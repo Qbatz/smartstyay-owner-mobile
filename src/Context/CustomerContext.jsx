@@ -1602,6 +1602,146 @@ const RequestKYC = async (customerId) => {
   }
 };
 
+const AddTenantDraft = async (
+  hostelId,
+  payload,
+  profilePic = null,
+  aadharPic = null,
+  panPic = null
+) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+
+    const formData = new FormData();
+
+    // JSON Payload
+    formData.append("request", {
+      string: JSON.stringify(payload.request),
+      type: "application/json",
+    });
+
+    // Profile Image
+    if (profilePic?.uri) {
+      formData.append("profilePic", {
+        uri: profilePic.uri,
+        type: profilePic.type || "image/jpeg",
+        name: profilePic.fileName || "profile.jpg",
+      });
+    }
+
+    // Aadhaar Image
+    if (aadharPic?.uri) {
+      formData.append("aadharPic", {
+        uri: aadharPic.uri,
+        type: aadharPic.type || "image/jpeg",
+        name: aadharPic.fileName || "aadhaar.jpg",
+      });
+    }
+
+    // PAN Image
+    if (panPic?.uri) {
+      formData.append("panPic", {
+        uri: panPic.uri,
+        type: panPic.type || "image/jpeg",
+        name: panPic.fileName || "pan.jpg",
+      });
+    }
+
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v3/customers/saveDraft/${hostelId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Draft save failed",
+    };
+  } catch (error) {
+    console.log("SAVE DRAFT ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const TenantCheckIn = async (hostelId, customerId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v3/customers/check-in/${hostelId}/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Check-In failed",
+    };
+  } catch (error) {
+    console.log("TENANT CHECK-IN ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 
   return (
@@ -1624,7 +1764,8 @@ const RequestKYC = async (customerId) => {
          bookCustomer,cancelCheckout,getSettlementByCustomerId,submitSettlement,initializeCheckout,confirmCheckout,
          initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
         addVendor, updateVendor , vendorList,
-        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment , RequestKYC
+        getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment , RequestKYC , 
+        AddTenantDraft ,TenantCheckIn
       }}
     >
       {children}

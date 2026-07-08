@@ -189,12 +189,12 @@ export default function TenantsScreen({ route }) {
       getParticularHostelDetails(activeHostelId);
     }
   }, [activeHostelId])
-  
- useFocusEffect(
-  useCallback(() => {
-    setSearchText("");
-  }, [])
-);
+
+  useFocusEffect(
+    useCallback(() => {
+      setSearchText("");
+    }, [])
+  );
 
 
   const handleOpenWhatsapp = (item) => {
@@ -1131,7 +1131,7 @@ export default function TenantsScreen({ route }) {
 
                           <View style={styles.detailRow}>
                             {item.floorName && (
-                              <View style={[styles.floorBadge, { flex: 1,alignItems:'center' }]}>
+                              <View style={[styles.floorBadge, { flex: 1, alignItems: 'center' }]}>
                                 <Text style={[styles.floorText]} numberOfLines={1}
                                   ellipsizeMode="tail">{item.floorName}</Text>
                               </View>
@@ -1530,10 +1530,11 @@ export default function TenantsScreen({ route }) {
                   selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "#00A32E0F" :
                     selectedCustomer?.customerCurrentStatus === "NOTICE" ? "#FFF9F9" :
                       selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "#1E45E10D" :
-                        ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "#FFF8EB" : "#FFF9F9"
+                        selectedCustomer?.customerCurrentStatus === "DRAFT" ? "#FFF8EB" :
+                          ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "#FFF8EB" : "#FFF9F9"
               }]}>
                 {/* <Text style={styles.unassignText}>Un Assigned</Text> */}
-                <Text style={[styles.unassignText, {
+                {/* <Text style={[styles.unassignText, {
                   color: selectedCustomer?.customerCurrentStatus === "BOOKED" ? "#1E45E1" :
                     selectedCustomer?.customerCurrentStatus === "CHECK_IN" ? "#00A32E" :
                       selectedCustomer?.customerCurrentStatus === "NOTICE" ? "#FF0000" :
@@ -1545,6 +1546,46 @@ export default function TenantsScreen({ route }) {
                       : selectedCustomer?.customerCurrentStatus === "NOTICE" ? "Notice Period"
                         : selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED" ? "Settlement Generated"
                           : ["INACTIVE", "IN_ACTIVE", "InActive"].includes(selectedCustomer?.customerCurrentStatus) ? "InActive" : "Write_Off"}
+                </Text> */}
+
+                <Text
+                  style={[
+                    styles.unassignText,
+                    {
+                      color:
+                        selectedCustomer?.customerCurrentStatus === "BOOKED"
+                          ? "#1E45E1"
+                          : selectedCustomer?.customerCurrentStatus === "CHECK_IN"
+                            ? "#00A32E"
+                            : selectedCustomer?.customerCurrentStatus === "NOTICE"
+                              ? "#FF0000"
+                              : selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED"
+                                ? "#1E45E1"
+                                : selectedCustomer?.customerCurrentStatus === "DRAFT"
+                                  ? "#FF9500"
+                                  : ["INACTIVE", "IN_ACTIVE", "InActive"].includes(
+                                    selectedCustomer?.customerCurrentStatus
+                                  )
+                                    ? "#FF9500"
+                                    : "#FF0000",
+                    },
+                  ]}
+                >
+                  {selectedCustomer?.customerCurrentStatus === "BOOKED"
+                    ? "Reserved"
+                    : selectedCustomer?.customerCurrentStatus === "CHECK_IN"
+                      ? "Occupied"
+                      : selectedCustomer?.customerCurrentStatus === "NOTICE"
+                        ? "Notice Period"
+                        : selectedCustomer?.customerCurrentStatus === "SETTLEMENT_GENERATED"
+                          ? "Settlement Generated"
+                          : selectedCustomer?.customerCurrentStatus === "DRAFT"
+                            ? "Draft"
+                            : ["INACTIVE", "IN_ACTIVE", "InActive"].includes(
+                              selectedCustomer?.customerCurrentStatus
+                            )
+                              ? "Inactive"
+                              : "Write Off"}
                 </Text>
 
 
@@ -1627,6 +1668,31 @@ export default function TenantsScreen({ route }) {
                   <Image source={require("../../Assets/Images/checkout_red.png")} style={styles.popupIcon} />
                   <Text style={styles.popupText}>Checkout</Text>
                 </TouchableOpacity>
+              }
+
+              {selectedCustomer?.customerCurrentStatus === "DRAFT" &&
+                <>
+                  <TouchableOpacity
+                    // style={styles.popupRow}
+                    style={[
+                      styles.popupRow,
+                      !canUpdateTenant && { opacity: 0.4 }]}
+                    disabled={!canUpdateTenant}
+                    onPress={() => {
+                      navigation.navigate("AddTenantNew", {
+                        customerId: selectedCustomer?.customerId,
+                        customer: selectedCustomer,
+                        mode: "EDIT",
+                      });
+                    }}
+                  >
+                    <Image source={require("../../Assets/Images/blue_circle.png")} style={styles.popupIcon} />
+                    <Text style={styles.popupText}>Draft Continue</Text>
+                  </TouchableOpacity>
+
+
+                </>
+
               }
 
               {selectedCustomer?.customerCurrentStatus === "BOOKED" &&
@@ -2426,7 +2492,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Gilroy-Semibold",
     color: "#111827",
-    marginRight:8
+    marginRight: 8
   },
   detailRow: {
     flexDirection: "row",
