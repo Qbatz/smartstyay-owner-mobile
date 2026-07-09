@@ -10,7 +10,7 @@ import {
     ScrollView,
     Animated,
     PanResponder,
-    Dimensions, BackHandler, Keyboard
+    Dimensions, BackHandler, Keyboard, NativeModules
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 import { useFocusEffect } from '@react-navigation/native';
@@ -38,6 +38,16 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const { expensesList, GetExpenseList, IntializeexpensesList, GetInitializeExpense, AddExpense,
         DeleteExpense, expenseUnits
     } = useContext(ExpensesContext)
+
+    const [environment, setEnvironment] = useState("")
+
+    const { CommonModule } = NativeModules;
+
+    useEffect(() => {
+        CommonModule.fetchEnvironment().then(r => {
+            setEnvironment(r)
+        })
+    }, [])
 
     const translateY = useRef(new Animated.Value(0)).current;
 
@@ -629,10 +639,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         }
     };
 
-       const itemTotal = items.reduce(
-            (sum, item) => sum + Number(item.amount || 0),
-            0
-        );
+    const itemTotal = items.reduce(
+        (sum, item) => sum + Number(item.amount || 0),
+        0
+    );
 
     const taxAmount =
         (itemTotal * Number(tax || 0)) / 100
@@ -640,9 +650,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const validateExpenseForm = () => {
         let newErrors = {};
 
-        if (!expenseTitle?.trim()) {
-            newErrors.expenseTitle = "Please Enter Expense Title";
-        }
+        // if (!expenseTitle?.trim()) {
+        //     newErrors.expenseTitle = "Please Enter Expense Title";
+        // }
 
         if (!selectedCategory) {
             newErrors.category = "Please Select Category";
@@ -738,12 +748,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 selectedUnits
         );
 
-  
 
-if (!hasItems) {
-  newErrors.expenseItems =
-    "Please add at least one expense item.";
-}
+
+        // if (!hasItems) {
+        //   newErrors.expenseItems =
+        //     "Please add at least one expense item.";
+        // }
 
         if (hasItems) {
             items.forEach((item, index) => {
@@ -777,36 +787,36 @@ if (!hasItems) {
         //         `Amount (${amount}) should match Item Total (${itemTotal})`;
         // }
 
-     
+
 
         // if (hasItems && Number(amount) !== itemTotal) {
         //     newErrors.amount =
         //         `Amount (${amount}) should match Item Total (${itemTotal})`;
         // }
 
-//         const expectedAmount = Number(
-//   (itemTotal + taxAmount - discountAmount).toFixed(2)
-// );
+        //         const expectedAmount = Number(
+        //   (itemTotal + taxAmount - discountAmount).toFixed(2)
+        // );
 
-// if (hasItems && Number(amount) !== expectedAmount) {
-//   newErrors.amount =
-//     `Amount (${amount}) should match Total Retainer Amount (₹${expectedAmount})`;
-// }
+        // if (hasItems && Number(amount) !== expectedAmount) {
+        //   newErrors.amount =
+        //     `Amount (${amount}) should match Total Retainer Amount (₹${expectedAmount})`;
+        // }
 
-const expectedAmount = Number(
-  (itemTotal + taxAmount - discountAmount).toFixed(2)
-);
+        // const expectedAmount = Number(
+        //     (itemTotal + taxAmount - discountAmount).toFixed(2)
+        // );
 
-if (hasItems && Number(amount) !== expectedAmount) {
-  newErrors.amount =
-    `Amount should match Total Retainer Amount (₹${expectedAmount.toLocaleString("en-IN")})`;
-}
+        if (hasItems && Number(amount) !== itemTotal) {
+            newErrors.amount =
+                `Total Amount should match Expense Item Total (₹${itemTotal.toLocaleString("en-IN")})`;
+        }
 
         if (tax && Number(tax) < 0) {
             newErrors.tax = "Invalid Tax Amount";
         }
 
-        
+
 
         if (discount && Number(discount) < 0) {
             newErrors.discount = "Invalid Discount";
@@ -820,9 +830,9 @@ if (hasItems && Number(amount) !== expectedAmount) {
                 "Discount cannot exceed Item Total";
         }
 
-       if (Number(tax) > 100) {
-    newErrors.tax = "Tax percentage cannot exceed 100";
-}
+        if (Number(tax) > 100) {
+            newErrors.tax = "Tax percentage cannot exceed 100";
+        }
 
         if (
             discountType === "percentage" &&
@@ -835,9 +845,9 @@ if (hasItems && Number(amount) !== expectedAmount) {
         setErrors(newErrors);
 
         console.log("discountType", discountType);
-console.log("taxAmount", taxAmount);
-console.log("discountAmount", discountAmount);
-console.log("grandTotal", grandTotal);
+        console.log("taxAmount", taxAmount);
+        console.log("discountAmount", discountAmount);
+        console.log("grandTotal", grandTotal);
 
         return Object.keys(newErrors).length === 0;
     }
@@ -989,7 +999,7 @@ console.log("grandTotal", grandTotal);
                 onClose={() => setShowSuccessModal(false)}
                 message={modalMessage}
                 type={modalType} />
-                
+
             <View style={styles.container}>
 
                 {/* Header */}
@@ -1021,7 +1031,7 @@ console.log("grandTotal", grandTotal);
                         </Text>
                     </View>
                     <Text style={styles.label}>
-                        Expenses Title <Text style={{ color: "red" }}>*</Text>
+                        Expenses Title
                     </Text>
 
                     {/* <ValidatedInput
@@ -1055,12 +1065,12 @@ console.log("grandTotal", grandTotal);
                     <Text style={styles.note}>
                         Note : Max 50 Characters
                     </Text>
-                    {errors.expenseTitle && (
+                    {/* {errors.expenseTitle && (
                         <ErrorMessage
                             message={errors.expenseTitle}
                             type="error"
                         />
-                    )}
+                    )} */}
 
                     <View style={{
                         flexDirection: "row",
@@ -1233,7 +1243,7 @@ console.log("grandTotal", grandTotal);
 
 
                     <Text style={styles.label}>
-                       Total Amount (INR)
+                        Total Amount (INR)
                         <Text style={{ color: "red" }}>*</Text>
                     </Text>
 
@@ -1352,7 +1362,39 @@ console.log("grandTotal", grandTotal);
                                 </Text>
                             </TouchableOpacity>
 
+
                             <TouchableOpacity
+                                disabled={environment === "PROD"}
+                                onPress={() => {
+                                    if (environment !== "PROD") {
+                                        setLinkVendor(true);
+                                    }
+                                }}
+                                style={{
+                                    flex: 1,
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    borderRadius: 10,
+                                    backgroundColor: linkVendor
+                                        ? "#2F54EB"
+                                        : "transparent",
+                                    opacity: environment === "PROD" ? 0.5 : 1,
+                                }}
+                            >
+                                <Text
+                                    style={{
+                                        color: linkVendor ? "#FFF" : "#1E1E1E",
+                                        fontSize: 13,
+                                        fontFamily: linkVendor
+                                            ? "Gilroy-Bold"
+                                            : "Gilroy-Medium",
+                                    }}
+                                >
+                                    Yes
+                                </Text>
+                            </TouchableOpacity>
+
+                            {/* <TouchableOpacity
                                 onPress={() => setLinkVendor(true)}
                                 style={{
                                     flex: 1,
@@ -1375,7 +1417,7 @@ console.log("grandTotal", grandTotal);
                                 >
                                     Yes
                                 </Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     </View>
 
@@ -1602,7 +1644,7 @@ console.log("grandTotal", grandTotal);
                                 />
                             )}
 
-                            {(paymentStatus === "Partially Paid" || paymentStatus ===  "Fully Paid" )&& (
+                            {(paymentStatus === "Partially Paid" || paymentStatus === "Fully Paid") && (
                                 <View
                                     style={{
                                         flexDirection: "row",
@@ -2156,12 +2198,12 @@ console.log("grandTotal", grandTotal);
                         </View>
                     ))}
 
-{errors.expenseItems && (
-  <ErrorMessage
-    message={errors.expenseItems}
-    type="error"
-  />
-)}
+                    {errors.expenseItems && (
+                        <ErrorMessage
+                            message={errors.expenseItems}
+                            type="error"
+                        />
+                    )}
 
                     <TouchableOpacity
                         style={styles.addRowBtn}
@@ -2278,7 +2320,7 @@ console.log("grandTotal", grandTotal);
                                 TOTAL RETAINER AMOUNT
                             </Text>
                             <Text style={styles.totalValue}>
-                                ₹ {grandTotal.toFixed(2)}
+                                ₹ {itemTotal.toFixed(2)}
                             </Text>
                         </View>
                     </View>

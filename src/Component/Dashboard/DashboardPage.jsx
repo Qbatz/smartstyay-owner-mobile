@@ -237,7 +237,7 @@ const subTabs = [
     label: "Add Tenant",
     icon: Usercircle,
     color: "#7C3AED",
-    route: "AddTenant",
+    route: "AddTenantNew",
     permission: canWriteWalkin
   },
   {

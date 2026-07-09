@@ -6,7 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,Image
 } from "react-native";
-
+import { useNavigation } from "@react-navigation/native";
 import { VendorContext } from "../../../Context/VendorContext";
 import { useHasPermission } from "../../../Utils/useHasPermission"
 import { CustomerContext } from "../../../Context/CustomerContext"
@@ -119,6 +119,9 @@ export default function VendorExpenses({vendor ,
   vendorExpensePayments,
 } = useContext(VendorContext);
 
+
+const navigation = useNavigation()
+
 useEffect(() => {
   getVendorExpenses(vendor?.id);
   // getVendorExpensePayments(vendor?.id);
@@ -201,7 +204,7 @@ console.log("vendorExpenses", vendorExpenses);
 <>
      {/* {loading && <Loader />} */}
 
-    <FlatList
+    {/* <FlatList
   data={vendorExpenses?.expenses || []}
   keyExtractor={(item) => item?.expenseId}
   renderItem={renderItem}
@@ -224,16 +227,84 @@ console.log("vendorExpenses", vendorExpenses);
        </Text>
      </View>
   }
-/>
+/> */}
+
+<View style={styles.container}>
+
+  <TouchableOpacity
+    style={styles.addExpenseBtn}
+    onPress={() => {
+       navigation.navigate("AddExpensesPage", {
+        })
+    }}
+  >
+    <Text style={styles.addExpenseText}>+ Add Expense</Text>
+  </TouchableOpacity>
+
+  <FlatList
+    data={vendorExpenses?.expenses || []}
+    keyExtractor={(item) => item?.expenseId?.toString()}
+    renderItem={renderItem}
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={styles.listContainer}
+    ListEmptyComponent={
+      <View style={styles.emptyContainer}>
+        <Image
+          source={EmptyState}
+          style={styles.emptyIcon}
+          resizeMode="contain"
+        />
+        <Text style={styles.emptyTitle}>No Expenses</Text>
+        <Text style={styles.emptySubTitle}>
+          No Expenses have been added yet.
+        </Text>
+      </View>
+    }
+  />
+
+</View>
 </>
   );
 }
 
 const styles = StyleSheet.create({
-  listContainer: {
-    backgroundColor: "#FFFFFF",
-    paddingBottom: 120,
-  },
+
+  container: {
+  flex: 1,
+  backgroundColor: "#FFF",
+},
+
+listContainer: {
+  paddingTop: 60, // button overlap avoid
+  paddingBottom: 120,
+},
+
+addExpenseBtn: {
+  position: "absolute",
+  top: 10,
+  right: 20,
+  zIndex: 100,
+
+  backgroundColor: "#2F54EB",
+  borderRadius: 10,
+  paddingHorizontal: 14,
+  height: 38,
+
+  justifyContent: "center",
+  alignItems: "center",
+
+  elevation: 5,
+},
+
+addExpenseText: {
+  color: "#FFF",
+  fontSize: 14,
+  fontFamily: "Gilroy-Bold",
+},
+  // listContainer: {
+  //   backgroundColor: "#FFFFFF",
+  //   paddingBottom: 120,
+  // },
 
   expenseCard: {
     flexDirection: "row",
