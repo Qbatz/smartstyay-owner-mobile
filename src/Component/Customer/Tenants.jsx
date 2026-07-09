@@ -24,6 +24,7 @@ import CheckoutIcon from "../../Assets/Images/checkout.png";
 import ActiveWalkin from "../../Assets/Images/ActiveWalkin.png";
 import WalkinIcon from "../../Assets/Images/walkin.png";
 import TenAntAdd from "../../Assets/Images/TenantAdd.png";
+import PlusIcon from "../../Assets/Images/add-circle.png";
 import Dots from "../../Assets/Images/3dots.png";
 import CallIcon from "../../Assets/Images/call_black_icon.png";
 import WhatsappIcon from "../../Assets/Images/whatsapp.png";
@@ -59,6 +60,14 @@ import RoomIcon from "../../Assets/Images/Room_Icon.png"
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60;
+
+  // onPress={() =>
+  //               navigation.navigate("AddTenant", {
+  //                 refreshWalkins: walkinCustomers,
+  //                  mode: "Add",
+  //               })
+  //             }
+
 export default function TenantsScreen({ route }) {
   const { setShowTabBar } = route.params;
   const screenWidth = Dimensions.get("window").width;
@@ -1211,6 +1220,22 @@ export default function TenantsScreen({ route }) {
               </>
             )}
 
+             {customers?.listCustomers?.length > 0 &&
+          <>
+            <TouchableOpacity
+              style={[styles.addBtn, !canWriteTenant && { opacity: 0.4 }]}
+              disabled={!canWriteTenant}
+              onPress={() =>
+                navigation.navigate("AddTenantNew", {
+                   mode: "Add",
+                })
+              }
+              >
+              <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
+            </TouchableOpacity>
+          </>
+        }
+
             {/* {customers?.listCustomers?.length > 0 &&
               <TouchableOpacity
                 style={[
@@ -2052,6 +2077,7 @@ export default function TenantsScreen({ route }) {
     </View>
   </TouchableOpacity>
 )} */}
+
 
         {showFilter && (
           <View style={styles.filterOverlay}>
@@ -3080,4 +3106,20 @@ const styles = StyleSheet.create({
     height: 18,
     marginRight: 10,
   },
+
+  addBtn: {
+    position: "absolute",
+    bottom: 0,
+    right: 20,
+    backgroundColor: "#00A32E",
+    width: 50,
+    height: 50,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 5,
+  },
+
+
+  plus: { fontSize: 30, color: "#fff", marginTop: -3 },
 });

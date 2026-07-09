@@ -1765,6 +1765,10 @@ const UpdateTenantDraft = async (
       type: "application/json",
     });
 
+    console.log("PROFILE", profilePic);
+console.log("AADHAAR", aadharPic);
+console.log("PAN", panPic);
+
     if (profilePic?.uri) {
       formData.append("profilePic", {
         uri: profilePic.uri,

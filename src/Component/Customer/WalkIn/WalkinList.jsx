@@ -224,9 +224,8 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
       return;
     }
 
-    navigation.navigate("AddTenantNew", {
+    navigation.navigate("AddTenant", {
       refreshWalkins: walkinCustomers,
-       mode: "Add",
     });
   };
 
@@ -390,12 +389,10 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
               style={[styles.addBtn, !canWriteTenant && { opacity: 0.4 }]}
               disabled={!canWriteTenant}
               onPress={() =>
-                navigation.navigate("AddTenantNew", {
+                navigation.navigate("AddTenant", {
                   refreshWalkins: walkinCustomers,
-                   mode: "Add",
                 })
-              }
-              >
+              }>
               <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
             </TouchableOpacity>
           </>

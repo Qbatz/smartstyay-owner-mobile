@@ -115,17 +115,17 @@ export default function ManageBedBottomSheet({ visible, onClose, selectedBed, ha
           <TouchableOpacity
             disabled={!canWriteCustomers}
             style={[styles.optionRow, !canWriteCustomers && { opacity: 0.4 }]}
-            onPress={() => {
-              onClose();
-              navigation.navigate("AddTenantNew", {
-                mode: "Add",
-              });
-            }}
-          // onPress={() => {
-          //   navigation.navigate("AddTenantNew");
+            // onPress={() => {
+            //   onClose();
+            //   navigation.navigate("AddTenant", {
+            //     mode: "Add",
+            //   });
+            // }}
+          onPress={() => {
+            navigation.navigate("AddTenant");
 
-          //   onClose();
-          // }}
+            onClose();
+          }}
           >
             <Text style={styles.optionText}>Add Tenant</Text>
             <Image source={require("../../Assets/Images/addsquare.png")} style={styles.icon} />

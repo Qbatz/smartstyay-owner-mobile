@@ -38,7 +38,7 @@ import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 // import DatePicker from "react-native-date-picker";
 
 
-export default function AddTenantNew({ navigation, route }) {
+export default function AddTenantNewform({ navigation, route }) {
     const { selectedBed, onBedAdded } = route.params || {};
     const insets = useSafeAreaInsets();
 
@@ -59,8 +59,15 @@ export default function AddTenantNew({ navigation, route }) {
     // const isEditMode = route.params?.isEdit;
 
     const isEditMode = route?.params?.mode === "EDIT";
-    const isAddMode = route?.params?.mode === "EDIT";
-     
+    const isAddMode = route?.params?.mode === "Add";
+
+    console.log("MODE", route?.params?.mode);
+    console.log("DRAFT", draftDetails);
+
+
+    console.log(route.params);
+    console.log(customer);
+
 
     // const tabBarHeight = useBottomTabBarHeight();
 
@@ -176,6 +183,74 @@ export default function AddTenantNew({ navigation, route }) {
 
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
+    const [basicDetails, setBasicDetails] = useState({
+        firstName: "",
+        lastName: "",
+        mobile: "",
+        email: "",
+    })
+
+
+    console.log("basicDetails", basicDetails);
+
+    const [countryCode, setCountryCode] = useState("91");
+
+    const [addressDetails, setAddressDetails] = useState({
+        flat: "",
+        area: "",
+        landmark: "",
+        pincode: "",
+        city: "",
+        state: "",
+    })
+
+
+
+    const [collectFullRent, setCollectFullRent] = useState(false);
+
+    const [showCustomRentEditor, setShowCustomRentEditor] = useState(false);
+
+    const [customRentAmount, setCustomRentAmount] = useState("");
+
+    const [savedCustomRent, setSavedCustomRent] = useState("");
+
+    const [isCustomRentSaved, setIsCustomRentSaved] = useState(false);
+
+    const [customRentError, setCustomRentError] = useState("");
+
+    console.log("savedCustomRent", savedCustomRent);
+
+
+
+
+    const handleSetCustomRent = () => {
+
+        if (!customRentAmount) {
+            setCustomRentError("Please enter custom rent amount");
+            return;
+        }
+
+        if (Number(customRentAmount) <= 0) {
+            setCustomRentError("Amount should be greater than 0");
+            return;
+        }
+
+        // if (Number(customRentAmount) > Number(checkinrentalAmount)) {
+        //     setCustomRentError("Custom rent cannot exceed total rent");
+        //     return;
+        // }
+
+        setSavedCustomRent(customRentAmount);
+        setIsCustomRentSaved(true);
+        setShowCustomRentEditor(false);
+        setCustomRentError("");
+    };
+
+    const handleEditCustomRent = () => {
+        setShowCustomRentEditor(true);
+        setIsCustomRentSaved(false);
+    };
+
 
 
     const [openStartTime, setOpenStartTime] = useState(false);
@@ -214,9 +289,9 @@ export default function AddTenantNew({ navigation, route }) {
 
         // AM / PM
         if (value.includes("PM")) {
-            result += " PM";
+            result 
         } else {
-            result += " AM";
+            result 
         }
 
         return result;
@@ -557,194 +632,253 @@ export default function AddTenantNew({ navigation, route }) {
     // }, [draftCustomerId]);
 
 
-  useFocusEffect(
-  useCallback(() => {
-    if (route?.params?.mode === "EDIT") {
-      handleGetDraftDetails(route.params.customerId);
-    } else {
-      resetDraftDetails();
 
-      setDraftCustomerId(null);
-      setSelectedImage(null);
-
-      setBasicDetails({
-        firstName: "",
-        lastName: "",
-        mobile: "",
-        email: "",
-      });
-
-      // reset remaining states
-    }
-  }, [route?.params?.mode, route?.params?.customerId])
-);
 
     console.log("DraftDetails", draftDetails);
 
 
     const getValue = (value, defaultValue = "") => {
-  if (
-    value === null ||
-    value === undefined ||
-    value === "null" ||
-    value === "undefined"
-  ) {
-    return defaultValue;
-  }
+        if (
+            value === null ||
+            value === undefined ||
+            value === "null" ||
+            value === "undefined"
+        ) {
+            return defaultValue;
+        }
 
-  return typeof value === "string" ? value.trim() : value;
-};
+        return typeof value === "string" ? value.trim() : value;
+    };
+
+
+
+
+
+
+    useFocusEffect(
+        useCallback(() => {
+            if (route?.params?.mode === "EDIT") {
+                handleGetDraftDetails(route.params.customerId);
+            } else {
+                resetDraftDetails();
+
+                setDraftCustomerId(null);
+                setSelectedImage(null);
+
+                setBasicDetails({
+                    firstName: "",
+                    lastName: "",
+                    mobile: "",
+                    email: "",
+                });
+
+                setAddressDetails({
+                    flat: "",
+                    area: "",
+                    landmark: "",
+                    city: "",
+                    pincode: "",
+                });
+
+                setPurchaseDate(null);
+                setJoiningDate(null);
+
+                setBookingAmount("");
+                setAdvanceAmount("");
+                setCheckinRentalAmount("");
+
+                setFloorSelected(null);
+                setRoomSelected(null);
+                setBedSelected(null);
+
+                setEmploymentStatus("");
+                setCompanyName("");
+                setJobRole("");
+                setWorkLocations("");
+                setShiftType("");
+
+                setGuardians([]);
+                setExtraCharges([]);
+                setOneTimePaymentCharges([]);
+
+                setAadhaarImage(null);
+                setPanCardImage(null);
+
+                setReferenceNumber("");
+                setCurrentStep(1);
+                setActiveTab("Booking");
+            }
+        }, [route?.params?.mode, route?.params?.customerId])
+    );
 
     useEffect(() => {
-  if (!draftDetails) return;
+        if (!draftDetails) return;
 
-  const {
-    address = {},
-    jobDetails = {},
-    hostelInfo = {},
-    vehicleDetails = {},
-    guardians = [],
-    deductions = [],
-  } = draftDetails;
+        const {
+            address = {},
+            jobDetails = {},
+            hostelInfo = {},
+            vehicleDetails = {},
+            guardians = [],
+            deductions = [],
+        } = draftDetails;
 
-   setDraftCustomerId(draftDetails?.customerId)
+        setDraftCustomerId(draftDetails?.customerId)
 
-  setBasicDetails({
-  firstName: getValue(draftDetails?.firstName),
-  lastName: getValue(draftDetails?.lastName),
-  mobile: getValue(draftDetails?.mobileNo || draftDetails?.mobile),
-  email: getValue(draftDetails?.emailId),
-});
+        setBasicDetails({
+            firstName: getValue(draftDetails?.firstName),
+            lastName: getValue(draftDetails?.lastName),
+            mobile: getValue(draftDetails?.mobileNo || draftDetails?.mobile),
+            email: getValue(draftDetails?.emailId),
+        });
 
-setCountryCode(getValue(draftDetails?.countryCode, "91"));
+        setCountryCode(getValue(draftDetails?.countryCode, "91"));
 
-setSelectedImage(
-  getValue(draftDetails?.profilePic)
-    ? { uri: draftDetails.profilePic }
-    : null
-);
+        setSelectedImage(
+            getValue(draftDetails?.profilePic)
+                ? { uri: draftDetails.profilePic }
+                : null
+        );
 
-setAddressDetails({
-  flat: getValue(
-    draftDetails?.address?.flat || draftDetails?.address?.house
-  ),
-  area: getValue(
-    draftDetails?.address?.area || draftDetails?.address?.street
-  ),
-  landmark: getValue(draftDetails?.address?.landmark),
-  pincode: getValue(draftDetails?.address?.pincode),
-  city: getValue(draftDetails?.address?.city),
-});
+        setAddressDetails({
+            flat: getValue(
+                draftDetails?.address?.flat || draftDetails?.address?.house
+            ),
+            area: getValue(
+                draftDetails?.address?.area || draftDetails?.address?.street
+            ),
+            landmark: getValue(draftDetails?.address?.landmark),
+            pincode: getValue(draftDetails?.address?.pincode),
+            city: getValue(draftDetails?.address?.city),
+        });
 
-setSelectedState(getValue(draftDetails?.address?.state));
+        setSelectedState(getValue(draftDetails?.address?.state));
 
-setIdProofType(getValue(draftDetails?.idProof?.type));
-setIdProofNumber(getValue(draftDetails?.idProof?.number));
+        setIdProofType(getValue(draftDetails?.idProof?.type));
+        setIdProofNumber(getValue(draftDetails?.idProof?.number));
 
-setPurchaseDate(
-  getValue(draftDetails?.bookingDate)
-    ? dayjs(draftDetails.bookingDate, "DD-MM-YYYY")
-    : null
-);
+        setPurchaseDate(
+            getValue(draftDetails?.bookingInfo?.bookingDate)
+                ? dayjs(draftDetails.bookingInfo?.bookingDate, "DD-MM-YYYY")
+                : null
+        );
 
-setJoiningDate(
-  getValue(draftDetails?.joiningDate)
-    ? dayjs(draftDetails.joiningDate, "DD-MM-YYYY")
-    : null
-);
+        setJoiningDate(
+            getValue(draftDetails?.booking?.joiningDateTentative)
+                ? dayjs(draftDetails.booking?.joiningDateTentative, "DD-MM-YYYY")
+                : null
+        );
 
-setBookingAmount(String(getValue(draftDetails?.bookingAmount, 0)));
+        setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, 0)));
 
-setReferenceNumber(getValue(draftDetails?.referenceNumber));
+        setReferenceNumber(getValue(draftDetails?.referenceNumber));
 
-setAdvanceAmount(String(getValue(draftDetails?.advanceAmount, 0)));
+        setAdvanceAmount(String(getValue(draftDetails?.advanceAmount, 0)));
 
-setCheckinRentalAmount(
-  String(getValue(draftDetails?.rentalAmount, 0))
-);
+        setCheckinRentalAmount(
+            String(getValue(draftDetails?.rentalAmount, 0))
+        );
 
 
-setFloorSelected(
-  draftDetails?.hostelInfo?.floorId
-    ? {
-        id: draftDetails.hostelInfo.floorId,
-        floorName: getValue(draftDetails.hostelInfo.floorName),
-      }
-    : null
-);
+        setFloorSelected(
+            draftDetails?.hostelInfo?.floorId
+                ? {
+                    id: draftDetails.hostelInfo.floorId,
+                    name: getValue(draftDetails.hostelInfo.floorName),
+                }
+                : null
+        );
 
-setRoomSelected(
-  draftDetails?.hostelInfo?.roomId
-    ? {
-        id: draftDetails.hostelInfo.roomId,
-        roomName: getValue(draftDetails.hostelInfo.roomName),
-      }
-    : null
-);
+        setRoomSelected(
+            draftDetails?.hostelInfo?.roomId
+                ? {
+                    id: draftDetails.hostelInfo.roomId,
+                    name: getValue(draftDetails.hostelInfo.roomName),
+                }
+                : null
+        );
 
-setBedSelected(
-  draftDetails?.hostelInfo?.bedId
-    ? {
-        bedId: draftDetails.hostelInfo.bedId,
-        bedName: getValue(draftDetails.hostelInfo.bedName),
-        floorId: draftDetails.hostelInfo.floorId,
-        roomId: draftDetails.hostelInfo.roomId,
-      }
-    : null
-);
+        setBedSelected(
+            draftDetails?.hostelInfo?.bedId
+                ? {
+                    bedId: draftDetails.hostelInfo.bedId,
+                    bedName: getValue(draftDetails.hostelInfo.bedName),
+                    floorId: draftDetails.hostelInfo.floorId,
+                    roomId: draftDetails.hostelInfo.roomId,
+                }
+                : null
+        );
 
-const job = draftDetails?.jobDetails || {};
+        const job = draftDetails?.jobDetails || {};
 
-setEmploymentStatus(getValue(job.employmentStatus));
-setCompanyName(getValue(job.companyName));
-setJobRole(getValue(job.jobRole));
-setWorkLocations(getValue(job.workLocation));
-setShiftType(getValue(job.shiftType));
-setStartTime(getValue(job.shiftFrom));
-setEndTime(getValue(job.shiftTo));
+        setEmploymentStatus(getValue(job.employmentStatus));
+        setCompanyName(getValue(job.companyName));
+        setJobRole(getValue(job?.jobRole || ""));
+        setWorkLocations(getValue(job.workLocation));
+        setShiftType(getValue(job.shiftType));
+        setStartTime(getValue(job.shiftFrom));
+        setEndTime(getValue(job.shiftTo));
 
-setGuardians(
-  Array.isArray(draftDetails?.guardians)
-    ? draftDetails.guardians.map(item => ({
-        fullName: getValue(item.guardianFullName),
-        relationship: getValue(item.relationshipToTenant),
-        occupation: getValue(item.guardianOccupation),
-        mobile: getValue(item.mobileNo),
-      }))
-    : []
-);
+        setGuardians(
+            Array.isArray(draftDetails?.guardians)
+                ? draftDetails.guardians.map(item => ({
+                    fullName: getValue(item.guardianFullName),
+                    relationship: getValue(item.relationshipToTenant),
+                    occupation: getValue(item.guardianOccupation),
+                    mobile: getValue(item.mobileNo),
+                }))
+                : []
+        );
 
-setExtraCharges(
-  Array.isArray(draftDetails?.deductions)
-    ? draftDetails.deductions.map((item, index) => ({
-        id: index + 1,
-        type: item.type === "Maintenance" ? "Maintenance" : "Others",
-        title: item.type === "Maintenance" ? "" : getValue(item.type),
-        amount: String(getValue(item.amount, 0)),
-      }))
-    : []
-);
+        setExtraCharges(
+            Array.isArray(draftDetails?.deductions)
+                ? draftDetails.deductions.map((item, index) => ({
+                    id: index + 1,
+                    type: item.type === "Maintenance" ? "Maintenance" : "Others",
+                    title: item.type === "Maintenance" ? "" : getValue(item.type),
+                    amount: String(getValue(item.amount, 0)),
+                }))
+                : []
+        );
 
-setAadhaarImage(
-  getValue(draftDetails?.aadhaarPic)
-    ? { uri: draftDetails.aadhaarPic }
-    : null
-);
+        if (draftDetails?.aadharPic) {
+            const aadhaarFile = {
+                uri: draftDetails.aadharPic,
+                fileName: draftDetails.aadharPic.split("/").pop(),
+                fileSize: 0,
+                type: "image/jpeg",
+            };
 
-setPanCardImage(
-  getValue(draftDetails?.panPic)
-    ? { uri: draftDetails.panPic }
-    : null
-);
+            setAadhaarImage(aadhaarFile);
+            setAadhaarAttachments([aadhaarFile]);
+        } else {
+            setAadhaarImage(null);
+            setAadhaarAttachments([]);
+        }
 
-const vehicle = draftDetails?.vehicleDetails || {};
+        if (draftDetails?.panPic) {
+            const panFile = {
+                uri: draftDetails.panPic,
+                fileName: draftDetails.panPic.split("/").pop(),
+                fileSize: 0,
+                type: "image/jpeg",
+            };
 
-setHasVehicle(vehicle?.isParkingSpaceRequired ?? false);
-setVehicleType(getValue(vehicle?.vehicleType));
-setVehicleNumber(getValue(vehicle?.vehicleNumber));
+            setPanCardImage(panFile);
+            setPanCardAttachments([panFile]);
+        } else {
+            setPanCardImage(null);
+            setPanCardAttachments([]);
+        }
 
-  
-}, [draftDetails]);
+        const vehicle = draftDetails?.vehicleDetails || {};
+
+        setHasVehicle(vehicle?.isParkingSpaceRequired ?? false);
+        setVehicleType(getValue(vehicle?.vehicleType));
+        setVehicleNumber(getValue(vehicle?.vehicleNumber));
+
+
+    }, [draftDetails]);
 
 
     // useEffect(() => {
@@ -766,7 +900,7 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
     //             : null
     //     );
 
-      
+
     //     setAddressDetails({
     //         flat: draftDetails?.address?.flat || draftDetails?.address?.house || "",
     //         area: draftDetails?.address?.area || draftDetails?.address?.street || "",
@@ -777,7 +911,7 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
 
     //     setSelectedState(draftDetails?.address?.state || "");
 
-        
+
     //     setEmploymentStatus(
     //         draftDetails?.jobDetails?.employmentStatus || ""
     //     );
@@ -800,7 +934,7 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
     //         draftDetails?.jobDetails?.shiftTo || ""
     //     );
 
-       
+
     //     setGuardians(
     //         draftDetails?.guardians || []
     //     );
@@ -912,23 +1046,8 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
     const TYPE_OPTIONS = ["Maintenance", "Others"];
 
 
-    const [basicDetails, setBasicDetails] = useState({
-        firstName: customer?.firstName || "",
-        lastName: customer?.lastName || "",
-        mobile: customer?.mobileNo || "",
-        email: customer?.emailId || "",
-    });
 
-    const [countryCode, setCountryCode] = useState(customer?.countryCode || "91");
 
-    const [addressDetails, setAddressDetails] = useState({
-        flat: "",
-        area: "",
-        landmark: "",
-        pincode: "",
-        city: "",
-        state: "",
-    })
 
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -1243,6 +1362,64 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
         )
     }
 
+
+    const clearAllStates = () => {
+        resetDraftDetails();
+
+        setDraftCustomerId(null);
+
+        setBasicDetails({
+            firstName: "",
+            lastName: "",
+            mobile: "",
+            email: "",
+        });
+
+        setAddressDetails({
+            flat: "",
+            area: "",
+            landmark: "",
+            city: "",
+            pincode: "",
+        });
+
+        setSelectedImage(null);
+        setAadhaarImage(null);
+        setPanCardImage(null);
+
+        setPurchaseDate(null);
+        setJoiningDate(null);
+        setcheckJoiningDate(null);
+
+        setBookingAmount("");
+        setAdvanceAmount("");
+        setCheckinRentalAmount("");
+        setReferenceNumber("");
+
+        setFloorSelected(null);
+        setRoomSelected(null);
+        setBedSelected(null);
+
+        setEmploymentStatus(null);
+        setCompanyName("");
+        setJobRole(null);
+        setWorkLocations("");
+        setShiftType(null);
+
+        setGuardians([]);
+        setExtraCharges([]);
+        setOneTimePaymentCharges([]);
+
+        setCurrentStep(1);
+        setActiveTab("Booking");
+    };
+
+    useEffect(() => {
+        return () => {
+            clearAllStates();
+        };
+    }, []);
+
     const handleBack = () => {
         if (currentStep > 1) {
             setCurrentStep(prev => prev - 1);
@@ -1353,8 +1530,8 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
                     // proRate: false,
 
                     idProof: {
-                        type: IdproofType,
-                        number: IdprooNumber,
+                        type: IdproofType || "",
+                        number: IdprooNumber || "",
                     },
 
                     address: {
@@ -1452,133 +1629,145 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
         isSubmittingRef.current = true;
 
         try {
-        const payload = {
-            request: {
-                // Basic Details
-                firstName: basicDetails.firstName,
-                lastName: basicDetails.lastName,
-                mobile: basicDetails.mobile,
-                emailId: basicDetails.email,
+            const payload = {
+                request: {
+                    // Basic Details
+                    firstName: basicDetails.firstName,
+                    lastName: basicDetails.lastName,
+                    mobile: basicDetails.mobile,
+                    emailId: basicDetails.email,
 
-                // Booking
-                joiningDate: joiningDate
-                    ? dayjs(joiningDate).format("DD-MM-YYYY")
-                    : "",
+                    // Booking
+                    joiningDate: joiningDate
+                        ? dayjs(joiningDate).format("DD-MM-YYYY")
+                        : "",
 
-                bookingDate: purchaseDate
-                    ? dayjs(purchaseDate).format("DD-MM-YYYY")
-                    : "",
+                    bookingDate: purchaseDate
+                        ? dayjs(purchaseDate).format("DD-MM-YYYY")
+                        : "",
 
-                bookingAmount: Number(bookingAmount || 0),
+                    bookingAmount: Number(bookingAmount || 0),
 
-                floorId: floorSelected?.id || null,
-                roomId: roomSelected?.id || null,
-                bedId: bedSelected?.bedId || null,
+                    floorId: floorSelected?.id || null,
+                    roomId: roomSelected?.id || null,
+                    bedId: bedSelected?.bedId || null,
 
-                bankId: accountSelected?.bankingId || "",
-                referenceNumber: referenceNumber || "",
+                    bankId: accountSelected?.bankingId || "",
+                    referenceNumber: referenceNumber || "",
 
-                advanceAmount: Number(advanceAmount || 0),
-                rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
+                    advanceAmount: Number(advanceAmount || 0),
+                    rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
 
-                stayType: "LONG",
+                    stayType: "LONG",
 
-                deductions: extraCharges.map(item => ({
-                    type:
-                        item.type === "Others"
-                            ? item.title
-                            : item.type,
-                    amount: Number(item.amount || 0),
-                })),
+                    deductions: extraCharges.map(item => ({
+                        type:
+                            item.type === "Others"
+                                ? item.title
+                                : item.type,
+                        amount: Number(item?.amount || 0),
+                    })),
 
-                proRate: false,
+                    proRate: false,
 
-                idProof: {
-                    type: "",
-                    number: "",
+                    idProof: {
+                        type: IdproofType || "",
+                        number: IdprooNumber || "",
+                    },
+
+                    address: {
+                        flat: addressDetails.flat || "",
+                        house: "",
+                        building: "",
+                        company: "",
+                        apartment: "",
+                        area: addressDetails.area || "",
+                        street: "",
+                        sector: "",
+                        village: "",
+                        landmark: addressDetails?.landmark || "",
+                        pincode: addressDetails?.pincode || "",
+                        city: addressDetails?.city || "",
+                        state: selectedState || "",
+                    },
+
+                    booking: {
+                        joiningDateTentative: joiningDate
+                            ? dayjs(joiningDate).format("DD-MM-YYYY")
+                            : "",
+                        refuseAdvanceAmount: refuseAdvanceAmount,
+                    },
+
+                    jobDetails: {
+                        employmentStatus: employmentStatus || "",
+                        companyName: companyName || "",
+                        collegeName: "",
+                        jobRole: jobRole || "",
+                        workLocation: worklocation || "",
+                        shiftType: shiftType || "",
+                        shiftFrom: startTime || "",
+                        shiftTo: endTime || "",
+                    },
+
+                    guardians: guardians.map(item => ({
+                        guardianFullName: item?.fullName || "",
+                        relationshipToTenant: item?.relationship || "",
+                        guardianOccupation: item?.occupation || "",
+                        mobileNo: item?.mobile || "",
+                    })),
+
+                    vehicleDetails: {
+                        vehicleType: hasVehicle ? vehicleType : "",
+                        vehicleNumber: hasVehicle ? vehicleNumber : "",
+                        isParkingSpaceRequired: hasVehicle,
+                    },
                 },
+            };
 
-                address: {
-                    flat: addressDetails.flat,
-                    house: "",
-                    building: "",
-                    company: "",
-                    apartment: "",
-                    area: addressDetails.area,
-                    street: "",
-                    sector: "",
-                    village: "",
-                    landmark: addressDetails.landmark,
-                    pincode: addressDetails.pincode,
-                    city: addressDetails.city,
-                    state: selectedState,
-                },
+            console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
 
-                booking: {
-                    joiningDateTentative: "",
-                    refuseAdvanceAmount: refuseAdvanceAmount,
-                },
+            const res = await UpdateTenantDraft(
+                activeHostelId,
+                draftCustomerId,
+                payload,
+                selectedImage,
+                aadhaarImage,
+                pancardImage
+            );
 
-                jobDetails: {
-                    employmentStatus: employmentStatus || "",
-                    companyName: companyName || "",
-                    collegeName: "",
-                    jobRole: jobRole || "",
-                    workLocation: worklocation || "",
-                    shiftType: shiftType || "",
-                    shiftFrom: startTime || "",
-                    shiftTo: endTime || "",
-                },
+            console.log("res", res, draftCustomerId);
 
-                guardians: guardians.map(item => ({
-                    guardianFullName: item.fullName,
-                    relationshipToTenant: item.relationship,
-                    guardianOccupation: item.occupation,
-                    mobileNo: item.mobile,
-                })),
 
-                vehicleDetails: {
-                    vehicleType: hasVehicle ? vehicleType : "",
-                    vehicleNumber: hasVehicle ? vehicleNumber : "",
-                    isParkingSpaceRequired: hasVehicle,
-                },
-            },
-        };
+            if (res.success) {
+                setModalType("success");
+                setMessage(res?.data?.message || "Draft updated successfully");
+                setShowSuccess(true);
 
-        console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
+                setTimeout(() => {
+                    setShowSuccess(false)
+                    if (currentStep === 1) {
+                        setCurrentStep(2)
+                    }
+                    if (currentStep === 2) {
+                        setCurrentStep(3)
+                    }
 
-        const res = await UpdateTenantDraft(
-            activeHostelId,
-            draftCustomerId,
-            payload,
-            selectedImage,
-            aadhaarImage,
-            pancardImage
-        );
+                    if (currentStep === 3) {
+                        navigation.goBack();
+                    }
 
-        console.log("res", res , draftCustomerId);
-        
 
-        if (res.success) {
-            setModalType("success");
-            setMessage(res?.data?.message || "Draft updated successfully");
-            setShowSuccess(true);
+                }, 800);
+            } else {
+                setModalType("error");
+                setMessage(res?.message || "Draft update failed");
+                setShowSuccess(true);
 
-            setTimeout(() => {
-                setShowSuccess(false);
-                navigation.goBack();
-                
-            }, 800);
-        } else {
-            setModalType("error");
-            setMessage(res?.message || "Draft update failed");
-            setShowSuccess(true);
-
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 800);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 800);
+            }
         }
-    }
         finally {
             isSubmittingRef.current = false;
         }
@@ -1642,7 +1831,7 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
     const handleBookingSubmit = async () => {
         if (!validateBooking()) return;
         // if (isCheckingIn) return;
-       if (isSubmittingRef.current) return;
+        if (isSubmittingRef.current) return;
         isSubmittingRef.current = true;
 
 
@@ -1849,140 +2038,143 @@ setVehicleNumber(getValue(vehicle?.vehicleNumber));
             return;
         }
 
-          if (isSubmittingRef.current) return;
+        if (isSubmittingRef.current) return;
         isSubmittingRef.current = true;
 
 
         try {
 
-        const payload = {
-            request: {
-                // Basic Details
-                firstName: basicDetails.firstName,
-                lastName: basicDetails.lastName,
-                mobile: basicDetails.mobile,
-                emailId: basicDetails.email,
+            const payload = {
+                request: {
+                    // Basic Details
+                    firstName: basicDetails.firstName,
+                    lastName: basicDetails.lastName,
+                    mobile: basicDetails.mobile,
+                    emailId: basicDetails.email,
 
-                // Booking
-                joiningDate: joiningDate
-                    ? dayjs(joiningDate).format("DD-MM-YYYY")
-                    : "",
+                    // Booking
+                    joiningDate: joiningDate
+                        ? dayjs(joiningDate).format("DD-MM-YYYY")
+                        : "",
 
-                bookingDate: purchaseDate
-                    ? dayjs(purchaseDate).format("DD-MM-YYYY")
-                    : "",
+                    bookingDate: purchaseDate
+                        ? dayjs(purchaseDate).format("DD-MM-YYYY")
+                        : "",
 
-                bookingAmount: Number(bookingAmount || 0),
+                    bookingAmount: Number(bookingAmount || 0),
 
-                floorId: floorSelected?.id || null,
-                roomId: roomSelected?.id || null,
-                bedId: bedSelected?.bedId || null,
+                    floorId: floorSelected?.id || null,
+                    roomId: roomSelected?.id || null,
+                    bedId: bedSelected?.bedId || null,
 
-                bankId: accountSelected?.bankingId || "",
-                referenceNumber: referenceNumber || "",
+                    bankId: accountSelected?.bankingId || "",
+                    referenceNumber: referenceNumber || "",
 
-                advanceAmount: Number(advanceAmount || 0),
-                rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
+                    advanceAmount: Number(advanceAmount || 0),
+                    rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
 
-                stayType: "LONG",
+                    stayType: "LONG",
 
-                deductions: extraCharges.map(item => ({
-                    type:
-                        item.type === "Others"
-                            ? item.title
-                            : item.type,
-                    amount: Number(item.amount || 0),
-                })),
+                    deductions: extraCharges.map(item => ({
+                        type:
+                            item.type === "Others"
+                                ? item.title
+                                : item.type,
+                        amount: Number(item.amount || 0),
+                    })),
 
-                proRate: false,
+                    proRate: false,
 
-                idProof: {
-                    type: "",
-                    number: "",
+                    idProof: {
+                        type: IdproofType || "",
+                        number: IdprooNumber || "",
+                    },
+
+                    address: {
+                        flat: addressDetails.flat,
+                        house: "",
+                        building: "",
+                        company: "",
+                        apartment: "",
+                        area: addressDetails.area,
+                        street: "",
+                        sector: "",
+                        village: "",
+                        landmark: addressDetails.landmark,
+                        pincode: addressDetails.pincode,
+                        city: addressDetails.city,
+                        state: selectedState,
+                    },
+
+                    booking: {
+                        joiningDateTentative: "",
+                        refuseAdvanceAmount: refuseAdvanceAmount,
+                    },
+
+                    jobDetails: {
+                        employmentStatus: employmentStatus || "",
+                        companyName: companyName || "",
+                        collegeName: "",
+                        jobRole: jobRole || "",
+                        workLocation: worklocation || "",
+                        shiftType: shiftType || "",
+                        shiftFrom: startTime || "",
+                        shiftTo: endTime || "",
+                    },
+
+                    guardians: guardians.map(item => ({
+                        guardianFullName: item.fullName,
+                        relationshipToTenant: item.relationship,
+                        guardianOccupation: item.occupation,
+                        mobileNo: item.mobile,
+                    })),
+
+                    vehicleDetails: {
+                        vehicleType: hasVehicle ? vehicleType : "",
+                        vehicleNumber: hasVehicle ? vehicleNumber : "",
+                        isParkingSpaceRequired: hasVehicle,
+                    },
                 },
+            };
 
-                address: {
-                    flat: addressDetails.flat,
-                    house: "",
-                    building: "",
-                    company: "",
-                    apartment: "",
-                    area: addressDetails.area,
-                    street: "",
-                    sector: "",
-                    village: "",
-                    landmark: addressDetails.landmark,
-                    pincode: addressDetails.pincode,
-                    city: addressDetails.city,
-                    state: selectedState,
-                },
+            console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
 
-                booking: {
-                    joiningDateTentative: "",
-                    refuseAdvanceAmount: refuseAdvanceAmount,
-                },
+            const res = await UpdateTenantDraft(
+                activeHostelId,
+                draftCustomerId,
+                payload,
+                selectedImage,
+                aadhaarImage,
+                pancardImage
+            );
 
-                jobDetails: {
-                    employmentStatus: employmentStatus || "",
-                    companyName: companyName || "",
-                    collegeName: "",
-                    jobRole: jobRole || "",
-                    workLocation: worklocation || "",
-                    shiftType: shiftType || "",
-                    shiftFrom: startTime || "",
-                    shiftTo: endTime || "",
-                },
+            console.log("updateres", res);
+            
 
-                guardians: guardians.map(item => ({
-                    guardianFullName: item.fullName,
-                    relationshipToTenant: item.relationship,
-                    guardianOccupation: item.occupation,
-                    mobileNo: item.mobile,
-                })),
+            if (res.success) {
+                setModalType("success");
+                setMessage(res?.data?.message || "Draft updated successfully");
+                setShowSuccess(true);
 
-                vehicleDetails: {
-                    vehicleType: hasVehicle ? vehicleType : "",
-                    vehicleNumber: hasVehicle ? vehicleNumber : "",
-                    isParkingSpaceRequired: hasVehicle,
-                },
-            },
-        };
+                setTimeout(() => {
+                    setShowSuccess(false);
+                    navigation.goBack();
+                }, 800);
+            } else {
+                setModalType("error");
+                setMessage(res?.message || "Draft update failed");
+                setShowSuccess(true);
 
-        console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 800);
+            }
 
-        const res = await UpdateTenantDraft(
-            activeHostelId,
-            draftCustomerId,
-            payload,
-            selectedImage,
-            aadhaarImage,
-            pancardImage
-        );
-
-        if (res.success) {
-            setModalType("success");
-            setMessage(res?.data?.message || "Draft updated successfully");
-            setShowSuccess(true);
-
-            setTimeout(() => {
-                setShowSuccess(false);
-                navigation.goBack();
-            }, 800);
-        } else {
-            setModalType("error");
-            setMessage(res?.message || "Draft update failed");
-            setShowSuccess(true);
-
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 800);
         }
-
-    }
-finally {
+        finally {
             isSubmittingRef.current = false;
         }
-       
+
     };
 
 
@@ -1993,17 +2185,31 @@ finally {
             return (
 
                 <View style={styles.row}>
-                    <View style={{ flex: 1, }}></View>
+
+                    {isEditMode ?
+                        <TouchableOpacity
+                            style={[
+                                styles.primaryBtn,
+
+                            ]}
+                            onPress={() => setCurrentStep(2)}
+                        >
+                            <Text style={styles.primaryText}>Next</Text>
+                        </TouchableOpacity>
+                        :
+                        <View style={{ flex: 1 }}></View>
+                    }
+
 
 
 
                     <TouchableOpacity
                         style={[
-        styles.primaryBtn,
-        isSubmittingRef.current && {
-            opacity: 0.5,
-        },
-    ]}
+                            styles.primaryBtn,
+                            isSubmittingRef.current && {
+                                opacity: 0.5,
+                            },
+                        ]}
                         onPress={isEditMode ? UpdateDraft : handleBasicNext}
                     >
                         <Text style={styles.primaryText}>
@@ -2092,12 +2298,12 @@ finally {
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                         style={[
-        styles.primaryBtn,
-        isSubmittingRef.current && {
-            opacity: 0.5,
-        },
-    ]}
+                        style={[
+                            styles.primaryBtn,
+                            isSubmittingRef.current && {
+                                opacity: 0.5,
+                            },
+                        ]}
                         onPress={handleStepThree}
 
                     >
@@ -2393,10 +2599,10 @@ finally {
             return;
         }
 
-         if (isSubmittingRef.current) return;
+        if (isSubmittingRef.current) return;
         isSubmittingRef.current = true;
 
-       
+
 
         try {
             setIsCheckingIn(true)
@@ -2433,6 +2639,7 @@ finally {
 
                 rentalAmount: Number(checkinrentalAmount),
 
+
                 stayType: "long",
                 // StayTypeSelected === "LongStay" ? "long" : "short",
 
@@ -2444,9 +2651,12 @@ finally {
                     amount: Number(item.amount),
                 })),
 
-                shouldCollectFullRent: false,
+                shouldCollectFullRent: collectFullRent,
 
-                customRent: 0,
+                // customRent: 0,
+                customRent: savedCustomRent
+                    ? Number(savedCustomRent)
+                    : null,
 
                 oneTimeDeduction: onetimepaymentcharges.map((item) => ({
                     type:
@@ -2490,7 +2700,7 @@ finally {
             console.log(error)
             setIsCheckingIn(false)
         }
-          finally {
+        finally {
             isSubmittingRef.current = false;
         }
 
@@ -2724,6 +2934,11 @@ finally {
     const summaryRent = Number(checkinrentalAmount || 0)
 
     const summaryAmount = summaryAdvanceAmount + deductionTotal + summaryRent;
+    console.log(searchText);
+    console.log(showTenantList);
+    console.log(tenantList);
+
+
 
 
     return (
@@ -3144,7 +3359,7 @@ finally {
                                         value={IdprooNumber}
                                         onChangeText={(t) => {
                                             const sanitized = t.replace(/[^a-zA-Z0-9\s]/g, "");
-                                            setIdProofNumber({ ...IdprooNumber, landmark: sanitized })
+                                            setIdProofNumber(sanitized)
                                         }}
                                     />
 
@@ -4535,6 +4750,178 @@ finally {
                                                 <ErrorMessage message={rentalError} type="error" />
                                             )}
 
+
+                                            <View style={styles.fullRentRow}>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        styles.checkbox,
+                                                        collectFullRent && styles.checkboxSelected,
+                                                    ]}
+                                                    onPress={() => {
+                                                        const value = !collectFullRent;
+
+                                                        setCollectFullRent(value);
+
+                                                        if (!value) {
+                                                            setShowCustomRentEditor(false);
+                                                            setCustomRentAmount("");
+                                                            setSavedCustomRent("");
+                                                            setIsCustomRentSaved(false);
+                                                            setCustomRentError("");
+                                                        }
+                                                    }}
+                                                >
+                                                    {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                                                </TouchableOpacity>
+
+                                                <Text style={styles.fullRentText}>
+                                                    Do you want to collect Full Rent for current month?
+                                                </Text>
+                                            </View>
+
+                                            {collectFullRent && (
+                                                <>
+                                                    <TouchableOpacity
+                                                        style={[
+                                                            styles.customRentBtn,
+                                                            (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
+                                                        ]}
+                                                        onPress={() => {
+
+                                                            if (showCustomRentEditor || isCustomRentSaved) {
+                                                                setShowCustomRentEditor(false);
+                                                                setIsCustomRentSaved(false)
+                                                            } else {
+                                                                setShowCustomRentEditor(true);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.customRentBtnText,
+                                                                (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                                                            ]}
+                                                        >
+                                                            {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                                                        </Text>
+                                                    </TouchableOpacity>
+
+                                                    {(showCustomRentEditor || isCustomRentSaved) && (
+                                                        <View style={styles.customRentCard}>
+
+                                                            <Text style={styles.customRentTitle}>
+                                                                Custom Rent Amount
+                                                            </Text>
+
+                                                            <Text style={styles.customRentSubTitle}>
+                                                                This amount reflects First month Rent only.
+                                                            </Text>
+
+                                                            {!isCustomRentSaved ? (
+
+                                                                <>
+                                                                    <View style={styles.amountRow}>
+
+                                                                        <TextInput
+                                                                            style={styles.amountInput}
+                                                                            placeholder="₹ 0.00"
+                                                                            keyboardType="numeric"
+                                                                            value={customRentAmount}
+                                                                            onChangeText={(text) => {
+                                                                                setCustomRentAmount(
+                                                                                    text.replace(/[^0-9]/g, "")
+                                                                                );
+                                                                                setCustomRentError("");
+                                                                            }}
+                                                                        />
+
+                                                                        <TouchableOpacity
+                                                                            style={styles.setBtn}
+                                                                            onPress={() => {
+
+                                                                                if (!customRentAmount) {
+                                                                                    setCustomRentError(
+                                                                                        "Please enter custom rent amount"
+                                                                                    );
+                                                                                    return;
+                                                                                }
+
+                                                                                if (Number(customRentAmount) <= 0) {
+                                                                                    setCustomRentError(
+                                                                                        "Amount should be greater than zero"
+                                                                                    );
+                                                                                    return;
+                                                                                }
+
+                                                                                // if (
+                                                                                //     Number(customRentAmount) >
+                                                                                //     Number(checkinrentalAmount || 0)
+                                                                                // ) {
+                                                                                //     setCustomRentError(
+                                                                                //         "Custom rent cannot exceed total rent"
+                                                                                //     );
+                                                                                //     return;
+                                                                                // }
+
+                                                                                setSavedCustomRent(customRentAmount);
+
+                                                                                setIsCustomRentSaved(true);
+
+                                                                                setShowCustomRentEditor(false);
+
+                                                                                setCustomRentError("");
+                                                                            }}
+                                                                        >
+                                                                            <Text style={styles.setBtnText}>
+                                                                                ✓ Set
+                                                                            </Text>
+                                                                        </TouchableOpacity>
+
+                                                                    </View>
+
+                                                                    {customRentError ? (
+                                                                        <ErrorMessage message={customRentError} />
+                                                                    ) : null}
+                                                                </>
+
+                                                            ) : (
+
+                                                                <View style={styles.savedRow}>
+
+                                                                    <Text style={styles.savedAmount}>
+                                                                        ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                                                                    </Text>
+
+                                                                    <TouchableOpacity
+                                                                        onPress={() => {
+
+                                                                            setCustomRentAmount(savedCustomRent);
+
+                                                                            setIsCustomRentSaved(false);
+
+                                                                            setShowCustomRentEditor(true);
+
+                                                                        }}
+                                                                    >
+                                                                        <Image
+                                                                            source={require("../../Assets/Images/edit.png")}
+                                                                            style={{
+                                                                                width: 24,
+                                                                                height: 24,
+                                                                                tintColor: "#6B7280",
+                                                                            }}
+                                                                        />
+                                                                    </TouchableOpacity>
+
+                                                                </View>
+
+                                                            )}
+
+                                                        </View>
+                                                    )}
+                                                </>
+                                            )}
+
                                             <View style={styles.nonRefund}>
                                                 <View style={styles.extraHeader}>
                                                     <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Add Onetime Payment </Text>
@@ -5136,7 +5523,7 @@ finally {
 
                                         {guardians.map((item, index) => (
                                             <View
-                                                key={item.id}
+                                                key={index}
                                                 style={styles.guardianCard}
                                             >
                                                 {/* Header */}
@@ -5616,12 +6003,17 @@ finally {
                                                 style={styles.shiftInput}
                                                 activeOpacity={1}
                                             >
-
                                                 <TextInput
                                                     style={styles.timeInput}
                                                     value={startTime}
-                                                    onChangeText={(text) => setStartTime(formatTimeInput(text))}
+                                                    onChangeText={(text) => {
+                                                        setStartTime(formatTimeInput(text))
+                                                        setStartTimeError("")
+                                                    }
+
+                                                    }
                                                     keyboardType="number-pad"
+                                                    placeholder="00:00 AM"
                                                 />
 
                                                 <Image
@@ -5629,20 +6021,22 @@ finally {
                                                     style={styles.calendarIcon}
                                                 />
                                             </TouchableOpacity>
-                                            {startTimeError ? <ErrorMessage message={startTimeError} /> : null}
-
 
                                             <TouchableOpacity
                                                 style={styles.shiftInput}
                                                 activeOpacity={1}
                                             >
-
-
                                                 <TextInput
                                                     style={styles.timeInput}
                                                     value={endTime}
-                                                    onChangeText={(text) => setEndTime(formatTimeInput(text))}
+                                                    onChangeText={(text) => {
+                                                        setEndTime(formatTimeInput(text))
+                                                        setEndTimeError("")
+                                                    }
+
+                                                    }
                                                     keyboardType="number-pad"
+                                                     placeholder="00:00 PM"
                                                 />
 
                                                 <Image
@@ -5650,9 +6044,9 @@ finally {
                                                     style={styles.calendarIcon}
                                                 />
                                             </TouchableOpacity>
-                                            {endTimeError ? <ErrorMessage message={endTimeError} /> : null}
                                         </View>
-
+                                        {startTimeError ? <ErrorMessage message={startTimeError} /> : null}
+                                        {endTimeError ? <ErrorMessage message={endTimeError} /> : null}
 
 
 
@@ -6977,33 +7371,33 @@ const styles = StyleSheet.create({
     //   marginBottom: 10,
     // },
 
-    shiftRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-    },
+    // shiftRow: {
+    //     flexDirection: "row",
+    //     justifyContent: "space-between",
+    // },
 
-    shiftInput: {
-        width: "48%",
-        height: 54,
-        borderWidth: 1,
-        borderColor: "#DADADA",
-        borderRadius: 14,
-        paddingHorizontal: 14,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        backgroundColor: "#FFF",
-    },
+    // shiftInput: {
+    //     width: "48%",
+    //     height: 54,
+    //     borderWidth: 1,
+    //     borderColor: "#DADADA",
+    //     borderRadius: 14,
+    //     paddingHorizontal: 14,
+    //     flexDirection: "row",
+    //     alignItems: "center",
+    //     justifyContent: "space-between",
+    //     backgroundColor: "#FFF",
+    // },
 
-    shiftText: {
-        fontSize: 18,
-        color: "#202020",
-        fontFamily: "Gilroy-Medium",
-    },
+    // shiftText: {
+    //     fontSize: 18,
+    //     color: "#202020",
+    //     fontFamily: "Gilroy-Medium",
+    // },
 
-    placeholderText: {
-        color: "#A3A3A3",
-    },
+    // placeholderText: {
+    //     color: "#A3A3A3",
+    // },
 
     calendarIcon: {
         width: 24,
@@ -7195,36 +7589,130 @@ const styles = StyleSheet.create({
     shiftRow: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginTop: 10,
+        marginTop: 8,
     },
 
     shiftInput: {
         width: "48%",
         height: 54,
         borderWidth: 1,
-        borderColor: "#E5E7EB",
+        borderColor: "#DADADA",
         borderRadius: 14,
-        paddingHorizontal: 16,
+        paddingHorizontal: 14,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
         backgroundColor: "#FFF",
     },
 
-    shiftText: {
+    timeInput: {
+        flex: 1,
         fontSize: 16,
-        color: "#111827",
+        color: "#202020",
+        fontFamily: "Gilroy-Medium",
     },
 
-    placeholderText: {
-        color: "#B0B7C3",
+    // calendarIcon: {
+    //   width: 22,
+    //   height: 22,
+    //   resizeMode: "contain",
+    // },
+
+    fullRentRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 20,
     },
 
-
-    calendarIcon: {
-        width: 22,
-        height: 22,
-        resizeMode: "contain",
+    fullRentText: {
+        marginLeft: 10,
+        fontSize: 14,
+        color: "#222",
+        flex: 1,
+        fontFamily: "Gilroy-Semibold"
     },
 
+    customRentBtn: {
+        marginTop: 15,
+        backgroundColor: "#EEF2FF",
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: "center",
+    },
+
+    closeBtn: {
+        backgroundColor: "#1F2BA6",
+    },
+
+    customRentBtnText: {
+        color: "#1E45E1",
+        fontSize: 14,
+        fontFamily: "Gilroy-Semibold"
+    },
+
+    customRentCard: {
+        marginTop: 12,
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#C8D3FF",
+        padding: 18,
+    },
+
+    customRentTitle: {
+        fontSize: 18,
+        fontFamily: "Gilroy-Bold",
+        color: "#222",
+    },
+
+    customRentSubTitle: {
+        marginTop: 6,
+        color: "#6B7280",
+        fontSize: 15,
+        fontFamily: "Gilroy-Regular"
+    },
+
+    amountRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 20,
+    },
+
+    amountInput: {
+        flex: 1,
+        height: 45,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        paddingHorizontal: 15,
+        fontSize: 14,
+        fontFamily: "Gilroy-Bold"
+    },
+
+    setBtn: {
+        marginLeft: 10,
+        backgroundColor: "#EEF2FF",
+        borderRadius: 10,
+        paddingHorizontal: 18,
+        height: 45,
+        justifyContent: "center",
+    },
+
+    setBtnText: {
+        color: "#1E45E1",
+        fontSize: 14,
+        fontFamily: "Gilroy-Semibold"
+    },
+
+    savedRow: {
+        marginTop: 25,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+
+    savedAmount: {
+        fontSize: 17,
+        fontFamily: "Gilroy-Bold",
+        color: "#222",
+    },
 });
