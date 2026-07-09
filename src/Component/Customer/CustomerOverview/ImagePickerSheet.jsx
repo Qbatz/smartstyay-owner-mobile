@@ -59,6 +59,21 @@ useEffect(() => {
   return () => backHandler.remove();
 }, [visible, onClose]);
 
+
+const handleOptionPress = (callback) => {
+  Animated.timing(translateY, {
+    toValue: 300,
+    duration: 200,
+    useNativeDriver: true,
+  }).start(() => {
+    onClose();
+
+    setTimeout(() => {
+      callback?.();
+    }, 250);
+  });
+};
+
   // 🔥 Swipe down close
  const panResponder = useRef(
   PanResponder.create({
@@ -114,10 +129,12 @@ useEffect(() => {
                 <TouchableOpacity
                   key={index}
                   style={styles.optionRow}
-                  onPress={() => {
-                    item.onPress();
-                    onClose();
-                  }}
+                  // onPress={() => {
+                  //   item.onPress();
+                  //   onClose();
+                  // }}
+
+                    onPress={() => handleOptionPress(item.onPress)}
                 >
                   {/* Left Icon */}
                   <View style={styles.left}>
