@@ -35,13 +35,17 @@ import PlusIcon from "../../Assets/Images/add-circle.png";
 import { Switch } from "react-native";
 import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+// import DatePicker from "react-native-date-picker";
 
 
 export default function AddTenantNew({ navigation, route }) {
     const { selectedBed, onBedAdded } = route.params || {};
     const insets = useSafeAreaInsets();
 
-    const { AddTenantDraft, TenantCheckIn, getCustomersByHostel, checkInCustomer, bookCustomer, getBedsByHostelAndDate, changeBedCustomer, getCustomerDetails } = useCustomer();
+    const { AddTenantDraft, UpdateTenantDraft, TenantCheckIn, SearchCustomer,
+        handleGetDraftDetails, resetDraftDetails, draftDetails,
+        getCustomersByHostel, checkInCustomer, bookCustomer, getBedsByHostelAndDate,
+        changeBedCustomer, getCustomerDetails } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
 
@@ -49,8 +53,14 @@ export default function AddTenantNew({ navigation, route }) {
 
     const { getBankListByHostel } = useContext(BankingContext);
 
+    const isSubmittingRef = useRef(false);
+
     const customer = route.params?.customer;
-    const isEdit = route.params?.isEdit;
+    // const isEditMode = route.params?.isEdit;
+
+    const isEditMode = route?.params?.mode === "EDIT";
+    const isAddMode = route?.params?.mode === "EDIT";
+     
 
     // const tabBarHeight = useBottomTabBarHeight();
 
@@ -65,6 +75,7 @@ export default function AddTenantNew({ navigation, route }) {
     const [checkJoiningDate, setcheckJoiningDate] = useState(null);
     const [bookingAmount, setBookingAmount] = useState("");
     const [rentalAmount, setRentalAmount] = useState("");
+    const [checkinrentalAmount, setCheckinRentalAmount] = useState("");
     const [advanceAmount, setAdvanceAmount] = useState("");
     const [extraCharges, setExtraCharges] = useState([]);
     const [onetimepaymentcharges, setOneTimePaymentCharges] = useState([]);
@@ -103,6 +114,7 @@ export default function AddTenantNew({ navigation, route }) {
     const [showProfileSheet, setShowProfileSheet] = useState(false);
 
     const [searchText, setSearchText] = useState("");
+    const [tenantList, setTenantList] = useState([]);
     const [showTenantList, setShowTenantList] = useState(false);
 
     const [nameError, setNameError] = useState("")
@@ -114,6 +126,8 @@ export default function AddTenantNew({ navigation, route }) {
     const [proceedcheckin, setProceedCheckin] = useState(false);
     const [countryOpen, setCountryOpen] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India", });
+
+
 
 
     const [date, setDate] = useState(null);
@@ -150,16 +164,155 @@ export default function AddTenantNew({ navigation, route }) {
     const [pancardImage, setPanCardImage] = useState(null);
     const [refuseAdvanceAmount, setRefuseAdvanceAmount] = useState(false);
 
+    const [ShowIdproofType, setShowIdProofType] = useState(false);
+    const [IdproofType, setIdProofType] = useState("");
+    const [IdprooNumber, setIdProofNumber] = useState("");
+
     const [guardians, setGuardians] = useState([]);
+
+    console.log("profileimage", selectedImage);
+
 
 
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-    const [startTime, setStartTime] = useState("");
-    const [endTime, setEndTime] = useState("");
+
 
     const [openStartTime, setOpenStartTime] = useState(false);
     const [openEndTime, setOpenEndTime] = useState(false);
+
+    const [startTime, setStartTime] = useState("00:00 AM");
+    const [endTime, setEndTime] = useState("00:00 PM");
+
+    console.log("time", startTime, endTime);
+
+
+
+    const [startDate, setStartDate] = useState(new Date());
+    const [endDate, setEndDate] = useState(new Date());
+
+    const formatTimeInput = (text) => {
+        let value = text.toUpperCase();
+
+        // numbers, :, space, A,M,P mattum
+        value = value.replace(/[^0-9APM: ]/g, "");
+
+        // HHMM format
+        const digits = value.replace(/\D/g, "").slice(0, 4);
+
+        let result = "";
+
+        if (digits.length >= 2) {
+            result = digits.slice(0, 2);
+        } else {
+            result = digits;
+        }
+
+        if (digits.length > 2) {
+            result += ":" + digits.slice(2);
+        }
+
+        // AM / PM
+        if (value.includes("PM")) {
+            result += " PM";
+        } else {
+            result += " AM";
+        }
+
+        return result;
+    };
+
+    const updateTime = (text, currentValue) => {
+        // delete panna allow panna koodathu
+        if (text.length < currentValue.length) {
+            return currentValue;
+        }
+
+        let value = text.toUpperCase();
+
+        value = value.replace(/[^0-9APM: ]/g, "");
+
+        if (value.length > 8) {
+            value = value.substring(0, 8);
+        }
+
+        return value;
+    };
+
+    const formatTime = (date) => {
+        return date.toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
+    const idProofOptions = [
+        { value: "Aadhar Card", label: "Aadhar Card" },
+        { value: "PAN Card", label: "PAN Card" },
+        { value: "Passport", label: "Passport" },
+        { value: "Driving License", label: "Driving License" },
+    ];
+
+    const relationOptions = [
+        { value: "Father", label: "Father" },
+        { value: "Mother", label: "Mother" },
+        { value: "Brother", label: "Brother" },
+        { value: "Sister", label: "Sister" },
+        { value: "Husband", label: "Husband" },
+        { value: "Husband", label: "Husband" },
+        { value: "Son", label: "Son" },
+        { value: "Daughter", label: "Daughter" },
+        { value: "Grandfather", label: "Grandfather" },
+        { value: "Grandfather", label: "Grandfather" },
+        { value: "Uncle", label: "Uncle" },
+        { value: "Aunt", label: "Aunt" },
+        { value: "Cousin", label: "Cousin" },
+        { value: "Guardian", label: "Guardian" },
+        { value: "Friend", label: "Friend" },
+        { value: "Relative", label: "Relative" },
+        { value: "Other", label: "Other" },
+    ];
+
+    const shiftTypeOptions = [
+        { value: "Day Shift", label: "Day Shift" },
+        { value: "Night Shift", label: "Night Shift" },
+        { value: "Rotational Shift", label: "Rotational Shift" },
+        { value: "Flexible Shift", label: "Flexible Shift" },
+        { value: "General Shift", label: "General Shift" },
+    ];
+
+    const jobRoleOptions = [
+        { value: "Software Engineer", label: "Software Engineer" },
+        { value: "Developer", label: "Developer" },
+        { value: "Tester", label: "Tester" },
+        { value: "Designer", label: "Designer" },
+        { value: "Manager", label: "Manager" },
+        { value: "Accountant", label: "Accountant" },
+        { value: "Teacher", label: "Teacher" },
+        { value: "Doctor", label: "Doctor" },
+        { value: "Nurse", label: "Nurse" },
+        { value: "Lawyer", label: "Lawyer" },
+        { value: "Sales Executive", label: "Sales Executive" },
+        { value: "Marketing Executive", label: "Marketing Executive" },
+        { value: "Student", label: "Student" },
+        { value: "Other", label: "Other" },
+    ];
+
+    const jobOptions = [
+        { value: "Employed", label: "Employed" },
+        { value: "Self Employed", label: "Self Employed" },
+        { value: "Student", label: "Student" },
+        { value: "Business Owner", label: "Business Owner" },
+        { value: "Freelancer", label: "Freelancer" },
+        { value: "Government Employee", label: "Government Employee" },
+        { value: "Private Employee", label: "Private Employee" },
+        { value: "Intern", label: "Intern" },
+        { value: "Retired", label: "Retired" },
+        { value: "Unemployed", label: "Unemployed" },
+        { value: "Other", label: "Other" },
+    ];
+
 
     const dummyTenants = [
         {
@@ -177,6 +330,26 @@ export default function AddTenantNew({ navigation, route }) {
             image: null,
         },
     ];
+
+    const handleSearchCustomer = async (value) => {
+        setSearchText(value);
+
+        if (value.length < 4) {
+            setTenantList([]);
+            setShowTenantList(false);
+            return;
+        }
+
+        setShowTenantList(true);
+
+        const res = await SearchCustomer(activeHostelId, value);
+
+        if (res.success) {
+            setTenantList(res?.data);
+        } else {
+            setTenantList([]);
+        }
+    };
 
     const highlightText = (text, keyword) => {
         if (!keyword) return <Text>{text}</Text>;
@@ -256,6 +429,8 @@ export default function AddTenantNew({ navigation, route }) {
     const [error, setError] = useState("");
 
 
+
+
     const [showRelationDropdown, setShowRelationDropdown] = useState(false);
     const [showOccupationDropdown, setShowOccupationDropdown] = useState(false);
 
@@ -270,6 +445,34 @@ export default function AddTenantNew({ navigation, route }) {
 
     const [initialState, setInitialState] = useState(null);
     const [isSubmitClicked, setIsSubmitClicked] = useState(false);
+
+    const [companyName, setCompanyName] = useState("")
+    const [employementstatus, setEmployementStatus] = useState("")
+    //   const [jobrole, setJobRole] = useState("")
+    const [worklocation, setWorkLocations] = useState("")
+    //   const [shifttype, setShiftType] = useState("")
+
+    const [employmentOpen, setEmploymentOpen] = useState(false);
+    const [jobRoleOpen, setJobRoleOpen] = useState(false);
+    const [shiftOpen, setShiftOpen] = useState(false);
+
+    const [employmentStatus, setEmploymentStatus] = useState(null);
+    const [jobRole, setJobRole] = useState(null);
+    const [shiftType, setShiftType] = useState(null);
+
+    const [aadhaarError, setAadhaarError] = useState("");
+    const [panError, setPanError] = useState("")
+
+
+    const [companyError, setCompanyError] = useState("");
+    const [employmentError, setEmploymentError] = useState("");
+    const [jobRoleError, setJobRoleError] = useState("");
+    const [workLocationError, setWorkLocationError] = useState("");
+    const [shiftTypeError, setShiftTypeError] = useState("");
+    const [startTimeError, setStartTimeError] = useState("");
+    const [endTimeError, setEndTimeError] = useState("");
+
+    const [guardianErrors, setGuardianErrors] = useState([]);
 
     const relationshipOptions = [
         "Father",
@@ -347,6 +550,263 @@ export default function AddTenantNew({ navigation, route }) {
         }
     }, [activeHostelId])
 
+    // useEffect(() => {
+    //     if (draftCustomerId) {
+    //         handleGetDraftDetails(draftCustomerId);
+    //     }
+    // }, [draftCustomerId]);
+
+
+  useFocusEffect(
+  useCallback(() => {
+    if (route?.params?.mode === "EDIT") {
+      handleGetDraftDetails(route.params.customerId);
+    } else {
+      resetDraftDetails();
+
+      setDraftCustomerId(null);
+      setSelectedImage(null);
+
+      setBasicDetails({
+        firstName: "",
+        lastName: "",
+        mobile: "",
+        email: "",
+      });
+
+      // reset remaining states
+    }
+  }, [route?.params?.mode, route?.params?.customerId])
+);
+
+    console.log("DraftDetails", draftDetails);
+
+
+    const getValue = (value, defaultValue = "") => {
+  if (
+    value === null ||
+    value === undefined ||
+    value === "null" ||
+    value === "undefined"
+  ) {
+    return defaultValue;
+  }
+
+  return typeof value === "string" ? value.trim() : value;
+};
+
+    useEffect(() => {
+  if (!draftDetails) return;
+
+  const {
+    address = {},
+    jobDetails = {},
+    hostelInfo = {},
+    vehicleDetails = {},
+    guardians = [],
+    deductions = [],
+  } = draftDetails;
+
+   setDraftCustomerId(draftDetails?.customerId)
+
+  setBasicDetails({
+  firstName: getValue(draftDetails?.firstName),
+  lastName: getValue(draftDetails?.lastName),
+  mobile: getValue(draftDetails?.mobileNo || draftDetails?.mobile),
+  email: getValue(draftDetails?.emailId),
+});
+
+setCountryCode(getValue(draftDetails?.countryCode, "91"));
+
+setSelectedImage(
+  getValue(draftDetails?.profilePic)
+    ? { uri: draftDetails.profilePic }
+    : null
+);
+
+setAddressDetails({
+  flat: getValue(
+    draftDetails?.address?.flat || draftDetails?.address?.house
+  ),
+  area: getValue(
+    draftDetails?.address?.area || draftDetails?.address?.street
+  ),
+  landmark: getValue(draftDetails?.address?.landmark),
+  pincode: getValue(draftDetails?.address?.pincode),
+  city: getValue(draftDetails?.address?.city),
+});
+
+setSelectedState(getValue(draftDetails?.address?.state));
+
+setIdProofType(getValue(draftDetails?.idProof?.type));
+setIdProofNumber(getValue(draftDetails?.idProof?.number));
+
+setPurchaseDate(
+  getValue(draftDetails?.bookingDate)
+    ? dayjs(draftDetails.bookingDate, "DD-MM-YYYY")
+    : null
+);
+
+setJoiningDate(
+  getValue(draftDetails?.joiningDate)
+    ? dayjs(draftDetails.joiningDate, "DD-MM-YYYY")
+    : null
+);
+
+setBookingAmount(String(getValue(draftDetails?.bookingAmount, 0)));
+
+setReferenceNumber(getValue(draftDetails?.referenceNumber));
+
+setAdvanceAmount(String(getValue(draftDetails?.advanceAmount, 0)));
+
+setCheckinRentalAmount(
+  String(getValue(draftDetails?.rentalAmount, 0))
+);
+
+
+setFloorSelected(
+  draftDetails?.hostelInfo?.floorId
+    ? {
+        id: draftDetails.hostelInfo.floorId,
+        floorName: getValue(draftDetails.hostelInfo.floorName),
+      }
+    : null
+);
+
+setRoomSelected(
+  draftDetails?.hostelInfo?.roomId
+    ? {
+        id: draftDetails.hostelInfo.roomId,
+        roomName: getValue(draftDetails.hostelInfo.roomName),
+      }
+    : null
+);
+
+setBedSelected(
+  draftDetails?.hostelInfo?.bedId
+    ? {
+        bedId: draftDetails.hostelInfo.bedId,
+        bedName: getValue(draftDetails.hostelInfo.bedName),
+        floorId: draftDetails.hostelInfo.floorId,
+        roomId: draftDetails.hostelInfo.roomId,
+      }
+    : null
+);
+
+const job = draftDetails?.jobDetails || {};
+
+setEmploymentStatus(getValue(job.employmentStatus));
+setCompanyName(getValue(job.companyName));
+setJobRole(getValue(job.jobRole));
+setWorkLocations(getValue(job.workLocation));
+setShiftType(getValue(job.shiftType));
+setStartTime(getValue(job.shiftFrom));
+setEndTime(getValue(job.shiftTo));
+
+setGuardians(
+  Array.isArray(draftDetails?.guardians)
+    ? draftDetails.guardians.map(item => ({
+        fullName: getValue(item.guardianFullName),
+        relationship: getValue(item.relationshipToTenant),
+        occupation: getValue(item.guardianOccupation),
+        mobile: getValue(item.mobileNo),
+      }))
+    : []
+);
+
+setExtraCharges(
+  Array.isArray(draftDetails?.deductions)
+    ? draftDetails.deductions.map((item, index) => ({
+        id: index + 1,
+        type: item.type === "Maintenance" ? "Maintenance" : "Others",
+        title: item.type === "Maintenance" ? "" : getValue(item.type),
+        amount: String(getValue(item.amount, 0)),
+      }))
+    : []
+);
+
+setAadhaarImage(
+  getValue(draftDetails?.aadhaarPic)
+    ? { uri: draftDetails.aadhaarPic }
+    : null
+);
+
+setPanCardImage(
+  getValue(draftDetails?.panPic)
+    ? { uri: draftDetails.panPic }
+    : null
+);
+
+const vehicle = draftDetails?.vehicleDetails || {};
+
+setHasVehicle(vehicle?.isParkingSpaceRequired ?? false);
+setVehicleType(getValue(vehicle?.vehicleType));
+setVehicleNumber(getValue(vehicle?.vehicleNumber));
+
+  
+}, [draftDetails]);
+
+
+    // useEffect(() => {
+    //     if (!draftDetails) return;
+
+    //     setBasicDetails({
+    //         firstName: draftDetails?.firstName || "",
+    //         lastName: draftDetails?.lastName || "",
+    //         mobile: draftDetails?.mobileNo?.replace("+91 ", "") || "",
+    //         email: draftDetails?.emailId || "",
+    //     });
+
+    //     setIdProofNumber(draftDetails?.idProof?.number || "",)
+    //     setIdProofType(draftDetails?.idProof?.type || "",)
+
+    //     setSelectedImage(
+    //         draftDetails?.profilePic
+    //             ? { uri: draftDetails.profilePic }
+    //             : null
+    //     );
+
+      
+    //     setAddressDetails({
+    //         flat: draftDetails?.address?.flat || draftDetails?.address?.house || "",
+    //         area: draftDetails?.address?.area || draftDetails?.address?.street || "",
+    //         landmark: draftDetails?.address?.landmark || "",
+    //         pincode: draftDetails?.address?.pincode || "",
+    //         city: draftDetails?.address?.city || "",
+    //     });
+
+    //     setSelectedState(draftDetails?.address?.state || "");
+
+        
+    //     setEmploymentStatus(
+    //         draftDetails?.jobDetails?.employmentStatus || ""
+    //     );
+    //     setCompanyName(
+    //         draftDetails?.jobDetails?.companyName || ""
+    //     );
+    //     setJobRole(
+    //         draftDetails?.jobDetails?.jobRole || ""
+    //     );
+    //     setWorkLocations(
+    //         draftDetails?.jobDetails?.workLocation || ""
+    //     );
+    //     setShiftType(
+    //         draftDetails?.jobDetails?.shiftType || ""
+    //     );
+    //     setStartTime(
+    //         draftDetails?.jobDetails?.shiftFrom || ""
+    //     );
+    //     setEndTime(
+    //         draftDetails?.jobDetails?.shiftTo || ""
+    //     );
+
+       
+    //     setGuardians(
+    //         draftDetails?.guardians || []
+    //     );
+
+    // }, [draftDetails]);
+
 
     const loadBedsByDate = async (selectedDate) => {
         if (!activeHostelId || !selectedDate) return;
@@ -390,19 +850,37 @@ export default function AddTenantNew({ navigation, route }) {
     const hasRooms = rooms && rooms?.length > 0;
     const hasBeds = filteredBeds && filteredBeds?.length > 0;
 
-    const scrollInputIntoView = (refOrNode) => {
-        if (!scrollRef?.current) return;
+    // const scrollInputIntoView = (refOrNode) => {
+    //     if (!scrollRef?.current) return;
 
-        // 🔥 detect if ref object or direct node
+    //     const input =
+    //         refOrNode?.current ? refOrNode.current : refOrNode;
+
+    //     if (!input || typeof input.focus !== "function") return;
+
+    //     setTimeout(() => {
+    //         input.focus();
+
+    //         scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
+    //             input,
+    //             200,
+    //             true
+    //         );
+    //     }, 150);
+    // };
+
+    const scrollInputIntoView = (refOrNode) => {
         const input =
             refOrNode?.current ? refOrNode.current : refOrNode;
 
-        if (!input || typeof input.focus !== "function") return;
+        if (!input) return;
 
         setTimeout(() => {
-            input.focus();
+            if (!scrollRef.current) return;
 
-            scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
+            input.focus?.();
+
+            scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard?.(
                 input,
                 200,
                 true
@@ -791,7 +1269,7 @@ export default function AddTenantNew({ navigation, route }) {
         }
 
         // Mobile
-        if (!/^[6-9]\d{9}$/.test(basicDetails.mobile)) {
+        if (!/^[1-9]\d{9}$/.test(basicDetails.mobile)) {
             setMobileError("Enter Valid Mobile Number");
             valid = false;
         }
@@ -842,37 +1320,183 @@ export default function AddTenantNew({ navigation, route }) {
             return;
         }
 
+        if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
+
+        try {
+
+            const payload = {
+                request: {
+                    firstName: basicDetails.firstName,
+                    lastName: basicDetails.lastName,
+                    mobile: basicDetails.mobile,
+                    emailId: basicDetails.email,
+
+                    // joiningDate: "",
+                    // bookingDate: "",
+                    // bookingAmount: 0,
+
+                    // floorId: null,
+                    // roomId: null,
+                    // bedId: null,
+
+                    // bankId: "",
+                    // referenceNumber: "",
+
+                    // advanceAmount: 0,
+                    // rentalAmount: 0,
+
+                    // stayType: "",
+
+                    // deductions: [],
+
+                    // proRate: false,
+
+                    idProof: {
+                        type: IdproofType,
+                        number: IdprooNumber,
+                    },
+
+                    address: {
+                        flat: addressDetails.flat,
+                        house: "",
+                        building: "",
+                        company: "",
+                        apartment: "",
+                        area: addressDetails.area,
+                        street: "",
+                        sector: "",
+                        village: "",
+                        landmark: addressDetails.landmark,
+                        pincode: addressDetails.pincode,
+                        city: addressDetails.city,
+                        state: selectedState,
+                    },
+
+                    // booking: {
+                    //   joiningDateTentative: "",
+                    //   refuseAdvanceAmount: false,
+                    // },
+
+                    jobDetails: {
+                        employmentStatus: "",
+                        companyName: "",
+                        collegeName: "",
+                        jobRole: "",
+                        workLocation: "",
+                        shiftType: "",
+                        shiftFrom: "",
+                        shiftTo: "",
+                    },
+
+                    guardians: [],
+
+                    vehicleDetails: {
+                        vehicleType: "",
+                        vehicleNumber: "",
+                        isParkingSpaceRequired: false,
+                    },
+                },
+            };
+            console.log("savedraftpayload", payload);
+
+            const profileImage = selectedImage
+
+            const res = await AddTenantDraft(
+                activeHostelId,
+                payload,
+                profileImage,
+                aadhaarImage,
+                pancardImage
+            );
+
+            console.log("addtenantdraftresponse", res);
+
+
+            if (res?.success) {
+                setModalType("success");
+                setMessage(res?.data?.message);
+                setShowSuccess(true);
+
+                setDraftCustomerId(res?.data?.customerId)
+
+                setTimeout(() => {
+                    setCurrentStep(2);
+                    setShowSuccess(false);
+                    setIsSubmitClicked(false)
+                }, 800);
+            }
+            else {
+                const mobileMsg = res?.message?.mobileStatus || "";
+                const emailMsg = res?.message?.emailStatus || "";
+
+                setMobileError(mobileMsg);
+                setEmailError(emailMsg);
+                setIsSubmitClicked(false)
+
+                // 🔥 IMPORTANT: Go back to step 1 if basic error
+                if (mobileMsg || emailMsg) {
+                    setStep(1);
+                }
+            }
+        }
+
+        finally {
+            isSubmittingRef.current = false;
+        }
+    };
+
+    const UpdateDraft = async () => {
+
+        if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
+
+        try {
         const payload = {
             request: {
+                // Basic Details
                 firstName: basicDetails.firstName,
                 lastName: basicDetails.lastName,
                 mobile: basicDetails.mobile,
                 emailId: basicDetails.email,
 
-                // joiningDate: "",
-                // bookingDate: "",
-                // bookingAmount: 0,
+                // Booking
+                joiningDate: joiningDate
+                    ? dayjs(joiningDate).format("DD-MM-YYYY")
+                    : "",
 
-                // floorId: null,
-                // roomId: null,
-                // bedId: null,
+                bookingDate: purchaseDate
+                    ? dayjs(purchaseDate).format("DD-MM-YYYY")
+                    : "",
 
-                // bankId: "",
-                // referenceNumber: "",
+                bookingAmount: Number(bookingAmount || 0),
 
-                // advanceAmount: 0,
-                // rentalAmount: 0,
+                floorId: floorSelected?.id || null,
+                roomId: roomSelected?.id || null,
+                bedId: bedSelected?.bedId || null,
 
-                // stayType: "",
+                bankId: accountSelected?.bankingId || "",
+                referenceNumber: referenceNumber || "",
 
-                // deductions: [],
+                advanceAmount: Number(advanceAmount || 0),
+                rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
 
-                // proRate: false,
+                stayType: "LONG",
 
-                // idProof: {
-                //   type: "",
-                //   number: "",
-                // },
+                deductions: extraCharges.map(item => ({
+                    type:
+                        item.type === "Others"
+                            ? item.title
+                            : item.type,
+                    amount: Number(item.amount || 0),
+                })),
+
+                proRate: false,
+
+                idProof: {
+                    type: "",
+                    number: "",
+                },
 
                 address: {
                     flat: addressDetails.flat,
@@ -890,73 +1514,74 @@ export default function AddTenantNew({ navigation, route }) {
                     state: selectedState,
                 },
 
-                // booking: {
-                //   joiningDateTentative: "",
-                //   refuseAdvanceAmount: false,
-                // },
-
-                jobDetails: {
-                    employmentStatus: "",
-                    companyName: "",
-                    collegeName: "",
-                    jobRole: "",
-                    workLocation: "",
-                    shiftType: "",
-                    shiftFrom: "",
-                    shiftTo: "",
+                booking: {
+                    joiningDateTentative: "",
+                    refuseAdvanceAmount: refuseAdvanceAmount,
                 },
 
-                guardians: [],
+                jobDetails: {
+                    employmentStatus: employmentStatus || "",
+                    companyName: companyName || "",
+                    collegeName: "",
+                    jobRole: jobRole || "",
+                    workLocation: worklocation || "",
+                    shiftType: shiftType || "",
+                    shiftFrom: startTime || "",
+                    shiftTo: endTime || "",
+                },
+
+                guardians: guardians.map(item => ({
+                    guardianFullName: item.fullName,
+                    relationshipToTenant: item.relationship,
+                    guardianOccupation: item.occupation,
+                    mobileNo: item.mobile,
+                })),
 
                 vehicleDetails: {
-                    vehicleType: "",
-                    vehicleNumber: "",
-                    isParkingSpaceRequired: false,
+                    vehicleType: hasVehicle ? vehicleType : "",
+                    vehicleNumber: hasVehicle ? vehicleNumber : "",
+                    isParkingSpaceRequired: hasVehicle,
                 },
             },
         };
 
-        const profileImage = selectedImage
+        console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
 
-        const res = await AddTenantDraft(
+        const res = await UpdateTenantDraft(
             activeHostelId,
+            draftCustomerId,
             payload,
-            profileImage,
+            selectedImage,
             aadhaarImage,
             pancardImage
         );
 
-        console.log("addtenantdraftresponse", res);
+        console.log("res", res , draftCustomerId);
+        
 
-
-        if (res?.success) {
+        if (res.success) {
             setModalType("success");
-            setMessage(res?.data?.message);
+            setMessage(res?.data?.message || "Draft updated successfully");
             setShowSuccess(true);
 
-            setDraftCustomerId(res?.data?.customerId)
+            setTimeout(() => {
+                setShowSuccess(false);
+                navigation.goBack();
+                
+            }, 800);
+        } else {
+            setModalType("error");
+            setMessage(res?.message || "Draft update failed");
+            setShowSuccess(true);
 
             setTimeout(() => {
-                setCurrentStep(2);
                 setShowSuccess(false);
-                setIsSubmitClicked(false)
             }, 800);
         }
-        else {
-            const mobileMsg = res?.message?.mobileStatus || "";
-            const emailMsg = res?.message?.emailStatus || "";
-
-            setMobileError(mobileMsg);
-            setEmailError(emailMsg);
-            setIsSubmitClicked(false)
-
-            // 🔥 IMPORTANT: Go back to step 1 if basic error
-            if (mobileMsg || emailMsg) {
-                setStep(1);
-            }
+    }
+        finally {
+            isSubmittingRef.current = false;
         }
-
-
     };
 
     const validateBooking = () => {
@@ -1017,7 +1642,8 @@ export default function AddTenantNew({ navigation, route }) {
     const handleBookingSubmit = async () => {
         if (!validateBooking()) return;
         // if (isCheckingIn) return;
-
+       if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
 
 
         try {
@@ -1075,10 +1701,290 @@ export default function AddTenantNew({ navigation, route }) {
             console.log(error)
             setIsCheckingIn(false)
         }
+        finally {
+            isSubmittingRef.current = false;
+        }
     };
 
     const hideBookingSaveDraft = !!accountSelected;
-    const hideCheckInSaveDraft = rentalAmount?.trim()?.length > 0;
+    const hideCheckInSaveDraft = checkinrentalAmount?.trim()?.length > 0;
+
+    const validateStepThree = () => {
+        let valid = true;
+
+        // Clear Errors
+        setCompanyError("");
+        setEmploymentError("");
+        setJobRoleError("");
+        setWorkLocationError("");
+        setShiftTypeError("");
+        setStartTimeError("");
+        setEndTimeError("");
+
+        const guardianValidation = [];
+
+        /* -------------------------------
+            JOB DETAILS
+        --------------------------------*/
+
+        const hasJobData =
+            companyName.trim() ||
+            employmentStatus ||
+            jobRole ||
+            worklocation.trim() ||
+            shiftType ||
+            startTime.trim() ||
+            endTime.trim();
+
+        if (hasJobData) {
+            if (!companyName.trim()) {
+                setCompanyError("Please enter Company / College Name");
+                valid = false;
+            }
+
+            if (!employmentStatus) {
+                setEmploymentError("Please select Employment Status");
+                valid = false;
+            }
+
+            if (!jobRole) {
+                setJobRoleError("Please select Job Role");
+                valid = false;
+            }
+
+            if (!worklocation.trim()) {
+                setWorkLocationError("Please enter Work Location");
+                valid = false;
+            }
+
+            if (!shiftType) {
+                setShiftTypeError("Please select Shift Type");
+                valid = false;
+            }
+
+            if (!startTime.trim()) {
+                setStartTimeError("Please enter Shift From");
+                valid = false;
+            }
+
+            if (!endTime.trim()) {
+                setEndTimeError("Please enter Shift To");
+                valid = false;
+            }
+        }
+
+        /* -------------------------------
+            GUARDIAN DETAILS
+        --------------------------------*/
+
+        guardians.forEach((item, index) => {
+            const errors = {};
+
+            const hasGuardianData =
+                item.fullName?.trim() ||
+                item.relationship ||
+                item.occupation ||
+                item.mobile?.trim();
+
+            if (!hasGuardianData) {
+                guardianValidation[index] = {};
+                return;
+            }
+
+            if (!item.fullName?.trim()) {
+                errors.fullName = "Please enter Guardian Name";
+                valid = false;
+            }
+
+            if (!item.relationship) {
+                errors.relationship = "Please select Relationship";
+                valid = false;
+            }
+
+            if (!item.occupation) {
+                errors.occupation = "Please select Occupation";
+                valid = false;
+            }
+
+            if (!item.mobile?.trim()) {
+                errors.mobile = "Please enter Mobile Number";
+                valid = false;
+            } else if (!/^[6-9]\d{9}$/.test(item.mobile)) {
+                errors.mobile = "Enter valid Mobile Number";
+                valid = false;
+            }
+
+            guardianValidation[index] = errors;
+        });
+
+        setGuardianErrors(guardianValidation);
+
+        return valid;
+    }
+    const updateGuardian = (index, field, value) => {
+        setGuardians(prev => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                [field]: value,
+            };
+            return updated;
+        });
+
+        setGuardianErrors(prev => {
+            const updated = [...prev];
+
+            updated[index] = {
+                ...(updated[index] || {}),
+                [field]: "",
+            };
+
+            return updated;
+        });
+    };
+
+
+    const handleStepThree = async () => {
+        if (!validateStepThree()) {
+            return;
+        }
+
+          if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
+
+
+        try {
+
+        const payload = {
+            request: {
+                // Basic Details
+                firstName: basicDetails.firstName,
+                lastName: basicDetails.lastName,
+                mobile: basicDetails.mobile,
+                emailId: basicDetails.email,
+
+                // Booking
+                joiningDate: joiningDate
+                    ? dayjs(joiningDate).format("DD-MM-YYYY")
+                    : "",
+
+                bookingDate: purchaseDate
+                    ? dayjs(purchaseDate).format("DD-MM-YYYY")
+                    : "",
+
+                bookingAmount: Number(bookingAmount || 0),
+
+                floorId: floorSelected?.id || null,
+                roomId: roomSelected?.id || null,
+                bedId: bedSelected?.bedId || null,
+
+                bankId: accountSelected?.bankingId || "",
+                referenceNumber: referenceNumber || "",
+
+                advanceAmount: Number(advanceAmount || 0),
+                rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
+
+                stayType: "LONG",
+
+                deductions: extraCharges.map(item => ({
+                    type:
+                        item.type === "Others"
+                            ? item.title
+                            : item.type,
+                    amount: Number(item.amount || 0),
+                })),
+
+                proRate: false,
+
+                idProof: {
+                    type: "",
+                    number: "",
+                },
+
+                address: {
+                    flat: addressDetails.flat,
+                    house: "",
+                    building: "",
+                    company: "",
+                    apartment: "",
+                    area: addressDetails.area,
+                    street: "",
+                    sector: "",
+                    village: "",
+                    landmark: addressDetails.landmark,
+                    pincode: addressDetails.pincode,
+                    city: addressDetails.city,
+                    state: selectedState,
+                },
+
+                booking: {
+                    joiningDateTentative: "",
+                    refuseAdvanceAmount: refuseAdvanceAmount,
+                },
+
+                jobDetails: {
+                    employmentStatus: employmentStatus || "",
+                    companyName: companyName || "",
+                    collegeName: "",
+                    jobRole: jobRole || "",
+                    workLocation: worklocation || "",
+                    shiftType: shiftType || "",
+                    shiftFrom: startTime || "",
+                    shiftTo: endTime || "",
+                },
+
+                guardians: guardians.map(item => ({
+                    guardianFullName: item.fullName,
+                    relationshipToTenant: item.relationship,
+                    guardianOccupation: item.occupation,
+                    mobileNo: item.mobile,
+                })),
+
+                vehicleDetails: {
+                    vehicleType: hasVehicle ? vehicleType : "",
+                    vehicleNumber: hasVehicle ? vehicleNumber : "",
+                    isParkingSpaceRequired: hasVehicle,
+                },
+            },
+        };
+
+        console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
+
+        const res = await UpdateTenantDraft(
+            activeHostelId,
+            draftCustomerId,
+            payload,
+            selectedImage,
+            aadhaarImage,
+            pancardImage
+        );
+
+        if (res.success) {
+            setModalType("success");
+            setMessage(res?.data?.message || "Draft updated successfully");
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+                navigation.goBack();
+            }, 800);
+        } else {
+            setModalType("error");
+            setMessage(res?.message || "Draft update failed");
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 800);
+        }
+
+    }
+finally {
+            isSubmittingRef.current = false;
+        }
+       
+    };
+
 
     const renderFooterButtons = () => {
 
@@ -1089,16 +1995,19 @@ export default function AddTenantNew({ navigation, route }) {
                 <View style={styles.row}>
                     <View style={{ flex: 1, }}></View>
 
+
+
                     <TouchableOpacity
                         style={[
-                            styles.primaryBtn,
-                            // !isStepOneValid() && styles.disabledBtn,
-                        ]}
-                        // disabled={!isStepOneValid()}
-                        onPress={handleBasicNext}
+        styles.primaryBtn,
+        isSubmittingRef.current && {
+            opacity: 0.5,
+        },
+    ]}
+                        onPress={isEditMode ? UpdateDraft : handleBasicNext}
                     >
                         <Text style={styles.primaryText}>
-                            Save & Next
+                            {isEditMode ? "Update Draft" : "Save & Next"}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -1112,7 +2021,7 @@ export default function AddTenantNew({ navigation, route }) {
                 <View style={styles.row}>
 
                     {!hideBookingSaveDraft && (
-                        <TouchableOpacity style={styles.secondaryBtn}>
+                        <TouchableOpacity style={styles.secondaryBtn} onPress={UpdateDraft}>
                             <Text>Save Draft</Text>
                         </TouchableOpacity>
                     )}
@@ -1139,7 +2048,7 @@ export default function AddTenantNew({ navigation, route }) {
                 <View style={styles.row}>
 
                     {!hideCheckInSaveDraft && (
-                        <TouchableOpacity style={styles.secondaryBtn}>
+                        <TouchableOpacity style={styles.secondaryBtn} onPress={UpdateDraft}>
                             <Text>Save Draft</Text>
                         </TouchableOpacity>
                     )}
@@ -1175,32 +2084,21 @@ export default function AddTenantNew({ navigation, route }) {
         // STEP 3
         return (
             <>
-                <TouchableOpacity
-                    style={styles.checkboxRow}
-                    activeOpacity={0.8}
-                >
-                    {/* <CheckBox
-                    value={doLater}
-                    onValueChange={setDoLater}
-                /> */}
 
-                    <Text style={styles.checkboxText}>
-                        Do it Later
-                    </Text>
-                </TouchableOpacity>
 
                 <View style={styles.row}>
-                    <TouchableOpacity style={styles.secondaryBtn}>
-                        <Text>Save Draft</Text>
+                    <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.goBack()}>
+                        <Text> Do it Later</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={[
-                            styles.primaryBtn,
-                            // !canSave && styles.disabledBtn,
-                        ]}
-                    // disabled={!canSave}
-                    
+                         style={[
+        styles.primaryBtn,
+        isSubmittingRef.current && {
+            opacity: 0.5,
+        },
+    ]}
+                        onPress={handleStepThree}
 
                     >
                         <Text style={styles.primaryText}>
@@ -1355,68 +2253,63 @@ export default function AddTenantNew({ navigation, route }) {
     }, 0);
 
     const handleNextThird = () => {
-        if (isCheckingIn) return;
-        const chargeValid = validateExtraCharges();
-        const onetimechargevalid = validateOneTimeCharges()
-        if (!chargeValid || !onetimechargevalid) return;
-        const customerId = CheckinTenantSelected?.customerId;
 
 
-        let hasError = false;
+        // if (isCheckingIn) return;
+        // const chargeValid = validateExtraCharges();
+        // const onetimechargevalid = validateOneTimeCharges()
+        // if (!chargeValid || !onetimechargevalid) return;
+        // const customerId = CheckinTenantSelected?.customerId;
 
-        setFloorError("");
-        setRoomError("");
-        setBedError("");
-        setRentalError("");
-        setAdvanceError("");
-        setCheckJoinDateError("");
-        setStayTypeError("");
 
-        // Joining Date
-        if (!checkJoiningDate) {
-            setCheckJoinDateError("Please Select Joining Date");
-            hasError = true;
-        }
+        // let hasError = false;
 
-        // Floor
-        if (!floorSelected) {
-            setFloorError("Please Select Floor");
-            hasError = true;
-        }
+        // setFloorError("");
+        // setRoomError("");
+        // setBedError("");
+        // setRentalError("");
+        // setAdvanceError("");
+        // setCheckJoinDateError("");
+        // setStayTypeError("");
 
-        // Room
-        if (!roomSelected) {
-            setRoomError("Please Select Room");
-            hasError = true;
-        }
 
-        // Bed
-        if (!bedSelected) {
-            setBedError("Please Select Bed");
-            hasError = true;
-        }
-
-        // Stay Type
-        // if (!StayTypeSelected || StayTypeSelected === "Stay Type") {
-        //     setStayTypeError("Please Select Stay Type");
+        // if (!checkJoiningDate) {
+        //     setCheckJoinDateError("Please Select Joining Date");
         //     hasError = true;
         // }
 
-        // Rental
-        if (!rentalAmount || Number(rentalAmount) <= 0) {
-            setRentalError("Please Enter Rental Amount");
-            hasError = true;
-        }
 
-        // Advance
-        if (!refuseAdvanceAmount) {
-            if (!advanceAmount || Number(advanceAmount) <= 0) {
-                setAdvanceError("Please Enter Advance Amount");
-                hasError = true;
-            }
-        }
+        // if (!floorSelected) {
+        //     setFloorError("Please Select Floor");
+        //     hasError = true;
+        // }
 
-        if (hasError) return;
+
+        // if (!roomSelected) {
+        //     setRoomError("Please Select Room");
+        //     hasError = true;
+        // }
+
+
+        // if (!bedSelected) {
+        //     setBedError("Please Select Bed");
+        //     hasError = true;
+        // }
+
+
+        // if (!checkinrentalAmount || Number(checkinrentalAmount) <= 0) {
+        //     setRentalError("Please Enter Rental Amount");
+        //     hasError = true;
+        // }
+
+        // if (!refuseAdvanceAmount) {
+        //     if (!advanceAmount || Number(advanceAmount) <= 0) {
+        //         setAdvanceError("Please Enter Advance Amount");
+        //         hasError = true;
+        //     }
+        // }
+
+        // if (hasError) return;
 
         setCurrentStep(3);
     }
@@ -1475,7 +2368,7 @@ export default function AddTenantNew({ navigation, route }) {
         // }
 
         // Rental
-        if (!rentalAmount || Number(rentalAmount) <= 0) {
+        if (!checkinrentalAmount || Number(checkinrentalAmount) <= 0) {
             setRentalError("Please Enter Rental Amount");
             hasError = true;
         }
@@ -1499,6 +2392,11 @@ export default function AddTenantNew({ navigation, route }) {
             }, 800)
             return;
         }
+
+         if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
+
+       
 
         try {
             setIsCheckingIn(true)
@@ -1533,7 +2431,7 @@ export default function AddTenantNew({ navigation, route }) {
 
                 refundableAmount: Number(advanceAmount),
 
-                rentalAmount: Number(rentalAmount),
+                rentalAmount: Number(checkinrentalAmount),
 
                 stayType: "long",
                 // StayTypeSelected === "LongStay" ? "long" : "short",
@@ -1548,7 +2446,7 @@ export default function AddTenantNew({ navigation, route }) {
 
                 shouldCollectFullRent: false,
 
-                customRent: Number(rentalAmount || 0),
+                customRent: 0,
 
                 oneTimeDeduction: onetimepaymentcharges.map((item) => ({
                     type:
@@ -1592,6 +2490,9 @@ export default function AddTenantNew({ navigation, route }) {
             console.log(error)
             setIsCheckingIn(false)
         }
+          finally {
+            isSubmittingRef.current = false;
+        }
 
     }
 
@@ -1612,13 +2513,16 @@ export default function AddTenantNew({ navigation, route }) {
                         ...newFiles,
                     ]);
 
-                    if (!selectedImage) {
+                    if (!aadhaarImage) {
                         setAadhaarImage(newFiles[0]);
                     }
                 }
             }
         );
     }
+
+    console.log("aadhaarImage", aadhaarImage);
+
 
 
     const pickPancardImage = () => {
@@ -1638,7 +2542,7 @@ export default function AddTenantNew({ navigation, route }) {
                         ...newFiles,
                     ]);
 
-                    if (!selectedImage) {
+                    if (!pancardImage) {
                         setPanCardImage(newFiles[0]);
                     }
                 }
@@ -1653,7 +2557,7 @@ export default function AddTenantNew({ navigation, route }) {
 
         setAadhaarAttachments(updated);
 
-        if (selectedImage?.uri === aadhaarattachments[index]?.uri) {
+        if (aadhaarImage?.uri === aadhaarattachments[index]?.uri) {
             setAadhaarImage(updated[0] || null);
         }
     }
@@ -1665,7 +2569,7 @@ export default function AddTenantNew({ navigation, route }) {
 
         setPanCardAttachments(updated);
 
-        if (selectedImage?.uri === pancardattachments[index]?.uri) {
+        if (pancardImage?.uri === pancardattachments[index]?.uri) {
             setPanCardImage(updated[0] || null);
         }
     }
@@ -1798,7 +2702,7 @@ export default function AddTenantNew({ navigation, route }) {
         setOpenDropdownId(null);
     };
     const resetCheckInState = () => {
-        setRentalAmount("");
+        setCheckinRentalAmount("");
         setAdvanceAmount("");
         setStayTypeSelected("Stay Type");
         setExtraCharges([]);
@@ -1817,7 +2721,7 @@ export default function AddTenantNew({ navigation, route }) {
     const deductionTotal = [...extraCharges].reduce(
         (total, item) => total + Number(item.amount || 0), 0)
 
-    const summaryRent = Number(rentalAmount || 0)
+    const summaryRent = Number(checkinrentalAmount || 0)
 
     const summaryAmount = summaryAdvanceAmount + deductionTotal + summaryRent;
 
@@ -1939,15 +2843,7 @@ export default function AddTenantNew({ navigation, route }) {
                                             onFocus={() => setShowTenantList(true)}
                                             onChangeText={(text) => {
                                                 const value = text.replace(/[^0-9]/g, "");
-
-                                                setSearchText(value);
-
-                                                if (value.length === 0) {
-                                                    setShowTenantList(false);
-                                                    return;
-                                                }
-
-                                                setShowTenantList(true);
+                                                handleSearchCustomer(value);
                                             }}
                                         />
 
@@ -1955,11 +2851,11 @@ export default function AddTenantNew({ navigation, route }) {
                                     {showTenantList && (
                                         <View style={styles.searchResultCard}>
 
-                                            {filteredTenants.length > 0 ? (
+                                            {tenantList.length > 0 ? (
 
-                                                filteredTenants.map((item, index) => (
+                                                tenantList.map((item, index) => (
 
-                                                    <View key={item.id}>
+                                                    <View key={index}>
                                                         <TouchableOpacity
                                                             style={styles.tenantRow}
                                                             activeOpacity={0.8}
@@ -1969,20 +2865,28 @@ export default function AddTenantNew({ navigation, route }) {
 
                                                                 setBasicDetails(prev => ({
                                                                     ...prev,
-                                                                    firstName: item.name,
-                                                                    mobile: item.mobile,
-                                                                    email: item.email,
+                                                                    firstName: item.firstName,
+                                                                    lastName: item.lastName,
+                                                                    mobile: item.mobile.replace("+91 ", ""),
+                                                                    email: item.emailId,
                                                                 }));
+                                                                setSelectedImage(
+                                                                    item?.profilePic
+                                                                        ? { uri: item?.profilePic }
+                                                                        : null
+                                                                )
+
+                                                                // setCustomerId(item.customerId);
                                                             }}>
-                                                            {item.image ? (
+                                                            {item.profilePic ? (
                                                                 <Image
-                                                                    source={item.image}
+                                                                    source={{ uri: item.profilePic }}
                                                                     style={styles.avatar}
                                                                 />
                                                             ) : (
                                                                 <View style={styles.avatarPlaceholder}>
                                                                     <Text style={styles.avatarLetter}>
-                                                                        {item.name[0]}
+                                                                        {item.initials || item.fullName?.charAt(0)}
                                                                     </Text>
                                                                 </View>
                                                             )}
@@ -1990,18 +2894,18 @@ export default function AddTenantNew({ navigation, route }) {
                                                             <View style={{ flex: 1 }}>
 
                                                                 <Text style={styles.name}>
-                                                                    {item.name}
+                                                                    {item.fullName}
                                                                 </Text>
 
                                                                 <View style={{ marginTop: 6 }}>
-                                                                    {highlightText(`+91 ${item.mobile}`, searchText)}
+                                                                    {highlightText(item?.mobile, searchText)}
                                                                 </View>
 
                                                                 <Text
                                                                     style={styles.info}
                                                                     numberOfLines={1}
                                                                 >
-                                                                    {item.email || "---"}
+                                                                    {item.emailId || "---"}
                                                                 </Text>
 
                                                             </View>
@@ -2162,22 +3066,72 @@ export default function AddTenantNew({ navigation, route }) {
 
                                     {emailError && <ErrorMessage message={emailError} type="error" />}
 
-                                    <Text style={styles.label}>
-                                        ID Proof Type
-                                    </Text>
 
-                                    <TouchableOpacity style={styles.dropdown}>
 
-                                        <Text style={styles.placeholder}>
-                                            Select
+                                    <View style={{ position: "relative" }}>
+                                        <Text style={styles.label}>
+                                            ID Proof Type
                                         </Text>
 
-                                        <Image
-                                            source={DownArrow}
-                                            style={styles.arrow}
-                                        />
+                                        {/* INPUT */}
+                                        <TouchableOpacity
+                                            style={styles.inputBox}
+                                            onPress={() => {
+                                                setShowIdProofType(v => !v);
+                                            }}
+                                        >
+                                            <Text style={{ fontSize: 15 }}>
+                                                {IdproofType
+                                                    ? idProofOptions.find(o => o.value === IdproofType)?.label
+                                                    : "Select ID Proof"}
+                                            </Text>
 
-                                    </TouchableOpacity>
+                                            <Image
+                                                source={DownArrow}
+                                                style={{ width: 18, height: 18, tintColor: "#555" }}
+                                            />
+                                        </TouchableOpacity>
+
+                                        {/* DROPDOWN */}
+                                        {ShowIdproofType && (
+                                            <View style={styles.transactiondropdown}>
+                                                <ScrollView
+                                                    nestedScrollEnabled
+                                                    scrollEnabled={idProofOptions.length > 3}
+                                                    showsVerticalScrollIndicator={false}
+                                                >
+                                                    {idProofOptions.map(opt => {
+                                                        const isSelected = IdproofType === opt.value;
+
+                                                        return (
+                                                            <TouchableOpacity
+                                                                key={opt.value}
+                                                                style={[
+                                                                    styles.dropdownRow,
+                                                                    isSelected && styles.dropdownRowSelected,
+                                                                ]}
+                                                                onPress={() => {
+                                                                    setIdProofType(opt.value);
+                                                                    setShowIdProofType(false);
+                                                                }}
+                                                            >
+                                                                <Text
+                                                                    style={
+                                                                        isSelected
+                                                                            ? styles.dropdownTextSelected
+                                                                            : styles.dropdownText
+                                                                    }
+                                                                >
+                                                                    {opt.label}
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        );
+                                                    })}
+                                                </ScrollView>
+                                            </View>
+                                        )}
+
+                                    </View>
 
                                     <Text style={styles.label}>
                                         ID Proof No
@@ -2186,6 +3140,12 @@ export default function AddTenantNew({ navigation, route }) {
                                     <TextInput
                                         style={styles.input}
                                         placeholder="Enter Number"
+                                        placeholderTextColor="#9CA3AF"
+                                        value={IdprooNumber}
+                                        onChangeText={(t) => {
+                                            const sanitized = t.replace(/[^a-zA-Z0-9\s]/g, "");
+                                            setIdProofNumber({ ...IdprooNumber, landmark: sanitized })
+                                        }}
                                     />
 
 
@@ -2205,7 +3165,7 @@ export default function AddTenantNew({ navigation, route }) {
                                             </Text>
                                         </View>
 
-                                        <TouchableOpacity
+                                        {/* <TouchableOpacity
                                             style={styles.doLaterContainer}
                                             activeOpacity={0.8}
                                             onPress={() => setDoItLater(!doItLater)}
@@ -2224,7 +3184,7 @@ export default function AddTenantNew({ navigation, route }) {
                                             <Text style={styles.doLater}>
                                                 Do it Later
                                             </Text>
-                                        </TouchableOpacity>
+                                        </TouchableOpacity> */}
                                     </View>
 
 
@@ -2325,6 +3285,7 @@ export default function AddTenantNew({ navigation, route }) {
                                             }}
                                         />
 
+
                                         <Text style={styles.label}>State</Text>
 
                                         <View style={{ position: "relative" }}>
@@ -2369,10 +3330,26 @@ export default function AddTenantNew({ navigation, route }) {
                                                             setStateQuery("");
                                                         }}
                                                     >
-                                                        <View style={styles.dropdownOverlay} />
+                                                        <View style={{
+                                                            position: "absolute",
+                                                            top: -1000,
+                                                            left: -1000,
+                                                            right: -1000,
+                                                            bottom: -1000,
+                                                            backgroundColor: "transparent",
+                                                            zIndex: 999,
+                                                        }} />
                                                     </TouchableWithoutFeedback>
 
-                                                    <View style={styles.dropdownMenu}>
+                                                    <View style={{
+                                                        borderWidth: 1,
+                                                        borderColor: "#ddd",
+                                                        borderRadius: 12,
+                                                        zIndex: 1000,
+                                                        marginTop: 6,
+                                                        maxHeight: 250,
+                                                        backgroundColor: "#fff",
+                                                    }}>
                                                         <ScrollView
                                                             keyboardShouldPersistTaps="always"
                                                             nestedScrollEnabled={true}
@@ -2419,7 +3396,6 @@ export default function AddTenantNew({ navigation, route }) {
                                             )}
 
                                         </View>
-
 
 
 
@@ -2477,7 +3453,7 @@ export default function AddTenantNew({ navigation, route }) {
                                                 setCheckinTenantsopen(false);
                                                 setTenantsError("")
                                                 setcheckJoiningDate(null)
-                                                setRentalAmount("")
+                                                setCheckinRentalAmount("")
                                                 setAdvanceAmount("");
                                                 clearAllErrors();
                                                 resetCheckInState();
@@ -2500,6 +3476,7 @@ export default function AddTenantNew({ navigation, route }) {
                                                 setCheckinTenantsopen(false);
                                                 setJoiningDate(null)
                                                 setRentalAmount("")
+                                                setCheckinRentalAmount("")
                                                 setAdvanceAmount("");
                                                 setTenantsError("")
                                                 clearAllErrors();
@@ -2845,7 +3822,7 @@ export default function AddTenantNew({ navigation, route }) {
                                             )}
 
 
-                                            <Text style={styles.label}>Total Rent <Text style={{ color: "red" }}>*</Text></Text>
+                                            {/* <Text style={styles.label}>Total Rent <Text style={{ color: "red" }}>*</Text></Text>
                                             <TextInput
                                                 style={styles.input}
                                                 placeholder={
@@ -2865,7 +3842,7 @@ export default function AddTenantNew({ navigation, route }) {
                                             />
                                             {rentalError && (
                                                 <ErrorMessage message={rentalError} type="error" />
-                                            )}
+                                            )} */}
 
 
 
@@ -3546,10 +4523,10 @@ export default function AddTenantNew({ navigation, route }) {
                                                 }
                                                 placeholderTextColor="#9CA3AF"
                                                 keyboardType="numeric"
-                                                value={rentalAmount}
+                                                value={checkinrentalAmount}
                                                 onChangeText={(text) => {
                                                     const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setRentalAmount(onlyNum);
+                                                    setCheckinRentalAmount(onlyNum);
                                                     setRentalError("");
                                                 }}
 
@@ -4188,19 +5165,26 @@ export default function AddTenantNew({ navigation, route }) {
                                                 <TextInput
                                                     style={styles.input}
                                                     placeholder="Enter name"
-                                                    value={fullName}
-                                                    onChangeText={(t) => {
-
-                                                        const cleaned = t.replace(/[^A-Za-z\s]/g, "");
-
-                                                        setFullName(cleaned);
-                                                        setNameErr("")
-                                                        setFormErr("")
+                                                    value={item.fullName}
+                                                    onChangeText={(text) => {
+                                                        updateGuardian(
+                                                            index,
+                                                            "fullName",
+                                                            text.replace(/[^A-Za-z\s]/g, "")
+                                                        );
                                                     }}
 
                                                 />
 
-                                                {nameErr ? <ErrorMessage message={nameErr} type="error" /> : null}
+                                                {guardianErrors[index]?.fullName && (
+                                                    <ErrorMessage message={guardianErrors[index].fullName} />
+                                                )}
+
+
+
+
+
+
 
                                                 <Text style={styles.label}>Relationship </Text>
                                                 <TouchableOpacity
@@ -4222,15 +5206,10 @@ export default function AddTenantNew({ navigation, route }) {
                                                     }}>
                                                         <TextInput
                                                             placeholder="Select Relationship"
-                                                            value={relationship}
+                                                            value={item.relationship}
                                                             editable={isRelationOther}
-                                                            onChangeText={(t) => {
-                                                                const cleaned = t.replace(/[^A-Za-z\s]/g, "")
-                                                                    .replace(/\s+/g, " ");
-
-                                                                setRelationship(cleaned);
-                                                                setRelationErr("")
-                                                                setFormErr("");
+                                                            onChangeText={(text) => {
+                                                                updateGuardian(index, "relationship", text);
                                                             }}
 
                                                             style={{ flex: 1 }}
@@ -4245,7 +5224,9 @@ export default function AddTenantNew({ navigation, route }) {
                                                     </View>
                                                 </TouchableOpacity>
 
-                                                {relationErr ? <ErrorMessage message={relationErr} type="error" /> : null}
+                                                {guardianErrors[index]?.relationship && (
+                                                    <ErrorMessage message={guardianErrors[index].relationship} />
+                                                )}
 
                                                 {showRelationDropdown && (
                                                     <View style={styles.additinaldropdown}>
@@ -4256,10 +5237,12 @@ export default function AddTenantNew({ navigation, route }) {
                                                                     style={styles.dropdownItem}
                                                                     onPress={() => {
                                                                         if (item === "Other") {
+                                                                            updateGuardian(index, "relationship", item);
                                                                             setIsRelationOther(true);
                                                                             setRelationship(""); // empty for typing
                                                                             setRelationErr("")
                                                                         } else {
+                                                                            updateGuardian(index, "relationship", item);
                                                                             setIsRelationOther(false);
                                                                             setRelationship(item);
                                                                             setRelationErr("")
@@ -4294,20 +5277,20 @@ export default function AddTenantNew({ navigation, route }) {
                                                     }}>
                                                         <TextInput
                                                             placeholder="Select Occupation"
-                                                            value={occupation}
+                                                            value={item.occupation}
                                                             editable={isOccupationOther}
                                                             onChangeText={(t) => {
-
-                                                                const cleaned = t.replace(/[^A-Za-z\s]/g, "")
+                                                                const cleaned = t
+                                                                    .replace(/[^A-Za-z\s]/g, "")
                                                                     .replace(/\s+/g, " ");
 
-                                                                setOccupation(cleaned);
-                                                                // setOccupation(t);
+                                                                updateGuardian(index, "occupation", cleaned);
                                                                 setOccupationErr("");
                                                                 setFormErr("");
                                                             }}
                                                             style={{ flex: 1 }}
                                                         />
+
 
 
                                                         <Image
@@ -4320,7 +5303,9 @@ export default function AddTenantNew({ navigation, route }) {
 
                                                     </View>
                                                 </TouchableOpacity>
-                                                {occupationErr ? <ErrorMessage message={occupationErr} type="error" /> : null}
+                                                {guardianErrors[index]?.occupation && (
+                                                    <ErrorMessage message={guardianErrors[index].occupation} />
+                                                )}
 
                                                 {showOccupationDropdown && (
                                                     <View style={styles.additinaldropdown}>
@@ -4332,13 +5317,15 @@ export default function AddTenantNew({ navigation, route }) {
                                                                     onPress={() => {
                                                                         if (item === "Other") {
                                                                             setIsOccupationOther(true);
-                                                                            setOccupation("");
-                                                                            setOccupationErr("")
+
+                                                                            updateGuardian(index, "occupation", "");
                                                                         } else {
                                                                             setIsOccupationOther(false);
-                                                                            setOccupation(item);
-                                                                            setOccupationErr("")
+
+                                                                            updateGuardian(index, "occupation", item);
                                                                         }
+
+                                                                        setOccupationErr("");
                                                                         setShowOccupationDropdown(false);
                                                                     }}
                                                                 >
@@ -4370,20 +5357,28 @@ export default function AddTenantNew({ navigation, route }) {
                                                         placeholder="Enter Mobile Number"
                                                         keyboardType="number-pad"
                                                         maxLength={10}
-                                                        value={mobile}
-                                                        onChangeText={(t) => {
-                                                            const validmobile = t.replace(/[^0-9]/g, "");
-                                                            setMobile(validmobile);
-                                                            setMobileErr("");
-                                                            setFormErr("");
-                                                        }}
+                                                        value={item.mobile}
+                                                        // onChangeText={(t) => {
+                                                        //     const validmobile = t.replace(/[^0-9]/g, "");
+                                                        //     setMobile(validmobile);
+                                                        //     setMobileErr("");
+                                                        //     setFormErr("");
+                                                        // }}
+                                                        onChangeText={(text) =>
+                                                            updateGuardian(
+                                                                index,
+                                                                "mobile",
+                                                                text.replace(/[^0-9]/g, "")
+                                                            )
+                                                        }
                                                         style={{ flex: 1 }}
                                                     />
                                                 </View>
 
 
-                                                {mobileErr ? <ErrorMessage message={mobileErr} type="error" /> : null}
-                                                {formErr ? <ErrorMessage message={formErr} type="error" /> : null}
+                                                {guardianErrors[index]?.mobile && (
+                                                    <ErrorMessage message={guardianErrors[index].mobile} />
+                                                )}
 
                                             </View>
                                         ))}
@@ -4433,220 +5428,229 @@ export default function AddTenantNew({ navigation, route }) {
                                         </View>
 
 
+
                                         <Text style={styles.label}>Company / College Name <Text style={{ color: "red" }}>*</Text></Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter name"
-                                            value={fullName}
+                                            value={companyName}
                                             onChangeText={(t) => {
 
                                                 const cleaned = t.replace(/[^A-Za-z\s]/g, "");
 
-                                                setFullName(cleaned);
-                                                setNameErr("")
-                                                setFormErr("")
+                                                setCompanyName(cleaned);
+
                                             }}
 
                                         />
 
-                                        {nameErr ? <ErrorMessage message={nameErr} type="error" /> : null}
+                                        {companyError ? <ErrorMessage message={companyError} /> : null}
 
-                                        <Text style={styles.label}>Employment status </Text>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setShowRelationDropdown(!showRelationDropdown);
-                                                setShowOccupationDropdown(false);
-                                            }}
-                                        >
-                                            <View style={{
-                                                borderWidth: 1,
-                                                borderColor: "#E5E7EB",
-                                                borderRadius: 10,
-                                                paddingHorizontal: 12,
-                                                height: 50,
-                                                flexDirection: "row",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                fontFamily: "Gilroy-Regular"
-                                            }}>
-                                                <TextInput
-                                                    placeholder="Select Relationship"
-                                                    value={relationship}
-                                                    editable={isRelationOther}
-                                                    onChangeText={(t) => {
-                                                        const cleaned = t.replace(/[^A-Za-z\s]/g, "")
-                                                            .replace(/\s+/g, " ");
 
-                                                        setRelationship(cleaned);
-                                                        setRelationErr("")
-                                                        setFormErr("");
-                                                    }}
 
-                                                    style={{ flex: 1 }}
-                                                />
+
+
+
+
+
+                                        <Text style={styles.label}>Employment Status</Text>
+
+                                        <View style={{ zIndex: employmentOpen ? 30 : 1 }}>
+                                            <TouchableOpacity
+                                                style={styles.dropdown}
+                                                activeOpacity={0.8}
+                                                onPress={() => {
+                                                    setEmploymentOpen(!employmentOpen);
+                                                    setJobRoleOpen(false);
+                                                    setShiftOpen(false);
+                                                }}>
+                                                <Text
+                                                    style={[
+                                                        styles.dropdownText,
+                                                        !employmentStatus && { color: "#9CA3AF" },
+                                                    ]}>
+                                                    {employmentStatus?.label || "Select Employment Status"}
+                                                </Text>
+
                                                 <Image
                                                     source={DownArrow}
                                                     style={[
-                                                        styles.arrowIcon,
-                                                        showRelationDropdown && { transform: [{ rotate: "180deg" }] }
+                                                        styles.arrow,
+                                                        employmentOpen && { transform: [{ rotate: "180deg" }] },
                                                     ]}
                                                 />
-                                            </View>
-                                        </TouchableOpacity>
+                                            </TouchableOpacity>
+
+                                            {employmentOpen && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                                                        {jobOptions.map(item => (
+                                                            <TouchableOpacity
+                                                                key={item.value}
+                                                                style={styles.option}
+                                                                onPress={() => {
+                                                                    setEmploymentStatus(item);
+                                                                    setEmploymentOpen(false);
+                                                                }}>
+                                                                <Text style={styles.optionText}>{item.label}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                        {employmentError ? <ErrorMessage message={employmentError} /> : null}
 
                                         <Text style={styles.label}>Job Role </Text>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setShowRelationDropdown(!showRelationDropdown);
-                                                setShowOccupationDropdown(false);
-                                            }}
-                                        >
-                                            <View style={{
-                                                borderWidth: 1,
-                                                borderColor: "#E5E7EB",
-                                                borderRadius: 10,
-                                                paddingHorizontal: 12,
-                                                height: 50,
-                                                flexDirection: "row",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                fontFamily: "Gilroy-Regular"
-                                            }}>
-                                                <TextInput
-                                                    placeholder="Select Relationship"
-                                                    value={relationship}
-                                                    editable={isRelationOther}
-                                                    onChangeText={(t) => {
-                                                        const cleaned = t.replace(/[^A-Za-z\s]/g, "")
-                                                            .replace(/\s+/g, " ");
+                                        <View style={{ zIndex: jobRoleOpen ? 30 : 1 }}>
+                                            <TouchableOpacity
+                                                style={styles.dropdown}
+                                                activeOpacity={0.8}
+                                                onPress={() => {
+                                                    setJobRoleOpen(!jobRoleOpen);
+                                                    // setJobRoleOpen(false);
+                                                    setShiftOpen(false);
+                                                }}>
+                                                <Text
+                                                    style={[
+                                                        styles.dropdownText,
+                                                        !jobRoleOpen && { color: "#9CA3AF" },
+                                                    ]}>
+                                                    {jobRole?.label || "Select Job Role"}
+                                                </Text>
 
-                                                        setRelationship(cleaned);
-                                                        setRelationErr("")
-                                                        setFormErr("");
-                                                    }}
-
-                                                    style={{ flex: 1 }}
-                                                />
                                                 <Image
                                                     source={DownArrow}
                                                     style={[
-                                                        styles.arrowIcon,
-                                                        showRelationDropdown && { transform: [{ rotate: "180deg" }] }
+                                                        styles.arrow,
+                                                        jobRoleOpen && { transform: [{ rotate: "180deg" }] },
                                                     ]}
                                                 />
-                                            </View>
-                                        </TouchableOpacity>
+                                            </TouchableOpacity>
 
+                                            {jobRoleOpen && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                                                        {jobRoleOptions.map(item => (
+                                                            <TouchableOpacity
+                                                                key={item.value}
+                                                                style={styles.option}
+                                                                onPress={() => {
+                                                                    setJobRole(item);
+                                                                    setJobRoleOpen(false);
+                                                                }}>
+                                                                <Text style={styles.optionText}>{item.label}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                        {jobRoleError ? <ErrorMessage message={jobRoleError} /> : null}
 
 
                                         <Text style={styles.label}>Work Location <Text style={{ color: "red" }}>*</Text></Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter name"
-                                            value={fullName}
+                                            value={worklocation}
                                             onChangeText={(t) => {
-
                                                 const cleaned = t.replace(/[^A-Za-z\s]/g, "");
-
-                                                setFullName(cleaned);
-                                                setNameErr("")
-                                                setFormErr("")
+                                                setWorkLocations(cleaned);
                                             }}
 
                                         />
+                                        {workLocationError ? <ErrorMessage message={workLocationError} /> : null}
 
 
                                         <Text style={styles.label}>Shift Type </Text>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setShowRelationDropdown(!showRelationDropdown);
-                                                setShowOccupationDropdown(false);
-                                            }}
-                                        >
-                                            <View style={{
-                                                borderWidth: 1,
-                                                borderColor: "#E5E7EB",
-                                                borderRadius: 10,
-                                                paddingHorizontal: 12,
-                                                height: 50,
-                                                flexDirection: "row",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                fontFamily: "Gilroy-Regular"
-                                            }}>
-                                                <TextInput
-                                                    placeholder="Select Relationship"
-                                                    value={relationship}
-                                                    editable={isRelationOther}
-                                                    onChangeText={(t) => {
-                                                        const cleaned = t.replace(/[^A-Za-z\s]/g, "")
-                                                            .replace(/\s+/g, " ");
+                                        <View style={{ zIndex: shiftOpen ? 30 : 1 }}>
+                                            <TouchableOpacity
+                                                style={styles.dropdown}
+                                                activeOpacity={0.8}
+                                                onPress={() => {
+                                                    setShiftOpen(!shiftOpen);
+                                                    setJobRoleOpen(false);
+                                                }}>
+                                                <Text
+                                                    style={[
+                                                        styles.dropdownText,
+                                                        !employmentStatus && { color: "#9CA3AF" },
+                                                    ]}>
+                                                    {shiftType?.label || "Select Shift Type"}
+                                                </Text>
 
-                                                        setRelationship(cleaned);
-                                                        setRelationErr("")
-                                                        setFormErr("");
-                                                    }}
-
-                                                    style={{ flex: 1 }}
-                                                />
                                                 <Image
                                                     source={DownArrow}
                                                     style={[
-                                                        styles.arrowIcon,
-                                                        showRelationDropdown && { transform: [{ rotate: "180deg" }] }
+                                                        styles.arrow,
+                                                        shiftOpen && { transform: [{ rotate: "180deg" }] },
                                                     ]}
                                                 />
-                                            </View>
-                                        </TouchableOpacity>
+                                            </TouchableOpacity>
+
+                                            {shiftOpen && (
+                                                <View style={styles.dropdownList}>
+                                                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                                                        {shiftTypeOptions.map(item => (
+                                                            <TouchableOpacity
+                                                                key={item.value}
+                                                                style={styles.option}
+                                                                onPress={() => {
+                                                                    setShiftType(item);
+                                                                    setShiftOpen(false);
+                                                                }}>
+                                                                <Text style={styles.optionText}>{item.label}</Text>
+                                                            </TouchableOpacity>
+                                                        ))}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+                                        {shiftTypeError ? <ErrorMessage message={shiftTypeError} /> : null}
 
                                         <Text style={styles.label}>Shift Timing</Text>
 
                                         <View style={styles.shiftRow}>
-
-                                            {/* Shift Start */}
-
                                             <TouchableOpacity
                                                 style={styles.shiftInput}
-                                                activeOpacity={0.8}
-                                                onPress={() => setOpenStartTime(true)}
+                                                activeOpacity={1}
                                             >
-                                                <Text
-                                                    style={[
-                                                        styles.shiftText,
-                                                        !startTime && styles.placeholderText,
-                                                    ]}
-                                                >
-                                                    {startTime || "Min"}
-                                                </Text>
+
+                                                <TextInput
+                                                    style={styles.timeInput}
+                                                    value={startTime}
+                                                    onChangeText={(text) => setStartTime(formatTimeInput(text))}
+                                                    keyboardType="number-pad"
+                                                />
 
                                                 <Image
                                                     source={require("../../Assets/Images/calendar.png")}
                                                     style={styles.calendarIcon}
                                                 />
                                             </TouchableOpacity>
+                                            {startTimeError ? <ErrorMessage message={startTimeError} /> : null}
 
-                                            {/* Shift End */}
 
                                             <TouchableOpacity
                                                 style={styles.shiftInput}
-                                                activeOpacity={0.8}
-                                                onPress={() => setOpenEndTime(true)}
+                                                activeOpacity={1}
                                             >
-                                                <Text
-                                                    style={[
-                                                        styles.shiftText,
-                                                        !endTime && styles.placeholderText,
-                                                    ]}
-                                                >
-                                                    {endTime || "Min"}
-                                                </Text>
+
+
+                                                <TextInput
+                                                    style={styles.timeInput}
+                                                    value={endTime}
+                                                    onChangeText={(text) => setEndTime(formatTimeInput(text))}
+                                                    keyboardType="number-pad"
+                                                />
 
                                                 <Image
                                                     source={require("../../Assets/Images/calendar.png")}
                                                     style={styles.calendarIcon}
                                                 />
                                             </TouchableOpacity>
-
+                                            {endTimeError ? <ErrorMessage message={endTimeError} /> : null}
                                         </View>
 
 
@@ -5285,6 +6289,7 @@ const styles = StyleSheet.create({
     optionText: {
         fontSize: 15,
         color: "#000",
+        fontFamily: "Gilroy-Regular",
     },
     disabledSelect: {
         backgroundColor: "#f2f2f2",
@@ -5409,6 +6414,41 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         borderWidth: 1
+    },
+    transactiondropdown: {
+        position: "absolute",
+        top: 77,          // 👈 input height
+        left: 0,
+        right: 0,
+
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 12,
+        zIndex: 9999,
+        elevation: 20,
+
+        maxHeight: 160,
+    },
+
+    dropdownRow: {
+        padding: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: "#F3F4F6",
+    },
+
+    dropdownRowSelected: {
+        backgroundColor: "#2563EB",
+    },
+
+    dropdownText: {
+        color: "#111",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    dropdownTextSelected: {
+        color: "#fff",
+        fontWeight: "700",
     },
 
     searchIcon: {
@@ -5867,11 +6907,35 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
     },
 
-    dropdownText: {
-        fontSize: 18,
-        color: "#222",
-        fontFamily: "Gilroy-Medium",
+    // dropdownText: {
+    //     fontSize: 18,
+    //     color: "#222",
+    //     fontFamily: "Gilroy-Medium",
+    // },
+
+
+
+    dropdownList: {
+        position: "absolute",
+        top: 56,
+        width: "100%",
+        backgroundColor: "#fff",
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        maxHeight: 220,
+        elevation: 6,
+        zIndex: 999,
     },
+
+    // option: {
+    //   paddingVertical: 14,
+    //   paddingHorizontal: 16,
+    //   borderBottomWidth: 1,
+    //   borderBottomColor: "#F3F4F6",
+    // },
+
+
 
     dropdownMenu: {
         position: "absolute",
@@ -5891,10 +6955,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
     },
 
-    optionText: {
-        fontSize: 16,
-        fontFamily: "Gilroy-Regular",
-    },
+    // optionText: {
+    //     fontSize: 16,
+    //     fontFamily: "Gilroy-Regular",
+    // },
 
     // input: {
     //     height: 58,
@@ -6128,5 +7192,39 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-SemiBold",
         color: "#111827",
     },
-});
+    shiftRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 10,
+    },
 
+    shiftInput: {
+        width: "48%",
+        height: 54,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 14,
+        paddingHorizontal: 16,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        backgroundColor: "#FFF",
+    },
+
+    shiftText: {
+        fontSize: 16,
+        color: "#111827",
+    },
+
+    placeholderText: {
+        color: "#B0B7C3",
+    },
+
+
+    calendarIcon: {
+        width: 22,
+        height: 22,
+        resizeMode: "contain",
+    },
+
+});

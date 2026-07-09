@@ -7,15 +7,15 @@ import { useHasPermission } from "../../Utils/useHasPermission";
 
 
 
-export default function ManageBedBottomSheet({ visible, onClose, selectedBed, handleEditBed,onDeleteBed,onBedAdded }) {
+export default function ManageBedBottomSheet({ visible, onClose, selectedBed, handleEditBed, onDeleteBed, onBedAdded }) {
   console.log("selectedBed", selectedBed)
-  const { getAllFloorsByHostel,getAllRoomsByFloor,getAllBedsByRoom,deleteBed } = useFloor();
+  const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom, deleteBed } = useFloor();
   const navigation = useNavigation();
   const translateY = useRef(new Animated.Value(300)).current;
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [modalType, setModalType] = useState("success");
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [message, setMessage] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
   const handleEdit = () => {
     handleEditBed(selectedBed);
   }
@@ -51,35 +51,35 @@ export default function ManageBedBottomSheet({ visible, onClose, selectedBed, ha
     },
   });
   const handleConfirmDelete = async () => {
-  if (!selectedBed?.bedId) return;
+    if (!selectedBed?.bedId) return;
 
-  const res = await deleteBed(selectedBed.bedId);
+    const res = await deleteBed(selectedBed.bedId);
 
-  if (res?.success) {
-     setModalType("success");
+    if (res?.success) {
+      setModalType("success");
       setMessage("Bed Deleted successfully");
       setShowSuccess(true);
-onBedAdded && onBedAdded(selectedBed.roomId)
+      onBedAdded && onBedAdded(selectedBed.roomId)
       setTimeout(() => {
         setShowSuccess(false);
         setShowDeletePopup(false);
-    onClose();
+        onClose();
       }, 800);
-   
-  } else {
-    // alert(res?.message || "Delete failed");
+
+    } else {
+      // alert(res?.message || "Delete failed");
       setModalType("error");
       setMessage(res?.message);
       setShowSuccess(true);
 
       setTimeout(() => {
         setShowSuccess(false);
-       
-      }, 800);
-  }
-};
 
-    const {
+      }, 800);
+    }
+  };
+
+  const {
     canWriteModule: canWritePayingGuests,
     canReadModule: canReadPayingGuests,
     canUpdateModule: canUpdatePayingGuests,
@@ -87,7 +87,7 @@ onBedAdded && onBedAdded(selectedBed.roomId)
   } = useHasPermission("Paying Guests");
 
 
-    const {
+  const {
     canWriteModule: canWriteCustomers,
     //   canReadModule: canReadExpense,
     // canUpdateModule: canUpdateCustomers,
@@ -112,13 +112,20 @@ onBedAdded && onBedAdded(selectedBed.roomId)
           <Text style={styles.title}>Manage Bed</Text>
 
 
-          <TouchableOpacity 
-          disabled={!canWriteCustomers}
-          style={[ styles.optionRow, !canWriteCustomers && { opacity: 0.4 }]}
-          onPress={() => {
-            navigation.navigate("AddTenant");
-            onClose();
-          }}
+          <TouchableOpacity
+            disabled={!canWriteCustomers}
+            style={[styles.optionRow, !canWriteCustomers && { opacity: 0.4 }]}
+            onPress={() => {
+              onClose();
+              navigation.navigate("AddTenantNew", {
+                mode: "Add",
+              });
+            }}
+          // onPress={() => {
+          //   navigation.navigate("AddTenantNew");
+
+          //   onClose();
+          // }}
           >
             <Text style={styles.optionText}>Add Tenant</Text>
             <Image source={require("../../Assets/Images/addsquare.png")} style={styles.icon} />
@@ -126,35 +133,35 @@ onBedAdded && onBedAdded(selectedBed.roomId)
 
 
           <TouchableOpacity
-          //  style={styles.optionRow} 
-          disabled={!canWriteCustomers}
-          style={[ styles.optionRow, !canWriteCustomers && { opacity: 0.4 }]}
-           onPress={() => {
-            onClose();
-            navigation.navigate("AssignTenant", {
-              roomNo: "101",
-              bedId: "A",
-              selectedBed,
-              onBedAdded
-              
-            });
-          }}>
+            //  style={styles.optionRow} 
+            disabled={!canWriteCustomers}
+            style={[styles.optionRow, !canWriteCustomers && { opacity: 0.4 }]}
+            onPress={() => {
+              onClose();
+              navigation.navigate("AssignTenant", {
+                roomNo: "101",
+                bedId: "A",
+                selectedBed,
+                onBedAdded
+
+              });
+            }}>
             <Text style={styles.optionText}>Assign Tenant</Text>
             <Image source={require("../../Assets/Images/Reports.png")} style={styles.icon} />
           </TouchableOpacity>
 
-          <TouchableOpacity 
-          // style={styles.deleteRow}
-          disabled={!canUpdatePayingGuests}
-          style={[ styles.deleteRow, !canUpdatePayingGuests && { opacity: 0.4 }]}
+          <TouchableOpacity
+            // style={styles.deleteRow}
+            disabled={!canUpdatePayingGuests}
+            style={[styles.deleteRow, !canUpdatePayingGuests && { opacity: 0.4 }]}
             onPress={handleEdit} >
             <Text style={styles.optionText}>Edit</Text>
             <Image source={require("../../Assets/Images/editIcon.png")} style={styles.deleteIcon} />
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             disabled={!canDeletePayingGuests}
-          style={[ styles.deleteRow, !canDeletePayingGuests && { opacity: 0.4 }]}
-          onPress={handleDelete}>
+            style={[styles.deleteRow, !canDeletePayingGuests && { opacity: 0.4 }]}
+            onPress={handleDelete}>
             <Text style={styles.deleteText}>Delete</Text>
             <Image source={require("../../Assets/Images/trash.png")} style={styles.deleteIcon} />
           </TouchableOpacity>
@@ -184,7 +191,7 @@ onBedAdded && onBedAdded(selectedBed.roomId)
 
                   <TouchableOpacity
                     style={styles.deleteBtn}
-               onPress={handleConfirmDelete}
+                    onPress={handleConfirmDelete}
 
                   >
                     <Text style={styles.deleteButton}>Delete</Text>
@@ -208,7 +215,7 @@ const styles = StyleSheet.create({
     top: 0, bottom: 0, left: 0, right: 0,
     backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "flex-end",
-   
+
   },
   overlayTouch: { flex: 1 },
   sheet: {
@@ -239,7 +246,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 16,
     color: "#333",
-    fontFamily: "Gilroy-Regular" 
+    fontFamily: "Gilroy-Regular"
   },
   deleteRow: {
     flexDirection: "row",
@@ -293,7 +300,7 @@ const styles = StyleSheet.create({
     color: "#555",
     textAlign: "center",
     marginBottom: 25,
-    fontFamily: "Gilroy-Bold" 
+    fontFamily: "Gilroy-Bold"
   },
 
   popupBtnRow: {

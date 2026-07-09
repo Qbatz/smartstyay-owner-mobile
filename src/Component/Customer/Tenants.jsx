@@ -1679,11 +1679,15 @@ export default function TenantsScreen({ route }) {
                       !canUpdateTenant && { opacity: 0.4 }]}
                     disabled={!canUpdateTenant}
                     onPress={() => {
+
                       navigation.navigate("AddTenantNew", {
                         customerId: selectedCustomer?.customerId,
                         customer: selectedCustomer,
                         mode: "EDIT",
-                      });
+                      })
+                      setShowDetailsMenu(false);
+                      setShowDetailModal(false);
+                      setMenuVisible(false)
                     }}
                   >
                     <Image source={require("../../Assets/Images/blue_circle.png")} style={styles.popupIcon} />

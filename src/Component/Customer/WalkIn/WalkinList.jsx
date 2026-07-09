@@ -226,6 +226,7 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
 
     navigation.navigate("AddTenantNew", {
       refreshWalkins: walkinCustomers,
+       mode: "Add",
     });
   };
 
@@ -391,8 +392,10 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
               onPress={() =>
                 navigation.navigate("AddTenantNew", {
                   refreshWalkins: walkinCustomers,
+                   mode: "Add",
                 })
-              }>
+              }
+              >
               <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
             </TouchableOpacity>
           </>

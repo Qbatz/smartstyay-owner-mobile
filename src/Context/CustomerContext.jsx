@@ -11,6 +11,7 @@ export const CustomerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("")
   const [vendorList, setVendorList] = useState([]);
+  const [draftDetails, setDraftDetails] = useState(null);
   const [ReAssignStatusCode , setReAssignStatusCode] = useState(0)
   const loginContext=useContext(LoginContexts)
   
@@ -1742,6 +1743,204 @@ const TenantCheckIn = async (hostelId, customerId, payload) => {
   }
 };
 
+const UpdateTenantDraft = async (
+  hostelId,
+  customerId,
+  payload,
+  profilePic = null,
+  aadharPic = null,
+  panPic = null
+) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const formData = new FormData();
+
+    formData.append("request", {
+      string: JSON.stringify(payload.request),
+      type: "application/json",
+    });
+
+    if (profilePic?.uri) {
+      formData.append("profilePic", {
+        uri: profilePic.uri,
+        type: profilePic.type || "image/jpeg",
+        name: profilePic.fileName || "profile.jpg",
+      });
+    }
+
+    if (aadharPic?.uri) {
+      formData.append("aadharPic", {
+        uri: aadharPic.uri,
+        type: aadharPic.type || "image/jpeg",
+        name: aadharPic.fileName || "aadhaar.jpg",
+      });
+    }
+
+    if (panPic?.uri) {
+      formData.append("panPic", {
+        uri: panPic.uri,
+        type: panPic.type || "image/jpeg",
+        name: panPic.fileName || "pan.jpg",
+      });
+    }
+
+    const res = await axios.put(
+      `/v3/customers/saveDraft/${hostelId}/${customerId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Draft update failed",
+    };
+  } catch (error) {
+    console.log("UPDATE DRAFT ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+
+const SearchCustomer = async (hostelId, search) => {
+  if (!hostelId || !search) {
+    return {
+      success: false,
+      data: [],
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v3/customers/search/${hostelId}`,
+      {
+        params: {
+          search,
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    return {
+      success: true,
+      data: res.data || [],
+    };
+  } catch (error) {
+    console.log("SEARCH CUSTOMER ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      data: [],
+      message:
+        error?.response?.data?.message ||
+        "Customer search failed",
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const handleGetDraftDetails = async (customerId) => {
+  if (!customerId) {
+    return {
+      success: false,
+      message: "CustomerId missing",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v3/customers/draftDetails/${customerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res?.status === 200) {
+      setDraftDetails(res?.data);
+
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Unable to fetch draft details",
+    };
+  } catch (error) {
+    console.log("DRAFT DETAILS ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const resetDraftDetails = () => {
+  setDraftDetails(null);
+};
+
 
 
   return (
@@ -1750,6 +1949,7 @@ const TenantCheckIn = async (hostelId, customerId, payload) => {
         getCustomersByHostel,
         GetParticularCustomerDetails,
         ParticularcustomerDetails,
+        draftDetails ,
         resetParticularCustomer,
         ReAssignStatusCode,
         setReAssignStatusCode,
@@ -1765,7 +1965,8 @@ const TenantCheckIn = async (hostelId, customerId, payload) => {
          initializeCheckIn,bookedCheckInCustomer,initializeCancelBooking,cancelBooking,getCheckoutCustomersByHostel,editBasicDetails,editJoiningDate,editRentalAmount,editAdvanceAmount,assignAmenitiesForTenant,initializeCancelCheckout,
         addVendor, updateVendor , vendorList,
         getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment , RequestKYC , 
-        AddTenantDraft ,TenantCheckIn
+        AddTenantDraft ,TenantCheckIn , UpdateTenantDraft , SearchCustomer ,
+        handleGetDraftDetails, resetDraftDetails,
       }}
     >
       {children}
