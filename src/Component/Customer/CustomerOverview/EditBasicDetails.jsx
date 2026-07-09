@@ -186,6 +186,7 @@ export default function EditBasicDetailsSheet({
             customerDetails.customerId,
             payloads
         );
+        console.log("EdBasic",res)
 
         if (res.success) {
             // alert("Basic details updated successfully ✅");
@@ -202,8 +203,14 @@ export default function EditBasicDetailsSheet({
             }, 800);
 
         } else {
-            const emailMsg = res?.message?.emailStatus || "";
+            const emailMsg = res?.message?.emailStatus ||  "";
             setEmailError(emailMsg);
+             setModalType("error");
+            setMessage(res.data || res?.message);
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false)
+            }, 800);
         }
     };
 
