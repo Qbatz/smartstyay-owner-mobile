@@ -43,7 +43,7 @@ import LeftArrow from "../../../Assets/Images/Arrow_left.png";
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  , openAdditionalContact , handleshowKYCPendingSheet}) {
+  , openAdditionalContact, handleshowKYCPendingSheet }) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
@@ -260,12 +260,12 @@ export default function OverviewTab({ customerDetails,
     status === "BOOKED" ||
     status === "VACATED" ||
     status === "NOTICE" ||
-    status ===  "CANCELLED_BOOKING"
+    status === "CANCELLED_BOOKING"
 
   const disabledocEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
-    status ===  "CANCELLED_BOOKING"
+    status === "CANCELLED_BOOKING"
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isSubscriptionAllow = isValidSubscription
@@ -287,31 +287,37 @@ export default function OverviewTab({ customerDetails,
       >
         <View style={{ paddingBottom: 30, padding: 5 }}>
 
-      <View style={styles.pendingCard}>
-  <View style={styles.pendingTopRow}>
-    <View style={styles.pendingLeft}>
-      <Image
-        source={RequestAmenitiesIcon} // document icon
-        style={styles.pendingIcon}
-      />
 
-      <Text style={styles.pendingText}>
-        <Text style={styles.pendingCount}>2</Text> Pending action(s)
-      </Text>
-    </View>
+         { !["VACATED", "INACTIVE"].includes(customerDetails?.customerCurrentStatus) &&
 
-    <View style={styles.progressBadge}>
-      <Text style={styles.progressArrow}>↑</Text>
-      <Text style={styles.progressText}>30%</Text>
-    </View>
-  </View>
+          <View style={styles.pendingCard}>
+            <View style={styles.pendingTopRow}>
+              <View style={styles.pendingLeft}>
+                <Image
+                  source={RequestAmenitiesIcon} // document icon
+                  style={styles.pendingIcon}
+                />
 
-  <TouchableOpacity style={styles.pendingBtn} onPress={handleshowkycsheet}>
-    <Text style={styles.pendingBtnText}>
-      See Pending Actions
-    </Text>
-  </TouchableOpacity>
-</View>
+                <Text style={styles.pendingText}>
+                  <Text style={styles.pendingCount}>2</Text> Pending action(s)
+                </Text>
+              </View>
+
+              <View style={styles.progressBadge}>
+                <Text style={styles.progressArrow}>↑</Text>
+                <Text style={styles.progressText}>30%</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity style={[styles.pendingBtn ,customerDetails?.customerCurrentStatus =="BOOKED" && {opacity:0.4}  ]} 
+            disabled = {customerDetails?.customerCurrentStatus =="BOOKED" ? true :false}
+            onPress={handleshowkycsheet}>
+              <Text style={styles.pendingBtnText}>
+                See Pending Actions
+              </Text>
+            </TouchableOpacity>
+          </View>
+          }
 
           <View style={styles.sectionBox}>
 
@@ -441,7 +447,7 @@ export default function OverviewTab({ customerDetails,
               {addressTab === "MANUAL" && (
 
 
-                (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING")  && (
+                (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
                   <TouchableOpacity
                     disabled={!canUpdateTenant}
                     style={!canUpdateTenant && { opacity: 0.4 }}
@@ -464,7 +470,7 @@ export default function OverviewTab({ customerDetails,
                       <View style={styles.valueRow}>
                         <Image source={House} style={styles.icon} />
                         <Text style={styles.value}>
-                          {/* {customerDetails?.address?.houseNo || "N/A"} */}
+                          {customerDetails?.kycInfo?.permanentAddress?.houseNo || "N/A"}
                         </Text>
                       </View>
                     </View>
@@ -474,7 +480,7 @@ export default function OverviewTab({ customerDetails,
                       <View style={styles.valueRow}>
                         <Image source={Street} style={styles.icon} />
                         <Text style={styles.value}>
-                          {/* {customerDetails?.address?.streetName || "N/A"} */}
+                          {customerDetails?.kycInfo?.permanentAddress?.streetName || "N/A"}
                         </Text>
                       </View>
                     </View>
@@ -487,7 +493,7 @@ export default function OverviewTab({ customerDetails,
                       <View style={styles.valueRow}>
                         <Image source={Location} style={styles.icon} />
                         <Text style={styles.value}>
-                          {/* {customerDetails?.address?.landmark || "N/A"} */}
+                          {customerDetails?.kycInfo?.permanentAddress?.landmark || "N/A"}
                         </Text>
                       </View>
                     </View>
@@ -497,7 +503,7 @@ export default function OverviewTab({ customerDetails,
                       <View style={styles.valueRow}>
                         <Image source={Pin} style={styles.icon} />
                         <Text style={styles.value}>
-                          {/* {customerDetails?.address?.pincode || "N/A"} */}
+                          {customerDetails?.kycInfo?.permanentAddress?.pincode || "N/A"}
                         </Text>
                       </View>
                     </View>
@@ -510,7 +516,7 @@ export default function OverviewTab({ customerDetails,
                       <View style={styles.valueRow}>
                         <Image source={Building} style={styles.icon} />
                         <Text style={styles.value}>
-                          {/* {customerDetails?.address?.city || "N/A"} */}
+                          {customerDetails?.kycInfo?.permanentAddress?.city || "N/A"}
                         </Text>
                       </View>
                     </View>
@@ -520,7 +526,7 @@ export default function OverviewTab({ customerDetails,
                       <View style={styles.valueRow}>
                         <Image source={Building} style={styles.icon} />
                         <Text style={styles.value}>
-                          {/* {customerDetails?.address?.state || "N/A"} */}
+                          {customerDetails?.kycInfo?.permanentAddress?.state || "N/A"}
                         </Text>
                       </View>
                     </View>
@@ -621,7 +627,7 @@ export default function OverviewTab({ customerDetails,
 
             {/* ROW 1 : Floor + Room */}
             <View style={styles.twoColumnRow}>
-              <View style={{width:"46%"}}>
+              <View style={{ width: "46%" }}>
                 <Text style={styles.detailLabel}>Floor</Text>
                 <View style={styles.valueWithIcon}>
                   <Image source={FloorIcon} style={styles.detailIconFloor} />
@@ -631,7 +637,7 @@ export default function OverviewTab({ customerDetails,
                 </View>
               </View>
 
-              <View style={{width:"46%"}}>
+              <View style={{ width: "46%" }}>
                 <Text style={styles.detailLabel}>Room</Text>
                 <View style={styles.valueWithIcon}>
                   <Image source={RoomIcon} style={styles.detailIconFloor} />
@@ -644,7 +650,7 @@ export default function OverviewTab({ customerDetails,
 
             {/* ROW 2 : Bed + Booking Date */}
             <View style={styles.twoColumnRow}>
-              <View style={{width:'46%'}}>
+              <View style={{ width: '46%' }}>
                 <Text style={styles.detailLabel}>Bed</Text>
                 <View style={styles.valueWithIcon}>
                   <Image source={BedIcon} style={styles.detailIcon} />
@@ -655,7 +661,7 @@ export default function OverviewTab({ customerDetails,
               </View>
 
 
-              <View style={{width:'46%'}}>
+              <View style={{ width: '46%' }}>
                 <Text style={styles.detailLabel}>Booking Date</Text>
                 <View style={styles.valueWithIcon}>
                   <Image source={Home} style={styles.detailIcon} />
@@ -789,7 +795,7 @@ export default function OverviewTab({ customerDetails,
             )}
 
 
-            <View style={{ width: "58%",paddingVertical: 12,paddingHorizontal: 14,}}>
+            <View style={{ width: "58%", paddingVertical: 12, paddingHorizontal: 14, }}>
               <View style={styles.amountValueRow}>
                 <Text style={styles.amountValue}>Advance Amount</Text>
 
@@ -828,7 +834,7 @@ export default function OverviewTab({ customerDetails,
                 ₹ {customerDetails?.advanceInfo?.advanceAmount || 0}
               </Text>
             </View>
-            
+
 
             {/* ROW 2 : Booking Amount + Maintenance */}
             <View style={styles.twoColumnRow}>
@@ -953,7 +959,7 @@ export default function OverviewTab({ customerDetails,
                                 source={require("../../../Assets/Images/Eye.png")}
                                 style={[
                                   styles.actionIcon,
-                                  !isSubscriptionAllow &&  { opacity: 0.4 },
+                                  !isSubscriptionAllow && { opacity: 0.4 },
                                 ]}
                               />
                             </TouchableOpacity>
@@ -967,7 +973,7 @@ export default function OverviewTab({ customerDetails,
                                 source={require("../../../Assets/Images/trash.png")}
                                 style={[
                                   styles.actionIcon,
-                                    (!isSubscriptionAllow || !doc?.canDelete) && { opacity: 0.4 }
+                                  (!isSubscriptionAllow || !doc?.canDelete) && { opacity: 0.4 }
                                 ]}
                               />
                             </TouchableOpacity>
@@ -1482,7 +1488,7 @@ export default function OverviewTab({ customerDetails,
         </TouchableWithoutFeedback>
       </Modal>
 
-  
+
 
       {/* <AdditionalContactBottomSheet
   visible={showSheet}
@@ -1668,13 +1674,14 @@ const styles = StyleSheet.create({
   detailBlock: {
     marginBottom: 12,
   },
-  pndngActionBox:{backgroundColor:'#FFF9EC',borderRadius:8,paddingVertical:13,
-                  paddingHorizontal:16,
+  pndngActionBox: {
+    backgroundColor: '#FFF9EC', borderRadius: 8, paddingVertical: 13,
+    paddingHorizontal: 16,
   },
-  pendingActTitl:{
-    backgroundColor:'#EB6617',borderRadius:8,
-    paddingVertical:10,paddingHorizontal:12,alignItems:'center',
-    marginTop:14
+  pendingActTitl: {
+    backgroundColor: '#EB6617', borderRadius: 8,
+    paddingVertical: 10, paddingHorizontal: 12, alignItems: 'center',
+    marginTop: 14
   },
   sectionBox: {
     backgroundColor: "#fff",
@@ -2133,77 +2140,77 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontFamily: "Gilroy-Semibold"
   },
-pendingCard: {
-  backgroundColor: "#FFF9EC",
-  borderRadius: 16,
-  padding: 16,
-  marginTop: 14,
-},
+  pendingCard: {
+    backgroundColor: "#FFF9EC",
+    borderRadius: 16,
+    padding: 16,
+    marginTop: 14,
+  },
 
-pendingTopRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: 18,
-},
+  pendingTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 18,
+  },
 
-pendingLeft: {
-  flexDirection: "row",
-  alignItems: "center",
-  flex: 1,
-},
+  pendingLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
 
-pendingIcon: {
-  width: 24,
-  height: 24,
-  resizeMode: "contain",
-  tintColor: "#2F2F2F",
-  marginRight: 12,
-},
+  pendingIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+    tintColor: "#2F2F2F",
+    marginRight: 12,
+  },
 
-pendingText: {
-  fontSize: 16,
-  color: "#1F2937",
-  fontFamily: "Gilroy-Medium",
-},
+  pendingText: {
+    fontSize: 16,
+    color: "#1F2937",
+    fontFamily: "Gilroy-Medium",
+  },
 
-pendingCount: {
-  fontFamily: "Gilroy-Bold",
-},
+  pendingCount: {
+    fontFamily: "Gilroy-Bold",
+  },
 
-progressBadge: {
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#FFFFFF",
-  paddingHorizontal: 10,
-  paddingVertical: 6,
-  borderRadius: 20,
-},
+  progressBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
 
-progressArrow: {
-  color: "#16A34A",
-  fontSize: 14,
-  fontFamily: "Gilroy-Bold",
-  marginRight: 4,
-},
+  progressArrow: {
+    color: "#16A34A",
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+    marginRight: 4,
+  },
 
-progressText: {
-  color: "#16A34A",
-  fontSize: 15,
-  fontFamily: "Gilroy-Bold",
-},
+  progressText: {
+    color: "#16A34A",
+    fontSize: 15,
+    fontFamily: "Gilroy-Bold",
+  },
 
-pendingBtn: {
-  backgroundColor: "#EB6617",
-  borderRadius: 12,
-  height: 46,
-  justifyContent: "center",
-  alignItems: "center",
-},
+  pendingBtn: {
+    backgroundColor: "#EB6617",
+    borderRadius: 12,
+    height: 46,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-pendingBtnText: {
-  color: "#FFFFFF",
-  fontSize: 18,
-  fontFamily: "Gilroy-Semibold",
-},
+  pendingBtnText: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontFamily: "Gilroy-Semibold",
+  },
 });

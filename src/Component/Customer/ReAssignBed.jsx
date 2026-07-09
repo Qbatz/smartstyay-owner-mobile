@@ -372,6 +372,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
 
 console.log(beds)
+console.log(roomSelected)
 
   const filteredBeds = beds.filter(bed => {
     if (!floorSelected || !roomSelected) return false;
@@ -379,7 +380,7 @@ console.log(beds)
     return (
       bed.floorId === floorSelected.id &&
       bed.roomId === roomSelected.id &&
-      bed.currentStatus === "VACANT" || "NOTICE"
+     ( bed.currentStatus === "VACANT" )|| (bed.currentStatus == "NOTICE")
     );
 
   });
