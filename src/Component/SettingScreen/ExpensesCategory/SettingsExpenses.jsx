@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect ,useContext } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   PanResponder,
   Keyboard,
   Modal,
-  ScrollView, BackHandler ,
+  ScrollView, BackHandler,
 } from "react-native";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -20,7 +20,7 @@ import Loader from "../../../Component/Loader/Loader"
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
-import EmptyExpense from "../../../Assets/Images/Empty_state.png"; 
+import EmptyExpense from "../../../Assets/Images/Empty_state.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import EditIcon from "../../../Assets/Images/editIcon.png";
 import TrashIcon from "../../../Assets/Images/trash.png";
@@ -32,15 +32,15 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 export default function ExpensesSettings({ navigation }) {
 
   const { activeHostelId } = useContext(CommonContexts);
-const {
-  expenses,
-  loading,
-  fetchExpenses,
-  addExpenseCategory,
-  addSubCategory,
-  setExpenses, UpdateExpenseCategory,
-  UpdateExpenseSubCategory,
-} = useContext(ExpensesContext);
+  const {
+    expenses,
+    loading,
+    fetchExpenses,
+    addExpenseCategory,
+    addSubCategory,
+    setExpenses, UpdateExpenseCategory,
+    UpdateExpenseSubCategory,
+  } = useContext(ExpensesContext);
 
   const {
     canWriteModule: canWriteExpense,
@@ -49,6 +49,8 @@ const {
     canDeleteModule: canDeleteExpense,
   } = useHasPermission("Expense");
 
+
+    const isApplyTriggeredRef = useRef(false);
 
   // const [expenses, setExpenses] = useState([
   //   {
@@ -75,7 +77,7 @@ const {
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [modalType, setModalType] = useState("success"); 
+  const [modalType, setModalType] = useState("success");
 
 
   const [showSubSheet, setShowSubSheet] = useState(false);
@@ -100,28 +102,28 @@ const {
 
 
   const [showMenuId, setShowMenuId] = useState(null);
-  const [expenseError,setExpenseError] = useState("")
-    const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
+  const [expenseError, setExpenseError] = useState("")
+  const [popupPos, setPopupPos] = useState({ x: 0, y: 0 });
   const dotsRefs = useRef({});
 
   useEffect(() => {
-  if (activeHostelId) {
-    fetchExpenses(activeHostelId);
-  }
-  else {
-    setExpenses([]);
-  }
-}, [activeHostelId]);
+    if (activeHostelId) {
+      fetchExpenses(activeHostelId);
+    }
+    else {
+      setExpenses([]);
+    }
+  }, [activeHostelId]);
 
-useEffect(() => {
-  if (showSuccessModal) {
-    const t = setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 1500);
+  useEffect(() => {
+    if (showSuccessModal) {
+      const t = setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
 
-    return () => clearTimeout(t);
-  }
-}, [showSuccessModal]);
+      return () => clearTimeout(t);
+    }
+  }, [showSuccessModal]);
 
 
 
@@ -178,86 +180,86 @@ useEffect(() => {
     })
   ).current;
 
-useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    const keyboardHeight = e.endCoordinates.height;
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      const keyboardHeight = e.endCoordinates.height;
 
-    const moveUp = keyboardHeight * 0.45; // ✅ half keyboard height only
+      const moveUp = keyboardHeight * 0.45; // ✅ half keyboard height only
 
-    if (showSubAddSheet) {
+      if (showSubAddSheet) {
+        Animated.timing(subAddSheetY, {
+          toValue: -moveUp,
+          duration: 180,
+          useNativeDriver: true,
+        }).start();
+      } else if (showSubSheet) {
+        Animated.timing(subSheetY, {
+          toValue: -moveUp,
+          duration: 180,
+          useNativeDriver: true,
+        }).start();
+      } else if (showExpenseSheet) {
+        Animated.timing(expenseSheetY, {
+          toValue: -moveUp,
+          duration: 180,
+          useNativeDriver: true,
+        }).start();
+      }
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
       Animated.timing(subAddSheetY, {
-        toValue: -moveUp,
-        duration: 180,
+        toValue: 0,
+        duration: 160,
         useNativeDriver: true,
       }).start();
-    } else if (showSubSheet) {
+
       Animated.timing(subSheetY, {
-        toValue: -moveUp,
-        duration: 180,
+        toValue: 0,
+        duration: 160,
         useNativeDriver: true,
       }).start();
-    } else if (showExpenseSheet) {
+
       Animated.timing(expenseSheetY, {
-        toValue: -moveUp,
-        duration: 180,
+        toValue: 0,
+        duration: 160,
         useNativeDriver: true,
       }).start();
-    }
-  });
+    });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    Animated.timing(subAddSheetY, {
-      toValue: 0,
-      duration: 160,
-      useNativeDriver: true,
-    }).start();
-
-    Animated.timing(subSheetY, {
-      toValue: 0,
-      duration: 160,
-      useNativeDriver: true,
-    }).start();
-
-    Animated.timing(expenseSheetY, {
-      toValue: 0,
-      duration: 160,
-      useNativeDriver: true,
-    }).start();
-  });
-
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, [showExpenseSheet, showSubSheet, showSubAddSheet]);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, [showExpenseSheet, showSubSheet, showSubAddSheet]);
 
 
 
-     useEffect(() => {
-                 const backHandler = BackHandler.addEventListener(
-                   "hardwareBackPress",
-                   () => {
-                     navigation.goBack();  
-                     return true;
-                   }
-                 );
-               
-                 return () => backHandler.remove();
-               }, [])
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        navigation.goBack();
+        return true;
+      }
+    );
+
+    return () => backHandler.remove();
+  }, [])
 
   const openExpenseSheet = (edit = false, item = null) => {
-      if (!activeHostelId) {
-    setModalType("warning");
-    setModalMessage("Please add a hostel first");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
+    if (!activeHostelId) {
+      setModalType("warning");
+      setModalMessage("Please add a hostel first");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
     expenseSheetY.setValue(700);
     setIsExpenseEdit(edit);
     if (edit && item) {
       setExpenseText(item.title);
-      setOriginalExpenseName(item.title); 
+      setOriginalExpenseName(item.title);
       setEditingExpenseId(item.id);
     } else {
       setExpenseText("");
@@ -333,57 +335,57 @@ useEffect(() => {
   //   }).start();
   // };
 
-//     const openSubAddSheet = (edit = false, subItem = null) => {
-//   subAddSheetY.setValue(700);
-//   setIsSubAddEdit(edit);
+  //     const openSubAddSheet = (edit = false, subItem = null) => {
+  //   subAddSheetY.setValue(700);
+  //   setIsSubAddEdit(edit);
 
-//   if (edit && subItem) {
-//     setSubName(subItem.name);
-//     setOriginalSubName(subItem.name);   
-//     setEditingSubId(subItem.id);
-//   } else {
-//     setSubName("");
-//     setOriginalSubName("");
-//     setEditingSubId(null);
-//   }
+  //   if (edit && subItem) {
+  //     setSubName(subItem.name);
+  //     setOriginalSubName(subItem.name);   
+  //     setEditingSubId(subItem.id);
+  //   } else {
+  //     setSubName("");
+  //     setOriginalSubName("");
+  //     setEditingSubId(null);
+  //   }
 
-//   setShowSubAddSheet(true);
-//   Animated.timing(subAddSheetY, {
-//     toValue: 0,
-//     duration: 220,
-//     useNativeDriver: true,
-//   }).start();
-// };
+  //   setShowSubAddSheet(true);
+  //   Animated.timing(subAddSheetY, {
+  //     toValue: 0,
+  //     duration: 220,
+  //     useNativeDriver: true,
+  //   }).start();
+  // };
 
-const openSubAddSheet = (
-  edit = false,
-  subItem = null,
-  expenseId = null
-) => {
-  subAddSheetY.setValue(700);
-  setIsSubAddEdit(edit);
+  const openSubAddSheet = (
+    edit = false,
+    subItem = null,
+    expenseId = null
+  ) => {
+    subAddSheetY.setValue(700);
+    setIsSubAddEdit(edit);
 
-  if (expenseId) {
-    setSelectedExpenseId(expenseId); // ✅ ensure parent is set
-  }
+    if (expenseId) {
+      setSelectedExpenseId(expenseId); // ✅ ensure parent is set
+    }
 
-  if (edit && subItem) {
-    setSubName(subItem.name);
-    setOriginalSubName(subItem.name);
-    setEditingSubId(subItem.id);
-  } else {
-    setSubName("");
-    setOriginalSubName("");
-    setEditingSubId(null);
-  }
+    if (edit && subItem) {
+      setSubName(subItem.name);
+      setOriginalSubName(subItem.name);
+      setEditingSubId(subItem.id);
+    } else {
+      setSubName("");
+      setOriginalSubName("");
+      setEditingSubId(null);
+    }
 
-  setShowSubAddSheet(true);
-  Animated.timing(subAddSheetY, {
-    toValue: 0,
-    duration: 220,
-    useNativeDriver: true,
-  }).start();
-};
+    setShowSubAddSheet(true);
+    Animated.timing(subAddSheetY, {
+      toValue: 0,
+      duration: 220,
+      useNativeDriver: true,
+    }).start();
+  };
 
 
 
@@ -400,85 +402,95 @@ const openSubAddSheet = (
     });
   };
 
-// const saveExpense = async () => {
-//   const value = expenseText.trim();
+  // const saveExpense = async () => {
+  //   const value = expenseText.trim();
 
-//   if (!value) {
-//     setExpenseError("Please enter expense name");
-//     return;
-//   }
+  //   if (!value) {
+  //     setExpenseError("Please enter expense name");
+  //     return;
+  //   }
 
-  
-//   const res = await addExpenseCategory({
-//     hostelId: activeHostelId,
-//     categoryName: value,
-//   });
 
-//   if (!res.success) {
-//     setModalMessage(res.message || "Failed to add category");
-//     setModalType("error");
-//     setShowSuccessModal(true);
-//     return;
-//   }
+  //   const res = await addExpenseCategory({
+  //     hostelId: activeHostelId,
+  //     categoryName: value,
+  //   });
 
-//   setModalMessage("Expense category added successfully");
-//   setModalType("success");
-//   setShowSuccessModal(true);
+  //   if (!res.success) {
+  //     setModalMessage(res.message || "Failed to add category");
+  //     setModalType("error");
+  //     setShowSuccessModal(true);
+  //     return;
+  //   }
 
-//   closeExpenseSheet();
-// };
+  //   setModalMessage("Expense category added successfully");
+  //   setModalType("success");
+  //   setShowSuccessModal(true);
 
-const saveExpense = async () => {
-  const value = expenseText.trim();
+  //   closeExpenseSheet();
+  // };
 
-  if (!value) {
-    setExpenseError("Please enter expense name");
-    return;
-  }
+  const saveExpense = async () => {
+    const value = expenseText.trim();
 
-  // 🚫 NO CHANGE DETECTED
-  if (
-    isExpenseEdit &&
-    value.toLowerCase() === originalExpenseName.trim().toLowerCase()
-  ) {
-    setModalMessage("No changes detected");
-    setModalType("warning");
-    setShowSuccessModal(true);
-    return;
-  }
+    if (!value) {
+      setExpenseError("Please enter expense name");
+      return;
+    }
 
+    // 🚫 NO CHANGE DETECTED
+    if (
+      isExpenseEdit &&
+      value.toLowerCase() === originalExpenseName.trim().toLowerCase()
+    ) {
+      setModalMessage("No changes detected");
+      setModalType("warning");
+      setShowSuccessModal(true);
+      return;
+    }
+
+        if (isApplyTriggeredRef.current) return
+        isApplyTriggeredRef.current = true
+
+        try {
   let res;
 
-  if (isExpenseEdit && editingExpenseId) {
-    res = await UpdateExpenseCategory({
-      hostelId: activeHostelId,
-      categoryId: editingExpenseId,
-      newCategoryName: value,
-    });
-  } else {
-    res = await addExpenseCategory({
-      hostelId: activeHostelId,
-      categoryName: value,
-    });
-  }
+    if (isExpenseEdit && editingExpenseId) {
+      res = await UpdateExpenseCategory({
+        hostelId: activeHostelId,
+        categoryId: editingExpenseId,
+        newCategoryName: value,
+      });
+    } else {
+      res = await addExpenseCategory({
+        hostelId: activeHostelId,
+        categoryName: value,
+      });
+    }
 
-  if (!res.success) {
-    setModalMessage(res.message || "Operation failed");
-    setModalType("error");
+    if (!res.success) {
+      setModalMessage(res.message || "Operation failed");
+      setModalType("error");
+      setShowSuccessModal(true);
+      return;
+    }
+
+    setModalMessage(
+      isExpenseEdit
+        ? "Expense category updated successfully"
+        : "Expense category added successfully"
+    );
+    setModalType("success");
     setShowSuccessModal(true);
-    return;
-  }
 
-  setModalMessage(
-    isExpenseEdit
-      ? "Expense category updated successfully"
-      : "Expense category added successfully"
-  );
-  setModalType("success");
-  setShowSuccessModal(true);
+    closeExpenseSheet();
+        }
 
-  closeExpenseSheet();
-};
+  finally{
+ isApplyTriggeredRef.current = false
+   }
+  
+  };
 
 
   const confirmDeleteExpense = (id) => {
@@ -494,87 +506,98 @@ const saveExpense = async () => {
 
   const getSelectedExpense = () => expenses.find((e) => e.id === selectedExpenseId) || null;
 
-//   const saveSubcategory = async () => {
-//   const value = subName.trim();
-//   if (!value || !selectedExpenseId) return;
+  //   const saveSubcategory = async () => {
+  //   const value = subName.trim();
+  //   if (!value || !selectedExpenseId) return;
 
-//   const res = await addSubCategory({
-//     hostelId: activeHostelId,
-//     categoryId: selectedExpenseId,
-//     subCategory: value,
-//   });
+  //   const res = await addSubCategory({
+  //     hostelId: activeHostelId,
+  //     categoryId: selectedExpenseId,
+  //     subCategory: value,
+  //   });
 
-//   if (!res.success) {
-//     setModalMessage(res.message || "Failed to add sub category");
-//     setModalType("error");
-//     setShowSuccessModal(true);
-//     return;
-//   }
+  //   if (!res.success) {
+  //     setModalMessage(res.message || "Failed to add sub category");
+  //     setModalType("error");
+  //     setShowSuccessModal(true);
+  //     return;
+  //   }
 
-//   setModalMessage("Sub category added successfully");
-//   setModalType("success");
-//   setShowSuccessModal(true);
+  //   setModalMessage("Sub category added successfully");
+  //   setModalType("success");
+  //   setShowSuccessModal(true);
 
-//   closeSubAddSheet();
-// };
+  //   closeSubAddSheet();
+  // };
 
 
-const saveSubcategory = async () => {
-  const value = subName.trim()
-   if (!value) {
-    setExpenseError("Please Enter SubCategory");
-    return;
-  }
-  if (!value || !selectedExpenseId) return;
+  const saveSubcategory = async () => {
+    const value = subName.trim()
+    if (!value) {
+      setExpenseError("Please Enter SubCategory");
+      return;
+    }
+    if (!value || !selectedExpenseId) return;
 
-  //  const value = expenseText.trim();
+    //  const value = expenseText.trim();
 
- 
 
-  // 🚫 NO CHANGE DETECTED
-  if (
-    isSubAddEdit &&
-    value.toLowerCase() === originalSubName.trim().toLowerCase()
-  ) {
-    setModalMessage("No changes detected");
-    setModalType("warning");
+
+    // 🚫 NO CHANGE DETECTED
+    if (
+      isSubAddEdit &&
+      value.toLowerCase() === originalSubName.trim().toLowerCase()
+    ) {
+      setModalMessage("No changes detected");
+      setModalType("warning");
+      setShowSuccessModal(true);
+      return;
+    }
+
+            if (isApplyTriggeredRef.current) return
+        isApplyTriggeredRef.current = true
+
+        try {
+
+    let res;
+
+    if (isSubAddEdit && editingSubId) {
+      res = await UpdateExpenseSubCategory({
+        hostelId: activeHostelId,
+        subCategoryId: editingSubId,
+        newSubCategoryName: value,
+      });
+    } else {
+      res = await addSubCategory({
+        hostelId: activeHostelId,
+        categoryId: selectedExpenseId,
+        subCategory: value,
+      });
+    }
+
+    if (!res.success) {
+      setModalMessage(res?.message || "Operation failed");
+      setModalType("error");
+      setShowSuccessModal(true);
+      return;
+    }
+
+    setModalMessage(
+      isSubAddEdit
+        ? "Sub category updated successfully"
+        : "Sub category added successfully"
+    );
+    setModalType("success");
     setShowSuccessModal(true);
-    return;
+
+    closeSubAddSheet();
+
   }
+ finally{
+ isApplyTriggeredRef.current = false
+   }
 
-  let res;
-
-  if (isSubAddEdit && editingSubId) {
-    res = await UpdateExpenseSubCategory({
-      hostelId: activeHostelId,
-      subCategoryId: editingSubId,
-      newSubCategoryName: value,
-    });
-  } else {
-    res = await addSubCategory({
-      hostelId: activeHostelId,
-      categoryId: selectedExpenseId,
-      subCategory: value,
-    });
   }
-
-  if (!res.success) {
-    setModalMessage(res.message || "Operation failed");
-    setModalType("error");
-    setShowSuccessModal(true);
-    return;
-  }
-
-  setModalMessage(
-    isSubAddEdit
-      ? "Sub category updated successfully"
-      : "Sub category added successfully"
-  );
-  setModalType("success");
-  setShowSuccessModal(true);
-
-  closeSubAddSheet();
-};
 
 
   const confirmDeleteSub = (subId) => {
@@ -625,28 +648,28 @@ const saveSubcategory = async () => {
 
 
         <View style={styles.card}>
-  <Text
-    style={styles.cardText}
-    numberOfLines={2}
-  >
-    {item.title}
-  </Text>
+          <Text
+            style={styles.cardText}
+            numberOfLines={2}
+          >
+            {item.title}
+          </Text>
 
-  <TouchableOpacity ref={(ref) => (dotsRefs.current[item.id] = ref)}
-  onPress={() => {
-    dotsRefs.current[item.id]?.measureInWindow((x, y, width, height) => {
-      setPopupPos({
-        x: x - 160,   
-        y: y + height + 8, 
-      });
-    });
-    setShowMenuId(item.id);
-  }}
-    style={styles.menuBtn}
-  >
-    <Image source={Dots} style={styles.dots} />
-  </TouchableOpacity>
-</View>
+          <TouchableOpacity ref={(ref) => (dotsRefs.current[item.id] = ref)}
+            onPress={() => {
+              dotsRefs.current[item.id]?.measureInWindow((x, y, width, height) => {
+                setPopupPos({
+                  x: x - 160,
+                  y: y + height + 8,
+                });
+              });
+              setShowMenuId(item.id);
+            }}
+            style={styles.menuBtn}
+          >
+            <Image source={Dots} style={styles.dots} />
+          </TouchableOpacity>
+        </View>
       </TouchableOpacity>
 
     </View>
@@ -688,7 +711,7 @@ const saveSubcategory = async () => {
 
   return (
     <>
-     <SuccessModal
+      <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
         message={modalMessage}
@@ -704,53 +727,53 @@ const saveSubcategory = async () => {
 
               <Text style={styles.headerTitle}>Expenses</Text>
 
-          
+
             </View>
 
-              {!canReadExpense &&  (
-  <View style={styles.emptyContainer}>
-    <Image source={EmptyExpense} style={styles.emptyImg} />
-    <Text style={styles.emptyTitle}>
-      You do not have access to view Expenses
-    </Text>
-  </View>
-)}
+            {!canReadExpense && (
+              <View style={styles.emptyContainer}>
+                <Image source={EmptyExpense} style={styles.emptyImg} />
+                <Text style={styles.emptyTitle}>
+                  You do not have access to view Expenses
+                </Text>
+              </View>
+            )}
 
-            
-{canReadExpense && (
-  <>
-            {
-            
-            loading ? (
- <Loader />
-) : expenses.length === 0 ? (
-  <View style={styles.emptyContainer}>
-    <Image source={EmptyExpense} style={styles.emptyImg} />
-    <Text style={styles.emptyTitle}>No Expenses are there!</Text>
 
-    <TouchableOpacity
-      // style={styles.addButtonEmpty}
-                style={[
-    styles.addButtonEmpty,
-    !canWriteExpense && { opacity: 0.4 },
-  ]}
-  disabled={!canWriteExpense}
-      onPress={() => openExpenseSheet(false)}
-    >
-      <Text style={styles.addBtnText}>Add Expenses</Text>
-    </TouchableOpacity>
-  </View>
-) : (
-  <FlatList
-    data={expenses}
-    keyExtractor={(i) => i.id}
-    renderItem={renderExpense}
-    contentContainerStyle={{ paddingBottom: 140 }}
-  />
-)}
+            {canReadExpense && (
+              <>
+                {
 
-</>
-)}
+                  loading ? (
+                    <Loader />
+                  ) : expenses.length === 0 ? (
+                    <View style={styles.emptyContainer}>
+                      <Image source={EmptyExpense} style={styles.emptyImg} />
+                      <Text style={styles.emptyTitle}>No Expenses are there!</Text>
+
+                      <TouchableOpacity
+                        // style={styles.addButtonEmpty}
+                        style={[
+                          styles.addButtonEmpty,
+                          !canWriteExpense && { opacity: 0.4 },
+                        ]}
+                        disabled={!canWriteExpense}
+                        onPress={() => openExpenseSheet(false)}
+                      >
+                        <Text style={styles.addBtnText}>Add Expense Category</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <FlatList
+                      data={expenses}
+                      keyExtractor={(i) => i.id}
+                      renderItem={renderExpense}
+                      contentContainerStyle={{ paddingBottom: 140 }}
+                    />
+                  )}
+
+              </>
+            )}
 
 
             {/* {expenses.length === 0 ? (
@@ -766,12 +789,12 @@ const saveSubcategory = async () => {
               <FlatList data={expenses} keyExtractor={(i) => i.id} renderItem={renderExpense} contentContainerStyle={{ paddingBottom: 140 }} />
             )} */}
 
-            {!loading && canReadExpense &&  expenses?.length > 0 && (
+            {!loading && canReadExpense && expenses?.length > 0 && (
               <TouchableOpacity
-              //  style={styles.floatingBtn} 
-              style={[styles.floatingBtn,!canWriteExpense && { opacity: 0.4 },]}
-              disabled={!canWriteExpense}
-              onPress={() => openExpenseSheet(false)}>
+                //  style={styles.floatingBtn} 
+                style={[styles.floatingBtn, !canWriteExpense && { opacity: 0.4 },]}
+                disabled={!canWriteExpense}
+                onPress={() => openExpenseSheet(false)}>
                 <Image source={AddIcon} style={{ width: 26, height: 26, tintColor: "#fff" }} />
               </TouchableOpacity>
             )}
@@ -780,7 +803,7 @@ const saveSubcategory = async () => {
 
 
 
-      
+
 
         {showSubSheet && (
           <View style={styles.sheetOverlay}>
@@ -814,49 +837,58 @@ const saveSubcategory = async () => {
               </View> */}
 
               <View style={styles.subHeaderRow}>
-  <View style={{ flex: 1, paddingRight: 12 }}>
-    <Text style={styles.subHeading}>Sub Categories</Text>
+                <View style={{ flex: 1, paddingRight: 12 }}>
+                  <Text style={styles.subHeading}>Sub Categories</Text>
 
-    <Text
-      style={styles.subParentTitle}
-      numberOfLines={2}
-    >
-      {subSheetTitle}
-    </Text>
-  </View>
+                  <Text
+                    style={styles.subParentTitle}
+                    numberOfLines={2}
+                  >
+                    {subSheetTitle}
+                  </Text>
+                </View>
+                 
+                  {getSelectedExpense() && getSelectedExpense().subcategories && getSelectedExpense().subcategories.length > 0 && ( 
+  <TouchableOpacity
+                  style={[styles.subAddBtn, !canWriteExpense && { opacity: 0.4 },]}
+                  disabled={!canWriteExpense}
+                  onPress={() => {
+                    openSubAddSheet(false, null, selectedExpenseId);
+                  }}>
+                  <Text style={styles.subAddText}>Add +</Text>
+                </TouchableOpacity>
+                  )}
+              
 
-  <TouchableOpacity style={styles.subAddBtn}>
-    <Text style={styles.subAddText}>Add +</Text>
-  </TouchableOpacity>
-</View>
+              </View>
 
-             {getSelectedExpense()?.subcategories?.length > 0 ? (
-  <FlatList
-    data={getSelectedExpense().subcategories}
-    keyExtractor={(s) => s.id}
-    renderItem={renderSubItem}
-    contentContainerStyle={{ paddingBottom: 80 }}
-  />
-) : (
-  <View style={styles.subEmpty}>
-    <Image source={EmptyExpense} style={{ width: 180, height: 140, marginBottom: 12 }} />
-    <Text style={{ fontSize: 14, color: "#444", marginBottom: 12, textAlign: "center" }}>
-      No Sub Categories added yet for "{subSheetTitle}"
-    </Text>
+              {getSelectedExpense()?.subcategories?.length > 0 ? (
+                <FlatList
+                  data={getSelectedExpense().subcategories}
+                  keyExtractor={(s) => s.id}
+                  renderItem={renderSubItem}
+                  contentContainerStyle={{ paddingBottom: 80 }}
+                />
+              ) : (
+                <View style={styles.subEmpty}>
+                  <Image source={EmptyExpense} style={{ width: 180, height: 140, marginBottom: 12 }} />
+                  <Text style={{ fontSize: 14, color: "#444", marginBottom: 12, textAlign: "center" }}>
+                    No Sub Categories added yet for "{subSheetTitle}"
+                  </Text>
 
-    <TouchableOpacity
-      // style={styles.addButtonEmpty}
-       style={[styles.addButtonEmpty,!canWriteExpense && { opacity: 0.4 },]}
-                disabled={!canWriteExpense}
-onPress={() => {
-  openSubAddSheet(false, null, selectedExpenseId);
-}}
+                  <TouchableOpacity
+                    // style={styles.addButtonEmpty}
+                    style={[styles.addButtonEmpty, !canWriteExpense && { opacity: 0.4 },]}
+                    disabled={!canWriteExpense}
+                    onPress={() => {
+                      openSubAddSheet(false, null, selectedExpenseId);
+                    }}
 
-    >
-      <Text style={styles.addBtnText}>Add +</Text>
-    </TouchableOpacity>
-  </View>
-)}
+                  >
+                    <Text style={styles.addBtnText}>Add +</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
 
 
               <View style={styles.bottomMask} />
@@ -864,101 +896,107 @@ onPress={() => {
           </View>
         )}
         {showSubAddSheet && (
-  <View style={styles.sheetOverlay}>
-    <TouchableWithoutFeedback onPress={closeSubAddSheet}>
-      <View style={styles.dimLayer} />
-    </TouchableWithoutFeedback>
+          <View style={styles.sheetOverlay}>
+            <TouchableWithoutFeedback onPress={closeSubAddSheet}>
+              <View style={styles.dimLayer} />
+            </TouchableWithoutFeedback>
 
-    <Animated.View
-      style={[styles.sheet, { transform: [{ translateY: subAddSheetY }] }]}
-    >
-      <View style={styles.handleWrapper} {...subAddPan.panHandlers}>
-        <View style={styles.sheetHandle} />
-      </View>
+            <Animated.View
+              style={[styles.sheet, { transform: [{ translateY: subAddSheetY }] }]}
+            >
+              <View style={styles.handleWrapper} {...subAddPan.panHandlers}>
+                <View style={styles.sheetHandle} />
+              </View>
 
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 80 }}
-      >
-        <Text style={styles.sheetTitle}>
-          {isSubAddEdit ? "Edit Sub Category" : "Add Sub Category"}
-        </Text>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 80 }}
+              >
+                <Text style={styles.sheetTitle}>
+                  {isSubAddEdit ? "Edit Sub Category" : "Add Sub Category"}
+                </Text>
 
-        <Text style={styles.inputLabel}>
-          Sub Category Name <Text style={{ color: "red" }}>*</Text>
-        </Text>
+                <Text style={styles.inputLabel}>
+                  Sub Category  <Text style={{ color: "red" }}>*</Text>
+                </Text>
 
-        <TextInput
-          style={styles.inputBox}
-          placeholder="Enter"
-          value={subName}
-             onChangeText={(t) =>  {
-              setSubName(t.replace(/[^a-zA-Z\s]/g, ""))
-              setExpenseError("")
-            }}
-        />
+                <TextInput
+                  style={styles.inputBox}
+                  placeholder="Enter"
+                  value={subName}
+                  onChangeText={(t) => {
+                    setSubName(t.replace(/[^a-zA-Z\s]/g, ""))
+                    setExpenseError("")
+                  }}
+                />
                 {expenseError ? <ErrorMessage message={expenseError} type="error" /> : null}
 
-        <TouchableOpacity
-          style={styles.addTypeBtn}
-          onPress={saveSubcategory}
-        >
-          <Text style={styles.addTypeText}>
-            {isSubAddEdit ? "Save Changes" : "Save"}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </Animated.View>
-  </View>
-)}
+                <TouchableOpacity
+                  // style={styles.addTypeBtn}
+                style={[styles.addTypeBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                disabled={isApplyTriggeredRef.current}
+                  onPress={saveSubcategory}
+                >
+                  <Text style={styles.addTypeText}>
+                    {isSubAddEdit ? "Save Changes" : "Save"}
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </Animated.View>
+          </View>
+        )}
 
- {showExpenseSheet && (
-  <View style={styles.sheetOverlay}>
-    <TouchableWithoutFeedback onPress={closeExpenseSheet}>
-      <View style={styles.dimLayer} />
-    </TouchableWithoutFeedback>
+        {showExpenseSheet && (
+          <View style={styles.sheetOverlay}>
+            <TouchableWithoutFeedback onPress={closeExpenseSheet}>
+              <View style={styles.dimLayer} />
+            </TouchableWithoutFeedback>
 
-    <Animated.View style={[styles.sheet, { transform: [{ translateY: expenseSheetY }] }]}>
-      <View style={styles.handleWrapper} {...expensePan.panHandlers}>
-        <View style={styles.sheetHandle} />
-      </View>
+            <Animated.View style={[styles.sheet, { transform: [{ translateY: expenseSheetY }] }]}>
+              <View style={styles.handleWrapper} {...expensePan.panHandlers}>
+                <View style={styles.sheetHandle} />
+              </View>
 
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 80 }}   // ✅ enough
-      >
-        <Text style={styles.sheetTitle}>
-          {isExpenseEdit ? "Edit Expense" : "Add Expense"}
-        </Text>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 80 }}   // ✅ enough
+              >
+                <Text style={styles.sheetTitle}>
+                  {isExpenseEdit ? "Edit Category" : "Add Category"}
+                </Text>
 
-        <Text style={styles.inputLabel}>
-          Expense Name <Text style={{ color: "red" }}>*</Text>
-        </Text>
+                <Text style={styles.inputLabel}>
+                  Category <Text style={{ color: "red" }}>*</Text>
+                </Text>
 
-        <TextInput
-          style={styles.inputBox}
-          placeholder="Enter"
-          value={expenseText}
-          onChangeText={(t) => {
-            const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
-            setExpenseText(cleanText);
-            setExpenseError("");
-          }}
-        />
+                <TextInput
+                  style={styles.inputBox}
+                  placeholder="Enter"
+                  value={expenseText}
+                  onChangeText={(t) => {
+                    const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
+                    setExpenseText(cleanText);
+                    setExpenseError("");
+                  }}
+                />
 
-        {expenseError ? <ErrorMessage message={expenseError} type="error" /> : null}
+                {expenseError ? <ErrorMessage message={expenseError} type="error" /> : null}
 
-        <TouchableOpacity style={styles.addTypeBtn} onPress={saveExpense}>
-          <Text style={styles.addTypeText}>
-            {isExpenseEdit ? "Save Changes" : "Save"}
-          </Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </Animated.View>
-  </View>
-)}
+                <TouchableOpacity 
+                // style={styles.addTypeBtn} 
+                style={[styles.addTypeBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                disabled={isApplyTriggeredRef.current}
+                onPress={saveExpense}>
+                  <Text style={styles.addTypeText}>
+                    {isExpenseEdit ? "Save Changes" : "Save"}
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </Animated.View>
+          </View>
+        )}
 
 
         {showDeleteExpenseConfirm && (
@@ -973,9 +1011,9 @@ onPress={() => {
                     <Text style={styles.cancelText}>Cancel</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.deleteBtn, {opacity: 0.4}]}
-                  //  onPress={deleteExpense}
-                   disabled
+                  <TouchableOpacity style={[styles.deleteBtn, { opacity: 0.4 }]}
+                    //  onPress={deleteExpense}
+                    disabled
                   >
                     <Text style={styles.deleteBtnText}>Coming soon</Text>
                   </TouchableOpacity>
@@ -997,7 +1035,7 @@ onPress={() => {
                     <Text style={styles.cancelText}>Cancel</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.deleteBtn, {opacity: 0.4}]} 
+                  <TouchableOpacity style={[styles.deleteBtn, { opacity: 0.4 }]}
                   // onPress={deleteSub}
                   >
                     <Text style={styles.deleteBtnText}>Coming soon</Text>
@@ -1008,11 +1046,11 @@ onPress={() => {
           </Modal>
         )}
 
-        
- {showMenuId && (
+
+        {showMenuId && (
           <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
             <View style={styles.globalPopupOverlay}>
-              <View style={[styles.globalPopup, { top: popupPos.y, left: popupPos.x  }]}>
+              <View style={[styles.globalPopup, { top: popupPos.y, left: popupPos.x }]}>
                 <TouchableOpacity
                   // style={styles.popupItem}
                   style={[styles.popupItem, !canUpdateExpense && { opacity: 0.4 },]}
@@ -1029,7 +1067,7 @@ onPress={() => {
 
                 <TouchableOpacity
                   // style={styles.popupItem}
-                  style={[styles.popupItem,!canDeleteExpense && { opacity: 0.4 },]}
+                  style={[styles.popupItem, !canDeleteExpense && { opacity: 0.4 },]}
                   disabled={!canDeleteExpense}
                   onPress={() => {
                     setShowMenuId(null);
@@ -1091,22 +1129,22 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     elevation: 1,
-    position:'relative'
+    position: 'relative'
   },
   cardText: {
-  flex: 1,
-  fontSize: 15,
-  color: "#111",
-  fontWeight: "600",
-  marginRight: 12,
-},
-menuBtn: {
-  width: 32,
-  height: 32,
-  justifyContent: "center",
-  alignItems: "center",
-  flexShrink: 0,
-},
+    flex: 1,
+    fontSize: 15,
+    color: "#111",
+    fontWeight: "600",
+    marginRight: 12,
+  },
+  menuBtn: {
+    width: 32,
+    height: 32,
+    justifyContent: "center",
+    alignItems: "center",
+    flexShrink: 0,
+  },
   dots: { width: 24, height: 24 },
 
 
@@ -1173,13 +1211,13 @@ menuBtn: {
   //   overflow: "hidden",
   // },
   sheet: {
-  width: "100%",
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 22,
-  borderTopRightRadius: 22,
-  maxHeight: "65%",  // ✅ important
-},
+    width: "100%",
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    maxHeight: "65%",  // ✅ important
+  },
 
 
 
@@ -1216,32 +1254,32 @@ menuBtn: {
   },
 
   /* Sub sheet header */
-subHeaderRow: {
-  flexDirection: "row",
-  alignItems: "flex-start",
-  justifyContent: "space-between",
-  marginBottom: 12,
-},
+  subHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
 
-subAddBtn: {
-  backgroundColor: "#1D5DFF",
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  borderRadius: 8,
-  marginLeft: 10,
-},
+  subAddBtn: {
+    backgroundColor: "#1D5DFF",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
 
-subParentTitle: {
-  fontSize: 14,
-  color: "#1D5DFF",
-  marginTop: 4,
-  fontWeight: "700",
-  flexShrink: 1,
-},
+  subParentTitle: {
+    fontSize: 14,
+    color: "#1D5DFF",
+    marginTop: 4,
+    fontWeight: "700",
+    flexShrink: 1,
+  },
   subHeading: { fontSize: 16, fontWeight: "700" },
   subAddText: { color: "#fff", fontWeight: "700" },
 
-  
+
 
   subCard: {
     backgroundColor: "#fff",
@@ -1254,8 +1292,10 @@ subParentTitle: {
     alignItems: "center",
     marginBottom: 10,
   },
-  subText: { fontSize: 14, fontWeight: "600" ,  flex: 1,
-  marginRight: 12,},
+  subText: {
+    fontSize: 14, fontWeight: "600", flex: 1,
+    marginRight: 12,
+  },
 
   subEmpty: { alignItems: "center", paddingVertical: 20 },
 
@@ -1282,8 +1322,8 @@ subParentTitle: {
   deleteBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, backgroundColor: "#1D5DFF", alignItems: "center" },
   deleteBtnText: { color: "#fff", fontWeight: "700" },
 
-  
-		 /* Global Popup */
+
+  /* Global Popup */
   globalPopupOverlay: {
     position: "absolute",
     top: 0,

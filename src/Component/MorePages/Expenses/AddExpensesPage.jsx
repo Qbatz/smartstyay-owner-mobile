@@ -894,6 +894,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         if (isApplyTriggeredRef.current) return
         isApplyTriggeredRef.current = true
 
+         try {
+
+         
+
         const totalAmount = Number(amount || 0);
 
         const paid =
@@ -987,8 +991,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 setShowSuccessModal(false);
             }, 1500);
         }
-
-        isApplyTriggeredRef.current = false
+    }
+   finally{
+ isApplyTriggeredRef.current = false
+   }
+       
     };
 
     return (

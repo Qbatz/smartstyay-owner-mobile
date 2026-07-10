@@ -155,6 +155,17 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
 
     setMenuVisible(false)
   }
+
+   const handleShowNewTenantCheckin = () => {
+    // navigation.navigate("TenantCheckin")
+    navigation.navigate("NewTenantCheckIn", {
+      customerId: selectedItem.customerId,
+      customer: selectedItem, // full details (optional)
+    });
+
+    setMenuVisible(false)
+  }
+
   const handleShowAddBooking = () => {
     // navigation.navigate("AddBooking")
     navigation.navigate("AddBooking", {
@@ -354,6 +365,15 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
                 <Image source={Checkin} style={[styles.menuIcon, { tintColor: "#1E45E1", }]} />
                 <Text style={styles.menuText}>Check-In</Text>
               </TouchableOpacity>
+
+               <TouchableOpacity
+                style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
+                disabled={!canWriteWalkin}
+                onPress={handleShowNewTenantCheckin}>
+                <Image source={Checkin} style={[styles.menuIcon, { tintColor: "#1E45E1", }]} />
+                <Text style={styles.menuText}>New Check-In</Text>
+              </TouchableOpacity>
+
 
 
               <TouchableOpacity
