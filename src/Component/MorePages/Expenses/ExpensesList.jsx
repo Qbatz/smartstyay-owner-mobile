@@ -84,42 +84,42 @@ export default function ExpensesList({ navigation }) {
         }, [activeHostelId])
     );
 
-        useEffect(() => {
-            if (activeHostelId) {
-                GetInitializeExpense(activeHostelId)
-            }
-    
-        }, [activeHostelId])
+    useEffect(() => {
+        if (activeHostelId) {
+            GetInitializeExpense(activeHostelId)
+        }
 
-        
-const handleSearch = async (text) => {
-  if (!text?.trim()) {
-    return GetExpenseList(activeHostelId);
-  }
+    }, [activeHostelId])
 
-  return GetExpenseList(activeHostelId, {
-    name: text,
-    categoryId: selectedCategoryId || null,
-    page: 1,
-    size: 10,
-  });
-};
+
+    const handleSearch = async (text) => {
+        if (!text?.trim()) {
+            return GetExpenseList(activeHostelId);
+        }
+
+        return GetExpenseList(activeHostelId, {
+            name: text,
+            categoryId: selectedCategoryId || null,
+            page: 1,
+            size: 10,
+        });
+    };
 
     const handleClearSearch = async () => {
-  setSearchText("");
-  setSearchOpen(false);
+        setSearchText("");
+        setSearchOpen(false);
 
-  await GetExpenseList(activeHostelId);
-};
+        await GetExpenseList(activeHostelId);
+    };
 
- const categoryList = IntializeexpensesList?.listExpenses || [];
+    const categoryList = IntializeexpensesList?.listExpenses || [];
 
     const Expensesdata =
         expensesList?.expenses || [];
     console.log("expenses", Expensesdata);
 
-    console.log("expenses" , expensesList);
-    
+    console.log("expenses", expensesList);
+
 
     const horizontalRef = useRef(null);
 
@@ -308,7 +308,7 @@ const handleSearch = async (text) => {
 
     }
 
-console.log("Search =>", searchText);
+    console.log("Search =>", searchText);
 
 
 
@@ -322,13 +322,13 @@ console.log("Search =>", searchText);
             return;
         }
 
-           if (categoryList?.length === 0 ) {
-    setModalType("warning");
-    setModalMessage("Please add a Expense Category option in Settings");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
+        if (categoryList?.length === 0) {
+            setModalType("warning");
+            setModalMessage("Please add a Expense Category option in Settings");
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 1500);
+            return;
+        }
         navigation.navigate("AddExpensesPage", {
             //   vendor: item,
         })
@@ -579,12 +579,24 @@ console.log("Search =>", searchText);
                         <>
                             <Text style={styles.headerTitle}>Expenses</Text>
 
-                            <TouchableOpacity
+                            {/* <TouchableOpacity
                                 style={styles.searchBtn}
                                 onPress={() => setSearchOpen(true)}
                             >
                                 <Image source={SearchIcon} style={styles.headerSearchIcon} />
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
+
+                            {Expensesdata?.length > 0 && (
+                                <TouchableOpacity
+                                    style={styles.searchBtn}
+                                    onPress={() => setSearchOpen(true)}
+                                >
+                                    <Image
+                                        source={SearchIcon}
+                                        style={styles.headerSearchIcon}
+                                    />
+                                </TouchableOpacity>
+                            )}
                         </>
                     ) : (
                         <View style={styles.searchWrapper}>
@@ -720,14 +732,14 @@ console.log("Search =>", searchText);
 
                                         <SummaryCard
                                             title="Paid"
-                                             value={expensesList?.expenseSummary?.totalPaidAmount}
+                                            value={expensesList?.expenseSummary?.totalPaidAmount}
                                             icon={TickIcon}
                                             valueColor="#00A651"
                                         />
 
                                         <SummaryCard
                                             title="UnPaid"
-                                             value={expensesList?.expenseSummary?.totalUnPaidAmount}
+                                            value={expensesList?.expenseSummary?.totalUnPaidAmount}
                                             icon={RupeeIcon}
                                         />
 
