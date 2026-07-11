@@ -510,6 +510,9 @@ export default function Vendors({ navigation }) {
                         <Image source={BackIcon} style={styles.backArrow} />
                     </TouchableOpacity>
 
+
+                    {vendorList?.vendors?.length > 0 ? (
+
                     <View style={styles.searchWrapper}>
                         <Image source={SearchIcon} style={styles.searchIcon} />
                         <TextInput
@@ -523,6 +526,12 @@ export default function Vendors({ navigation }) {
                             placeholderTextColor="#9CA3AF"
                         />
                     </View>
+                    ) : (
+                        <View>
+                            <Text style={{fontSize: 22,color: "#111827",fontFamily: "Gilroy-Semibold",}}>
+                                Vendors</Text>
+                        </View>
+                    )}
                 </View>
 
 
@@ -647,6 +656,13 @@ export default function Vendors({ navigation }) {
                                             icon={OutstandingIcon}
                                             title="Outstanding"
                                             value={vendorList?.vendorSummary?.outstandingAmount || 0}
+                                            prefix="₹ "
+                                        />
+
+                                        <SummaryCard
+                                            icon={GreenRupees}
+                                            title="Total Paid"
+                                            value={vendorList?.vendorSummary?.totalPaid || 0}
                                             prefix="₹ "
                                         />
                                     </ScrollView>

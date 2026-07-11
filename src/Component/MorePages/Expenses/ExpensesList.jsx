@@ -494,7 +494,7 @@ export default function ExpensesList({ navigation }) {
                 <View style={styles.expenseCard}>
                     <View style={{ flex: 1 }}>
                         <Text style={styles.expenseTitle}>
-                            {item?.title || "-"}
+                            {item?.title || "N/A"}
                         </Text>
 
                         <Text style={styles.expenseMeta}>
@@ -740,6 +740,12 @@ export default function ExpensesList({ navigation }) {
                                         <SummaryCard
                                             title="UnPaid"
                                             value={expensesList?.expenseSummary?.totalUnPaidAmount}
+                                            icon={RupeeIcon}
+                                        />
+
+                                        <SummaryCard
+                                            title="Partially Paid"
+                                            value={expensesList?.expenseSummary?.totalPartialPaidAmount}
                                             icon={RupeeIcon}
                                         />
 
