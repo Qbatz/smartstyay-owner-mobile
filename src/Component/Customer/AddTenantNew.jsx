@@ -1782,10 +1782,10 @@ export default function AddTenantNewform({ navigation, route }) {
         setBankError("");
 
 
-        if (!CheckinTenantSelected) {
-            setTenantsError("Please Select Tenant");
-            valid = false;
-        }
+        // if (!CheckinTenantSelected) {
+        //     setTenantsError("Please Select Tenant");
+        //     valid = false;
+        // }
 
         if (!purchaseDate) {
             setBookingDateError("Please Select Booking Date");
@@ -3060,6 +3060,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 const value = text.replace(/[^0-9]/g, "");
                                                 handleSearchCustomer(value);
                                             }}
+                                            maxLength={10}
                                         />
 
                                     </View>

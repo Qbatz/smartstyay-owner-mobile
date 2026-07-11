@@ -22,12 +22,13 @@ import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../ToastFile/ToastPage";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png"
+import { Switch } from "react-native";
 
 
 export default function AssignTenant({ navigation, route }) {
   const { selectedBed, onBedAdded } = route.params || {};
 
-  const { getCustomersByHostel, checkInCustomer, bookCustomer } = useCustomer();
+  const { getCustomersByHostel, checkInCustomer, bookCustomer, TenantCheckIn } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
   const { getBankListByHostel } = useContext(BankingContext);
 
@@ -49,8 +50,10 @@ export default function AssignTenant({ navigation, route }) {
   const [CheckinTenantSelected, setCheckinTenantSelected] = useState(null);
   const StayType = ["LongStay"];
   const [StayTypeOpen, setStayTypeOpen] = useState(false);
+  const [onetimepaymentcharges, setOneTimePaymentCharges] = useState([]);
   const [StayTypeSelected, setStayTypeSelected] = useState("Stay Type");
   const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
+  const onetimepaymentmaintenanceAlreadyUsed = onetimepaymentcharges?.some(c => c?.type === "Maintenance");
   const [tenentsError, setTenantsError] = useState("")
   const [rentalError, setRentalError] = useState("")
   const [advanceError, setAdvanceError] = useState("")
@@ -73,7 +76,18 @@ export default function AssignTenant({ navigation, route }) {
   const { height: SCREEN_HEIGHT } = Dimensions.get("window");
   const scrollRef = useRef(null);
   const transactionRef = useRef(null);
+
+  const isSubmittingRef = useRef(false);
+
   const [isCheckingIn, setIsCheckingIn] = useState(false);
+
+  const [collectFullRent, setCollectFullRent] = useState(false);
+  const [showCustomRentEditor, setShowCustomRentEditor] = useState(false);
+  const [customRentAmount, setCustomRentAmount] = useState("");
+  const [savedCustomRent, setSavedCustomRent] = useState("");
+  const [isCustomRentSaved, setIsCustomRentSaved] = useState(false);
+  const [customRentError, setCustomRentError] = useState("");
+  const [refuseAdvanceAmount, setRefuseAdvanceAmount] = useState(false);
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -198,6 +212,7 @@ export default function AssignTenant({ navigation, route }) {
     };
   }
   console.log("setCheckinTenants", CheckinTenants)
+
   const selectType = (id, type) => {
 
 
@@ -209,6 +224,45 @@ export default function AssignTenant({ navigation, route }) {
 
     setOpenDropdownId(null);
   };
+
+  const selectOntimeType = (id, type) => {
+
+
+    if (type === "Maintenance" && onetimepaymentmaintenanceAlreadyUsed) return;
+
+    setOneTimePaymentCharges(prev =>
+      prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError: "" } : i))
+    );
+
+    setOpenDropdownId(null);
+  };
+
+
+  const OneTimeupdateTitle = (id, title) => {
+    // setExtraCharges(prev =>
+    //   prev.map(i => (i.id === id ? { ...i, title } : i))
+    // );
+    setOneTimePaymentCharges(prev =>
+      prev.map(i =>
+        i.id === id
+          ? { ...i, title, titleError: "" }
+          : i
+      )
+    );
+  };
+
+  const OneTimeupdateAmount = (id, amount) => {
+    const onlyNum = amount.replace(/[^0-9]/g, "");
+
+    setOneTimePaymentCharges((prev) =>
+      prev.map((i) =>
+        i.id === id
+          ? { ...i, amount: onlyNum, amountError: "" }
+          : i
+      )
+    )
+  }
+
 
   const fetchBankingList = async () => {
     const data = await getBankListByHostel(activeHostelId);
@@ -253,6 +307,86 @@ export default function AssignTenant({ navigation, route }) {
     );
   };
 
+  const AddOnetimeCharge = () => {
+    setOneTimePaymentCharges(prev => [
+      ...prev,
+      { id: Date.now(), type: "", title: "", amount: "" }
+    ]);
+  };
+
+  const removeOnetimeCharge = (id) => {
+    setOneTimePaymentCharges(prev => prev.filter(i => i.id !== id));
+
+  };
+
+  const validateOneTimeCharges = () => {
+    let valid = true;
+
+    const updated = onetimepaymentcharges.map((e) => {
+      let titleError = "";
+      let amountError = "";
+      let typeError = "";
+
+      const titleFilled = e.title?.trim()?.length > 0;
+      const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+
+      const amt = Number(e.amount);
+
+
+      if (!e.type) {
+        typeError = "Please select type";
+        valid = false;
+        return { ...e, typeError, titleError: "", amountError: "" };
+      }
+
+
+      if (e.type === "Maintenance") {
+        if (!amountFilled) {
+          amountError = "Please enter amount";
+          valid = false;
+        } else if (isNaN(amt) || amt <= 0) {
+          amountError = "Amount must be greater than 0";
+          valid = false;
+        }
+
+        return { ...e, typeError: "", titleError: "", amountError };
+      }
+
+      // ✅ CASE 3: Others -> reason + amount both mandatory
+      if (e.type === "Others") {
+        // both empty -> ok (optional row)
+        // if (!titleFilled && !amountFilled) {
+        //   return { ...e, titleError: "", amountError: "" };
+        // }
+
+        if (!titleFilled && !amountFilled) {
+          titleError = "Please enter reason";
+          valid = false;
+        }
+
+        else if (!titleFilled) {
+          titleError = "Please enter reason";
+          valid = false;
+        }
+
+        else if (!amountFilled) {
+          amountError = "Please enter amount";
+          valid = false;
+        } else if (isNaN(amt) || amt <= 0) {
+          amountError = "Amount must be greater than 0";
+          valid = false;
+        }
+
+        return { ...e, typeError, titleError, amountError };
+      }
+
+      return { ...e, typeError: "", titleError: "", amountError: "" };
+    });
+
+    setOneTimePaymentCharges(updated);
+    return valid;
+  };
+
 
   const validateBooking = () => {
     let valid = true;
@@ -292,7 +426,7 @@ export default function AssignTenant({ navigation, route }) {
   };
   const handleBookingSubmit = async () => {
     if (!validateBooking()) return;
-    if(isCheckingIn) return;
+    if (isCheckingIn) return;
 
     if (!selectedBed) {
       setModalType("error");
@@ -305,46 +439,52 @@ export default function AssignTenant({ navigation, route }) {
       return;
     }
 
-    try{
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+
+    try {
       setIsCheckingIn(true)
 
-    const payload = {
-      customerId: CheckinTenantSelected?.customerId,
-      bookingDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-      joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
-      bookingAmount: Number(bookingAmount),
+      const payload = {
+        customerId: CheckinTenantSelected?.customerId,
+        bookingDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+        joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+        bookingAmount: Number(bookingAmount),
 
-      floorId: selectedBed.floorId,
-      roomId: selectedBed.roomId,
-      bedId: selectedBed.bedId,
+        floorId: selectedBed.floorId,
+        roomId: selectedBed.roomId,
+        bedId: selectedBed.bedId,
 
-      bankId: accountSelected.bankingId,
-      referenceNumber: referenceNumber || "",
-    };
+        bankId: accountSelected.bankingId,
+        referenceNumber: referenceNumber || "",
+      };
 
-    const res = await bookCustomer(activeHostelId, payload);
+      const res = await bookCustomer(activeHostelId, payload);
 
-    if (res.success) {
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
+      if (res.success) {
+        setModalType("success");
+        setMessage(res.data);
+        setShowSuccess(true);
 
-      setTimeout(() => {
-        setShowSuccess(false);
-        navigation.goBack();
-      }, 800);
-    } else {
-       setModalType("error");
-      setMessage(res?.message || "Booking failed");
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 800)
-      // alert(res.message || "Booking failed");
-    }
-    }catch(error){
+        setTimeout(() => {
+          setShowSuccess(false);
+          navigation.goBack();
+        }, 800);
+      } else {
+        setModalType("error");
+        setMessage(res?.message || "Booking failed");
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 800)
+        // alert(res.message || "Booking failed");
+      }
+    } catch (error) {
       console.log(error)
       setIsCheckingIn(false)
+    }
+    finally {
+      isSubmittingRef.current = false;
     }
   };
   const validateExtraCharges = () => {
@@ -417,12 +557,13 @@ export default function AssignTenant({ navigation, route }) {
 
   const handleCheckIn = async () => {
 
-      if (isCheckingIn) return;
+    if (isCheckingIn) return;
     const chargeValid = validateExtraCharges();
-    if (!chargeValid) return;
+    // if (!chargeValid) return;
+    const onetimechargevalid = validateOneTimeCharges();
+    if (!chargeValid || !onetimechargevalid) return;
+
     const customerId = CheckinTenantSelected?.customerId;
-
-
     let hasError = false;
 
 
@@ -459,6 +600,13 @@ export default function AssignTenant({ navigation, route }) {
       hasError = true;
     }
 
+    if (!refuseAdvanceAmount) {
+      if (!advanceAmount || Number(advanceAmount) <= 0) {
+        setAdvanceError("Please Enter Advance Amount");
+        hasError = true;
+      }
+    }
+
     if (hasError) return;
 
     if (!selectedBed) {
@@ -472,62 +620,118 @@ export default function AssignTenant({ navigation, route }) {
       return;
     }
 
-    try{
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
+
+    try {
       setIsCheckingIn(true)
-    const payload = {
-      floorId: selectedBed.floorId,
-      roomId: selectedBed.roomId,
-      bedId: selectedBed.bedId,
-
-      joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
-
-      advanceAmount: Number(advanceAmount),
-      rentalAmount: Number(rentalAmount),
-
-      stayType: "SHORT",
 
 
-      deductions: extraCharges.map((e) => ({
-        type:
-          e.type === "Others"
-            ? e.title.trim().toLowerCase()
-            : e.type.toLowerCase(),
-        amount: Number(e.amount),
-      })),
-    };
+      // const payload = {
+      //   floorId: selectedBed.floorId,
+      //   roomId: selectedBed.roomId,
+      //   bedId: selectedBed.bedId,
 
-    
-    const res = await checkInCustomer(
-      customerId,
-      payload
-    );
+      //   joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
 
-    console.log("checkined",res)
+      //   advanceAmount: Number(advanceAmount),
+      //   rentalAmount: Number(rentalAmount),
 
-    if (res.success) {
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-        onBedAdded && onBedAdded(selectedBed.roomId)
-        navigation.goBack();
-      }, 800);
+      //   stayType: "SHORT",
 
 
-    } else {
-      setModalType("error");
-      setMessage(res?.message);
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 800)
-      // alert(res.message);
-    }
-    }catch(error){
+      //   deductions: extraCharges.map((e) => ({
+      //     type:
+      //       e.type === "Others"
+      //         ? e.title.trim().toLowerCase()
+      //         : e.type.toLowerCase(),
+      //     amount: Number(e.amount),
+      //   })),
+      // };
+
+
+      const payload = {
+        floorId: selectedBed.floorId,
+        roomId: selectedBed.roomId,
+        bedId: selectedBed.bedId,
+
+        joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
+
+        refundableAmount: refuseAdvanceAmount
+          ? 0
+          : Number(advanceAmount),
+
+        rentalAmount: Number(rentalAmount),
+
+        stayType:
+          StayTypeSelected === "LongStay"
+            ? "long"
+            : "short",
+
+        deductions: refuseAdvanceAmount
+          ? []
+          : extraCharges.map((item) => ({
+            type:
+              item.type === "Others"
+                ? item.title.trim()
+                : item.type,
+            amount: Number(item.amount),
+          })),
+
+        shouldCollectFullRent: collectFullRent,
+
+        customRent:
+          collectFullRent && savedCustomRent
+            ? Number(savedCustomRent)
+            : null,
+
+
+        oneTimeDeduction: onetimepaymentcharges.map((item) => ({
+          type:
+            item.type === "Others"
+              ? item.title.trim()
+              : item.type,
+          amount: Number(item.amount),
+        }))
+        ,
+      };
+
+      const res = await TenantCheckIn(
+        activeHostelId,
+        customerId,
+        payload
+      );
+
+      console.log("checkined", res)
+
+      if (res.success) {
+        setModalType("success");
+        setMessage(res.data);
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          onBedAdded && onBedAdded(selectedBed.roomId)
+          navigation.goBack();
+        }, 800);
+
+
+      } else {
+        setModalType("error");
+        setMessage(res?.message);
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 800)
+        // alert(res.message);
+      }
+    } catch (error) {
       console.log(error)
-       setIsCheckingIn(false)
+      setIsCheckingIn(false)
     }
+    finally {
+      isSubmittingRef.current = false;
+    }
+
     // finally{
     //   setIsCheckingIn(false)
     // }
@@ -566,6 +770,23 @@ export default function AssignTenant({ navigation, route }) {
     }
   }
 
+  const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
+
+  useEffect(() => {
+    if (!checkJoiningDate) return;
+
+    const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+
+    setCollectFullRent(currentMonth);
+
+    if (!currentMonth) {
+      setShowCustomRentEditor(false);
+      setCustomRentAmount("");
+      setSavedCustomRent("");
+      setIsCustomRentSaved(false);
+      setCustomRentError("");
+    }
+  }, [checkJoiningDate])
 
   const isBookingDateDisabled = (d) => {
     if (!d) return false;
@@ -1064,10 +1285,13 @@ export default function AssignTenant({ navigation, route }) {
                     </View>
                   )} */}
                 </View>
+
+
+
+
                 <Text style={styles.label}>
                   Stay Type <Text style={{ color: "red" }}>*</Text>
                 </Text>
-
                 <View style={{ position: "relative" }}>
                   <TouchableOpacity
                     style={styles.select}
@@ -1104,46 +1328,6 @@ export default function AssignTenant({ navigation, route }) {
                 </View>
 
 
-
-                <Text style={styles.label}>Rental Amount <Text style={{ color: "red" }}>*</Text></Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder={
-                    selectedBed?.rentAmount
-                      ? String(selectedBed.rentAmount)
-                      : "Enter Amount"
-                  }
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  value={rentalAmount}
-                  onChangeText={(text) => {
-                    const onlyNum = text.replace(/[^0-9]/g, "");
-                    setRentalAmount(onlyNum);
-                    setRentalError("");
-                  }}
-
-                />
-                {rentalError && (
-                  <ErrorMessage message={rentalError} type="error" />
-                )}
-
-
-                <Text style={styles.label}>Advance Amount <Text style={{ color: "red" }}>*</Text></Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter Amount"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="numeric"
-                  value={advanceAmount}
-                  onChangeText={(text) => {
-                    const onlyNum = text.replace(/[^0-9]/g, "");
-                    setAdvanceAmount(onlyNum);
-                    setAdvanceError("");
-                  }}
-                />
-                {advanceError && (
-                  <ErrorMessage message={advanceError} type="error" />
-                )}
                 <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
                 <View ref={checkinDateRef} collapsable={false}>
@@ -1177,155 +1361,587 @@ export default function AssignTenant({ navigation, route }) {
                   <ErrorMessage message={checkJoinDateError} type="error" />
                 )}
 
+
+
+                <Text style={styles.label}>Rental Amount <Text style={{ color: "red" }}>*</Text></Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={
+                    selectedBed?.rentAmount
+                      ? String(selectedBed.rentAmount)
+                      : "Enter Amount"
+                  }
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  value={rentalAmount}
+                  onChangeText={(text) => {
+                    const onlyNum = text.replace(/[^0-9]/g, "");
+                    setRentalAmount(onlyNum);
+                    setRentalError("");
+                  }}
+
+                />
+                {rentalError && (
+                  <ErrorMessage message={rentalError} type="error" />
+                )}
+
+
+                <View style={styles.switchRow}>
+                  <Text style={{
+                    fontSize: 14,
+                    color: "#111827",
+                    fontFamily: "Gilroy-Medium",
+                  }}>
+                    Do you want to refuse advance amount?
+                  </Text>
+
+                  <Switch
+                    value={refuseAdvanceAmount}
+                    onValueChange={(value) => {
+                      setRefuseAdvanceAmount(value);
+
+                      if (value) {
+                        setAdvanceAmount("");
+                        setAdvanceError("");
+                        setExtraCharges([]);
+                      }
+                      else {
+                        setOneTimePaymentCharges([])
+                      }
+                    }}
+
+
+                  />
+                </View>
+
+                <Text style={styles.label}>Advance Amount <Text style={{ color: "red" }}>*</Text></Text>
+                {/* <TextInput
+                  style={styles.input}
+                  placeholder="Enter Amount"
+                  placeholderTextColor="#9CA3AF"
+                  keyboardType="numeric"
+                  value={advanceAmount}
+                  onChangeText={(text) => {
+                    const onlyNum = text.replace(/[^0-9]/g, "");
+                    setAdvanceAmount(onlyNum);
+                    setAdvanceError("");
+                  }}
+                /> */}
+
+                <TextInput
+                  style={[
+                    styles.input,
+                    refuseAdvanceAmount && styles.disabledInput,
+                  ]}
+                  placeholder="Enter Amount"
+                  keyboardType="numeric"
+                  value={advanceAmount}
+                  editable={!refuseAdvanceAmount}
+                  selectTextOnFocus={!refuseAdvanceAmount}
+                  placeholderTextColor="#9CA3AF"
+                  onChangeText={(text) => {
+                    const onlyNum = text.replace(/[^0-9]/g, "");
+                    setAdvanceAmount(onlyNum);
+                    setAdvanceError("");
+                  }}
+
+
+                />
+                {advanceError && (
+                  <ErrorMessage message={advanceError} type="error" />
+                )}
+
               </>
             )}
 
             {activeTab === "CheckIn" && (
-              <View style={styles.nonRefund}>
-                <View style={styles.extraHeader}>
-                  <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Non Refundable Amount</Text>
+              <>
+                <View style={styles.nonRefund}>
+                  <View style={styles.extraHeader}>
+                    <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Non Refundable Amount</Text>
 
-                  <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                    <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
-                  </TouchableOpacity>
-                </View>
-
-                {extraCharges.map((item) => (
-                  <View key={item.id} style={styles.figmaRowWrapper}>
-
-                    {/* CLOSE BTN */}
                     <TouchableOpacity
-                      onPress={() => removeCharge(item.id, item.type)}
-                      style={styles.figmaCloseBtn}
-                    >
-
-                      <Image
-                        source={Delete}
-                        style={styles.figmaCloseText}
-                      />
+                      // style={styles.addBtn}
+                      disabled={refuseAdvanceAmount}
+                      style={[
+                        styles.addBtn,
+                        refuseAdvanceAmount && { opacity: 0.5 }
+                      ]}
+                      onPress={addCharge}>
+                      <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
                     </TouchableOpacity>
+                  </View>
 
+                  {extraCharges.map((item) => (
+                    <View key={item.id} style={styles.figmaRowWrapper}>
 
-                    <View style={styles.figmaRow}>
+                      {/* CLOSE BTN */}
+                      <TouchableOpacity
+                        onPress={() => removeCharge(item.id, item.type)}
+                        style={styles.figmaCloseBtn}
+                      >
 
-
-                      {item.type === "" ? (
-                        <TouchableOpacity
-                          style={styles.figmaLeftBox}
-                          onPress={() =>
-                            setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                          }
-                        >
-                          <Text style={{ color: "#777" }}>Select...</Text>
-                          <Image source={DownArrow} style={styles.arrow} />
-                        </TouchableOpacity>
-                      ) : item.type === "Others" ? (
-                        <TextInput
-                          ref={(r) => {
-                            inputRefs.current[`reason-${item.id}`] = r;
-                          }}
-                          style={styles.figmaLeftBox}
-                          placeholder="Enter reason"
-
-                          value={item.title}
-                          onFocus={() => {
-                            setOpenDropdownId(null);
-                            scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
-                          }}
-
-                          // onChangeText={(t) => updateTitle(item.id, t)}
-                          onChangeText={(t) => {
-                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                            updateTitle(item.id, onlyLetters);
-                          }}
+                        <Image
+                          source={Delete}
+                          style={styles.figmaCloseText}
                         />
-                      ) : (
-                        <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
-                          <Text>Maintenance</Text>
-                        </View>
+                      </TouchableOpacity>
+
+
+                      <View style={styles.figmaRow}>
+
+
+                        {item.type === "" ? (
+                          <TouchableOpacity
+                            style={styles.figmaLeftBox}
+                            onPress={() =>
+                              setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                            }
+                          >
+                            <Text style={{ color: "#777" }}>Select...</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                          </TouchableOpacity>
+                        ) : item.type === "Others" ? (
+                          <TextInput
+                            ref={(r) => {
+                              inputRefs.current[`reason-${item.id}`] = r;
+                            }}
+                            style={styles.figmaLeftBox}
+                            placeholder="Enter reason"
+
+                            value={item.title}
+                            onFocus={() => {
+                              setOpenDropdownId(null);
+                              scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                            }}
+
+                            // onChangeText={(t) => updateTitle(item.id, t)}
+                            onChangeText={(t) => {
+                              const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                              updateTitle(item.id, onlyLetters);
+                            }}
+                          />
+                        ) : (
+                          <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                            <Text>Maintenance</Text>
+                          </View>
+                        )}
+
+                        {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                        {item.type === "" ? (
+                          <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                            <Text style={{ color: "#999" }}>Enter amount</Text>
+                          </View>
+                        ) : (
+                          <TextInput
+                            ref={(r) => {
+                              inputRefs.current[`amount-${item.id}`] = r;
+                            }}
+                            style={styles.figmaRightBox}
+                            placeholder="Enter amount"
+                            keyboardType="numeric"
+                            value={item.amount}
+                            onFocus={() => {
+                              setOpenDropdownId(null);
+                              scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+                            }}
+
+                            onChangeText={(t) => {
+
+                              let cleaned = t.replace(/[^0-9.]/g, "");
+
+                              const parts = cleaned.split(".");
+
+                              if (parts.length > 2) {
+                                cleaned = parts[0] + "." + parts[1];
+                              }
+
+                              if (parts[1]?.length > 2) {
+                                cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                              }
+
+                              updateAmount(item.id, cleaned)
+                            }
+
+                            }
+                          />
+                        )}
+
+                      </View>
+
+                      {item.titleError && (
+                        <ErrorMessage message={item.titleError} type="error" />
                       )}
 
-                      {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
-                      {item.type === "" ? (
-                        <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                          <Text style={{ color: "#999" }}>Enter amount</Text>
+                      {item.typeError && (
+                        <ErrorMessage message={item.typeError} type="error" />
+                      )}
+
+                      {item.amountError && (
+                        <ErrorMessage message={item.amountError} type="error" />
+                      )}
+                      {openDropdownId === item.id && item.type === "" && (
+                        <View style={styles.nonRefundDropdown}>
+                          {TYPE_OPTIONS.map((t) => {
+
+                            const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
+
+                            return (
+                              <TouchableOpacity
+                                key={t}
+                                disabled={disabled}
+                                onPress={() => !disabled && selectType(item.id, t)}
+                                style={{ opacity: disabled ? 0.3 : 1 }}
+                              >
+                                <Text style={styles.dropdownItem}>{t}</Text>
+                              </TouchableOpacity>
+                            );
+                          })}
                         </View>
-                      ) : (
-                        <TextInput
-                          ref={(r) => {
-                            inputRefs.current[`amount-${item.id}`] = r;
-                          }}
-                          style={styles.figmaRightBox}
-                          placeholder="Enter amount"
-                          keyboardType="numeric"
-                          value={item.amount}
-                          onFocus={() => {
-                            setOpenDropdownId(null);
-                            scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
-                          }}
-
-                          onChangeText={(t) => {
-
-                            let cleaned = t.replace(/[^0-9.]/g, "");
-
-                            const parts = cleaned.split(".");
-
-                            if (parts.length > 2) {
-                              cleaned = parts[0] + "." + parts[1];
-                            }
-
-                            if (parts[1]?.length > 2) {
-                              cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                            }
-
-                            updateAmount(item.id, cleaned)
-                          }
-
-                          }
-                        />
                       )}
 
                     </View>
+                  ))}
 
-                    {item.titleError && (
-                      <ErrorMessage message={item.titleError} type="error" />
-                    )}
 
-                    {item.typeError && (
-                      <ErrorMessage message={item.typeError} type="error" />
-                    )}
 
-                    {item.amountError && (
-                      <ErrorMessage message={item.amountError} type="error" />
-                    )}
-                    {openDropdownId === item.id && item.type === "" && (
-                      <View style={styles.nonRefundDropdown}>
-                        {TYPE_OPTIONS.map((t) => {
 
-                          const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
 
-                          return (
+
+                </View>
+
+                {isCurrentMonth && (
+                  <View style={styles.fullRentRow}>
+                    <TouchableOpacity
+                      style={[
+                        styles.checkbox,
+                        collectFullRent && styles.checkboxSelected,
+                      ]}
+                      onPress={() => {
+                        const value = !collectFullRent;
+
+                        setCollectFullRent(value);
+
+                        if (!value) {
+                          setShowCustomRentEditor(false);
+                          setCustomRentAmount("");
+                          setSavedCustomRent("");
+                          setIsCustomRentSaved(false);
+                          setCustomRentError("");
+                        }
+                      }}
+                    >
+                      {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                    </TouchableOpacity>
+
+                    <Text style={styles.fullRentText}>
+                      Do you want to collect Full Rent for current month?
+                    </Text>
+                  </View>
+                )}
+
+                {collectFullRent && (
+                  <>
+                    <TouchableOpacity
+                      style={[
+                        styles.customRentBtn,
+                        (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
+                      ]}
+                      onPress={() => {
+
+                        if (showCustomRentEditor || isCustomRentSaved) {
+                          setShowCustomRentEditor(false);
+                          setIsCustomRentSaved(false)
+                        } else {
+                          setShowCustomRentEditor(true);
+                        }
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.customRentBtnText,
+                          (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                        ]}
+                      >
+                        {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {(showCustomRentEditor || isCustomRentSaved) && (
+                      <View style={styles.customRentCard}>
+
+                        <Text style={styles.customRentTitle}>
+                          Custom Rent Amount
+                        </Text>
+
+                        <Text style={styles.customRentSubTitle}>
+                          This amount reflects First month Rent only.
+                        </Text>
+
+                        {!isCustomRentSaved ? (
+
+                          <>
+                            <View style={styles.amountRow}>
+
+                              <TextInput
+                                style={styles.amountInput}
+                                placeholder="₹ 0.00"
+                                keyboardType="numeric"
+                                value={customRentAmount}
+                                onChangeText={(text) => {
+                                  setCustomRentAmount(
+                                    text.replace(/[^0-9]/g, "")
+                                  );
+                                  setCustomRentError("");
+                                }}
+                              />
+
+                              <TouchableOpacity
+                                style={styles.setBtn}
+                                onPress={() => {
+
+                                  if (!customRentAmount) {
+                                    setCustomRentError(
+                                      "Please enter custom rent amount"
+                                    );
+                                    return;
+                                  }
+
+                                  if (Number(customRentAmount) <= 0) {
+                                    setCustomRentError(
+                                      "Amount should be greater than zero"
+                                    );
+                                    return;
+                                  }
+
+
+
+                                  setSavedCustomRent(customRentAmount);
+
+                                  setIsCustomRentSaved(true);
+
+                                  setShowCustomRentEditor(false);
+
+                                  setCustomRentError("");
+                                }}
+                              >
+                                <Text style={styles.setBtnText}>
+                                  ✓ Set
+                                </Text>
+                              </TouchableOpacity>
+
+                            </View>
+
+                            {customRentError ? (
+                              <ErrorMessage message={customRentError} />
+                            ) : null}
+                          </>
+
+                        ) : (
+
+                          <View style={styles.savedRow}>
+
+                            <Text style={styles.savedAmount}>
+                              ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                            </Text>
+
                             <TouchableOpacity
-                              key={t}
-                              disabled={disabled}
-                              onPress={() => !disabled && selectType(item.id, t)}
-                              style={{ opacity: disabled ? 0.3 : 1 }}
+                              onPress={() => {
+
+                                setCustomRentAmount(savedCustomRent);
+
+                                setIsCustomRentSaved(false);
+
+                                setShowCustomRentEditor(true);
+
+                              }}
                             >
-                              <Text style={styles.dropdownItem}>{t}</Text>
+                              <Image
+                                source={require("../../Assets/Images/edit.png")}
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  tintColor: "#6B7280",
+                                }}
+                              />
                             </TouchableOpacity>
-                          );
-                        })}
+
+                          </View>
+
+                        )}
+
                       </View>
                     )}
 
+
+
+
+                  </>
+                )}
+
+                <View style={styles.nonRefund}>
+                  <View style={styles.extraHeader}>
+                    <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Add Onetime Payment </Text>
+
                   </View>
-                ))}
+
+                  {onetimepaymentcharges.map((item) => (
+                    <View key={item.id} style={styles.figmaRowWrapper}>
+
+                      {/* CLOSE BTN */}
+                      <TouchableOpacity
+                        onPress={() => removeOnetimeCharge(item.id, item.type)}
+                        style={styles.figmaCloseBtn}
+                      >
+
+                        <Image
+                          source={Delete}
+                          style={styles.figmaCloseText}
+                        />
+                      </TouchableOpacity>
+
+
+                      <View style={styles.figmaRow}>
+
+
+                        {item.type === "" ? (
+                          <TouchableOpacity
+                            style={styles.figmaLeftBox}
+                            onPress={() =>
+                              setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                            }
+                          >
+                            <Text style={{ color: "#777" }}>Select...</Text>
+                            <Image source={DownArrow} style={styles.arrow} />
+                          </TouchableOpacity>
+                        ) : item.type === "Others" ? (
+                          <TextInput
+                            ref={(r) => {
+                              inputRefs.current[`reason-${item.id}`] = r;
+                            }}
+                            style={styles.figmaLeftBox}
+                            placeholder="Enter reason"
+
+                            value={item.title}
+                            onFocus={() => {
+                              setOpenDropdownId(null);
+                              scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                            }}
+
+                            // onChangeText={(t) => updateTitle(item.id, t)}
+                            onChangeText={(t) => {
+                              const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                              OneTimeupdateTitle(item.id, onlyLetters);
+                            }}
+                          />
+                        ) : (
+                          <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                            <Text>Maintenance</Text>
+                          </View>
+                        )}
+
+                        {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                        {item.type === "" ? (
+                          <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                            <Text style={{ color: "#999" }}>Enter amount</Text>
+                          </View>
+                        ) : (
+                          <TextInput
+                            ref={(r) => {
+                              inputRefs.current[`amount-${item.id}`] = r;
+                            }}
+                            style={styles.figmaRightBox}
+                            placeholder="Enter amount"
+                            keyboardType="numeric"
+                            value={item.amount}
+                            onFocus={() => {
+                              setOpenDropdownId(null);
+                              scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+                            }}
+
+                            onChangeText={(t) => {
+
+                              let cleaned = t.replace(/[^0-9.]/g, "");
+
+                              const parts = cleaned.split(".");
+
+                              if (parts.length > 2) {
+                                cleaned = parts[0] + "." + parts[1];
+                              }
+
+                              if (parts[1]?.length > 2) {
+                                cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                              }
+
+                              OneTimeupdateAmount(item.id, cleaned)
+                            }
+
+                            }
+                          />
+                        )}
+
+                      </View>
+
+                      {item.titleError && (
+                        <ErrorMessage message={item.titleError} type="error" />
+                      )}
+
+                      {item.typeError && (
+                        <ErrorMessage message={item.typeError} type="error" />
+                      )}
+
+                      {item.amountError && (
+                        <ErrorMessage message={item.amountError} type="error" />
+                      )}
+                      {openDropdownId === item.id && item.type === "" && (
+                        <View style={styles.nonRefundDropdown}>
+                          {TYPE_OPTIONS.map((t) => {
+
+                            const disabled = t === "Maintenance" && onetimepaymentmaintenanceAlreadyUsed;
+
+                            return (
+                              <TouchableOpacity
+                                key={t}
+                                disabled={disabled}
+                                onPress={() => !disabled && selectOntimeType(item.id, t)}
+                                style={{ opacity: disabled ? 0.3 : 1 }}
+                              >
+                                <Text style={styles.dropdownItem}>{t}</Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      )}
+
+                    </View>
+                  ))}
+
+                  <TouchableOpacity
+                    // style={styles.addNewButton}
+                    onPress={AddOnetimeCharge}
+
+                    disabled={!refuseAdvanceAmount}
+                    style={[
+                      styles.addNewButton,
+                      !refuseAdvanceAmount && { opacity: 0.5 }
+                    ]}
+                  >
+                    <View style={styles.addNewContent}>
+                      <View style={styles.plusCircle}>
+                        <Text style={styles.plusText}>+</Text>
+                      </View>
+
+                      <Text style={styles.addNewText}>
+                        Add
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+
+                </View>
+              </>
 
 
 
-
-
-              </View>
             )}
 
 
@@ -1334,9 +1950,11 @@ export default function AssignTenant({ navigation, route }) {
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.submitBtn,isCheckingIn &&{opacity:0.4}]}
+              <TouchableOpacity
+                disabled={isCheckingIn || isSubmittingRef.current}
+                style={[styles.submitBtn, (isCheckingIn || isSubmittingRef.current) && { opacity: 0.4 }]}
                 //  onPress={handleCheckIn}
-                disabled={isCheckingIn}
+                // disabled={isCheckingIn}
                 onPress={activeTab === "Booking" ? handleBookingSubmit : handleCheckIn}
 
               >
@@ -1834,6 +2452,217 @@ const styles = StyleSheet.create({
     borderWidth: 1
   },
 
+  fullRentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+  },
+
+  fullRentText: {
+    marginLeft: 10,
+    fontSize: 14,
+    color: "#222",
+    flex: 1,
+    fontFamily: "Gilroy-Semibold"
+  },
+
+  customRentBtn: {
+    marginTop: 15,
+    backgroundColor: "#EEF2FF",
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+
+  closeBtn: {
+    backgroundColor: "#1F2BA6",
+  },
+
+  customRentBtnText: {
+    color: "#1E45E1",
+    fontSize: 14,
+    fontFamily: "Gilroy-Semibold"
+  },
+
+  customRentCard: {
+    marginTop: 12,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#C8D3FF",
+    padding: 18,
+  },
+
+  customRentTitle: {
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+    color: "#222",
+  },
+
+  customRentSubTitle: {
+    marginTop: 6,
+    color: "#6B7280",
+    fontSize: 15,
+    fontFamily: "Gilroy-Regular"
+  },
+
+  amountRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 20,
+  },
+
+  amountInput: {
+    flex: 1,
+    height: 45,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    paddingHorizontal: 15,
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold"
+  },
+
+  setBtn: {
+    marginLeft: 10,
+    backgroundColor: "#EEF2FF",
+    borderRadius: 10,
+    paddingHorizontal: 18,
+    height: 45,
+    justifyContent: "center",
+  },
+
+  setBtnText: {
+    color: "#1E45E1",
+    fontSize: 14,
+    fontFamily: "Gilroy-Semibold"
+  },
+
+  savedRow: {
+    marginTop: 25,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  savedAmount: {
+    fontSize: 17,
+    fontFamily: "Gilroy-Bold",
+    color: "#222",
+  },
+  switchRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 16,
+    marginBottom: 5,
+  },
+
+  subText: {
+    flex: 1,
+    fontSize: 14,
+    color: "#6B7280",
+    fontFamily: "Gilroy-Regular",
+  },
+
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    borderColor: "#D1D5DB",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#FFF",
+    marginRight: 8,
+  },
+
+  checkboxSelected: {
+    backgroundColor: "#1E45E1",
+    borderColor: "#1E45E1",
+  },
+
+  tick: {
+    color: "#FFF",
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  switchRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 16,
+    marginBottom: 5,
+  },
+  addNewButton: {
+    marginTop: 12,
+    backgroundColor: "#EEF2FF",
+    borderRadius: 10,
+    height: 48,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  addNewContent: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  plusCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "#1D4ED8",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 8,
+  },
+
+  plusText: {
+    color: "#1D4ED8",
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+    lineHeight: 22,
+  },
+
+  addNewText: {
+    color: "#1D4ED8",
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+  },
+  fixedChargeFooter: {
+    marginTop: 12,
+    backgroundColor: "#F4F6FA",
+    borderBottomLeftRadius: 14,
+    borderBottomRightRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 18,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#E7EAF0",
+  },
+
+  fixedChargeTitle: {
+    fontSize: 13,
+    color: "#64748B",
+    fontFamily: "Gilroy-Semibold",
+    textTransform: "uppercase",
+  },
+
+  fixedChargeAmount: {
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
+  note: {
+    color: "#64748B",
+    marginTop: 10,
+    lineHeight: 20,
+    fontSize: 13,
+  },
 
 });
 
