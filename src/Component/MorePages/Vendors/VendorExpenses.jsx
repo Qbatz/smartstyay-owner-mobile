@@ -128,7 +128,6 @@ useEffect(() => {
 }, []);
 
 
-console.log(vendor,"shruthu")
 console.log("vendorExpenses", vendorExpenses);
 
   const renderItem = ({ item }) => (

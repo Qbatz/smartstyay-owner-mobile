@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,8 +12,22 @@ import CallIcon from "../../../Assets/Images/call.png";
 import LocationIcon from "../../../Assets/Images/LocationIcon.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import MobileIcon from "../../../Assets/Images/mobile.png";
+import { VendorContext } from "../../../Context/VendorContext";
 
 export default function VendorInfo({ vendor }) {
+
+   const {
+      getVendorExpenses,
+      vendorExpenses,
+      getVendorExpensePayments,
+      vendorExpensePayments,loading
+    } = useContext(VendorContext);
+
+    useEffect(() => {
+          // getVendorExpenses(vendor?.id);
+          getVendorExpensePayments(vendor?.id);
+        }, [])
+
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -21,7 +35,7 @@ export default function VendorInfo({ vendor }) {
     >
       <InfoItem
         label="Vendor Name"
-        value={vendor?.fullName}
+        value={vendor?.fullName || vendor?.firstName || "N/A"}
       />
 
       <InfoItem
@@ -32,7 +46,7 @@ export default function VendorInfo({ vendor }) {
 
       <InfoItem
         label="Mobile No"
-        value={`+91 ${vendor?.mobile || ""}`}
+        value={`+91 ${vendor?.mobile || "N/A"}`}
         icon={MobileIcon}
       />
 
@@ -42,11 +56,11 @@ export default function VendorInfo({ vendor }) {
         icon={LocationIcon}
       />
 
-      {/* <InfoItem
+      <InfoItem
         label="Last Transaction"
-        value="N/A"
+        value= {vendorExpensePayments?.payments?.[0]?.paymentDate ||"N/A"}
         icon={CalendarIcon}
-      /> */}
+      />
 
       <InfoItem
   label="Credit Limit"

@@ -50,6 +50,12 @@ export default function VendorDetails({ route, navigation }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
+   const {
+      getVendorExpenses,
+      vendorExpenses,
+      getVendorExpensePayments,
+      vendorExpensePayments,
+    } = useContext(VendorContext);
 
   console.log("vendorDetails", vendorDetails);
 
@@ -62,6 +68,11 @@ export default function VendorDetails({ route, navigation }) {
 
     return unsubscribe; // cleanup
   }, [navigation, vendor?.id]);
+
+  useEffect(() => {
+      // getVendorExpenses(vendor?.id);
+      getVendorExpensePayments(vendor?.id);
+    }, [])
 
   const handleEdit = async (vendor) => {
     console.log("vendor", vendor);

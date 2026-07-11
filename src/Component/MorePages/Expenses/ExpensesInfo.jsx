@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   View,
   Text,
@@ -12,8 +12,17 @@ import CallIcon from "../../../Assets/Images/call.png";
 import LocationIcon from "../../../Assets/Images/LocationIcon.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import MobileIcon from "../../../Assets/Images/mobile.png";
+import PeopleIcon from "../../../Assets/Images/peopleIcon.png"
+import { CustomerContext } from "../../../Context/CustomerContext";
 
 export default function ExpenseInfo({ expense }) {
+
+   const { vendorList, getVendorList, deleteVendor } = useContext(CustomerContext);;
+   console.log(vendorList)
+
+   const vendorName= vendorList?.vendors?.find((item)=>item.id == expense?.vendorId)?.fullName
+
+   console.log(vendorName)
   return (
     <ScrollView
       showsVerticalScrollIndicator={false}
@@ -39,13 +48,13 @@ export default function ExpenseInfo({ expense }) {
 
        <InfoItem
         label="Vendor"
-        value={ expense?.vendorAddress || "N/A"}
-       icon={LocationIcon}
+        value={ vendorName || "N/A"}
+       icon={PeopleIcon}
       />
 
       <InfoItem
         label="Business Location/Address"
-        value={"N/A"}
+        value={ expense?.vendorAddress || "N/A"}
         icon={LocationIcon}
       />
 

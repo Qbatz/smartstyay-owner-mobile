@@ -173,8 +173,6 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     console.log("vendorlist", vendorList);
 
 
-console.log("vendy",vendorData,route)
-
 
     const emptyItem = {
         itemDetail: "",
@@ -199,7 +197,7 @@ console.log("vendy",vendorData,route)
         ]);
     }
 
-    console.log("sinna",vendorList)
+    
 
     useEffect(()=>{
         if(vendorName){
@@ -996,6 +994,9 @@ console.log("vendy",vendorData,route)
 
                 setTimeout(() => {
                     navigation.goBack();
+                    setTimeout(() => {
+                        isApplyTriggeredRef.current = false
+                    }, 500);
                 }, 1500);
             } else {
                 setModalType("error");
@@ -1008,9 +1009,13 @@ console.log("vendy",vendorData,route)
                 }, 1500);
             }
         }
-        finally {
+        catch(error){
+            console.log(error)
             isApplyTriggeredRef.current = false
         }
+        // finally {
+        //     isApplyTriggeredRef.current = false
+        // }
 
     };
 
