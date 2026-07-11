@@ -45,6 +45,8 @@ import { useNavigation } from "@react-navigation/native";
 import DiscountActionSheet from "./DiscountActionSheet"
 import QuestionIcon from "../../../Assets/Images/help.png";
 import BillIcon from "../../../Assets/Images/bill.png";
+import RefundedIcon from "../../../Assets/Images/Repeat.png";
+
 
 
 const BillDetailsSheet = ({
@@ -482,13 +484,16 @@ const BillDetailsSheet = ({
     paymentStatus === "Partial Payment" ||
     paymentStatus === "PARTIAL_PAYMENT";
 
-  const isPending = invoice?.paymentStatus === "Pending";
-  const partiallyRefund = invoice?.paymentStatus === "Partially Refunded";
-  const pendingRefund = invoice?.paymentStatus === "Pending Refund";
+  const isPending = invoice?.status === "PENDING" || selectedBill?.paymentStatus === "Pending";
+  const partiallyRefund = invoice?.status === "PARTIAL_REFUND" || selectedBill?.paymentStatus === "Partially Refunded";
+  const pendingRefund = invoice?.status === "PENDING_REFUND" || selectedBill?.paymentStatus === "Pending Refund";
   const cancelled = invoice?.paymentStatus === "Cancelled";
   const FullyRefund = invoice?.paymentStatus === "Refunded";
 
   // const invoiceType = bill?.configurations?.invoiceType;
+   const showRefundButton =
+    selectedBill?.invoiceType === "Settlement" &&
+    pendingRefund || partiallyRefund
 
   const showSettlementRedeem =
     selectedBill?.invoiceType === "Settlement" &&
@@ -519,35 +524,35 @@ const BillDetailsSheet = ({
     );
 
 
-     const unpaidRotate = useRef(new Animated.Value(openUnpaid ? 1 : 0)).current;
-      const rentRotate = useRef(new Animated.Value(openRefundRent ? 1 : 0)).current;
-      const ebRotate = useRef(new Animated.Value(openEBill ? 1 : 0)).current;
-    
-      useEffect(() => {
-        Animated.timing(unpaidRotate, {
-          toValue: openUnpaid ? 1 : 0,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      }, [openUnpaid]);
-    
-      useEffect(() => {
-        Animated.timing(rentRotate, {
-          toValue: openRefundRent ? 1 : 0,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      }, [openRefundRent]);
-    
-      useEffect(() => {
-        Animated.timing(ebRotate, {
-          toValue: openEBill ? 1 : 0,
-          duration: 200,
-          useNativeDriver: true,
-        }).start();
-      }, [openEBill]);
+  const unpaidRotate = useRef(new Animated.Value(openUnpaid ? 1 : 0)).current;
+  const rentRotate = useRef(new Animated.Value(openRefundRent ? 1 : 0)).current;
+  const ebRotate = useRef(new Animated.Value(openEBill ? 1 : 0)).current;
 
-    const unpaidArrow = unpaidRotate.interpolate({
+  useEffect(() => {
+    Animated.timing(unpaidRotate, {
+      toValue: openUnpaid ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [openUnpaid]);
+
+  useEffect(() => {
+    Animated.timing(rentRotate, {
+      toValue: openRefundRent ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [openRefundRent]);
+
+  useEffect(() => {
+    Animated.timing(ebRotate, {
+      toValue: openEBill ? 1 : 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [openEBill]);
+
+  const unpaidArrow = unpaidRotate.interpolate({
     inputRange: [0, 1],
     outputRange: ["0deg", "180deg"],
   });
@@ -746,7 +751,7 @@ const BillDetailsSheet = ({
             styles.transactionSheet,
             {
               // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
-              maxHeight: '95%',
+              maxHeight: '98%',
               transform: [{ translateY: detailsSheetY }]
             }
           ]}
@@ -946,99 +951,99 @@ const BillDetailsSheet = ({
               </View>
             )}
 
-             {selectedBill?.invoiceType === "Settlement" && showSettlementRedeem && (
-            
-            
-                                  <>
-            
-                                    <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                      <View>
-                                        <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Refundable Advance</Text>
-                                      </View>
-                                      <View>
-                                        <Text style={styles.amountValue}>
-            
-                                          ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
-                                          {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
-                                        </Text>
-                                      </View>
-                                    </View>
-            
-                                    <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                      <View>
-                                        <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Payable Rent</Text>
-                                      </View>
-                                      <View>
-                                        <Text style={styles.amountValue}>
-            
-                                          ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0}
-                                          {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
-                                        </Text>
-                                      </View>
-                                    </View>
-            
-                                    <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                      <View>
-                                        <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Deductions</Text>
-                                      </View>
-                                      <View>
-                                        <Text style={[
-                                          styles.amountValue,
-                                          { color: "#FF0000" },
-                                        ]}>
-                                          ₹  {BillPdfdetails?.invoiceInfo?.deductionAmount || 0}
-                                          {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
-                                        </Text>
-                                      </View>
-                                    </View>
-            
-                                    <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                      <View>
-                                        <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Electricity Bill</Text>
-                                      </View>
-                                      <View>
-                                        <Text style={[
-                                          styles.amountValue,
-                                          { color: "#FF0000" },
-                                        ]}>
-            
-                                          ₹  {BillPdfdetails?.invoiceInfo?.electricityAmount || 0}
-                                          {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
-                                        </Text>
-                                      </View>
-                                    </View>
-            
-                                    <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                      <View>
-                                        <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Unpaid Invoices </Text>
-                                      </View>
-                                      <View>
-                                        <Text style={[
-                                          styles.amountValue,
-                                          { color: "#FF0000" },
-                                        ]} >
-                                          ₹  {BillPdfdetails?.invoiceInfo?.unpaidInvoiceAmount || 0}
-                                          {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
-                                        </Text>
-                                      </View>
-                                    </View>
-            
-                                    <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                      <View>
-                                        <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Type</Text>
-                                      </View>
-                                      <View>
-                                        <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                                          Manual
-                                        </Text>
-                                      </View>
-                                    </View>
-            
-                                  </>
-                                )}
+            {selectedBill?.invoiceType === "Settlement" && showSettlementRedeem && (
 
 
-  {!cancelled &&
+              <>
+
+                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View>
+                    <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Refundable Advance</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.amountValue}>
+
+                      ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
+                      {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View>
+                    <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Payable Rent</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.amountValue}>
+
+                      ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0}
+                      {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View>
+                    <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Deductions</Text>
+                  </View>
+                  <View>
+                    <Text style={[
+                      styles.amountValue,
+                      { color: "#FF0000" },
+                    ]}>
+                      ₹  {BillPdfdetails?.invoiceInfo?.deductionAmount || 0}
+                      {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View>
+                    <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Electricity Bill</Text>
+                  </View>
+                  <View>
+                    <Text style={[
+                      styles.amountValue,
+                      { color: "#FF0000" },
+                    ]}>
+
+                      ₹  {BillPdfdetails?.invoiceInfo?.electricityAmount || 0}
+                      {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View>
+                    <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Unpaid Invoices </Text>
+                  </View>
+                  <View>
+                    <Text style={[
+                      styles.amountValue,
+                      { color: "#FF0000" },
+                    ]} >
+                      ₹  {BillPdfdetails?.invoiceInfo?.unpaidInvoiceAmount || 0}
+                      {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View>
+                    <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Type</Text>
+                  </View>
+                  <View>
+                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                      Manual
+                    </Text>
+                  </View>
+                </View>
+
+              </>
+            )}
+
+
+            {!cancelled &&
               bill?.configurations?.invoiceType !== "Booking" && (
                 <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                   <View>
@@ -1046,7 +1051,7 @@ const BillDetailsSheet = ({
                   </View>
                   <View>
                     <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                        {BillPdfdetails?.invoiceDate ?? BillPdfdetails?.invoiceInfo?.invoiceDate}
+                      {BillPdfdetails?.invoiceDate ?? BillPdfdetails?.invoiceInfo?.invoiceDate}
                     </Text>
                   </View>
                 </View>
@@ -1105,11 +1110,11 @@ const BillDetailsSheet = ({
               </>
             )}
 
-            <View style={{flexDirection:'row',justifyContent:'space-between',alignItems:'center',marginTop:10}}>
-                  <Text style={{fontSize: 14, fontFamily: "Gilroy-Semibold",color: "#777", }}>
-                    Invoice Date</Text>
-                  <Text style={{fontSize: 13, fontFamily: "Gilroy-Semibold" }}>{BillPdfdetails?.invoiceDate}</Text>
-              </View>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+              <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold", color: "#777", }}>
+                Invoice Date</Text>
+              <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>{BillPdfdetails?.invoiceDate}</Text>
+            </View>
 
             {BillPdfdetails?.invoiceInfo?.isCancelled && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
@@ -1120,19 +1125,19 @@ const BillDetailsSheet = ({
             )}
 
 
-              {selectedBill?.paymentStatus === "Cancelled" && (
-                                  <View style={styles.cancelInfoCard}>
-            
-                                    <View style={styles.cancelIconWrapper}>
-                                      <Text style={styles.cancelIconText}>i</Text>
-                                    </View>
-            
-                                    <Text style={styles.cancelInfoText}>
-                                      Invoice cancelled due to Final Settlement
-                                    </Text>
-            
-                                  </View>
-                                )}
+            {selectedBill?.paymentStatus === "Cancelled" && (
+              <View style={styles.cancelInfoCard}>
+
+                <View style={styles.cancelIconWrapper}>
+                  <Text style={styles.cancelIconText}>i</Text>
+                </View>
+
+                <Text style={styles.cancelInfoText}>
+                  Invoice cancelled due to Final Settlement
+                </Text>
+
+              </View>
+            )}
 
 
 
@@ -1882,9 +1887,9 @@ const BillDetailsSheet = ({
 
 
 
-          
 
-    
+
+
 
             {!isPaid &&
               !cancelled &&
@@ -1968,7 +1973,7 @@ const BillDetailsSheet = ({
 
           <View style={styles.fixedBottomBar}>
 
-            {(isPaid || cancelled || pendingRefund || partiallyRefund || FullyRefund) && (
+            {(isPaid || cancelled ) && (
               <>
                 <TouchableOpacity
                   style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
@@ -1988,6 +1993,55 @@ const BillDetailsSheet = ({
                 </TouchableOpacity>
               </>
             )}
+
+            {(pendingRefund || partiallyRefund || FullyRefund) && (
+              <>
+                <View style={styles.bottomRefundActionItem}>
+                  <TouchableOpacity
+                    style={[styles.refundiIconBtn, !isExportAllow && { opacity: 0.4 }]}
+                    disabled={!isExportAllow}
+                    onPress={handleshareBill}
+                  >
+                    <Image source={ShareIcon} style={styles.iconDark} />
+
+                  </TouchableOpacity>
+                  <Text style={styles.refundActionTxt}>Share</Text>
+                </View>
+
+                <View style={styles.bottomRefundActionItem}>
+                  <TouchableOpacity
+                    style={[styles.refundiIconBtn, !isExportAllow && { opacity: 0.4 }]}
+                    disabled={!isExportAllow}
+                    onPress={handleDownloadBillsPdf}>
+                    <Image source={DownloadIcon} style={styles.iconDark} />
+
+                  </TouchableOpacity>
+                  <Text style={styles.refundActionTxt}>Download</Text>
+                </View>
+                {showRefundButton && (
+                  <View style={styles.bottomRefundActionItem}>
+                    <TouchableOpacity
+                      style={styles.refundBtn}
+                      onPress={handleShowRefundPayment}
+                    >
+                      <Image
+                        source={RefundedIcon}
+                        style={styles.refundIcon}
+                      />
+
+                    </TouchableOpacity>
+                    <Text style={styles.refundText}>
+                      Refund
+                    </Text>
+                  </View>
+                )}
+
+
+
+              </>
+
+            )}
+
 
             {(isPending || isPartial) && (
               <>
@@ -2980,42 +3034,42 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-SemiBold",
   },
   cancelInfoCard: {
-      marginTop: 22,
-      borderWidth: 1,
-      borderColor: "#EAEAEA",
-      borderRadius: 16,
-      paddingVertical: 10,
-      // paddingHorizontal: 10,
-      paddingLeft: 10,
-      backgroundColor: "#FFFFFF",
-      flexDirection: "row",
-      alignItems: "center",
-    },
-  
-    cancelIconWrapper: {
-      width: 22,
-      height: 22,
-      borderRadius: 11,
-      backgroundColor: "#E57A1F",
-      justifyContent: "center",
-      alignItems: "center",
-      marginRight: 12,
-    },
-  
-    cancelIconText: {
-      color: "#FFFFFF",
-      fontSize: 10,
-      fontFamily: "Gilroy-Semibold",
-      marginTop: Platform.OS === "ios" ? 1 : -1,
-    },
-  
-    cancelInfoText: {
-      flex: 1,
-      fontSize: 14,
-      lineHeight: 24,
-      color: "#222222",
-      fontFamily: "Gilroy-Medium",
-    },
+    marginTop: 22,
+    borderWidth: 1,
+    borderColor: "#EAEAEA",
+    borderRadius: 16,
+    paddingVertical: 10,
+    // paddingHorizontal: 10,
+    paddingLeft: 10,
+    backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  cancelIconWrapper: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: "#E57A1F",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
+
+  cancelIconText: {
+    color: "#FFFFFF",
+    fontSize: 10,
+    fontFamily: "Gilroy-Semibold",
+    marginTop: Platform.OS === "ios" ? 1 : -1,
+  },
+
+  cancelInfoText: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 24,
+    color: "#222222",
+    fontFamily: "Gilroy-Medium",
+  },
 
   accordionCard: {
     borderWidth: 1,
@@ -3274,7 +3328,7 @@ const styles = StyleSheet.create({
     color: "#222222",
     fontFamily: "Gilroy-Medium",
   },
-   accordionLeft: {
+  accordionLeft: {
     flexDirection: "row",
     alignItems: "center",
   },
@@ -3290,7 +3344,7 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold",
     color: "#111827",
   },
-   walletRow: {
+  walletRow: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -3324,6 +3378,45 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 12,
     fontFamily: "Gilroy-Medium",
+  },
+  bottomRefundActionItem: {
+    alignItems: "center",
+    flex: 1,
+    // marginRight: 15
+  },
+  refundiIconBtn: {
+    backgroundColor: "#F3F4F6",
+    // padding:14,
+    paddingVertical: 14,
+    paddingHorizontal: 37,
+    borderRadius: 10,
+    // marginRight: 20
+  },
+  refundActionTxt:{
+    fontFamily: "Gilroy-Semibold"
+  },
+  refundBtn: {
+    backgroundColor: "#E67E22",
+     paddingVertical: 14,
+    paddingHorizontal: 37,
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 37,
+    borderRadius: 10,
+  },
+
+  refundIcon: {
+    width: 15,
+    height: 15,
+    tintColor: "#FFFFFF",
+  },
+
+  refundText: {
+    marginLeft: 7,
+    // color: "#FFFFFF",
+    // marginTop: 4,
+    // fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
   },
 
 
