@@ -33,6 +33,9 @@ import UplodIcon from "../../Assets/Images/upload.png";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import PlusIcon from "../../Assets/Images/add-circle.png";
 import { Switch } from "react-native";
+import BedDetailsSheet from "./BedDetailsBottomsheet"
+
+
 
 export default function NewTenantCheckIn({ navigation, route }) {
 
@@ -60,10 +63,10 @@ export default function NewTenantCheckIn({ navigation, route }) {
     const [floorError, setFloorError] = useState("")
     const [roomError, setRoomError] = useState("")
     const [bedError, setBedError] = useState('')
-      const [sameAsCurrent, setSameAsCurrent] = useState(false);
-        const isSubmittingRef = useRef(false);
+    const [sameAsCurrent, setSameAsCurrent] = useState(false);
+    const isSubmittingRef = useRef(false);
     // const [advanceError, setAdvanceError] = useState("")
-       const [amount, setAmount] = useState("");
+    const [amount, setAmount] = useState("");
     const [rentError, setRentError] = useState("")
     const [openDatePicker, setOpenDatePicker] = useState(false)
 
@@ -152,6 +155,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
             setRooms([])
         }
     }
+
+
 
 
     //   const loadRooms = async (floorId) => {
@@ -251,6 +256,17 @@ export default function NewTenantCheckIn({ navigation, route }) {
         setOpenDropdownId(null);
     };
 
+    const selectOntimeType = (id, type) => {
+
+
+        if (type === "Maintenance" && onetimepaymentmaintenanceAlreadyUsed) return;
+
+        setOneTimePaymentCharges(prev =>
+            prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError: "" } : i))
+        );
+
+        setOpenDropdownId(null);
+    };
 
 
 
@@ -268,6 +284,20 @@ export default function NewTenantCheckIn({ navigation, route }) {
         );
     };
 
+    const OneTimeupdateTitle = (id, title) => {
+        // setExtraCharges(prev =>
+        //   prev.map(i => (i.id === id ? { ...i, title } : i))
+        // );
+        setOneTimePaymentCharges(prev =>
+            prev.map(i =>
+                i.id === id
+                    ? { ...i, title, titleError: "" }
+                    : i
+            )
+        );
+    };
+
+
     const updateAmount = (id, amount) => {
         // setExtraCharges(prev =>
         //   prev.map(i => (i.id === id ? { ...i, amount } : i))
@@ -280,6 +310,18 @@ export default function NewTenantCheckIn({ navigation, route }) {
             )
         );
     };
+
+    const OneTimeupdateAmount = (id, amount) => {
+        const onlyNum = amount.replace(/[^0-9]/g, "");
+
+        setOneTimePaymentCharges((prev) =>
+            prev.map((i) =>
+                i.id === id
+                    ? { ...i, amount: onlyNum, amountError: "" }
+                    : i
+            )
+        )
+    }
 
     useEffect(() => {
         if (openCalendar) {
@@ -518,7 +560,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
     const StayType = ["LongStay"];
     const [StayTypeOpen, setStayTypeOpen] = useState(false);
     const [StayTypeSelected, setStayTypeSelected] = useState("Stay Type");
-        const [stayTypeError, setStayTypeError] = useState("")
+    const [stayTypeError, setStayTypeError] = useState("")
 
     const maintenanceAlreadyUsed = extraCharges?.some(c => c?.type === "Maintenance");
     const onetimepaymentmaintenanceAlreadyUsed = onetimepaymentcharges?.some(c => c?.type === "Maintenance");
@@ -537,6 +579,9 @@ export default function NewTenantCheckIn({ navigation, route }) {
     const [customRentError, setCustomRentError] = useState("");
     const [refuseAdvanceAmount, setRefuseAdvanceAmount] = useState(false);
 
+    const [selectedBedDetails, setSelectedBedDetails] = useState(null);
+    const [showBedSheet, setShowBedSheet] = useState(false);
+
     const [showCalendar, setShowCalendar] = useState(false);
     const [activeDateField, setActiveDateField] = useState(null);
     const CALENDAR_HEIGHT = 340;
@@ -546,6 +591,26 @@ export default function NewTenantCheckIn({ navigation, route }) {
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [showProfileSheet, setShowProfileSheet] = useState(false);
     const [proceedcheckin, setProceedCheckin] = useState(false);
+
+    const scrollInputIntoView = (refOrNode) => {
+        const input =
+            refOrNode?.current ? refOrNode.current : refOrNode;
+
+        if (!input) return;
+
+        setTimeout(() => {
+            if (!scrollRef.current) return;
+
+            input.focus?.();
+
+            scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard?.(
+                input,
+                200,
+                true
+            );
+        }, 150);
+    };
+
 
     const inputRefs = useRef({});
     const getSafeCalendarTop = (y, h) => {
@@ -587,7 +652,11 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
     console.log("filteredBeds", filteredBeds);
 
+   const handleshowBedDetailsheet = () => {
+    if (!checkJoiningDate) return;
 
+    setShowBedSheet(true);
+};
 
     const toggleDropdown = (type) => {
         setOpenDropdown((prev) => (prev === type ? null : type));
@@ -722,6 +791,23 @@ export default function NewTenantCheckIn({ navigation, route }) {
         setOpenDropdownId(null);
     }
 
+    const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
+
+    useEffect(() => {
+        if (!checkJoiningDate) return;
+
+        const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+
+        setCollectFullRent(currentMonth);
+
+        if (!currentMonth) {
+            setShowCustomRentEditor(false);
+            setCustomRentAmount("");
+            setSavedCustomRent("");
+            setIsCustomRentSaved(false);
+            setCustomRentError("");
+        }
+    }, [checkJoiningDate])
 
     const summaryAdvanceAmount = Number(advanceAmount || 0);
 
@@ -817,7 +903,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
         try {
             setIsCheckingIn(true)
-       
+
 
             const payload = {
                 floorId: floorSelected.id,
@@ -898,6 +984,9 @@ export default function NewTenantCheckIn({ navigation, route }) {
         }
 
     }
+
+
+    console.log("joiningDate", checkJoiningDate);
 
 
     return (
@@ -1030,12 +1119,37 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                     <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
-                                    <View style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}>
+                                    <TouchableOpacity
+                                        style={[
+                                            {
+                                                flexDirection: "row",
+                                                backgroundColor: checkJoiningDate ? "#EDF3FF" : "#F3F4F6",
+                                                padding: 10,
+                                                paddingHorizontal: 10,
+                                                opacity: checkJoiningDate ? 1 : 0.5,
+                                            },
+                                        ]}
+                                        disabled={!checkJoiningDate}
+                                        onPress={handleshowBedDetailsheet}
+                                    >
+                                        <Image
+                                            source={BedIcon}
+                                            style={{
+                                                height: 20,
+                                                width: 20,
+                                                marginRight: 10,
+                                                tintColor: checkJoiningDate ? "#1E45E1" : "#9CA3AF",
+                                            }}
+                                        />
 
-                                        <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
-
-                                        <Text style={{ color: '#1E45E1' }}>Bed Layout View</Text>
-                                    </View>
+                                        <Text
+                                            style={{
+                                                color: checkJoiningDate ? "#1E45E1" : "#9CA3AF",
+                                            }}
+                                        >
+                                            Bed Layout View
+                                        </Text>
+                                    </TouchableOpacity>
 
                                 </View>
 
@@ -1262,12 +1376,17 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                         onValueChange={(value) => {
                                             setRefuseAdvanceAmount(value);
 
-                                            // Optional: refuse ON na amount clear pannalam
                                             if (value) {
                                                 setAdvanceAmount("");
                                                 setAdvanceError("");
+                                                setExtraCharges([]);
+                                            }
+                                            else {
+                                                setOneTimePaymentCharges([])
                                             }
                                         }}
+
+
                                     />
                                 </View>
                                 <Text style={styles.label}>Advance Amount <Text style={{ color: "red" }}>*</Text></Text>
@@ -1288,6 +1407,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                         setAdvanceAmount(onlyNum);
                                         setAdvanceError("");
                                     }}
+
+
                                 />
 
                                 {advanceError && (
@@ -1434,9 +1555,16 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     ))}
 
                                     <TouchableOpacity
-                                        style={styles.addNewButton}
+                                        // style={styles.addNewButton}
+                                        // onPress={addCharge}
+                                        disabled={refuseAdvanceAmount}
+                                        style={[
+                                            styles.addNewButton,
+                                            refuseAdvanceAmount && { opacity: 0.5 }
+                                        ]}
                                         onPress={addCharge}
                                     >
+
                                         <View style={styles.addNewContent}>
                                             <View style={styles.plusCircle}>
                                                 <Text style={styles.plusText}>+</Text>
@@ -1490,34 +1618,35 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     <ErrorMessage message={rentalError} type="error" />
                                 )}
 
+                                {isCurrentMonth && (
+                                    <View style={styles.fullRentRow}>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.checkbox,
+                                                collectFullRent && styles.checkboxSelected,
+                                            ]}
+                                            onPress={() => {
+                                                const value = !collectFullRent;
 
-                                <View style={styles.fullRentRow}>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.checkbox,
-                                            collectFullRent && styles.checkboxSelected,
-                                        ]}
-                                        onPress={() => {
-                                            const value = !collectFullRent;
+                                                setCollectFullRent(value);
 
-                                            setCollectFullRent(value);
+                                                if (!value) {
+                                                    setShowCustomRentEditor(false);
+                                                    setCustomRentAmount("");
+                                                    setSavedCustomRent("");
+                                                    setIsCustomRentSaved(false);
+                                                    setCustomRentError("");
+                                                }
+                                            }}
+                                        >
+                                            {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                                        </TouchableOpacity>
 
-                                            if (!value) {
-                                                setShowCustomRentEditor(false);
-                                                setCustomRentAmount("");
-                                                setSavedCustomRent("");
-                                                setIsCustomRentSaved(false);
-                                                setCustomRentError("");
-                                            }
-                                        }}
-                                    >
-                                        {collectFullRent && <Text style={styles.tick}>✓</Text>}
-                                    </TouchableOpacity>
-
-                                    <Text style={styles.fullRentText}>
-                                        Do you want to collect Full Rent for current month?
-                                    </Text>
-                                </View>
+                                        <Text style={styles.fullRentText}>
+                                            Do you want to collect Full Rent for current month?
+                                        </Text>
+                                    </View>
+                                )}
 
                                 {collectFullRent && (
                                     <>
@@ -1795,8 +1924,14 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     ))}
 
                                     <TouchableOpacity
-                                        style={styles.addNewButton}
+                                        // style={styles.addNewButton}
                                         onPress={AddOnetimeCharge}
+
+                                        disabled={!refuseAdvanceAmount}
+                                        style={[
+                                            styles.addNewButton,
+                                            !refuseAdvanceAmount && { opacity: 0.5 }
+                                        ]}
                                     >
                                         <View style={styles.addNewContent}>
                                             <View style={styles.plusCircle}>
@@ -1924,26 +2059,26 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     </Text>
                                 </TouchableOpacity>
 
-                            
-                                    <View style={styles.row}>
+
+                                <View style={styles.row}>
 
 
 
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.primaryBtn,
-                                                // hideCheckInSaveDraft && { flex: 1 },
-                                               ( !proceedcheckin || isSubmittingRef.current) && styles.disabledBtn,
-                                            ]}
-                                            disabled={!proceedcheckin || isSubmittingRef.current}
-                                            onPress={handleCheckIn}
-                                        >
-                                            <Text style={styles.primaryText}>Check In</Text>
-                                        </TouchableOpacity>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.primaryBtn,
+                                            // hideCheckInSaveDraft && { flex: 1 },
+                                            (!proceedcheckin || isSubmittingRef.current) && styles.disabledBtn,
+                                        ]}
+                                        disabled={!proceedcheckin || isSubmittingRef.current}
+                                        onPress={handleCheckIn}
+                                    >
+                                        <Text style={styles.primaryText}>Check In</Text>
+                                    </TouchableOpacity>
 
 
-                                    </View>
-                             
+                                </View>
+
 
 
                             </>
@@ -1956,6 +2091,47 @@ export default function NewTenantCheckIn({ navigation, route }) {
                     </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
+
+            <BedDetailsSheet
+                visible={showBedSheet}
+                joiningDate={checkJoiningDate}
+                onClose={() => setShowBedSheet(false)}
+                onSelect={(data) => {
+                    console.log("Selected Bed =>", data);
+
+                    setSelectedBedDetails(data);
+
+                    // Floor dropdown update
+                    const floor = floors.find(f => f.id === data.floorId);
+                    if (floor) {
+                        setFloorSelected(floor);
+                    }
+
+                    // Load rooms for selected floor
+                    loadRoomsByFloor(data.floorId).then(async () => {
+
+                        // Room dropdown update
+                        const room = {
+                            id: data.roomId,
+                            name: data.roomName,
+                        };
+                        setRoomSelected(room);
+
+                        // Load beds for selected room
+                        await getAllBedsByRoom(data.roomId);
+
+                        // Bed dropdown update
+                        setBedSelected({
+                            bedId: data.bedId,
+                            bedName: data.bedName,
+                            rentAmount: data.rentAmount,
+                        });
+
+                        // Rent auto fill
+                        setCheckinRentalAmount(String(data?.rentAmount));
+                    });
+                }}
+            />
 
             {showCalendar && (
                 <View style={styles.sheetOverlay}>
