@@ -35,6 +35,7 @@ import PlusIcon from "../../Assets/Images/add-circle.png";
 import { Switch } from "react-native";
 import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import ValidatedInput from "../MorePages/ValidatedInput"
 // import DatePicker from "react-native-date-picker";
 
 
@@ -289,9 +290,9 @@ export default function AddTenantNewform({ navigation, route }) {
 
         // AM / PM
         if (value.includes("PM")) {
-            result 
+            result
         } else {
-            result 
+            result
         }
 
         return result;
@@ -2149,7 +2150,7 @@ export default function AddTenantNewform({ navigation, route }) {
             );
 
             console.log("updateres", res);
-            
+
 
             if (res.success) {
                 setModalType("success");
@@ -3051,13 +3052,16 @@ export default function AddTenantNewform({ navigation, route }) {
                                             +91
                                         </Text>
 
-                                        <TextInput
+                                        <ValidatedInput
+                                            type="mobile"
+                                            inputType="numeric"
+                                            keyboardType="numeric"
                                             placeholder="9876543210"
-                                            keyboardType="number-pad"
                                             value={searchText}
                                             onFocus={() => setShowTenantList(true)}
                                             onChangeText={(text) => {
-                                                const value = text.replace(/[^0-9]/g, "");
+                                                    const value = t.replace(/[^0-9]/g, "").slice(0, 10)
+                                                // const value = text.replace(/[^0-9]/g, "");
                                                 handleSearchCustomer(value);
                                             }}
                                             maxLength={10}
@@ -6037,7 +6041,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                                     }
                                                     keyboardType="number-pad"
-                                                     placeholder="00:00 PM"
+                                                    placeholder="00:00 PM"
                                                 />
 
                                                 <Image
