@@ -128,7 +128,7 @@ useEffect(() => {
 }, []);
 
 
-
+console.log(vendor,"shruthu")
 console.log("vendorExpenses", vendorExpenses);
 
   const renderItem = ({ item }) => (
@@ -234,7 +234,7 @@ console.log("vendorExpenses", vendorExpenses);
   <TouchableOpacity
     style={styles.addExpenseBtn}
     onPress={() => {
-       navigation.navigate("AddExpensesPage", {
+       navigation.navigate("AddExpensesPage", { vendorData:vendor
         })
     }}
   >

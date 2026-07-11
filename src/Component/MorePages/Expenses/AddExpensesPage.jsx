@@ -10,7 +10,8 @@ import {
     ScrollView,
     Animated,
     PanResponder,
-    Dimensions, BackHandler, Keyboard, NativeModules
+    Dimensions, BackHandler, Keyboard, NativeModules,
+    Alert
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 import { useFocusEffect } from '@react-navigation/native';
@@ -128,7 +129,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const [description, setDescription] =
         useState("");
     const [paymentStatus, setPaymentStatus] =
-        useState("Partially Paid");
+        useState("");
 
     const [creditType, setCreditType] = useState("");
     const [categoryOpen, setCategoryOpen] = useState(false);
@@ -161,6 +162,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const [tax, setTax] = useState("");
     const [discount, setDiscount] = useState("");
     const [discountType, setDiscountType] = useState("amount"); // amount | percentage
+    const [discountError, setDiscountError] = useState("")
+    const vendorName=route?.params?.vendorData?.fullName
 
     const categoryList = IntializeexpensesList?.listExpenses || [];
 
@@ -170,6 +173,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     console.log("vendorlist", vendorList);
 
 
+console.log("vendy",vendorData,route)
 
 
     const emptyItem = {
@@ -194,6 +198,15 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             },
         ]);
     }
+
+    console.log("sinna",vendorList)
+
+    useEffect(()=>{
+        if(vendorName){
+           setSelectedVendor(route?.params?.vendorData)
+           setVendorId(route?.params?.vendorData?.id)
+        }
+    },[])
 
 
 
@@ -602,6 +615,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const [minDate, setMinDate] = useState(null); // add this
 
+
+    
+
     const pickImage = () => {
         ImagePicker.launchImageLibrary(
             {
@@ -873,17 +889,17 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     // const taxAmount = Number(tax || 0)
 
 
-
     const discountAmount =
         discountType === "percentage"
-            ? (itemTotal * Number(discount || 0)) / 100
+            ? (amount * Number(discount || 0)) / 100
             : Number(discount || 0);
 
-    const grandTotal =
-        itemTotal + taxAmount - discountAmount;
+    const grandTotal = () => {
+        // const res = Number(amount) + Number(tax) - Number(discountAmount);
+        return Number(amount) + Number(tax) - Number(discountAmount);
+    }
 
-
-
+    console.log(grandTotal(), "pinch")
     const datevalid = dayjs(purchaseDate).format("DD-MM-YYYY")
     console.log("purchaseDate", datevalid);
 
@@ -894,108 +910,108 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         if (isApplyTriggeredRef.current) return
         isApplyTriggeredRef.current = true
 
-         try {
-
-         
-
-        const totalAmount = Number(amount || 0);
-
-        const paid =
-            paymentStatus === "Fully Paid"
-                ? totalAmount
-                : Number(paidAmount || 0);
-
-        const balance =
-            paymentStatus === "Fully Paid"
-                ? 0
-                : totalAmount - paid;
-
-        const payload = {
-            images: attachments || [],
-
-            expense: {
-                categoryId: selectedCategory?.categoryId,
-                subCategory: selectedSubCategory?.subCategoryId,
-                purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-                count: items.length,
-                totalAmount,
-                creditPeriod: creditType || "",
-                bankId: selectedMode?.id || "",
-
-                description,
-                title: expenseTitle,
-
-                isVendorExpense: linkVendor,
-                vendorId: linkVendor ? vendorId : null,
-
-                paymentStatus:
-                    paymentStatus === "Fully Paid"
-                        ? "Full"
-                        : paymentStatus === "Partially Paid"
-                            ? "Partial"
-                            : "Pending",
-
-                paidAmount: paid,
-                balanceAmount: balance,
-
-                paymentMethod:
-                    paymentStatus === "Credit / Pending"
-                        ? ""
-                        : selectedMode?.id,
-
-                //                       creditType:
-                // paymentStatus === "Credit / Pending"
-                //   ? creditType
-                //   : "",
-
-                note: description || "",
-                transactionId: transactionId || "",
-
-                tax: Number(tax || 0),
-                discount: Number(discount || 0),
-
-                expenseItems: items.map((item) => ({
-                    item: item.itemDetail,
-                    quantity: Number(item.quantity || 0),
-                    unit: selectedUnits?.label,
-                    unitPrice: Number(item.unitPrice || 0),
-                    totalAmount: Number(item.amount || 0),
-                })),
-            },
-        };
-
-        console.log("EXPENSE PAYLOAD =>", payload);
-
-        const hostelId = activeHostelId
-
-        const response = await addExpense(hostelId, payload.expense, attachments);
-
-        console.log("response", response);
+        try {
 
 
-        if (response?.success) {
-            setModalType("success");
-            setModalMessage("Expense Added Successfully");
-            setShowSuccessModal(true);
 
-            setTimeout(() => {
-                navigation.goBack();
-            }, 1500);
-        } else {
-            setModalType("error");
-            setModalMessage(
-                response?.message || "Failed to add expense"
-            );
-            setShowSuccessModal(true);
-            setTimeout(() => {
-                setShowSuccessModal(false);
-            }, 1500);
+            const totalAmount = Number(amount || 0);
+
+            const paid =
+                paymentStatus === "Fully Paid"
+                    ? totalAmount
+                    : Number(paidAmount || 0);
+
+            const balance =
+                paymentStatus === "Fully Paid"
+                    ? 0
+                    : totalAmount - paid;
+
+            const payload = {
+                images: attachments || [],
+
+                expense: {
+                    categoryId: selectedCategory?.categoryId,
+                    subCategory: selectedSubCategory?.subCategoryId,
+                    purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+                    count: items.length,
+                    totalAmount,
+                    creditPeriod: creditType || "",
+                    bankId: selectedMode?.id || "",
+
+                    description,
+                    title: expenseTitle,
+
+                    isVendorExpense: linkVendor,
+                    vendorId: linkVendor ? vendorId : null,
+
+                    paymentStatus:
+                        paymentStatus === "Fully Paid"
+                            ? "Full"
+                            : paymentStatus === "Partially Paid"
+                                ? "Partial"
+                                : "Pending",
+
+                    paidAmount: paid,
+                    balanceAmount: balance,
+
+                    paymentMethod:
+                        paymentStatus === "Credit / Pending"
+                            ? ""
+                            : selectedMode?.id,
+
+                    //                       creditType:
+                    // paymentStatus === "Credit / Pending"
+                    //   ? creditType
+                    //   : "",
+
+                    note: description || "",
+                    transactionId: transactionId || "",
+
+                    tax: Number(tax || 0),
+                    discount: Number(discount || 0),
+
+                    expenseItems: items.map((item) => ({
+                        item: item.itemDetail,
+                        quantity: Number(item.quantity || 0),
+                        unit: selectedUnits?.label,
+                        unitPrice: Number(item.unitPrice || 0),
+                        totalAmount: Number(item.amount || 0),
+                    })),
+                },
+            };
+
+            console.log("EXPENSE PAYLOAD =>", payload);
+
+            const hostelId = activeHostelId
+
+            const response = await addExpense(hostelId, payload.expense, attachments);
+
+            console.log("response", response);
+
+
+            if (response?.success) {
+                setModalType("success");
+                setModalMessage("Expense Added Successfully");
+                setShowSuccessModal(true);
+
+                setTimeout(() => {
+                    navigation.goBack();
+                }, 1500);
+            } else {
+                setModalType("error");
+                setModalMessage(
+                    response?.message || "Failed to add expense"
+                );
+                setShowSuccessModal(true);
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 1500);
+            }
         }
-    }
-   finally{
- isApplyTriggeredRef.current = false
-   }
-       
+        finally {
+            isApplyTriggeredRef.current = false
+        }
+
     };
 
     return (
@@ -1534,6 +1550,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
                             <TouchableOpacity
                                 style={styles.expensesDropdownBox}
+                                disabled={vendorName ? true :false}
                                 onPress={() => {
                                     setVendorOpen(!vendorOpen);
                                     setSubCategoryOpen(false);
@@ -2289,7 +2306,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                             discountType === "amount" &&
                                             styles.discountBtnActive,
                                         ]}
-                                        onPress={() => setDiscountType("amount")}
+                                        onPress={() => {
+                                            setDiscountType("amount")
+                                            setDiscountError("")
+                                        }}
                                     >
                                         <Text style={{ color: discountType === "amount" ? "#fff" : "#00000" }}>₹</Text>
                                     </TouchableOpacity>
@@ -2300,7 +2320,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                             discountType === "percentage" &&
                                             styles.discountBtnActive,
                                         ]}
-                                        onPress={() => setDiscountType("percentage")}
+                                        onPress={() => {
+                                            setDiscountType("percentage")
+                                            setDiscountError("")
+                                        }}
                                     >
                                         <Text style={{ color: discountType === "percentage" ? "#fff" : "#00000" }}>%</Text>
                                     </TouchableOpacity>
@@ -2315,19 +2338,31 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                     type="numberOnly"
                                     inputType="numeric"
                                     value={discount}
-                                    onChangeText={setDiscount}
+                                    onChangeText={(text) => {
+
+                                        if (discountType === "percentage" && Number(text) > 100) {
+                                            setDiscountError("Discount percentage cannot exceed 100%")
+                                            return;
+                                        } else if (discountType === "amount" && Number(text) > amount) {
+                                            setDiscountError("Discount amount cannot exceed total amount")
+                                            return;
+                                        }
+                                        setDiscount(text)
+                                        setDiscountError("")
+                                    }}
                                     placeholder="₹ 0.00"
                                     style={styles.discountInput}
                                 />
                             </View>
+                            {discountError && <ErrorMessage message={discountError} type="error" />}
                         </View>
 
                         <View style={styles.totalContainer}>
                             <Text style={styles.totalLabel}>
-                                TOTAL RETAINER AMOUNT
+                                TOTAL AMOUNT
                             </Text>
                             <Text style={styles.totalValue}>
-                                ₹ {itemTotal.toFixed(2)}
+                                ₹ {(grandTotal())}
                             </Text>
                         </View>
                     </View>
