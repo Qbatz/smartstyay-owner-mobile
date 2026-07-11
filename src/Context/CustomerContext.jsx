@@ -1943,6 +1943,57 @@ const handleGetDraftDetails = async (customerId) => {
 
 const resetDraftDetails = () => {
   setDraftDetails(null);
+}
+
+
+const BookedTenantCheckIn = async (hostelId, customerId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v3/customers/booked/check-in/${hostelId}/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res?.status === 200 || res?.status === 201) {
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Booked Check-In failed",
+    };
+
+  } catch (error) {
+    console.log("BOOKED CHECK-IN ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
 };
 
 
@@ -1970,7 +2021,7 @@ const resetDraftDetails = () => {
         addVendor, updateVendor , vendorList,
         getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment , RequestKYC , 
         AddTenantDraft ,TenantCheckIn , UpdateTenantDraft , SearchCustomer ,
-        handleGetDraftDetails, resetDraftDetails,
+        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn
       }}
     >
       {children}
