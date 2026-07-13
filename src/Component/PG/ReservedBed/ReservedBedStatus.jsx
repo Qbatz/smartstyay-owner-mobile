@@ -145,11 +145,12 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
         setMenuOpen(false)
         onClose()
         setBookDetails(details)
-      navigation.navigate("ReserveToCheckin", {
+      navigation.navigate("BookingCheckIn", {
      selectedBedReserv: details,
-     selectedBed:selectedBed
-
-  });
+     PGselectedBed:selectedBed
+  })
+       console.log("emtybed", details)
+          console.log("emtybed", selectedBed)
     }
 
       const handleCallPhone=(mobile)=>{

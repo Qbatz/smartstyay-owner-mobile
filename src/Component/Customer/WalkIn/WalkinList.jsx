@@ -358,20 +358,20 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
                 },
               ]}
             >
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
                 disabled={!canWriteWalkin}
                 onPress={handleShowTennantCheckin}>
                 <Image source={Checkin} style={[styles.menuIcon, { tintColor: "#1E45E1", }]} />
                 <Text style={styles.menuText}>Check-In</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
                <TouchableOpacity
                 style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
                 disabled={!canWriteWalkin}
                 onPress={handleShowNewTenantCheckin}>
                 <Image source={Checkin} style={[styles.menuIcon, { tintColor: "#1E45E1", }]} />
-                <Text style={styles.menuText}>New Check-In</Text>
+                <Text style={styles.menuText}>Check-In</Text>
               </TouchableOpacity>
 
 

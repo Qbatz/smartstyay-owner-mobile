@@ -559,9 +559,9 @@ export default function AssignTenant({ navigation, route }) {
 
     if (isCheckingIn) return;
     const chargeValid = validateExtraCharges();
-    // if (!chargeValid) return;
-    const onetimechargevalid = validateOneTimeCharges();
-    if (!chargeValid || !onetimechargevalid) return;
+    if (!chargeValid) return;
+    // const onetimechargevalid = validateOneTimeCharges();
+    // if (!chargeValid || !onetimechargevalid) return;
 
     const customerId = CheckinTenantSelected?.customerId;
     let hasError = false;
@@ -1779,7 +1779,7 @@ export default function AssignTenant({ navigation, route }) {
                   </>
                 )}
 
-                <View style={styles.nonRefund}>
+                {/* <View style={styles.nonRefund}>
                   <View style={styles.extraHeader}>
                     <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Add Onetime Payment </Text>
 
@@ -1788,7 +1788,6 @@ export default function AssignTenant({ navigation, route }) {
                   {onetimepaymentcharges.map((item) => (
                     <View key={item.id} style={styles.figmaRowWrapper}>
 
-                      {/* CLOSE BTN */}
                       <TouchableOpacity
                         onPress={() => removeOnetimeCharge(item.id, item.type)}
                         style={styles.figmaCloseBtn}
@@ -1828,7 +1827,6 @@ export default function AssignTenant({ navigation, route }) {
                               scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
                             }}
 
-                            // onChangeText={(t) => updateTitle(item.id, t)}
                             onChangeText={(t) => {
                               const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                               OneTimeupdateTitle(item.id, onlyLetters);
@@ -1840,7 +1838,6 @@ export default function AssignTenant({ navigation, route }) {
                           </View>
                         )}
 
-                        {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
                         {item.type === "" ? (
                           <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
                             <Text style={{ color: "#999" }}>Enter amount</Text>
@@ -1917,7 +1914,6 @@ export default function AssignTenant({ navigation, route }) {
                   ))}
 
                   <TouchableOpacity
-                    // style={styles.addNewButton}
                     onPress={AddOnetimeCharge}
 
                     disabled={!refuseAdvanceAmount}
@@ -1937,7 +1933,7 @@ export default function AssignTenant({ navigation, route }) {
                     </View>
                   </TouchableOpacity>
 
-                </View>
+                </View> */}
               </>
 
 
@@ -2665,4 +2661,3 @@ const styles = StyleSheet.create({
   },
 
 });
-
