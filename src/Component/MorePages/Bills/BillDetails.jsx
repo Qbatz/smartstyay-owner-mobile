@@ -388,7 +388,11 @@ const BillDetailsSheet = ({
 
   const handleShowRecordPayment = () => {
     setShowMenu(false);
-    setShowRecordPayment(true);
+     navigation.navigate("NewRecordPayment",
+                              {
+                                selectedBill, BillPdfdetails,
+                                onPaymentSuccess: onClose(),
+                              })
   };
 
   const handleShowRefundPayment = () => {
