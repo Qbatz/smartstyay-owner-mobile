@@ -61,12 +61,12 @@ import RoomIcon from "../../Assets/Images/Room_Icon.png"
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60;
 
-  // onPress={() =>
-  //               navigation.navigate("AddTenant", {
-  //                 refreshWalkins: walkinCustomers,
-  //                  mode: "Add",
-  //               })
-  //             }
+// onPress={() =>
+//               navigation.navigate("AddTenant", {
+//                 refreshWalkins: walkinCustomers,
+//                  mode: "Add",
+//               })
+//             }
 
 export default function TenantsScreen({ route }) {
   const { setShowTabBar } = route.params;
@@ -875,6 +875,21 @@ export default function TenantsScreen({ route }) {
                       No Tenant available{"\n"}
                       There are no tenant added.
                     </Text>
+
+                    <TouchableOpacity
+                      style={[styles.addBtnAdd, !canWriteTenant && { opacity: 0.4 }]}
+                      disabled={!canWriteTenant}
+                      onPress={() =>
+                        navigation.navigate("AddTenantNew", {
+                          mode: "Add",
+                        })
+                      }
+                    // onPress={}
+                    >
+                      <Text style={styles.addBtnText}>
+                        + Add Tenant
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 )}
                 {/* <ScrollView horizontal
@@ -1220,21 +1235,21 @@ export default function TenantsScreen({ route }) {
               </>
             )}
 
-             {customers?.listCustomers?.length > 0 &&
-          <>
-            <TouchableOpacity
-              style={[styles.addBtn, !canWriteTenant && { opacity: 0.4 }]}
-              disabled={!canWriteTenant}
-              onPress={() =>
-                navigation.navigate("AddTenantNew", {
-                   mode: "Add",
-                })
-              }
-              >
-              <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
-            </TouchableOpacity>
-          </>
-        }
+            {customers?.listCustomers?.length > 0 &&
+              <>
+                <TouchableOpacity
+                  style={[styles.addBtn, !canWriteTenant && { opacity: 0.4 }]}
+                  disabled={!canWriteTenant}
+                  onPress={() =>
+                    navigation.navigate("AddTenantNew", {
+                      mode: "Add",
+                    })
+                  }
+                >
+                  <Image source={PlusIcon} style={{ width: 25, height: 25 }} />
+                </TouchableOpacity>
+              </>
+            }
 
             {/* {customers?.listCustomers?.length > 0 &&
               <TouchableOpacity
@@ -3122,4 +3137,17 @@ const styles = StyleSheet.create({
 
 
   plus: { fontSize: 30, color: "#fff", marginTop: -3 },
+  addBtnAdd: {
+    backgroundColor: "#1E45E1",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderRadius: 12,
+    marginBottom: 10,    // 🔥 reduced
+  },
+
+  addBtnText: {
+    textAlign: "center",
+    color: "#fff",
+    fontFamily: "Gilroy-Semibold"
+  },
 });

@@ -35,6 +35,7 @@ import PlusIcon from "../../Assets/Images/add-circle.png";
 import { Switch } from "react-native";
 import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import ValidatedInput from "../MorePages/ValidatedInput"
 // import DatePicker from "react-native-date-picker";
 
 
@@ -289,9 +290,9 @@ export default function AddTenantNewform({ navigation, route }) {
 
         // AM / PM
         if (value.includes("PM")) {
-            result 
+            result
         } else {
-            result 
+            result
         }
 
         return result;
@@ -2149,7 +2150,7 @@ export default function AddTenantNewform({ navigation, route }) {
             );
 
             console.log("updateres", res);
-            
+
 
             if (res.success) {
                 setModalType("success");
@@ -2528,9 +2529,9 @@ export default function AddTenantNewform({ navigation, route }) {
 
         if (isCheckingIn) return;
         const chargeValid = validateExtraCharges();
-        const onetimechargevalid = validateOneTimeCharges()
-        if (!chargeValid || !onetimechargevalid) return;
-        const customerId = CheckinTenantSelected?.customerId;
+        // const onetimechargevalid = validateOneTimeCharges()
+        if (!chargeValid) return;
+        // const customerId = CheckinTenantSelected?.customerId;
 
 
         let hasError = false;
@@ -3051,13 +3052,16 @@ export default function AddTenantNewform({ navigation, route }) {
                                             +91
                                         </Text>
 
-                                        <TextInput
+                                        <ValidatedInput
+                                            type="mobile"
+                                            inputType="numeric"
+                                            keyboardType="numeric"
                                             placeholder="9876543210"
-                                            keyboardType="number-pad"
                                             value={searchText}
                                             onFocus={() => setShowTenantList(true)}
                                             onChangeText={(text) => {
-                                                const value = text.replace(/[^0-9]/g, "");
+                                                    const value = t.replace(/[^0-9]/g, "").slice(0, 10)
+                                                // const value = text.replace(/[^0-9]/g, "");
                                                 handleSearchCustomer(value);
                                             }}
                                             maxLength={10}
@@ -4923,19 +4927,15 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 </>
                                             )}
 
-                                            <View style={styles.nonRefund}>
+                                            {/* <View style={styles.nonRefund}>
                                                 <View style={styles.extraHeader}>
                                                     <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Add Onetime Payment </Text>
 
-                                                    {/* <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                                                        <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
-                                                    </TouchableOpacity> */}
                                                 </View>
 
                                                 {onetimepaymentcharges.map((item) => (
                                                     <View key={item.id} style={styles.figmaRowWrapper}>
 
-                                                        {/* CLOSE BTN */}
                                                         <TouchableOpacity
                                                             onPress={() => removeOnetimeCharge(item.id, item.type)}
                                                             style={styles.figmaCloseBtn}
@@ -4975,7 +4975,6 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                         scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
                                                                     }}
 
-                                                                    // onChangeText={(t) => updateTitle(item.id, t)}
                                                                     onChangeText={(t) => {
                                                                         const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                                                         OneTimeupdateTitle(item.id, onlyLetters);
@@ -4987,7 +4986,6 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                 </View>
                                                             )}
 
-                                                            {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
                                                             {item.type === "" ? (
                                                                 <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
                                                                     <Text style={{ color: "#999" }}>Enter amount</Text>
@@ -5077,16 +5075,11 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         </Text>
                                                     </View>
                                                 </TouchableOpacity>
+                                            </View> */}
 
 
 
-
-
-
-
-                                            </View>
-
-                                            <View style={styles.summaryCard}>
+                                            {/* <View style={styles.summaryCard}>
                                                 <Text
                                                     style={styles.summaryTitle}
                                                 >
@@ -5097,10 +5090,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     style={styles.summaryAmount}
                                                 >
                                                     ₹ {summaryAmount.toLocaleString("en-IN")}
-                                                    {/* {(
-                                Number(paidAmount) ||
-                                0
-                              ).toFixed(2)} */}
+                                  
                                                 </Text>
 
                                                 <View
@@ -5120,11 +5110,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         style={styles.summaryText}
                                                     >
                                                         ₹ {summaryAdvanceAmount.toLocaleString("en-IN")}
-                                                        {/* {(
-                                  Number(
-                                    paidAmount
-                                  ) || 0
-                                ).toFixed(2)} */}
+                                  
                                                     </Text>
                                                 </View>
 
@@ -5144,11 +5130,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         style={styles.summaryText}
                                                     >
                                                         - ₹ {deductionTotal.toLocaleString("en-IN")}
-                                                        {/* {balance > 0
-                                  ? balance.toFixed(
-                                    2
-                                  )
-                                  : "0.00"} */}
+                                   
                                                     </Text>
                                                 </View>
                                                 <View
@@ -5164,17 +5146,15 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         style={styles.summaryText}
                                                     >
                                                         - ₹ {summaryRent.toLocaleString("en-IN")}
-                                                        {/* {balance > 0
-                                  ? balance.toFixed(
-                                    2
-                                  )
-                                  : "0.00"} */}
+                                  
                                                     </Text>
                                                 </View>
                                             </View>
                                             <Text style={styles.note}>
                                                 Note: System automatically generates a separate invoices for Advance & Base Rent
-                                            </Text>
+                                            </Text> */}
+
+
                                             <TouchableOpacity
                                                 style={{
                                                     flexDirection: "row",
@@ -6037,7 +6017,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                                     }
                                                     keyboardType="number-pad"
-                                                     placeholder="00:00 PM"
+                                                    placeholder="00:00 PM"
                                                 />
 
                                                 <Image

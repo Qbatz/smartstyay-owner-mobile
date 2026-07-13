@@ -198,7 +198,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   };
 
   const handleshowKYCPendingSheet = () => {
-     console.log("Pendingbuttonclicked");
+    console.log("Pendingbuttonclicked");
     setShowKYCPendingSheet(true)
   }
 
@@ -519,19 +519,17 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       customerId: selectedItem.customerId,
       customer: selectedItem,
 
-
-
       onSuccess: async () => {
         await fetchCustomers()
-        setShowDetailsMenu(false);
-        setMenuVisible(false);
+        // setShowDetailsMenu(false);
+        setMenuVisible(false)
       },
     })
 
     setMenuVisible(false)
+  }
 
-    console.log("selectedItem", selectedItem);
-  };
+
   const handleShowFinalSettlement = () => {
 
     setMenuVisible(false)
@@ -699,19 +697,20 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
   const status = customerDetails?.customerCurrentStatus;
-  
-const displayImage =
-  profileImage?.uri ||
-  customerDetails?.profilePic ||
-  (customerDetails?.kycInfo?.status === "VERIFIED"
-    ? customerDetails?.kycInfo?.aadhaarImage
-    : null);
+
+  const displayImage =
+    profileImage?.uri ||
+    customerDetails?.profilePic ||
+    (customerDetails?.kycInfo?.status === "VERIFIED"
+      ? customerDetails?.kycInfo?.aadhaarImage
+      : null);
 
   const disableFinancialEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
     status === "CANCELLED_BOOKING" ||
-    status === "SETTLEMENT_GENERATED" || status === "INACTIVE"
+    status === "SETTLEMENT_GENERATED" || status === "INACTIVE" ||
+    status ===  "DRAFT"
   // (status === "NOTICE" && isAfterLeavingDate);
 
   const renderTab = () => {
@@ -847,7 +846,7 @@ const displayImage =
 
 
 
-              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
+              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING" && customerDetails?.customerCurrentStatus != "DRAFT") && (
                 <TouchableOpacity onPress={(e) => {
                   openMenu(e, customerDetails);
                 }}>
@@ -880,7 +879,7 @@ const displayImage =
               >
                 <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
                   <TouchableOpacity onPress={handleProfilePress}
-                  disabled={(customerDetails?.customerCurrentStatus == "VACATED" || customerDetails?.customerCurrentStatus == "CANCELLED_BOOKING")}>
+                    disabled={(customerDetails?.customerCurrentStatus == "VACATED" || customerDetails?.customerCurrentStatus == "CANCELLED_BOOKING")}>
                     {/* <View style={{ width: 95, height: 95 }}>
                       {profileImage?.uri || customerDetails?.profilePic ? (
                         <Image
@@ -904,34 +903,34 @@ const displayImage =
                     </View> */}
 
                     <View style={{ width: 95, height: 95 }}>
-  {displayImage ? (
-    <Image
-      source={{ uri: displayImage }}
-      style={styles.avatar}
-    />
-  ) : (
-    <View
-      style={{
-        width: 95,
-        height: 95,
-        borderRadius: 17.08,
-        backgroundColor: "#E5E7EB",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Text
-        style={{
-          fontSize: 20,
-          fontWeight: "600",
-          color: "#374151",
-        }}
-      >
-        {customerDetails?.initials}
-      </Text>
-    </View>
-  )}
-</View>
+                      {displayImage ? (
+                        <Image
+                          source={{ uri: displayImage }}
+                          style={styles.avatar}
+                        />
+                      ) : (
+                        <View
+                          style={{
+                            width: 95,
+                            height: 95,
+                            borderRadius: 17.08,
+                            backgroundColor: "#E5E7EB",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 20,
+                              fontWeight: "600",
+                              color: "#374151",
+                            }}
+                          >
+                            {customerDetails?.initials}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
 
                     {/* <Image
                   source={
@@ -1476,13 +1475,13 @@ const displayImage =
           selectedTransaction={transactionDetail} />
 
 
- 
+
       </View>
-                 <KYCPendingSheet
-    visible={showkycPendingSheet}
-    onClose={() => setShowKYCPendingSheet(false)}
-    customerDetails={customerDetails}
-/>
+      <KYCPendingSheet
+        visible={showkycPendingSheet}
+        onClose={() => setShowKYCPendingSheet(false)}
+        customerDetails={customerDetails}
+      />
     </>
   );
 }

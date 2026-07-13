@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
     View,
     Text,
@@ -27,17 +27,31 @@ import SuccessModal from '../../ToastFile/ToastPage';
 import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import CommingSoon from "../../Assets/Images/Coming_soon.png"
+import BedIcon from "../../Assets/Images/bed_NewIcon.png";
+import { Switch } from "react-native";
+
+
+
+
 
 export default function BookingCheckIn({ navigation, route }) {
-    const { customerId, customer, onSuccess } = route.params || {};
+
+
+    const { customerId, customer, onSuccess, selectedBedReserv, PGselectedBed, } = route.params || {};
+    // const { customerId, customer, selectedBedReserv, selectedBed, onSuccess} = route.params || {};
     console.log("customerten", customerId)
     console.log("customer", customer);
+
+    const isPGBooking = !!selectedBedReserv && !!PGselectedBed;
 
     const [tab, setTab] = useState("long");
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
-    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, initializeCheckIn, bookedCheckInCustomer } = useCustomer();
+    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel,
+        initializeCheckIn, bookedCheckInCustomer,
+        BookedTenantCheckIn } = useCustomer();
 
+    const isSubmittingRef = useRef(false);
     const [floors, setFloors] = useState([]);
     const [floorOpen, setFloorOpen] = useState(false);
     const [selectedFloor, setSelectedFloor] = useState(null);
@@ -47,6 +61,8 @@ export default function BookingCheckIn({ navigation, route }) {
     const [modalType, setModalType] = useState("success");
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState("");
+
+
     const [selectedRoom, setSelectedRoom] = useState(null);
 
     const [beds, setBeds] = useState([]);
@@ -65,6 +81,21 @@ export default function BookingCheckIn({ navigation, route }) {
     const [extraCharges, setExtraCharges] = useState([]);
     const [bookingDetails, setBookingDetails] = useState("")
     const [bookingDetailsError, setBookingDetailsError] = useState("")
+    const [onetimepaymentcharges, setOneTimePaymentCharges] = useState([]);
+    const onetimepaymentmaintenanceAlreadyUsed = onetimepaymentcharges?.some(c => c?.type === "Maintenance");
+
+
+    const [refuseAdvanceAmount, setRefuseAdvanceAmount] = useState(false);
+    const [collectFullRent, setCollectFullRent] = useState(false);
+    const [showCustomRentEditor, setShowCustomRentEditor] = useState(false);
+    const [customRentAmount, setCustomRentAmount] = useState("");
+    const [savedCustomRent, setSavedCustomRent] = useState("");
+    const [isCustomRentSaved, setIsCustomRentSaved] = useState(false);
+    const [customRentError, setCustomRentError] = useState("");
+
+    const [proceedcheckin, setProceedCheckin] = useState(false);
+
+    const [availableBeds, setAvailableBeds] = useState([]);
 
     console.log("bookingDetails", bookingDetails)
 
@@ -92,23 +123,41 @@ export default function BookingCheckIn({ navigation, route }) {
             setRooms([]);
         }
     };
+const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
 
     useEffect(() => {
-        if (!activeHostelId || !customerId) return;
+        if (!activeHostelId || !checkInCustomerId) return;
 
         const initCheckIn = async () => {
-            const res = await initializeCheckIn(activeHostelId, customerId);
+            const res = await initializeCheckIn(activeHostelId, checkInCustomerId);
             console.log("initCheckIn", res)
-            if (res.success) {
+            if (res?.success) {
                 setBookingDetails(res.data);
+                if(res?.data?.bedName === null){
+                    setBookingDetailsError("Bed is Unavailable")
+
+                     await loadBeds(joiningDate);
+                    setSelectedFloor(null);
+                    setSelectedRoom(null);
+                    setSelectedBed(null);
+                }
             }
             else {
-                setBookingDetailsError(res.message)
+
+                setBookingDetailsError(res?.message);
+
+                await loadBeds(joiningDate);
+
+                setSelectedFloor(null);
+                setSelectedRoom(null);
+                setSelectedBed(null);
             }
         };
 
         initCheckIn();
-    }, [activeHostelId, customerId]);
+    }, [activeHostelId, checkInCustomerId]);
+
+
 
 
     const isAssignDisabled = !!bookingDetailsError;
@@ -122,7 +171,7 @@ export default function BookingCheckIn({ navigation, route }) {
     }, [activeHostelId]);
 
 
-    const loadBeds = async (date) => {
+    const loadBeds = async (date = joiningDate) => {
         if (!activeHostelId) return;
 
         const formattedDate = dayjs(date).format("DD-MM-YYYY");
@@ -132,22 +181,76 @@ export default function BookingCheckIn({ navigation, route }) {
             formattedDate
         );
 
+        console.log("avaolblebeds", res);
+
         if (res.success) {
-            setBeds(res.data.listBeds);
+            const list = res.data?.listBeds || [];
+
+            setBeds(list);
+
+            // Floor options
+            const floorList = [
+                ...new Map(
+                    list.map(item => [
+                        item.floorId,
+                        {
+                            id: item.floorId,
+                            name: item.floorName,
+                        },
+                    ])
+                ).values(),
+            ];
+
+            setFloors(floorList);
+
         } else {
             setBeds([]);
         }
     };
 
-    const filteredBeds = beds.filter(bed => {
-        if (!selectedFloor || !selectedRoom) return false;
 
-        return (
-            bed.floorId === selectedFloor.id &&
-            bed.roomId === selectedRoom.id &&
-            bed.currentStatus === "VACANT"
-        );
-    });
+    const displayName = isPGBooking
+        ? selectedBedReserv.tenantFullName
+        : customer?.fullName;
+
+        const countryCode =
+    isPGBooking
+        ? selectedBedReserv?.countryCode
+        : customer?.countryCode;
+
+    const displayMobile = isPGBooking
+        ? selectedBedReserv?.mobile
+        : customer?.mobile || customer?.mobileNo
+
+    const bookingDate = isPGBooking
+        ? selectedBedReserv.bookingDate
+        : bookingDetails?.bookedDate || customer?.bookedAt;
+
+    const defaultRent = isPGBooking
+        ? PGselectedBed?.rentAmount
+        : bookingDetails?.rent;
+
+        const profilePic =
+    isPGBooking
+        ? selectedBedReserv?.profilePic
+        : customer?.profilePic;
+
+
+    // const filteredBeds = beds.filter(bed => {
+    //     if (!selectedFloor || !selectedRoom) return false;
+
+    //     return (
+    //         bed.floorId === selectedFloor.id &&
+    //         bed.roomId === selectedRoom.id &&
+    //         bed.currentStatus === "VACANT"
+    //     );
+    // });
+
+    const filteredBeds = beds.filter(item =>
+        item.floorId === selectedFloor?.id &&
+        item.roomId === selectedRoom?.id &&
+        item.currentStatus === "VACANT"
+    );
 
     const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
@@ -180,35 +283,79 @@ export default function BookingCheckIn({ navigation, route }) {
     };
 
 
+    // useEffect(() => {
+    //     if (!customer) return;
+
+
+    //     setSelectedFloor({
+    //         id: customer.floorId,
+    //         name: customer.floorName || customer?.bookingInfo?.bookedFloor,
+    //     });
+
+
+    //     setSelectedRoom({
+    //         id: customer.roomId,
+    //         name: customer.roomName || customer?.bookingInfo?.bookedRoom,
+    //     });
+
+
+    //     setSelectedBed({
+    //         bedId: customer.bedId,
+    //         bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
+    //     });
+
+
+
+
+    // }, [customer]);
+
+
     useEffect(() => {
-        if (!customer) return;
+
+        if (isPGBooking) {
+
+            setSelectedFloor({
+                id: PGselectedBed.floorId,
+                name: PGselectedBed.floorName,
+            });
+
+            setSelectedRoom({
+                id: PGselectedBed.roomId,
+                name: PGselectedBed.roomName,
+            });
+
+            setSelectedBed({
+                bedId: PGselectedBed.bedId,
+                bedName: PGselectedBed.bedName,
+            });
+
+            return;
+        }
+
+        if (customer) {
+            setSelectedFloor({
+                id: customer.floorId,
+                name: customer.floorName || customer?.bookingInfo?.bookedFloor,
+            });
 
 
-        setSelectedFloor({
-            id: customer.floorId,
-            name: customer.floorName || customer?.bookingInfo?.bookedFloor,
-        });
+            setSelectedRoom({
+                id: customer.roomId,
+                name: customer.roomName || customer?.bookingInfo?.bookedRoom,
+            });
 
 
-        setSelectedRoom({
-            id: customer.roomId,
-            name: customer.roomName || customer?.bookingInfo?.bookedRoom,
-        });
+            setSelectedBed({
+                bedId: customer.bedId,
+                bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
+            });
+
+        }
+
+    }, [customer, selectedBedReserv , PGselectedBed]);
 
 
-        setSelectedBed({
-            bedId: customer.bedId,
-            bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
-        });
 
-
-        // if (customer.expectedJoiningDate) {
-        //     setJoiningDate(
-        //         dayjs(customer.expectedJoiningDate, "DD/MM/YYYY").toDate()
-        //     );
-        // }
-
-    }, [customer]);
 
 
 
@@ -223,6 +370,124 @@ export default function BookingCheckIn({ navigation, route }) {
                     : i
             )
         );
+    };
+
+    const selectOntimeType = (id, type) => {
+
+
+        if (type === "Maintenance" && onetimepaymentmaintenanceAlreadyUsed) return;
+
+        setOneTimePaymentCharges(prev =>
+            prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError: "" } : i))
+        );
+
+        setOpenDropdownId(null);
+    };
+
+
+    const OneTimeupdateTitle = (id, title) => {
+        // setExtraCharges(prev =>
+        //   prev.map(i => (i.id === id ? { ...i, title } : i))
+        // );
+        setOneTimePaymentCharges(prev =>
+            prev.map(i =>
+                i.id === id
+                    ? { ...i, title, titleError: "" }
+                    : i
+            )
+        );
+    };
+
+    const OneTimeupdateAmount = (id, amount) => {
+        const onlyNum = amount.replace(/[^0-9]/g, "");
+
+        setOneTimePaymentCharges((prev) =>
+            prev.map((i) =>
+                i.id === id
+                    ? { ...i, amount: onlyNum, amountError: "" }
+                    : i
+            )
+        )
+    }
+
+    const AddOnetimeCharge = () => {
+        setOneTimePaymentCharges(prev => [
+            ...prev,
+            { id: Date.now(), type: "", title: "", amount: "" }
+        ]);
+    };
+
+    const removeOnetimeCharge = (id) => {
+        setOneTimePaymentCharges(prev => prev.filter(i => i.id !== id));
+
+    };
+
+    const validateOneTimeCharges = () => {
+        let valid = true;
+
+        const updated = onetimepaymentcharges.map((e) => {
+            let titleError = "";
+            let amountError = "";
+            let typeError = "";
+
+            const titleFilled = e.title?.trim()?.length > 0;
+            const amountFilled = e.amount !== "" && e.amount !== null && e.amount !== undefined;
+
+            const amt = Number(e.amount);
+
+
+            if (!e.type) {
+                typeError = "Please select type";
+                valid = false;
+                return { ...e, typeError, titleError: "", amountError: "" };
+            }
+
+
+            if (e.type === "Maintenance") {
+                if (!amountFilled) {
+                    amountError = "Please enter amount";
+                    valid = false;
+                } else if (isNaN(amt) || amt <= 0) {
+                    amountError = "Amount must be greater than 0";
+                    valid = false;
+                }
+
+                return { ...e, typeError: "", titleError: "", amountError };
+            }
+
+            // ✅ CASE 3: Others -> reason + amount both mandatory
+            if (e.type === "Others") {
+                // both empty -> ok (optional row)
+                // if (!titleFilled && !amountFilled) {
+                //   return { ...e, titleError: "", amountError: "" };
+                // }
+
+                if (!titleFilled && !amountFilled) {
+                    titleError = "Please enter reason";
+                    valid = false;
+                }
+
+                else if (!titleFilled) {
+                    titleError = "Please enter reason";
+                    valid = false;
+                }
+
+                else if (!amountFilled) {
+                    amountError = "Please enter amount";
+                    valid = false;
+                } else if (isNaN(amt) || amt <= 0) {
+                    amountError = "Amount must be greater than 0";
+                    valid = false;
+                }
+
+                return { ...e, typeError, titleError, amountError };
+            }
+
+            return { ...e, typeError: "", titleError: "", amountError: "" };
+        });
+
+        setOneTimePaymentCharges(updated);
+        return valid;
     };
 
     const updateAmount = (id, amount) => {
@@ -307,7 +572,7 @@ export default function BookingCheckIn({ navigation, route }) {
             valid = false;
         }
 
-        if (!advanceAmount) {
+        if (!refuseAdvanceAmount && !advanceAmount) {
             setAdvanceError("Please Enter Advance Amount");
             valid = false;
         }
@@ -382,66 +647,122 @@ export default function BookingCheckIn({ navigation, route }) {
 
         setExtraCharges(updated);
         return valid;
-    };
+    }
+
+
+    console.log("Selected Bed", selectedBed);
+
+  console.log("bookingtocheckincustomerId", customerId , selectedBedReserv?.tenetId)
 
     const submitLongStay = async () => {
         const isValid = validateLongStay();
 
         if (!isValid) return;
         const chargeValid = validateExtraCharges();
+        // const onetimechargevalid = validateOneTimeCharges()
+        // if (!chargeValid || !onetimechargevalid) return;
         if (!chargeValid) return;
-        const payload = {
-            bookingId: bookingDetails?.bookingId,
-            joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
-            advanceAmount: Number(advanceAmount),
-            rentalAmount: Number(rentalAmount),
-            stayType: "LONG",
+        //  if(!checkInCustomerId) return
+            
+        if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
 
-            deductions: extraCharges.map(e => ({
-                type:
-                    e.type === "Others"
-                        ? e.title.trim().toLowerCase()
-                        : e.type.toLowerCase(),
-                amount: Number(e.amount),
-            })),
+        try {
 
-            isAdvanceIncludedInBooking: true,
+            const payload = {
+                floorId: selectedFloor?.id,
+                roomId: selectedRoom?.id,
+                bedId: selectedBed?.bedId,
 
+                joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
 
-        };
-        console.log("customerId", customerId)
-        console.log("payload", payload)
-        const res = await bookedCheckInCustomer(customerId, payload);
+                refundableAmount: refuseAdvanceAmount
+                    ? 0
+                    : Number(advanceAmount || 0),
 
-        if (res.success) {
-            setModalType("success");
-            setMessage(res.data);
-            setShowSuccess(true);
-            navigation.goBack();
+                rentalAmount: Number(rentalAmount || 0),
 
-            if (onSuccess) {
-                await onSuccess();
+                stayType: "LONG",
+
+                deductions: extraCharges.map(item => ({
+                    type:
+                        item.type === "Others"
+                            ? item.title.trim()
+                            : item.type,
+                    amount: Number(item.amount || 0),
+                })),
+
+                shouldCollectFullRent: collectFullRent,
+
+                customRent:
+                    collectFullRent && savedCustomRent
+                        ? Number(savedCustomRent)
+                        : 0,
+
+                oneTimeDeduction: onetimepaymentcharges.map(item => ({
+                    type:
+                        item.type === "Others"
+                            ? item.title.trim()
+                            : item.type,
+                    amount: Number(item.amount || 0),
+                })),
             }
 
+            console.log("bookingtocheckincustomerId", checkInCustomerId)
+            console.log("bookingtocheckinpayload", payload)
 
-            await getAllBedsByRoom(selectedRoom.id);
+            // const checkInCustomerId = customerId || selectedBedReserv?.tenantId;
 
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 800);
+            const res = await BookedTenantCheckIn(
+                activeHostelId,
+                checkInCustomerId,
+                payload
+            );
+            
+            console.log("bookingtocheckinres", res);
+            
 
-        } else {
-            setModalType("error");
-            setMessage(res?.message);
-            setShowSuccess(true);
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 800);
+            if (res?.success) {
+                setModalType("success");
+                setMessage(res.data);
+                setShowSuccess(true);
+                navigation.goBack();
+
+                if (onSuccess) {
+                    await onSuccess();
+                }
+
+
+                await getAllBedsByRoom(selectedRoom.id);
+
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 800);
+
+            } else {
+                setModalType("error");
+                setMessage(res?.message);
+                setShowSuccess(true);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 800);
+            }
+
+        }
+        finally {
+            isSubmittingRef.current = false;
         }
 
+    }
 
-    };
+    const summaryAdvanceAmount = Number(advanceAmount || 0);
 
+    const deductionTotal = [...extraCharges].reduce(
+        (total, item) => total + Number(item.amount || 0), 0)
+
+    const summaryRent = Number(rentalAmount || 0)
+
+    const summaryAmount = summaryAdvanceAmount + deductionTotal + summaryRent;
 
 
 
@@ -523,26 +844,73 @@ export default function BookingCheckIn({ navigation, route }) {
 
                         {tab === "long" && (
                             <View>
-                            
-                            <View style={{flexDirection:'row',alignItems:'center',marginVertical:10}}>
-                                {customer?.profilePic ? <Image source={{ uri: customer?.profilePic }} style={{ width: 45, height: 45 }} /> :
 
-                                    <View style={{width:45,height:45,borderRadius:22.5,backgroundColor:'#e6e7eb',
-                                                justifyContent:'center',alignItems:'center'}}>
-                                        <Text style={{fontSize:18,fontFamily:'Gilroy-Semibold'}}>{customer?.initials}</Text>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+                                    {profilePic ? <Image source={{ uri: profilePic }} style={{ width: 45, height: 45 }} /> :
 
+                                        <View style={{
+                                            width: 45, height: 45, borderRadius: 22.5, backgroundColor: '#e6e7eb',
+                                            justifyContent: 'center', alignItems: 'center'
+                                        }}>
+                                            <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>{customer?.initials || selectedBedReserv?.tenantInitials}</Text>
+
+                                        </View>
+                                    }
+
+                                    <View style={{ marginLeft: 8 }}>
+                                        <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold' }}>{displayName}</Text>
+                                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 4 }}>
+                                            +{countryCode} {displayMobile}</Text>
                                     </View>
-                                }
-
-                                <View style={{marginLeft:8}}>
-                                    <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold'}}>{customer?.fullName}</Text>
-                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',marginTop:4}}>
-                                        +{customer?.countryCode} {customer?.mobile || customer?.mobileNo}</Text>
                                 </View>
-                            </View>
+
+                                <Text style={styles.label}>Booking Date</Text>
+
+                                <TouchableOpacity
+                                    // style={styles.dateBox}
+                                    // style={[
+                                    //     styles.dateBox,
+                                    //     bookingDetails?.bookedDate && { backgroundColor: "#F3F4F6" }
+                                    // ]}
+                                    // disabled={!!bookingDetails?.bookedDate}
+                                    style={[
+                                        styles.dateBox,
+                                        (bookingDate) && {
+                                            backgroundColor: "#F3F4F6",
+                                        },
+                                    ]}
+                                    disabled={!!(bookingDate)}
+                                >
+                                    <Text style={styles.placeholder}>
+                                        {/* {bookingDetails?.bookedDate} */}
+                                        {bookingDate || "DD-MM-YYYY"}
+                                    </Text>
+                                    <Image source={CalendarImg} style={styles.calendarIcon} />
+                                </TouchableOpacity>
+
+                                <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
+
+                                <TouchableOpacity
+                                    style={styles.dateBox}
+                                    onPress={() => setOpenDatePicker(true)}
+                                >
+                                    <Text style={styles.placeholder}>
+                                        {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                                    </Text>
+                                    <Image source={CalendarImg} style={styles.calendarIcon} />
+                                </TouchableOpacity>
 
 
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
+                                    <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
+                                    <View style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}>
 
+                                        <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
+
+                                        <Text style={{ color: '#1E45E1' }}>Bed Layout View</Text>
+                                    </View>
+
+                                </View>
 
 
 
@@ -552,9 +920,10 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <TouchableOpacity
                                         style={[
                                             styles.select,
-                                            customer && { backgroundColor: "#F3F4F6" }
+                                            // customer && { backgroundColor: "#F3F4F6" }
                                         ]}
-                                        disabled={!!customer}
+                                        onPress={() => setFloorOpen(!floorOpen)}
+                                    // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
                                             {selectedFloor?.name || "Select a Floor"}
@@ -575,10 +944,24 @@ export default function BookingCheckIn({ navigation, route }) {
                                                             setSelectedFloor(v);
                                                             setFloorOpen(false);
 
+                                                            const roomList = [
+                                                                ...new Map(
+                                                                    beds
+                                                                        .filter(item => item.floorId === v.id)
+                                                                        .map(item => [
+                                                                            item.roomId,
+                                                                            {
+                                                                                id: item.roomId,
+                                                                                name: item.roomName,
+                                                                            },
+                                                                        ])
+                                                                ).values(),
+                                                            ];
+
+                                                            setRooms(roomList);
+
                                                             setSelectedRoom(null);
                                                             setSelectedBed(null);
-                                                            setRooms([]);
-                                                            loadRooms(v.id);
                                                         }}
                                                     >
                                                         <Text style={styles.optionText}>{v.name}</Text>
@@ -599,9 +982,14 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <TouchableOpacity
                                         style={[
                                             styles.select,
-                                            customer && { backgroundColor: "#F3F4F6" }
+                                            // customer && { backgroundColor: "#F3F4F6" }
                                         ]}
-                                        disabled={!!customer}
+                                        onPress={() => {
+                                            if (selectedFloor) {
+                                                setRoomOpen(!roomOpen);
+                                            }
+                                        }}
+                                    // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
                                             {selectedRoom?.name || "Select a Room"}
@@ -619,6 +1007,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         onPress={() => {
                                                             setSelectedRoom(r);
                                                             setRoomOpen(false);
+                                                            setSelectedBed(null);
                                                         }}
                                                     >
                                                         <Text style={styles.optionText}>{r.name}</Text>
@@ -637,9 +1026,14 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <TouchableOpacity
                                         style={[
                                             styles.select,
-                                            customer && { backgroundColor: "#F3F4F6" }
+                                            // customer && { backgroundColor: "#F3F4F6" }
                                         ]}
-                                        disabled={!!customer}
+                                        onPress={() => {
+                                            if (selectedRoom) {
+                                                setBedOpen(!bedOpen);
+                                            }
+                                        }}
+                                    // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
                                             {selectedBed?.bedName || "Select a Bed"}
@@ -651,7 +1045,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                     {bedOpen && filteredBeds.length > 0 && (
                                         <View style={styles.dropdownMenu}>
                                             <ScrollView style={{ maxHeight: 160 }}>
-                                                {filteredBeds.map((b) => (
+                                                {/* {filteredBeds.map((b) => (
                                                     <TouchableOpacity
                                                         key={b.bedId}
                                                         style={styles.option}
@@ -665,6 +1059,19 @@ export default function BookingCheckIn({ navigation, route }) {
                                                             {b.bedName}
                                                         </Text>
                                                     </TouchableOpacity>
+                                                ))} */}
+                                                {filteredBeds.map(item => (
+                                                    <TouchableOpacity
+                                                        key={item.bedId}
+                                                        style={styles.option}
+                                                        onPress={() => {
+                                                            setSelectedBed(item);
+                                                            setBedOpen(false);
+                                                            setBookingDetailsError("")
+                                                        }}
+                                                    >
+                                                        <Text style={styles.optionText}>{item.bedName}</Text>
+                                                    </TouchableOpacity>
                                                 ))}
                                             </ScrollView>
                                         </View>
@@ -674,49 +1081,45 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <ErrorMessage message={bedError} type="error" />
                                 )}
 
-                                <Text style={styles.label}>Booking Date</Text>
+                                {bookingDetailsError && (
+                                    <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }} />
+                                )}
 
-                                <TouchableOpacity
-                                    // style={styles.dateBox}
-                                    // style={[
-                                    //     styles.dateBox,
-                                    //     bookingDetails?.bookedDate && { backgroundColor: "#F3F4F6" }
-                                    // ]}
-                                    // disabled={!!bookingDetails?.bookedDate}
-                                    style={[
-                                        styles.dateBox,
-                                        (bookingDetails?.bookedDate || customer?.bookedAt) && {
-                                            backgroundColor: "#F3F4F6",
-                                        },
-                                    ]}
-                                    disabled={!!(bookingDetails?.bookedDate || customer?.bookedAt)}
-                                >
-                                    <Text style={styles.placeholder}>
-                                        {/* {bookingDetails?.bookedDate} */}
-                                        {bookingDetails?.bookedDate || customer?.bookedAt || "DD-MM-YYYY"}
+
+
+
+
+
+                                <View style={styles.switchRow}>
+                                    <Text style={styles.switchLabel}>
+                                        Do you want to refuse advance amount?
                                     </Text>
-                                    <Image source={CalendarImg} style={styles.calendarIcon} />
-                                </TouchableOpacity>
 
+                                    <Switch
+                                        value={refuseAdvanceAmount}
+                                        onValueChange={(value) => {
+                                            setRefuseAdvanceAmount(value);
 
-                                <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-
-                                <TouchableOpacity
-                                    style={styles.dateBox}
-                                    onPress={() => setOpenDatePicker(true)}
-                                >
-                                    <Text style={styles.placeholder}>
-                                        {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                                    </Text>
-                                    <Image source={CalendarImg} style={styles.calendarIcon} />
-                                </TouchableOpacity>
+                                            if (value) {
+                                                setAdvanceAmount("");
+                                                setAdvanceError("");
+                                            }
+                                        }}
+                                    />
+                                </View>
 
                                 <View style={styles.field}>
                                     <Text style={styles.label}>Advance Amount <Text style={{ color: "red" }}>*</Text></Text>
                                     <TextInput
-                                        style={styles.input}
+                                        // style={styles.input}
+                                        style={[
+                                            styles.input,
+                                            refuseAdvanceAmount && styles.disabledInput,
+                                        ]}
                                         keyboardType="numeric"
                                         value={advanceAmount}
+                                        editable={!refuseAdvanceAmount}
+                                        selectTextOnFocus={!refuseAdvanceAmount}
                                         placeholder='Enter AdvanceAmount'
                                         // onChangeText={setAdvanceAmount}
                                         onChangeText={(text) => {
@@ -731,37 +1134,19 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <ErrorMessage message={advanceError} type="error" />
                                 )}
 
-                                <View style={styles.field}>
-                                    <Text style={styles.label}>Rental Amount <Text style={{ color: "red" }}>*</Text></Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        keyboardType="numeric"
-                                        value={rentalAmount}
-                                        placeholder={
-                                            bookingDetails?.rent
-                                                ? `Selected Bed Rent is ${bookingDetails?.rent}`
-                                                : "Enter Rental Amount"
-                                        }
-                                        placeholderTextColor="#9CA3AF"
-                                        // onChangeText={setRentalAmount}
-                                        onChangeText={(text) => {
-                                            const onlyNumbers = text.replace(/[^0-9]/g, "");
-                                            setRentalAmount(onlyNumbers);
-                                            setRentError("");
-                                        }}
-
-                                    />
-
-                                </View>
-                                {rentError && (
-                                    <ErrorMessage message={rentError} type="error" />
-                                )}
 
                                 <View style={styles.nonRefund}>
                                     <View style={styles.extraHeader}>
                                         <Text style={styles.label}>Non Refundable Amount</Text>
 
-                                        <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
+                                        <TouchableOpacity
+                                            disabled={refuseAdvanceAmount}
+                                            style={[
+                                                styles.addBtn,
+                                                refuseAdvanceAmount && { opacity: 0.5 }
+                                            ]}
+                                            // style={styles.addBtn} 
+                                            onPress={addCharge}>
                                             <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Add</Text>
                                         </TouchableOpacity>
                                     </View>
@@ -880,11 +1265,471 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                 </View>
 
-                                <View style={styles.centerError}>
+                                <View style={styles.field}>
+                                    <Text style={styles.label}>Total Rent <Text style={{ color: "red" }}>*</Text></Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        keyboardType="numeric"
+                                        value={rentalAmount}
+                                        placeholder={
+                                            defaultRent
+                                                ? `Selected Bed Rent is ${defaultRent}`
+                                                : "Enter Rental Amount"
+                                        }
+                                        placeholderTextColor="#9CA3AF"
+                                        // onChangeText={setRentalAmount}
+                                        onChangeText={(text) => {
+                                            const onlyNumbers = text.replace(/[^0-9]/g, "");
+                                            setRentalAmount(onlyNumbers);
+                                            setRentError("");
+                                        }}
+
+                                    />
+
+                                </View>
+                                {rentError && (
+                                    <ErrorMessage message={rentError} type="error" />
+                                )}
+
+                                <View style={styles.fullRentRow}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.checkbox,
+                                            collectFullRent && styles.checkboxSelected,
+                                        ]}
+                                        onPress={() => {
+                                            const value = !collectFullRent;
+
+                                            setCollectFullRent(value);
+
+                                            if (!value) {
+                                                setShowCustomRentEditor(false);
+                                                setCustomRentAmount("");
+                                                setSavedCustomRent("");
+                                                setIsCustomRentSaved(false);
+                                                setCustomRentError("");
+                                            }
+                                        }}
+                                    >
+                                        {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                                    </TouchableOpacity>
+
+                                    <Text style={styles.fullRentText}>
+                                        Do you want to collect Full Rent for current month?
+                                    </Text>
+                                </View>
+
+                                {collectFullRent && (
+                                    <>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.customRentBtn,
+                                                (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
+                                            ]}
+                                            onPress={() => {
+
+                                                if (showCustomRentEditor || isCustomRentSaved) {
+                                                    setShowCustomRentEditor(false);
+                                                    setIsCustomRentSaved(false)
+                                                } else {
+                                                    setShowCustomRentEditor(true);
+                                                }
+                                            }}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.customRentBtnText,
+                                                    (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                                                ]}
+                                            >
+                                                {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                                            </Text>
+                                        </TouchableOpacity>
+
+                                        {(showCustomRentEditor || isCustomRentSaved) && (
+                                            <View style={styles.customRentCard}>
+
+                                                <Text style={styles.customRentTitle}>
+                                                    Custom Rent Amount
+                                                </Text>
+
+                                                <Text style={styles.customRentSubTitle}>
+                                                    This amount reflects First month Rent only.
+                                                </Text>
+
+                                                {!isCustomRentSaved ? (
+
+                                                    <>
+                                                        <View style={styles.amountRow}>
+
+                                                            <TextInput
+                                                                style={styles.amountInput}
+                                                                placeholder="₹ 0.00"
+                                                                keyboardType="numeric"
+                                                                value={customRentAmount}
+                                                                onChangeText={(text) => {
+                                                                    setCustomRentAmount(
+                                                                        text.replace(/[^0-9]/g, "")
+                                                                    );
+                                                                    setCustomRentError("");
+                                                                }}
+                                                            />
+
+                                                            <TouchableOpacity
+                                                                style={styles.setBtn}
+                                                                onPress={() => {
+
+                                                                    if (!customRentAmount) {
+                                                                        setCustomRentError(
+                                                                            "Please enter custom rent amount"
+                                                                        );
+                                                                        return;
+                                                                    }
+
+                                                                    if (Number(customRentAmount) <= 0) {
+                                                                        setCustomRentError(
+                                                                            "Amount should be greater than zero"
+                                                                        );
+                                                                        return;
+                                                                    }
+
+                                                                    // if (
+                                                                    //     Number(customRentAmount) >
+                                                                    //     Number(checkinrentalAmount || 0)
+                                                                    // ) {
+                                                                    //     setCustomRentError(
+                                                                    //         "Custom rent cannot exceed total rent"
+                                                                    //     );
+                                                                    //     return;
+                                                                    // }
+
+                                                                    setSavedCustomRent(customRentAmount);
+
+                                                                    setIsCustomRentSaved(true);
+
+                                                                    setShowCustomRentEditor(false);
+
+                                                                    setCustomRentError("");
+                                                                }}
+                                                            >
+                                                                <Text style={styles.setBtnText}>
+                                                                    ✓ Set
+                                                                </Text>
+                                                            </TouchableOpacity>
+
+                                                        </View>
+
+                                                        {customRentError ? (
+                                                            <ErrorMessage message={customRentError} />
+                                                        ) : null}
+                                                    </>
+
+                                                ) : (
+
+                                                    <View style={styles.savedRow}>
+
+                                                        <Text style={styles.savedAmount}>
+                                                            ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                                                        </Text>
+
+                                                        <TouchableOpacity
+                                                            onPress={() => {
+
+                                                                setCustomRentAmount(savedCustomRent);
+
+                                                                setIsCustomRentSaved(false);
+
+                                                                setShowCustomRentEditor(true);
+
+                                                            }}
+                                                        >
+                                                            <Image
+                                                                source={require("../../Assets/Images/edit.png")}
+                                                                style={{
+                                                                    width: 24,
+                                                                    height: 24,
+                                                                    tintColor: "#6B7280",
+                                                                }}
+                                                            />
+                                                        </TouchableOpacity>
+
+                                                    </View>
+
+                                                )}
+
+                                            </View>
+                                        )}
+                                    </>
+                                )}
+
+
+                                {/* <View style={styles.nonRefund}>
+                                    <View style={styles.extraHeader}>
+                                        <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Add Onetime Payment </Text>
+
+                                    
+                                    </View>
+
+                                    {onetimepaymentcharges.map((item) => (
+                                        <View key={item.id} style={styles.figmaRowWrapper}>
+
+                                            <TouchableOpacity
+                                                onPress={() => removeOnetimeCharge(item.id, item.type)}
+                                                style={styles.figmaCloseBtn}
+                                            >
+
+                                                <Image
+                                                    source={Delete}
+                                                    style={styles.figmaCloseText}
+                                                />
+                                            </TouchableOpacity>
+
+
+                                            <View style={styles.figmaRow}>
+
+
+                                                {item.type === "" ? (
+                                                    <TouchableOpacity
+                                                        style={styles.figmaLeftBox}
+                                                        onPress={() =>
+                                                            setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                                                        }
+                                                    >
+                                                        <Text style={{ color: "#777" }}>Select...</Text>
+                                                        <Image source={DownArrow} style={styles.arrow} />
+                                                    </TouchableOpacity>
+                                                ) : item.type === "Others" ? (
+                                                    <TextInput
+                                                        ref={(r) => {
+                                                            inputRefs.current[`reason-${item.id}`] = r;
+                                                        }}
+                                                        style={styles.figmaLeftBox}
+                                                        placeholder="Enter reason"
+
+                                                        value={item.title}
+                                                        onFocus={() => {
+                                                            setOpenDropdownId(null);
+                                                            scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                                                        }}
+
+                                                        onChangeText={(t) => {
+                                                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                                            OneTimeupdateTitle(item.id, onlyLetters);
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                                                        <Text>Maintenance</Text>
+                                                    </View>
+                                                )}
+
+                                                {item.type === "" ? (
+                                                    <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                                                        <Text style={{ color: "#999" }}>Enter amount</Text>
+                                                    </View>
+                                                ) : (
+                                                    <TextInput
+                                                        ref={(r) => {
+                                                            inputRefs.current[`amount-${item.id}`] = r;
+                                                        }}
+                                                        style={styles.figmaRightBox}
+                                                        placeholder="Enter amount"
+                                                        keyboardType="numeric"
+                                                        value={item.amount}
+                                                        onFocus={() => {
+                                                            setOpenDropdownId(null);
+                                                            scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+                                                        }}
+
+                                                        onChangeText={(t) => {
+
+                                                            let cleaned = t.replace(/[^0-9.]/g, "");
+
+                                                            const parts = cleaned.split(".");
+
+                                                            if (parts.length > 2) {
+                                                                cleaned = parts[0] + "." + parts[1];
+                                                            }
+
+                                                            if (parts[1]?.length > 2) {
+                                                                cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                                                            }
+
+                                                            OneTimeupdateAmount(item.id, cleaned)
+                                                        }
+
+                                                        }
+                                                    />
+                                                )}
+
+                                            </View>
+
+                                            {item.titleError && (
+                                                <ErrorMessage message={item.titleError} type="error" />
+                                            )}
+
+                                            {item.typeError && (
+                                                <ErrorMessage message={item.typeError} type="error" />
+                                            )}
+
+                                            {item.amountError && (
+                                                <ErrorMessage message={item.amountError} type="error" />
+                                            )}
+                                            {openDropdownId === item.id && item.type === "" && (
+                                                <View style={styles.nonRefundDropdown}>
+                                                    {TYPE_OPTIONS.map((t) => {
+
+                                                        const disabled = t === "Maintenance" && onetimepaymentmaintenanceAlreadyUsed;
+
+                                                        return (
+                                                            <TouchableOpacity
+                                                                key={t}
+                                                                disabled={disabled}
+                                                                onPress={() => !disabled && selectOntimeType(item.id, t)}
+                                                                style={{ opacity: disabled ? 0.3 : 1 }}
+                                                            >
+                                                                <Text style={styles.dropdownItem}>{t}</Text>
+                                                            </TouchableOpacity>
+                                                        );
+                                                    })}
+                                                </View>
+                                            )}
+
+                                        </View>
+                                    ))}
+
+                                    <TouchableOpacity
+                                        disabled={!refuseAdvanceAmount}
+                                        style={[
+                                            styles.addNewButton,
+                                            !refuseAdvanceAmount && { opacity: 0.5 }
+                                        ]}
+                                        onPress={AddOnetimeCharge}
+                                    >
+                                        <View style={styles.addNewContent}>
+                                            <View style={styles.plusCircle}>
+                                                <Text style={styles.plusText}>+</Text>
+                                            </View>
+
+                                            <Text style={styles.addNewText}>
+                                                Add
+                                            </Text>
+                                        </View>
+                                    </TouchableOpacity>
+
+
+
+
+
+
+
+                                </View> */}
+
+                                {/* <View style={styles.summaryCard}>
+                                    <Text
+                                        style={styles.summaryTitle}
+                                    >
+                                        SUMMARY
+                                    </Text>
+
+                                    <Text
+                                        style={styles.summaryAmount}
+                                    >
+                                        ₹ {summaryAmount.toLocaleString("en-IN")}
+
+                                    </Text>
+
+                                    <View
+                                        style={styles.divider}
+                                    />
+
+                                    <View
+                                        style={styles.summaryRow}
+                                    >
+                                        <Text
+                                            style={styles.summaryText}
+                                        >
+                                            1. Advance Amount
+                                        </Text>
+
+                                        <Text
+                                            style={styles.summaryText}
+                                        >
+                                            ₹ {summaryAdvanceAmount.toLocaleString("en-IN")}
+
+                                        </Text>
+                                    </View>
+
+                                    <View
+                                        style={styles.summaryRow}
+                                    >
+                                        <View style={{ flexDirection: 'column' }}>
+                                            <Text
+                                                style={styles.summaryText}
+                                            >
+                                                2. Non Refundable Amount
+
+                                            </Text>
+                                            <Text style={styles.summaryText}>  (Deduted from Advance 1)</Text>
+                                        </View>
+                                        <Text
+                                            style={styles.summaryText}
+                                        >
+                                            - ₹ {deductionTotal.toLocaleString("en-IN")}
+
+                                        </Text>
+                                    </View>
+                                    <View
+                                        style={styles.summaryRow}
+                                    >
+                                        <Text
+                                            style={styles.summaryText}
+                                        >
+                                            3. Base Rent (Pro Rate)
+                                        </Text>
+
+                                        <Text
+                                            style={styles.summaryText}
+                                        >
+                                            - ₹ {summaryRent.toLocaleString("en-IN")}
+
+                                        </Text>
+                                    </View>
+                                </View>
+                                <Text style={styles.note}>
+                                    Note: System automatically generates a separate invoices for Advance & Base Rent
+                                </Text> */}
+
+
+                                <TouchableOpacity
+                                    style={{
+                                        flexDirection: "row",
+                                        alignItems: "center", marginTop: 10
+                                    }}
+                                    activeOpacity={0.8}
+                                    onPress={() => setProceedCheckin(prev => !prev)}
+                                >
+                                    <View
+                                        style={[
+                                            styles.checkbox,
+                                            proceedcheckin && styles.checkboxSelected,
+                                        ]}
+                                    >
+                                        {proceedcheckin && (
+                                            <Text style={styles.tick}>✓</Text>
+                                        )}
+                                    </View>
+
+                                    <Text style={styles.doLater}>
+                                        Everything is Correct – Proceed to Check-In
+                                    </Text>
+                                </TouchableOpacity>
+
+                                {/* <View style={styles.centerError}>
                                     {bookingDetailsError && (
                                         <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }} />
                                     )}
-                                </View>
+                                </View> */}
 
 
                             </View>
@@ -908,9 +1753,14 @@ export default function BookingCheckIn({ navigation, route }) {
                             <TouchableOpacity
                                 style={[
                                     styles.submitBtn,
-                                    isAssignDisabled && { backgroundColor: "#9CA3AF" }
+                                    (!proceedcheckin || isSubmittingRef.current) && { backgroundColor: "#9CA3AF" }
                                 ]}
-                                disabled={isAssignDisabled}
+                                disabled={!proceedcheckin || isSubmittingRef.current}
+                                //           style={[
+                                //     styles.primaryBtn,
+                                //     hideCheckInSaveDraft && { flex: 1 },
+                                //     !proceedcheckin && styles.disabledBtn,
+                                // ]}
                                 onPress={submitLongStay}
                             >
                                 <Text style={styles.submitText}>Check-In</Text>
@@ -1297,6 +2147,225 @@ const styles = StyleSheet.create({
         zIndex: 20,
         elevation: 10,
     },
+    summaryCard: {
+        margin: 5,
+        backgroundColor: "#1F2BA8",
+        borderRadius: 16,
+        padding: 20,
+    },
 
+    summaryTitle: {
+        color: "#BFC9FF",
+        fontSize: 12,
+        fontFamily: "Gilroy-Semibold"
+    },
+
+    summaryAmount: {
+        color: "#fff",
+        fontSize: 34,
+        fontFamily: "Gilroy-Bold",
+        marginTop: 10,
+    },
+
+    divider: {
+        height: 1,
+        backgroundColor: "#4A57D6",
+        marginVertical: 15,
+    },
+
+    summaryRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 10,
+    },
+
+    summaryText: {
+        color: "#fff",
+        fontFamily: "Gilroy-Semibold"
+    },
+    addNewButton: {
+        marginTop: 12,
+        backgroundColor: "#EEF2FF",
+        borderRadius: 10,
+        height: 48,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    addNewContent: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+
+    plusCircle: {
+        width: 24,
+        height: 24,
+        borderRadius: 11,
+        borderWidth: 2,
+        borderColor: "#1D4ED8",
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 8,
+    },
+
+    plusText: {
+        color: "#1D4ED8",
+        fontSize: 18,
+        fontFamily: "Gilroy-Bold",
+        lineHeight: 22,
+    },
+
+    addNewText: {
+        color: "#1D4ED8",
+        fontSize: 15,
+        fontFamily: "Gilroy-Semibold",
+    },
+
+
+    fullRentRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 20,
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 4,
+        borderWidth: 1.5,
+        borderColor: "#D1D5DB",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#FFF",
+        marginRight: 8,
+    },
+
+    checkboxSelected: {
+        backgroundColor: "#1E45E1",
+        borderColor: "#1E45E1",
+    },
+
+    tick: {
+        color: "#FFF",
+        fontSize: 13,
+        fontWeight: "700",
+    },
+
+    fullRentText: {
+        marginLeft: 10,
+        fontSize: 14,
+        color: "#222",
+        flex: 1,
+        fontFamily: "Gilroy-Semibold"
+    },
+
+    customRentBtn: {
+        marginTop: 15,
+        backgroundColor: "#EEF2FF",
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: "center",
+    },
+
+    closeBtn: {
+        backgroundColor: "#1F2BA6",
+    },
+
+    customRentBtnText: {
+        color: "#1E45E1",
+        fontSize: 14,
+        fontFamily: "Gilroy-Semibold"
+    },
+
+    customRentCard: {
+        marginTop: 12,
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#C8D3FF",
+        padding: 18,
+    },
+
+    customRentTitle: {
+        fontSize: 18,
+        fontFamily: "Gilroy-Bold",
+        color: "#222",
+    },
+
+    customRentSubTitle: {
+        marginTop: 6,
+        color: "#6B7280",
+        fontSize: 15,
+        fontFamily: "Gilroy-Regular"
+    },
+
+    amountRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 20,
+    },
+
+    amountInput: {
+        flex: 1,
+        height: 45,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        paddingHorizontal: 15,
+        fontSize: 14,
+        fontFamily: "Gilroy-Bold"
+    },
+
+    setBtn: {
+        marginLeft: 10,
+        backgroundColor: "#EEF2FF",
+        borderRadius: 10,
+        paddingHorizontal: 18,
+        height: 45,
+        justifyContent: "center",
+    },
+
+    setBtnText: {
+        color: "#1E45E1",
+        fontSize: 14,
+        fontFamily: "Gilroy-Semibold"
+    },
+
+    savedRow: {
+        marginTop: 25,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+
+    savedAmount: {
+        fontSize: 17,
+        fontFamily: "Gilroy-Bold",
+        color: "#222",
+    },
+    switchRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginTop: 16,
+        marginBottom: 5,
+    },
+
+    subText: {
+        flex: 1,
+        fontSize: 14,
+        color: "#6B7280",
+        fontFamily: "Gilroy-Regular",
+    },
+    disabledInput: {
+        backgroundColor: "#F5F5F5",
+        color: "#9CA3AF",
+        opacity: 0.7,
+    },
+
+    doLater: {
+        fontSize: 14,
+        color: "#111827",
+        fontFamily: "Gilroy-Medium",
+    },
 
 });

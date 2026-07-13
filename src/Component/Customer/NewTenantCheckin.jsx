@@ -29,6 +29,7 @@ import { Calendar } from "react-native-calendars";
 import ListView from "../../Assets/Images/listview.png";
 import RoomView from "../../Assets/Images/Roomview.png";
 import BedIcon from "../../Assets/Images/bed_NewIcon.png";
+import ComingSoomImage from "../../Assets/Images/Coming_soon.png";
 import UplodIcon from "../../Assets/Images/upload.png";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import PlusIcon from "../../Assets/Images/add-circle.png";
@@ -825,9 +826,9 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
         if (isCheckingIn) return;
         const chargeValid = validateExtraCharges();
-        const onetimechargevalid = validateOneTimeCharges()
-        if (!chargeValid || !onetimechargevalid) return;
-        // const customerId = CheckinTenantSelected?.customerId;
+        // const onetimechargevalid = validateOneTimeCharges()
+        // if (!chargeValid || !onetimechargevalid) return;
+        if (!chargeValid) return;
 
 
         let hasError = false;
@@ -1786,7 +1787,9 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                     </>
                                 )}
-                                <View style={styles.nonRefund}>
+
+
+                                {/* <View style={styles.nonRefund}>
                                     <View style={styles.extraHeader}>
                                         <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Add Onetime Payment </Text>
 
@@ -1795,7 +1798,6 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     {onetimepaymentcharges.map((item) => (
                                         <View key={item.id} style={styles.figmaRowWrapper}>
 
-                                            {/* CLOSE BTN */}
                                             <TouchableOpacity
                                                 onPress={() => removeOnetimeCharge(item.id, item.type)}
                                                 style={styles.figmaCloseBtn}
@@ -1835,7 +1837,6 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                             scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
                                                         }}
 
-                                                        // onChangeText={(t) => updateTitle(item.id, t)}
                                                         onChangeText={(t) => {
                                                             const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                                             OneTimeupdateTitle(item.id, onlyLetters);
@@ -1847,7 +1848,6 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                     </View>
                                                 )}
 
-                                                {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
                                                 {item.type === "" ? (
                                                     <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
                                                         <Text style={{ color: "#999" }}>Enter amount</Text>
@@ -1924,7 +1924,6 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     ))}
 
                                     <TouchableOpacity
-                                        // style={styles.addNewButton}
                                         onPress={AddOnetimeCharge}
 
                                         disabled={!refuseAdvanceAmount}
@@ -1944,9 +1943,9 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                         </View>
                                     </TouchableOpacity>
 
-                                </View>
+                                </View> */}
 
-                                <View style={styles.summaryCard}>
+                                {/* <View style={styles.summaryCard}>
                                     <Text
                                         style={styles.summaryTitle}
                                     >
@@ -1957,10 +1956,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                         style={styles.summaryAmount}
                                     >
                                         ₹ {summaryAmount.toLocaleString("en-IN")}
-                                        {/* {(
-                                Number(paidAmount) ||
-                                0
-                              ).toFixed(2)} */}
+                                
                                     </Text>
 
                                     <View
@@ -1980,11 +1976,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                             style={styles.summaryText}
                                         >
                                             ₹ {summaryAdvanceAmount.toLocaleString("en-IN")}
-                                            {/* {(
-                                  Number(
-                                    paidAmount
-                                  ) || 0
-                                ).toFixed(2)} */}
+                                 
                                         </Text>
                                     </View>
 
@@ -2004,11 +1996,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                             style={styles.summaryText}
                                         >
                                             ₹ {deductionTotal.toLocaleString("en-IN")}
-                                            {/* {balance > 0
-                                  ? balance.toFixed(
-                                    2
-                                  )
-                                  : "0.00"} */}
+                                      
                                         </Text>
                                     </View>
                                     <View
@@ -2024,17 +2012,15 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                             style={styles.summaryText}
                                         >
                                             ₹ {summaryRent.toLocaleString("en-IN")}
-                                            {/* {balance > 0
-                                  ? balance.toFixed(
-                                    2
-                                  )
-                                  : "0.00"} */}
+                                   
                                         </Text>
                                     </View>
                                 </View>
                                 <Text style={styles.note}>
                                     Note: System automatically generates a separate invoices for Advance & Base Rent
-                                </Text>
+                                </Text> */}
+
+
                                 <TouchableOpacity
                                     style={{
                                         flexDirection: "row",
@@ -2086,7 +2072,28 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                         {tab === "short" && (
 
-                            <View><Text>Comming Soon</Text></View>
+                             <View style={styles.shortstaycontainer}>
+                                  <Image
+                                    source={ComingSoomImage}
+                                    style={styles.shortstayimage}
+                                    resizeMode="contain"
+                                  />
+                            
+                                  <Text style={styles.shortstaytitle}>
+                                    We’re still working on this feature!
+                                  </Text>
+                            
+                                  <Text style={styles.shortstaysubtitle}>
+                                    Our team is building something helpful for you.
+                                    {"\n"}Check back again shortly.
+                                  </Text>
+                            
+                                  {/* <TouchableOpacity
+                                    style={styles.button}
+                                  >
+                                    <Text style={styles.buttonText}>← Go Back</Text>
+                                  </TouchableOpacity> */}
+                                </View>
                         )}
                     </ScrollView>
                 </KeyboardAvoidingView>
@@ -2830,6 +2837,7 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: "row",
         gap: 10,
+        marginTop:20 
     },
 
     primaryBtn: {
@@ -2850,4 +2858,30 @@ const styles = StyleSheet.create({
         backgroundColor: "#B7C4F7",
         opacity: 0.6,
     },
+      shortstaycontainer: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  shortstayimage: {
+    width: "100%",
+    height: 230,
+    marginBottom: 30,
+  },
+  shortstaytitle: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#111827",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  shortstaysubtitle: {
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 30,
+  },
 });
