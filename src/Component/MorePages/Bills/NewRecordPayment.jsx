@@ -48,8 +48,6 @@ const NewRecordPayment = ({ route }) => {
     const [recordLoading, setRecordLoading] = useState(false)
 
     console.log(selectedBill)
-    console.log("Thata", route)
-    console.log("kfsdfpsdfosds")
 
     const totalAmount = 15000;
 
@@ -202,7 +200,7 @@ const NewRecordPayment = ({ route }) => {
                 },
             });
 
-            console.log(res)
+            console.log("PayRecord",res)
 
             if (res.success) {
                 await GetAllBillDetails(activeHostelId);
@@ -210,13 +208,15 @@ const NewRecordPayment = ({ route }) => {
                 //   setShowRecordPayment(false);
                 if (onPaymentSuccess) {
                     onPaymentSuccess();
-                }
-                navigation.goBack();
+                }             
 
                 setModalType("success");
-                setModalMessage("Payment recorded successfully");
+                setModalMessage(res?.data || "Payment recorded successfully");
                 setShowSuccessModal(true);
-                setTimeout(() => setShowSuccessModal(false), 1500);
+                setTimeout(() => {
+                    setShowSuccessModal(false)
+                    navigation.goBack();
+                }, 1500);
             } else if (res.payableAmount) {
                 setModalType("warning");
                 setModalMessage(res.payableAmount);
@@ -339,7 +339,8 @@ const NewRecordPayment = ({ route }) => {
                             <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold' }}>
                                 ₹ {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem ?
                                     BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem : "N/A"}</Text></Text>
-                        <TouchableOpacity onPress={handleBookingApplyInvoices}>
+                        <TouchableOpacity onPress={handleBookingApplyInvoices}
+                        disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}>
                             <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#338BFF' }}>
                                 Apply Now
                             </Text>

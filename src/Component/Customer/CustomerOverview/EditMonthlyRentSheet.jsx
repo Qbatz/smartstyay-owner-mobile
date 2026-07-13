@@ -125,7 +125,6 @@ export default function EditRentalAmountSheet({
     }
   }
 
-  console.log("simbu",startMonth,endMonth)
 
   const isMonthDisabled = (year, monthIndex) => {
     if (!startMonth || !endMonth) return true;

@@ -23,6 +23,8 @@ import com.facebook.react.bridge.ReactMethod;
 import android.content.ActivityNotFoundException;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.qbatz.utils.Constants;
+
+import android.provider.MediaStore;
 import android.webkit.MimeTypeMap;
 
 import java.io.File;
@@ -41,6 +43,7 @@ public class CommonModule extends ReactContextBaseJavaModule {
     private final ConnectivityManager connectivityManager;
 
     private static final int REQUEST_CALL =1;
+    private static final int REQUEST_IMAGE_CAPTURE = 1;
 
     CommonModule(ReactApplicationContext context) {
         super(context);
@@ -281,4 +284,6 @@ public class CommonModule extends ReactContextBaseJavaModule {
             promise.reject("ERROR", "Unable to get build number");
         }
     }
+
+   
 }
