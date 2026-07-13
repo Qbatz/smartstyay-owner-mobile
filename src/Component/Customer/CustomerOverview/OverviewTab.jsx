@@ -255,17 +255,21 @@ export default function OverviewTab({ customerDetails,
   const canEditAdvance = customerDetails?.advanceInfo?.canEditAdvance;
 
   const status = customerDetails?.customerCurrentStatus;
+  
+
+  const DraftTenant = status === "DRAFT"
 
   const disableFinancialEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
     status === "NOTICE" ||
-    status === "CANCELLED_BOOKING"
+    status === "CANCELLED_BOOKING" 
+    // status === "DRAFT"
 
   const disabledocEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
-    status === "CANCELLED_BOOKING"
+    status === "CANCELLED_BOOKING" 
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isSubscriptionAllow = isValidSubscription
@@ -288,7 +292,7 @@ export default function OverviewTab({ customerDetails,
         <View style={{ paddingBottom: 30, padding: 5 }}>
 
 
-         { !["VACATED", "INACTIVE"].includes(customerDetails?.customerCurrentStatus) &&
+         { !["VACATED", "INACTIVE" , "DRAFT"].includes(customerDetails?.customerCurrentStatus) &&
 
           <View style={styles.pendingCard}>
             <View style={styles.pendingTopRow}>

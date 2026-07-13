@@ -30,15 +30,25 @@ import CommingSoon from "../../Assets/Images/Coming_soon.png"
 import BedIcon from "../../Assets/Images/bed_NewIcon.png";
 import { Switch } from "react-native";
 
+
+
+
+
 export default function BookingCheckIn({ navigation, route }) {
-    const { customerId, customer, onSuccess } = route.params || {};
+
+
+    const { customerId, customer, onSuccess, selectedBedReserv, PGselectedBed, } = route.params || {};
+    // const { customerId, customer, selectedBedReserv, selectedBed, onSuccess} = route.params || {};
     console.log("customerten", customerId)
     console.log("customer", customer);
+
+    const isPGBooking = !!selectedBedReserv && !!PGselectedBed;
 
     const [tab, setTab] = useState("long");
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
-    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, initializeCheckIn, bookedCheckInCustomer,
+    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel,
+        initializeCheckIn, bookedCheckInCustomer,
         BookedTenantCheckIn } = useCustomer();
 
     const isSubmittingRef = useRef(false);
@@ -51,6 +61,8 @@ export default function BookingCheckIn({ navigation, route }) {
     const [modalType, setModalType] = useState("success");
     const [showSuccess, setShowSuccess] = useState(false);
     const [message, setMessage] = useState("");
+
+
     const [selectedRoom, setSelectedRoom] = useState(null);
 
     const [beds, setBeds] = useState([]);
@@ -111,19 +123,28 @@ export default function BookingCheckIn({ navigation, route }) {
             setRooms([]);
         }
     };
+const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
 
     useEffect(() => {
-        if (!activeHostelId || !customerId) return;
+        if (!activeHostelId || !checkInCustomerId) return;
 
         const initCheckIn = async () => {
-            const res = await initializeCheckIn(activeHostelId, customerId);
+            const res = await initializeCheckIn(activeHostelId, checkInCustomerId);
             console.log("initCheckIn", res)
-            if (res.success) {
+            if (res?.success) {
                 setBookingDetails(res.data);
+                if(res?.data?.bedName === null){
+                    setBookingDetailsError("Bed is Unavailable")
+
+                     await loadBeds(joiningDate);
+                    setSelectedFloor(null);
+                    setSelectedRoom(null);
+                    setSelectedBed(null);
+                }
             }
             else {
 
-                setBookingDetailsError(res.message);
+                setBookingDetailsError(res?.message);
 
                 await loadBeds(joiningDate);
 
@@ -134,7 +155,7 @@ export default function BookingCheckIn({ navigation, route }) {
         };
 
         initCheckIn();
-    }, [activeHostelId, customerId]);
+    }, [activeHostelId, checkInCustomerId]);
 
 
 
@@ -188,6 +209,32 @@ export default function BookingCheckIn({ navigation, route }) {
     };
 
 
+    const displayName = isPGBooking
+        ? selectedBedReserv.tenantFullName
+        : customer?.fullName;
+
+        const countryCode =
+    isPGBooking
+        ? selectedBedReserv?.countryCode
+        : customer?.countryCode;
+
+    const displayMobile = isPGBooking
+        ? selectedBedReserv?.mobile
+        : customer?.mobile || customer?.mobileNo
+
+    const bookingDate = isPGBooking
+        ? selectedBedReserv.bookingDate
+        : bookingDetails?.bookedDate || customer?.bookedAt;
+
+    const defaultRent = isPGBooking
+        ? PGselectedBed?.rentAmount
+        : bookingDetails?.rent;
+
+        const profilePic =
+    isPGBooking
+        ? selectedBedReserv?.profilePic
+        : customer?.profilePic;
+
 
     // const filteredBeds = beds.filter(bed => {
     //     if (!selectedFloor || !selectedRoom) return false;
@@ -236,35 +283,76 @@ export default function BookingCheckIn({ navigation, route }) {
     };
 
 
+    // useEffect(() => {
+    //     if (!customer) return;
+
+
+    //     setSelectedFloor({
+    //         id: customer.floorId,
+    //         name: customer.floorName || customer?.bookingInfo?.bookedFloor,
+    //     });
+
+
+    //     setSelectedRoom({
+    //         id: customer.roomId,
+    //         name: customer.roomName || customer?.bookingInfo?.bookedRoom,
+    //     });
+
+
+    //     setSelectedBed({
+    //         bedId: customer.bedId,
+    //         bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
+    //     });
+
+
+
+
+    // }, [customer]);
+
+
     useEffect(() => {
-        if (!customer) return;
+
+        if (isPGBooking) {
+
+            setSelectedFloor({
+                id: PGselectedBed.floorId,
+                name: PGselectedBed.floorName,
+            });
+
+            setSelectedRoom({
+                id: PGselectedBed.roomId,
+                name: PGselectedBed.roomName,
+            });
+
+            setSelectedBed({
+                bedId: PGselectedBed.bedId,
+                bedName: PGselectedBed.bedName,
+            });
+
+            return;
+        }
+
+        if (customer) {
+            setSelectedFloor({
+                id: customer.floorId,
+                name: customer.floorName || customer?.bookingInfo?.bookedFloor,
+            });
 
 
-        setSelectedFloor({
-            id: customer.floorId,
-            name: customer.floorName || customer?.bookingInfo?.bookedFloor,
-        });
+            setSelectedRoom({
+                id: customer.roomId,
+                name: customer.roomName || customer?.bookingInfo?.bookedRoom,
+            });
 
 
-        setSelectedRoom({
-            id: customer.roomId,
-            name: customer.roomName || customer?.bookingInfo?.bookedRoom,
-        });
+            setSelectedBed({
+                bedId: customer.bedId,
+                bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
+            });
 
+        }
 
-        setSelectedBed({
-            bedId: customer.bedId,
-            bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
-        });
-
-
-        // if (customer.expectedJoiningDate) {
-        //     setJoiningDate(
-        //         dayjs(customer.expectedJoiningDate, "DD/MM/YYYY").toDate()
-        //     );
-        // }
-
-    }, [customer]);
+    }, [customer, selectedBedReserv , PGselectedBed]);
 
 
 
@@ -562,20 +650,20 @@ export default function BookingCheckIn({ navigation, route }) {
     }
 
 
-console.log("Selected Bed", selectedBed);
+    console.log("Selected Bed", selectedBed);
 
-
+  console.log("bookingtocheckincustomerId", customerId , selectedBedReserv?.tenetId)
 
     const submitLongStay = async () => {
         const isValid = validateLongStay();
 
         if (!isValid) return;
         const chargeValid = validateExtraCharges();
-        const onetimechargevalid = validateOneTimeCharges()
-        if (!chargeValid || !onetimechargevalid) return;
-        // if (!chargeValid) return;
-
-
+        // const onetimechargevalid = validateOneTimeCharges()
+        // if (!chargeValid || !onetimechargevalid) return;
+        if (!chargeValid) return;
+        //  if(!checkInCustomerId) return
+            
         if (isSubmittingRef.current) return;
         isSubmittingRef.current = true;
 
@@ -618,16 +706,23 @@ console.log("Selected Bed", selectedBed);
                             : item.type,
                     amount: Number(item.amount || 0),
                 })),
-            };
-            console.log("customerId", customerId)
-            console.log("payload", payload)
+            }
+
+            console.log("bookingtocheckincustomerId", checkInCustomerId)
+            console.log("bookingtocheckinpayload", payload)
+
+            // const checkInCustomerId = customerId || selectedBedReserv?.tenantId;
+
             const res = await BookedTenantCheckIn(
                 activeHostelId,
-                customerId,
+                checkInCustomerId,
                 payload
             );
+            
+            console.log("bookingtocheckinres", res);
+            
 
-            if (res.success) {
+            if (res?.success) {
                 setModalType("success");
                 setMessage(res.data);
                 setShowSuccess(true);
@@ -658,7 +753,7 @@ console.log("Selected Bed", selectedBed);
             isSubmittingRef.current = false;
         }
 
-    };
+    }
 
     const summaryAdvanceAmount = Number(advanceAmount || 0);
 
@@ -751,21 +846,21 @@ console.log("Selected Bed", selectedBed);
                             <View>
 
                                 <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
-                                    {customer?.profilePic ? <Image source={{ uri: customer?.profilePic }} style={{ width: 45, height: 45 }} /> :
+                                    {profilePic ? <Image source={{ uri: profilePic }} style={{ width: 45, height: 45 }} /> :
 
                                         <View style={{
                                             width: 45, height: 45, borderRadius: 22.5, backgroundColor: '#e6e7eb',
                                             justifyContent: 'center', alignItems: 'center'
                                         }}>
-                                            <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>{customer?.initials}</Text>
+                                            <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>{customer?.initials || selectedBedReserv?.tenantInitials}</Text>
 
                                         </View>
                                     }
 
                                     <View style={{ marginLeft: 8 }}>
-                                        <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold' }}>{customer?.fullName}</Text>
+                                        <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold' }}>{displayName}</Text>
                                         <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 4 }}>
-                                            +{customer?.countryCode} {customer?.mobile || customer?.mobileNo}</Text>
+                                            +{countryCode} {displayMobile}</Text>
                                     </View>
                                 </View>
 
@@ -780,15 +875,15 @@ console.log("Selected Bed", selectedBed);
                                     // disabled={!!bookingDetails?.bookedDate}
                                     style={[
                                         styles.dateBox,
-                                        (bookingDetails?.bookedDate || customer?.bookedAt) && {
+                                        (bookingDate) && {
                                             backgroundColor: "#F3F4F6",
                                         },
                                     ]}
-                                    disabled={!!(bookingDetails?.bookedDate || customer?.bookedAt)}
+                                    disabled={!!(bookingDate)}
                                 >
                                     <Text style={styles.placeholder}>
                                         {/* {bookingDetails?.bookedDate} */}
-                                        {bookingDetails?.bookedDate || customer?.bookedAt || "DD-MM-YYYY"}
+                                        {bookingDate || "DD-MM-YYYY"}
                                     </Text>
                                     <Image source={CalendarImg} style={styles.calendarIcon} />
                                 </TouchableOpacity>
@@ -827,7 +922,7 @@ console.log("Selected Bed", selectedBed);
                                             styles.select,
                                             // customer && { backgroundColor: "#F3F4F6" }
                                         ]}
-                                         onPress={() => setFloorOpen(!floorOpen)}
+                                        onPress={() => setFloorOpen(!floorOpen)}
                                     // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
@@ -889,11 +984,11 @@ console.log("Selected Bed", selectedBed);
                                             styles.select,
                                             // customer && { backgroundColor: "#F3F4F6" }
                                         ]}
-                                         onPress={() => {
-        if (selectedFloor) {
-            setRoomOpen(!roomOpen);
-        }
-    }}
+                                        onPress={() => {
+                                            if (selectedFloor) {
+                                                setRoomOpen(!roomOpen);
+                                            }
+                                        }}
                                     // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
@@ -933,11 +1028,11 @@ console.log("Selected Bed", selectedBed);
                                             styles.select,
                                             // customer && { backgroundColor: "#F3F4F6" }
                                         ]}
-                                         onPress={() => {
-        if (selectedRoom) {
-            setBedOpen(!bedOpen);
-        }
-    }}
+                                        onPress={() => {
+                                            if (selectedRoom) {
+                                                setBedOpen(!bedOpen);
+                                            }
+                                        }}
                                     // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
@@ -1177,8 +1272,8 @@ console.log("Selected Bed", selectedBed);
                                         keyboardType="numeric"
                                         value={rentalAmount}
                                         placeholder={
-                                            bookingDetails?.rent
-                                                ? `Selected Bed Rent is ${bookingDetails?.rent}`
+                                            defaultRent
+                                                ? `Selected Bed Rent is ${defaultRent}`
                                                 : "Enter Rental Amount"
                                         }
                                         placeholderTextColor="#9CA3AF"
@@ -1368,23 +1463,16 @@ console.log("Selected Bed", selectedBed);
                                 )}
 
 
-
-
-
-
-                                <View style={styles.nonRefund}>
+                                {/* <View style={styles.nonRefund}>
                                     <View style={styles.extraHeader}>
                                         <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Add Onetime Payment </Text>
 
-                                        {/* <TouchableOpacity style={styles.addBtn} onPress={addCharge}>
-                                                        <Text style={{ color: "#fff", fontWeight: "600" }}>Add</Text>
-                                                    </TouchableOpacity> */}
+                                    
                                     </View>
 
                                     {onetimepaymentcharges.map((item) => (
                                         <View key={item.id} style={styles.figmaRowWrapper}>
 
-                                            {/* CLOSE BTN */}
                                             <TouchableOpacity
                                                 onPress={() => removeOnetimeCharge(item.id, item.type)}
                                                 style={styles.figmaCloseBtn}
@@ -1424,7 +1512,6 @@ console.log("Selected Bed", selectedBed);
                                                             scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
                                                         }}
 
-                                                        // onChangeText={(t) => updateTitle(item.id, t)}
                                                         onChangeText={(t) => {
                                                             const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                                             OneTimeupdateTitle(item.id, onlyLetters);
@@ -1436,7 +1523,6 @@ console.log("Selected Bed", selectedBed);
                                                     </View>
                                                 )}
 
-                                                {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
                                                 {item.type === "" ? (
                                                     <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
                                                         <Text style={{ color: "#999" }}>Enter amount</Text>
@@ -1513,7 +1599,6 @@ console.log("Selected Bed", selectedBed);
                                     ))}
 
                                     <TouchableOpacity
-                                        // style={styles.addNewButton}
                                         disabled={!refuseAdvanceAmount}
                                         style={[
                                             styles.addNewButton,
@@ -1538,9 +1623,9 @@ console.log("Selected Bed", selectedBed);
 
 
 
-                                </View>
+                                </View> */}
 
-                                <View style={styles.summaryCard}>
+                                {/* <View style={styles.summaryCard}>
                                     <Text
                                         style={styles.summaryTitle}
                                     >
@@ -1551,10 +1636,7 @@ console.log("Selected Bed", selectedBed);
                                         style={styles.summaryAmount}
                                     >
                                         ₹ {summaryAmount.toLocaleString("en-IN")}
-                                        {/* {(
-                                Number(paidAmount) ||
-                                0
-                              ).toFixed(2)} */}
+
                                     </Text>
 
                                     <View
@@ -1574,11 +1656,7 @@ console.log("Selected Bed", selectedBed);
                                             style={styles.summaryText}
                                         >
                                             ₹ {summaryAdvanceAmount.toLocaleString("en-IN")}
-                                            {/* {(
-                                  Number(
-                                    paidAmount
-                                  ) || 0
-                                ).toFixed(2)} */}
+
                                         </Text>
                                     </View>
 
@@ -1598,11 +1676,7 @@ console.log("Selected Bed", selectedBed);
                                             style={styles.summaryText}
                                         >
                                             - ₹ {deductionTotal.toLocaleString("en-IN")}
-                                            {/* {balance > 0
-                                  ? balance.toFixed(
-                                    2
-                                  )
-                                  : "0.00"} */}
+
                                         </Text>
                                     </View>
                                     <View
@@ -1618,17 +1692,13 @@ console.log("Selected Bed", selectedBed);
                                             style={styles.summaryText}
                                         >
                                             - ₹ {summaryRent.toLocaleString("en-IN")}
-                                            {/* {balance > 0
-                                  ? balance.toFixed(
-                                    2
-                                  )
-                                  : "0.00"} */}
+
                                         </Text>
                                     </View>
                                 </View>
                                 <Text style={styles.note}>
                                     Note: System automatically generates a separate invoices for Advance & Base Rent
-                                </Text>
+                                </Text> */}
 
 
                                 <TouchableOpacity
