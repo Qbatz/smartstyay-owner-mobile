@@ -1202,10 +1202,10 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
 
                 {/* <Image source={RoomIcon} style={styles.smallIcon} />
-                                           <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed.roomName}</Text>
-                   
-                                           <Image source={BedIcon} style={styles.smallIcon} />
-                                           <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text> */}
+                   <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed.roomName}</Text>
+                    <Image source={BedIcon} style={styles.smallIcon} />
+                    <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text> */}
+                    
               </View>
 
               <View style={{ borderWidth: 0.2, marginTop: 12, marginBottom: 8, borderColor: "#E5E7EB" }} />

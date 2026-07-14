@@ -36,6 +36,7 @@ import { Switch } from "react-native";
 import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ValidatedInput from "../MorePages/ValidatedInput"
+import BedDetailsSheet from "./BedDetailsBottomsheet"
 // import DatePicker from "react-native-date-picker";
 
 
@@ -120,6 +121,9 @@ export default function AddTenantNewform({ navigation, route }) {
     const transactionRef = useRef(null);
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [showProfileSheet, setShowProfileSheet] = useState(false);
+
+        const [showBedSheet, setShowBedSheet] = useState(false);
+          const [selectedBedDetails, setSelectedBedDetails] = useState(null);
 
     const [searchText, setSearchText] = useState("");
     const [tenantList, setTenantList] = useState([]);
@@ -1155,7 +1159,12 @@ export default function AddTenantNewform({ navigation, route }) {
     const removeOnetimeCharge = (id) => {
         setOneTimePaymentCharges(prev => prev.filter(i => i.id !== id));
 
-    };
+    }
+
+      const handleshowBedDetailsheet = () => {
+        // if (!checkJoiningDate || !joiningDate) return
+        setShowBedSheet(true);
+    }
 
 
     const openCamera = () => {
@@ -1271,15 +1280,14 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const selectType = (id, type) => {
 
-
         if (type === "Maintenance" && maintenanceAlreadyUsed) return;
 
         setExtraCharges(prev =>
             prev.map(i => (i.id === id ? { ...i, type, title: "", amount: "", typeError: "" } : i))
-        );
+        )
 
-        setOpenDropdownId(null);
-    };
+        setOpenDropdownId(null)
+    }
 
     const selectOntimeType = (id, type) => {
 
@@ -1316,8 +1324,8 @@ export default function AddTenantNewform({ navigation, route }) {
                     ? { ...i, title, titleError: "" }
                     : i
             )
-        );
-    };
+        )
+    }
 
     const OneTimeupdateTitle = (id, title) => {
         // setExtraCharges(prev =>
@@ -2947,10 +2955,6 @@ export default function AddTenantNewform({ navigation, route }) {
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <View style={styles.container}>
 
-                {/* <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Image source={ArrowLeft} style={{ width: 20, height: 20 }} />
-                    </TouchableOpacity> */}
 
                 <View style={styles.header}>
 
@@ -2997,34 +3001,28 @@ export default function AddTenantNewform({ navigation, route }) {
 
                 </View>
 
-                {/* </View> */}
-
-
-                {/* <Text style={styles.roomText}>{selectedBed?.floorName} | {selectedBed?.roomName} | {selectedBed?.bedName}</Text> */}
-
-
 
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
-                    behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    // behavior={Platform.OS === "ios" ? "padding" : undefined}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
                     keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+
+
                 >
-                    {/* <ScrollView
-  ref={scrollRef}
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: keyboardHeight + 80,
-  }}
-> */}
+
                     <ScrollView
                         ref={scrollRef}
                         keyboardShouldPersistTaps="handled"
                         keyboardDismissMode="on-drag"
                         showsVerticalScrollIndicator={false}
                         scrollEnabled={!checkinTenantsOpen}
+
+
                         contentContainerStyle={{
-                            paddingBottom: keyboardHeight + 80,
+                            flexGrow: 1,
+                            paddingHorizontal: 16,
+                            paddingBottom: 80,
                         }}
                     >
 
@@ -3032,11 +3030,8 @@ export default function AddTenantNewform({ navigation, route }) {
                         {
                             currentStep === 1 && (
 
-                                <ScrollView
-                                    showsVerticalScrollIndicator={false}
-                                    keyboardShouldPersistTaps="handled"
-                                >
 
+                                <View>
                                     <Text style={styles.label}>
                                         Search Mobile Number
                                     </Text>
@@ -3059,9 +3054,8 @@ export default function AddTenantNewform({ navigation, route }) {
                                             placeholder="9876543210"
                                             value={searchText}
                                             onFocus={() => setShowTenantList(true)}
-                                            onChangeText={(text) => {
-                                                    const value = t.replace(/[^0-9]/g, "").slice(0, 10)
-                                                // const value = text.replace(/[^0-9]/g, "");
+                                            onChangeText={(t) => {
+                                                const value = t.replace(/[^0-9]/g, "").slice(0, 10)
                                                 handleSearchCustomer(value);
                                             }}
                                             maxLength={10}
@@ -3654,7 +3648,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
 
-                                </ScrollView>
+                                </View>
 
                             )
                         }
@@ -3713,57 +3707,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                     </View>
                                     {activeTab === "Booking" && (
                                         <>
-                                            {/* <Text style={styles.label}>Tenant <Text style={{ color: "red" }}>*</Text></Text>
 
-                <View style={{ position: "relative" }}>
-
-                  <TouchableOpacity
-                    style={styles.select}
-                    onPress={() => setCheckinTenantsopen(!checkinTenantsOpen)}
-                    activeOpacity={0.9}
-                  >
-                    <Text style={styles.selectText}>
-                      {CheckinTenantSelected?.fullName || "Select Tenant"}
-
-                    </Text>
-                    <Image source={DownArrow} style={styles.arrow} />
-                  </TouchableOpacity>
-
-                  {tenentsError && (
-                    <ErrorMessage message={tenentsError} type="error" />
-                  )}
-
-   
-                  {checkinTenantsOpen && (
-                    <View style={styles.dropdownMenuone}>
-                      <ScrollView
-                        nestedScrollEnabled
-                        keyboardShouldPersistTaps="handled"
-                        showsVerticalScrollIndicator
-                        style={{ maxHeight: 160 }}
-                        contentContainerStyle={{ paddingBottom: 5 }}
-                      >
-
-                        {CheckinTenants.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={[styles.option, CheckinTenantSelected?.customerId === v.customerId && { backgroundColor: "#E6F0FF" }]}
-                            onPress={() => {
-                              setCheckinTenantSelected(v);
-                              setCheckinTenantsopen(false);
-                              setTenantsError("");
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v.fullName}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
-
-
-              
-                </View> */}
 
                                             <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
                                             <View ref={bookingDateRef} collapsable={false}>
@@ -3842,12 +3786,13 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                                 <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
-                                                <View style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}>
+                                                <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}
+                                                onPress={handleshowBedDetailsheet}>
 
                                                     <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
 
                                                     <Text style={{ color: '#1E45E1' }}>Bed Layout View</Text>
-                                                </View>
+                                                </TouchableOpacity>
 
                                             </View>
 
@@ -4163,104 +4108,13 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                     {activeTab === "CheckIn" && (
                                         <>
-                                            {/* <Text style={styles.label}>Tenant <Text style={{ color: "red" }}>*</Text></Text>
-
-                <View style={{ position: "relative" }}>
-
-                  <TouchableOpacity
-                    style={styles.select}
-                    onPress={() => setCheckinTenantsopen(!checkinTenantsOpen)}
-                    activeOpacity={0.9}
-                  >
-                    <Text style={styles.selectText}>
-                      {CheckinTenantSelected?.fullName || "Select Tenant"}
-
-                    </Text>
-                    <Image source={DownArrow} style={styles.arrow} />
-                  </TouchableOpacity>
-
-                  {tenentsError && (
-                    <ErrorMessage message={tenentsError} type="error" />
-                  )}
-                  {checkinTenantsOpen && (
-                    <View style={styles.dropdownMenuone}>
-                      <ScrollView
-                        nestedScrollEnabled
-                        keyboardShouldPersistTaps="handled"
-                        showsVerticalScrollIndicator
-                        style={{ maxHeight: 160 }}
-                        contentContainerStyle={{ paddingBottom: 5 }}
-                      >
-                        {CheckinTenants.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={[styles.option, CheckinTenantSelected?.customerId === v.customerId && { backgroundColor: "#E6F0FF" }]}
-                            onPress={() => {
-                              setCheckinTenantSelected(v);
-                              setCheckinTenantsopen(false);
-                              setTenantsError("");
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v.fullName}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
-
-               
-                </View> */}
-
-
-                                            {/* <Text style={styles.label}>
-                  Stay Type <Text style={{ color: "red" }}>*</Text>
-                </Text>
-
-                <View style={{ position: "relative" }}>
-                  <TouchableOpacity
-                    style={styles.select}
-                    onPress={() => setStayTypeOpen(!StayTypeOpen)}
-                    activeOpacity={0.9}
-                  >
-                    <Text style={styles.selectText}>{StayTypeSelected}</Text>
-                    <Image source={DownArrow} style={styles.arrow} />
-                  </TouchableOpacity>
-
-                  {stayTypeError && (
-                    <ErrorMessage message={stayTypeError} type="error" />
-                  )}
-
-                  {StayTypeOpen && (
-                    <View style={styles.dropdownMenuone}>
-                      <ScrollView style={{ maxHeight: 160 }}>
-                        {StayType.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={styles.option}
-                            onPress={() => {
-                              setStayTypeSelected(v);
-                              setStayTypeOpen(false);
-                              setStayTypeError(""); 
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
-                </View> */}
-
-
-
-
                                             <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
                                             <View ref={checkinDateRef} collapsable={false}>
                                                 <TouchableOpacity
                                                     style={styles.dateBox}
                                                     onPress={() => {
-                                                        Keyboard.dismiss();        // 🔥 close keyboard
+                                                        Keyboard.dismiss();
                                                         setOpenDropdownId(null);
                                                         setCheckinTenantsopen(false);
 
@@ -4274,11 +4128,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     }}
 
                                                 >
-                                                    {/* <Text style={styles.placeholder}>
-                                                        {checkJoiningDate
-                                                            ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
-                                                            : "DD-MM-YYYY"}
-                                                    </Text> */}
+
 
                                                     <Text style={styles.placeholder}>
                                                         {checkJoiningDate
@@ -4296,12 +4146,13 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                                 <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
-                                                <View style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}>
+                                                <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}
+                                                  onPress={handleshowBedDetailsheet} >
 
                                                     <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
 
                                                     <Text style={{ color: '#1E45E1' }}>Bed Layout View</Text>
-                                                </View>
+                                                </TouchableOpacity>
 
                                             </View>
 
@@ -6133,24 +5984,7 @@ export default function AddTenantNewform({ navigation, route }) {
                         <View style={{ height: 60 }} />
                     </ScrollView>
                 </KeyboardAvoidingView>
-                {/* {openCheckJoinDatePic && (
-        <View style={styles.sheetOverlay}>
-          <TouchableWithoutFeedback onPress={() => setOpenCheckJoinDatePic(false)}>
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
 
-          <View style={styles.datePickerBox}>
-            <DatePicker
-              mode="single"
-              date={checkJoiningDate}
-              onChange={(p) => {
-                setcheckJoiningDate(p.date || dayjs());
-                setOpenCheckJoinDatePic(false);
-              }}
-            />
-          </View>
-        </View>
-      )} */}
                 {showCalendar && (
                     <View style={styles.sheetOverlay}>
                         <TouchableWithoutFeedback onPress={() => setShowCalendar(false)}>
@@ -6330,8 +6164,40 @@ export default function AddTenantNewform({ navigation, route }) {
                     {renderFooterButtons()}
                 </View>
 
-
-
+                 <BedDetailsSheet
+                                visible={showBedSheet}
+                                joiningDate={joiningDate || checkJoiningDate}
+                                onClose={() => setShowBedSheet(false)}
+                                onSelect={(data) => {
+                                    console.log("Selected Bed =>", data);
+                
+                                    setSelectedBedDetails(data);
+                
+                                    const floor = floors.find(f => f?.id === data?.floorId);
+                                    if (floor) {
+                                        setFloorSelected(floor);
+                                    }
+                
+                                    loadRoomsByFloor(data?.floorId).then(async () => {
+                
+                                        const room = {
+                                            id: data?.roomId,
+                                            name: data?.roomName,
+                                        };
+                                        setRoomSelected(room);
+                
+                                        await getAllBedsByRoom(data?.roomId);
+                
+                                        setBedSelected({
+                                            bedId: data?.bedId,
+                                            bedName: data?.bedName,
+                                            rentAmount: data?.rentAmount,
+                                        });
+                
+                                        setCheckinRentalAmount(String(data?.rentAmount));
+                                    });
+                                }}
+                            />
 
             </View>
         </>

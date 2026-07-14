@@ -29,6 +29,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import CommingSoon from "../../Assets/Images/Coming_soon.png"
 import BedIcon from "../../Assets/Images/bed_NewIcon.png";
 import { Switch } from "react-native";
+import BedDetailsSheet from "./BedDetailsBottomsheet"
 
 
 
@@ -64,6 +65,9 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
     const [selectedRoom, setSelectedRoom] = useState(null);
+
+    const [showBedSheet, setShowBedSheet] = useState(false);
+    const [selectedBedDetails, setSelectedBedDetails] = useState(null);
 
     const [beds, setBeds] = useState([]);
     const [bedOpen, setBedOpen] = useState(false);
@@ -123,7 +127,7 @@ export default function BookingCheckIn({ navigation, route }) {
             setRooms([]);
         }
     };
-const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
+    const checkInCustomerId = customerId || selectedBedReserv?.tenetId;
 
     useEffect(() => {
         if (!activeHostelId || !checkInCustomerId) return;
@@ -133,10 +137,10 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
             console.log("initCheckIn", res)
             if (res?.success) {
                 setBookingDetails(res.data);
-                if(res?.data?.bedName === null){
+                if (res?.data?.bedName === null) {
                     setBookingDetailsError("Bed is Unavailable")
 
-                     await loadBeds(joiningDate);
+                    await loadBeds(joiningDate);
                     setSelectedFloor(null);
                     setSelectedRoom(null);
                     setSelectedBed(null);
@@ -213,10 +217,10 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
         ? selectedBedReserv.tenantFullName
         : customer?.fullName;
 
-        const countryCode =
-    isPGBooking
-        ? selectedBedReserv?.countryCode
-        : customer?.countryCode;
+    const countryCode =
+        isPGBooking
+            ? selectedBedReserv?.countryCode
+            : customer?.countryCode;
 
     const displayMobile = isPGBooking
         ? selectedBedReserv?.mobile
@@ -230,10 +234,10 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
         ? PGselectedBed?.rentAmount
         : bookingDetails?.rent;
 
-        const profilePic =
-    isPGBooking
-        ? selectedBedReserv?.profilePic
-        : customer?.profilePic;
+    const profilePic =
+        isPGBooking
+            ? selectedBedReserv?.profilePic
+            : customer?.profilePic;
 
 
     // const filteredBeds = beds.filter(bed => {
@@ -245,6 +249,11 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
     //         bed.currentStatus === "VACANT"
     //     );
     // });
+
+       const handleshowBedDetailsheet = () => {
+        if (!joiningDate) return
+        setShowBedSheet(true);
+    }
 
     const filteredBeds = beds.filter(item =>
         item.floorId === selectedFloor?.id &&
@@ -352,7 +361,7 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
 
         }
 
-    }, [customer, selectedBedReserv , PGselectedBed]);
+    }, [customer, selectedBedReserv, PGselectedBed]);
 
 
 
@@ -652,7 +661,7 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
 
     console.log("Selected Bed", selectedBed);
 
-  console.log("bookingtocheckincustomerId", customerId , selectedBedReserv?.tenetId)
+    console.log("bookingtocheckincustomerId", customerId, selectedBedReserv?.tenetId)
 
     const submitLongStay = async () => {
         const isValid = validateLongStay();
@@ -663,7 +672,7 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
         // if (!chargeValid || !onetimechargevalid) return;
         if (!chargeValid) return;
         //  if(!checkInCustomerId) return
-            
+
         if (isSubmittingRef.current) return;
         isSubmittingRef.current = true;
 
@@ -718,9 +727,9 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
                 checkInCustomerId,
                 payload
             );
-            
+
             console.log("bookingtocheckinres", res);
-            
+
 
             if (res?.success) {
                 setModalType("success");
@@ -903,12 +912,13 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
 
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                     <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
-                                    <View style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}>
+                                    <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}
+                                     onPress={handleshowBedDetailsheet} >
 
                                         <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
 
                                         <Text style={{ color: '#1E45E1' }}>Bed Layout View</Text>
-                                    </View>
+                                    </TouchableOpacity>
 
                                 </View>
 
@@ -1769,6 +1779,52 @@ const checkInCustomerId =  customerId || selectedBedReserv?.tenetId;
                     )}
                 </KeyboardAvoidingView>
             </SafeAreaView>
+
+           <BedDetailsSheet
+    visible={showBedSheet}
+    joiningDate={joiningDate}
+    onClose={() => setShowBedSheet(false)}
+    onSelect={(data) => {
+        console.log("Selected Bed =>", data);
+
+        setSelectedBedDetails(data);
+
+        setSelectedFloor({
+            id: data.floorId,
+            name: data.floorName,
+        });
+
+        const room = {
+            id: data.roomId,
+            name: data.roomName,
+        };
+
+        setSelectedRoom(room);
+
+        setRooms([
+            {
+                id: data.roomId,
+                name: data.roomName,
+            },
+        ]);
+
+        setSelectedBed({
+            bedId: data.bedId,
+            bedName: data.bedName,
+            rentAmount: data.rentAmount,
+        });
+
+        setRentalAmount(String(data.rentAmount));
+
+        setFloorError("");
+        setRoomError("");
+        setBedError("");
+        setBookingDetailsError("");
+
+        setShowBedSheet(false);
+    }}
+/>
+
             {openDatePicker && (
                 <View style={styles.sheetOverlay}>
                     <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
