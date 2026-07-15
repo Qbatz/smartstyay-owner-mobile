@@ -653,11 +653,11 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
     console.log("filteredBeds", filteredBeds);
 
-   const handleshowBedDetailsheet = () => {
-    if (!checkJoiningDate) return;
+    const handleshowBedDetailsheet = () => {
+        if (!checkJoiningDate) return;
 
-    setShowBedSheet(true);
-};
+        setShowBedSheet(true);
+    }
 
     const toggleDropdown = (type) => {
         setOpenDropdown((prev) => (prev === type ? null : type));
@@ -2072,28 +2072,28 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                         {tab === "short" && (
 
-                             <View style={styles.shortstaycontainer}>
-                                  <Image
+                            <View style={styles.shortstaycontainer}>
+                                <Image
                                     source={ComingSoomImage}
                                     style={styles.shortstayimage}
                                     resizeMode="contain"
-                                  />
-                            
-                                  <Text style={styles.shortstaytitle}>
+                                />
+
+                                <Text style={styles.shortstaytitle}>
                                     We’re still working on this feature!
-                                  </Text>
-                            
-                                  <Text style={styles.shortstaysubtitle}>
+                                </Text>
+
+                                <Text style={styles.shortstaysubtitle}>
                                     Our team is building something helpful for you.
                                     {"\n"}Check back again shortly.
-                                  </Text>
-                            
-                                  {/* <TouchableOpacity
+                                </Text>
+
+                                {/* <TouchableOpacity
                                     style={styles.button}
                                   >
                                     <Text style={styles.buttonText}>← Go Back</Text>
                                   </TouchableOpacity> */}
-                                </View>
+                            </View>
                         )}
                     </ScrollView>
                 </KeyboardAvoidingView>
@@ -2837,7 +2837,7 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: "row",
         gap: 10,
-        marginTop:20 
+        marginTop: 20
     },
 
     primaryBtn: {
@@ -2858,30 +2858,30 @@ const styles = StyleSheet.create({
         backgroundColor: "#B7C4F7",
         opacity: 0.6,
     },
-      shortstaycontainer: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 24,
-  },
-  shortstayimage: {
-    width: "100%",
-    height: 230,
-    marginBottom: 30,
-  },
-  shortstaytitle: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  shortstaysubtitle: {
-    fontSize: 14,
-    color: "#6B7280",
-    textAlign: "center",
-    lineHeight: 20,
-    marginBottom: 30,
-  },
+    shortstaycontainer: {
+        flex: 1,
+        backgroundColor: "#FFFFFF",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 24,
+    },
+    shortstayimage: {
+        width: "100%",
+        height: 230,
+        marginBottom: 30,
+    },
+    shortstaytitle: {
+        fontSize: 24,
+        fontWeight: "700",
+        color: "#111827",
+        textAlign: "center",
+        marginBottom: 10,
+    },
+    shortstaysubtitle: {
+        fontSize: 14,
+        color: "#6B7280",
+        textAlign: "center",
+        lineHeight: 20,
+        marginBottom: 30,
+    },
 });
