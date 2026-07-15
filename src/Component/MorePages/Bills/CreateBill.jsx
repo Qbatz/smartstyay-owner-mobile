@@ -752,6 +752,7 @@ const filteredCustomers = customers.filter(
           payload: changedItems,
         });
 
+
         console.log("edit bill", payload);
         // res = await UpdateBill({
         //   hostelId: activeHostelId,
