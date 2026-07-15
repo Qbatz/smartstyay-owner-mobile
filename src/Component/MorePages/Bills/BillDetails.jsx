@@ -623,15 +623,15 @@ const BillDetailsSheet = ({
   const overdueDays = getOverdueDays(BillPdfdetails?.dueDate);
 
   const mappedBillForRecord = {
-    invoiceId: bill?.invoiceId,
+    invoiceId: bill?.invoiceInfo?.invoiceId,
 
     dueAmount: invoice?.balanceAmount || invoice?.totalAmount || 0,
 
-    invoiceDate: bill?.invoiceDate,
+    invoiceDate: bill?.invoiceInfo?.invoiceDate,
 
     fullName: customer?.fullName,
 
-    invoiceType: bill?.configurations?.invoiceType,
+    invoiceType: bill?.configurations?.invoiceType || selectedBill?.invoiceType,
 
     invoiceNumber: bill?.invoiceNumber || bill?.invoiceInfo?.invoiceNo,
 

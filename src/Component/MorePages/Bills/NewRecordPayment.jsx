@@ -325,6 +325,7 @@ const NewRecordPayment = ({ route }) => {
                         style={styles.txtInputBox}
                         placeholder="₹ 1700"
                         value={paidAmount}
+                        keyboardType="number-pad"
                         // onChangeText={(text) => {
                         //     if (text > totalAmount) return;
                         //     setPaidAmount(text)
@@ -539,7 +540,7 @@ const NewRecordPayment = ({ route }) => {
                                 marginLeft: 5
                             }}>
                             <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', color: '#FFFFFF' }}>
-                                Record</Text>
+                                  Record {paidAmount ? `₹ ${paidAmount} →` : ""}</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>

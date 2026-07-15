@@ -489,6 +489,8 @@ const RefundPaymentSheet = ({
       payload,
     });
 
+    console.log("refundDetails",res)
+
     if (res?.success) {
       GetAllBillDetails(activeHostelId);
       setModalType("success");

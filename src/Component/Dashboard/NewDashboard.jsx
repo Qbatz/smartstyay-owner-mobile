@@ -93,6 +93,7 @@ import SubscriptionFullScreenAlert from "./SubscriptionBannerAlert";
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 import SubscriptionExpiredCard from "./SubscriptionBannerAlert";
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
+import { BillContext } from "../../Context/BillsContext";
 
 
 
@@ -110,6 +111,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
   const { getDashboard, getParticularHostelDetails, PGDetails, loading } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
+  const {  GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt, } = useContext(BillContext);
   const [unreadCount, setUnreadCount] = useState(0);
   const [dashboardList, setDashboardList] = useState([])
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -575,8 +577,37 @@ export default function DashboardNewDesign({ initialParams, route }) {
   }
 
 
-  const handleShowRecordPayment = (item) => {
-    setShowRecordPayment(true)
+  const handleShowRecordPayment =async (item) => {
+    // setShowRecordPayment(true)
+    if(activeHostelId){
+      if (activeHostelId) {
+        try {
+            const res = await getBillsPdfDetails(activeHostelId,item?.invoiceId);
+
+            console.log("recordPaid", res);
+            console.log(res.data);
+
+            setSelectedBill(item);
+            if(res?.success){
+               navigation.navigate("NewRecordPayment", {
+                selectedBill: item,
+                BillPdfdetails: res.data,
+                onPaymentSuccess: fetchDashboard,
+            });
+            }else{
+              setShowSuccessModal(true)
+              setModalMessage(res?.message || "Something Went Wrong")
+              setModalType("error")
+              setTimeout(() => {
+                setShowSuccessModal(false)
+              }, 800);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+     }
+     
     setSelectedBill(item)
 
   }

@@ -263,7 +263,7 @@ export default function BillsDesign({ route }) {
   const [filterError, setFilterError] = useState("");
   const [showUnpaidModal, setShowUnpaidModal] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null);
-  
+
 
   const [showRecuringBillDetail, setShowRecuringBillDetail] = useState(false)
   const [selectedRecurringBill, setSelectedRecurringBill] = useState("")
@@ -1561,11 +1561,11 @@ export default function BillsDesign({ route }) {
   };
 
   console.log("text", searchText);
-  
+
 
   const handleReceiptSearch = async (text) => {
     console.log("text", text);
-    
+
     setSearchText(text);
 
     if (!canReadReceipt) return;
@@ -1687,17 +1687,17 @@ export default function BillsDesign({ route }) {
     await GetAllBillDetails(activeHostelId);
   };
 
-   const handleReceiptResetFilters = async () => {
-  if (!canReadReceipt) return;
+  const handleReceiptResetFilters = async () => {
+    if (!canReadReceipt) return;
 
-  setReceiptAppliedFilters(null);
+    setReceiptAppliedFilters(null);
 
-  await ReceiptFilter({
-    hostelId: activeHostelId,
-  });
-};
+    await ReceiptFilter({
+      hostelId: activeHostelId,
+    });
+  };
 
- 
+
 
   const resetRefundForm = () => {
     setRefundAmount("");
@@ -2235,6 +2235,9 @@ export default function BillsDesign({ route }) {
       mode: "edit",
       data: item,
     });
+    setShowBillDetails(false);
+    setShowMenu(false)
+    
   }
 
   const handleShowBillPdf = async () => {
@@ -2269,17 +2272,17 @@ export default function BillsDesign({ route }) {
   // ];
 
   useEffect(() => {
-  setSearchText("");
+    setSearchText("");
 
-  if (activeTab === "Receipt") {
-    ReceiptFilter({
-      hostelId: activeHostelId,
-      keyword: "",
-      page: 1,
-      size: 10,
-    });
-  }
-}, [activeTab])
+    if (activeTab === "Receipt") {
+      ReceiptFilter({
+        hostelId: activeHostelId,
+        keyword: "",
+        page: 1,
+        size: 10,
+      });
+    }
+  }, [activeTab])
 
 
 
@@ -2553,28 +2556,28 @@ export default function BillsDesign({ route }) {
                           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                             <View style={{ flexDirection: "row", alignItems: "center" }}>
 
-                            
+
                               {appliedFilters.paymentStatus?.map((s) => (
                                 <View key={s} style={styles.chip}>
                                   <Text style={styles.chipText}>Status is : {s}</Text>
                                 </View>
                               ))}
 
-                             
+
                               {appliedFilters.type?.map((t) => (
                                 <View key={t} style={styles.chip}>
                                   <Text style={styles.chipText}>Type is : {t}</Text>
                                 </View>
                               ))}
 
-                           
+
                               {appliedFilters.modes?.map((m) => (
                                 <View key={m} style={styles.chip}>
                                   <Text style={styles.chipText}>Mode is : {m}</Text>
                                 </View>
                               ))}
 
-                            
+
                               {appliedFilters.startDate && appliedFilters.endDate && (
                                 <View style={styles.chip}>
                                   <Text style={styles.chipText}>
@@ -2586,7 +2589,7 @@ export default function BillsDesign({ route }) {
                             </View>
                           </ScrollView>
 
-                         
+
                           <TouchableOpacity onPress={handleResetFilters}>
                             <Text style={styles.resetTextSmall}>Reset</Text>
                           </TouchableOpacity>
@@ -2648,7 +2651,7 @@ export default function BillsDesign({ route }) {
                             </View>
 
                             {(
-                              ["Partially Paid", "Partial Payment","Partially Refunded"].includes(item.paymentStatus) ||
+                              ["Partially Paid", "Partial Payment", "Partially Refunded"].includes(item.paymentStatus) ||
                               (item.paymentStatus === "Pending" && item.isDiscounted)
                             ) && (
                                 <Text style={styles.dueLabel}>Outstanding</Text>
@@ -2666,7 +2669,7 @@ export default function BillsDesign({ route }) {
                             <Text style={{ fontSize: 10, color: "#6B7280", fontFamily: "Gilroy-Regular", marginTop: 4 }}>
                               {item.invoiceDate}</Text>
                             {(
-                              ["Partially Paid", "Partial Payment","Partially Refunded"].includes(item.paymentStatus) ||
+                              ["Partially Paid", "Partial Payment", "Partially Refunded"].includes(item.paymentStatus) ||
                               (item.paymentStatus === "Pending" && item.isDiscounted)
                             ) && (
                                 <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
@@ -2737,10 +2740,10 @@ export default function BillsDesign({ route }) {
             <RecurringBills onSelectRecurringBill={handleRecurringBill} />
           )}
           {activeTab === "Receipt" && (
-            <Receipt onSelectReceipt={handleOpenReceiptSheet} 
-            showReceiptFiltersheet={() => setShowReceiptFilter(true)} 
-            appliedFilters={receiptAppliedFilters}
-            handleResetFilters={handleReceiptResetFilters}
+            <Receipt onSelectReceipt={handleOpenReceiptSheet}
+              showReceiptFiltersheet={() => setShowReceiptFilter(true)}
+              appliedFilters={receiptAppliedFilters}
+              handleResetFilters={handleReceiptResetFilters}
             />
           )}
 
@@ -4082,7 +4085,7 @@ export default function BillsDesign({ route }) {
 
                   <View style={styles.fixedRefundBottomBar}>
 
-                    {(isPaid || cancelled ) && (
+                    {(isPaid || cancelled) && (
                       <>
                         <TouchableOpacity
                           style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
@@ -4107,41 +4110,41 @@ export default function BillsDesign({ route }) {
 
                     {(pendingRefund || partiallyRefund || FullyRefund) && (
                       <>
-                      <View style={styles.bottomRefundActionItem}>
-                        <TouchableOpacity
-                          style={[styles.refundiIconBtn, !isExportAllow && { opacity: 0.4 }]}
-                          disabled={!isExportAllow}
-                          onPress={handleshareBill}
-                        >
-                          <Image source={ShareIcon} style={styles.iconDark} />
-                          
-                        </TouchableOpacity>
-                        <Text style={styles.refundActionTxt}>Share</Text>
+                        <View style={styles.bottomRefundActionItem}>
+                          <TouchableOpacity
+                            style={[styles.refundiIconBtn, !isExportAllow && { opacity: 0.4 }]}
+                            disabled={!isExportAllow}
+                            onPress={handleshareBill}
+                          >
+                            <Image source={ShareIcon} style={styles.iconDark} />
+
+                          </TouchableOpacity>
+                          <Text style={styles.refundActionTxt}>Share</Text>
                         </View>
 
-                      <View style={styles.bottomRefundActionItem}>
-                        <TouchableOpacity
-                          style={[styles.refundiIconBtn, !isExportAllow && { opacity: 0.4 }]}
-                          disabled={!isExportAllow}
-                          onPress={handleDownloadBillsPdf}>
-                          <Image source={DownloadIcon} style={styles.iconDark} />
-                          
-                        </TouchableOpacity>
-                        <Text style={styles.refundActionTxt}>Download</Text>
+                        <View style={styles.bottomRefundActionItem}>
+                          <TouchableOpacity
+                            style={[styles.refundiIconBtn, !isExportAllow && { opacity: 0.4 }]}
+                            disabled={!isExportAllow}
+                            onPress={handleDownloadBillsPdf}>
+                            <Image source={DownloadIcon} style={styles.iconDark} />
+
+                          </TouchableOpacity>
+                          <Text style={styles.refundActionTxt}>Download</Text>
                         </View>
                         {showRefundButton && (
                           <View style={styles.bottomRefundActionItem}>
-                          <TouchableOpacity
-                            style={styles.refundBtn}
-                            onPress={handleShowRefundPayment}
-                          >
-                            <Image
-                              source={RefundedIcon}
-                              style={styles.refundIcon}
-                            />
-                            
-                          </TouchableOpacity>
-                          <Text style={styles.refundText}>
+                            <TouchableOpacity
+                              style={styles.refundBtn}
+                              onPress={handleShowRefundPayment}
+                            >
+                              <Image
+                                source={RefundedIcon}
+                                style={styles.refundIcon}
+                              />
+
+                            </TouchableOpacity>
+                            <Text style={styles.refundText}>
                               Refund
                             </Text>
                           </View>
@@ -4200,14 +4203,14 @@ export default function BillsDesign({ route }) {
 
 
             <ReceiptFilterSheet
-             visible={showReceiptFilter}
+              visible={showReceiptFilter}
               onClose={() => setShowReceiptFilter(false)}
               onApply={(filters) => {
                 console.log(filters);
               }}
-                setAppliedFilters={setReceiptAppliedFilters}
-               onResetFilter={handleReceiptResetFilters}
-            /> 
+              setAppliedFilters={setReceiptAppliedFilters}
+              onResetFilter={handleReceiptResetFilters}
+            />
 
             <DiscountActionSheet
               visible={showDiscountSheet}
@@ -4691,19 +4694,25 @@ export default function BillsDesign({ route }) {
                   </>
                 )}
 
-                <TouchableOpacity
-                  style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-                  // disabled={!canUpdateInvoice}
 
-                  onPress={handleBookingApplyInvoices} >
-                  <Image
-                    source={require("../../../Assets/Images/Union.png")}
-                    style={styles.popupIcon}
-                  />
-                  <Text style={styles.popupText}>Adjust With Retainer</Text>
-                </TouchableOpacity>
+                {BillPdfdetails?.invoiceInfo?.canRedeem && (
+                  <>
+                    <TouchableOpacity
+                      style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
+                      // disabled={!canUpdateInvoice}
 
-                <View style={styles.menuDivider} />
+                      onPress={handleBookingApplyInvoices} >
+                      <Image
+                        source={require("../../../Assets/Images/Union.png")}
+                        style={styles.popupIcon}
+                      />
+                      <Text style={styles.popupText}>Adjust With Retainer</Text>
+                    </TouchableOpacity>
+
+
+                    <View style={styles.menuDivider} />
+                  </>
+                )}
 
                 {/*  */}
 
@@ -7727,7 +7736,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     // marginRight: 20
   },
-  refundActionTxt:{
+  refundActionTxt: {
     fontFamily: "Gilroy-Semibold"
   },
 
@@ -8496,7 +8505,7 @@ const styles = StyleSheet.create({
     // alignItems: "center",
     // justifyContent: "center",
     backgroundColor: "#E67E22",
-     paddingVertical: 14,
+    paddingVertical: 14,
     paddingHorizontal: 37,
     borderRadius: 10,
     paddingVertical: 14,
