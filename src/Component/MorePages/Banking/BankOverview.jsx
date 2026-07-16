@@ -304,7 +304,8 @@ const styles = StyleSheet.create({
   padding: 14,
   marginRight: 12,
   marginBottom: 5,
-
+  paddingBottom:28,
+marginTop:10,
   elevation: 3,
 
   shadowColor: "#000",
@@ -334,6 +335,7 @@ iconBox: {
   justifyContent: "center",
   marginBottom: 8,
 
+
   // ✅ Add this
   backgroundColor: "#FFFFFF",
 
@@ -354,7 +356,7 @@ iconBox: {
 
   cardTitle: { fontSize: 12, color: "#6B7280" },
 
-  cardValue: { fontSize: 18, fontWeight: "700" },
+  cardValue: { fontSize: 18, fontWeight: "700" , marginBottom:10},
 
   swipeBtn: { alignSelf: "flex-end", paddingRight: 16, paddingTop:10 },
 

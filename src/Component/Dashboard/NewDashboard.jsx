@@ -1824,11 +1824,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               </View>
                             </TouchableOpacity> */}
 
-                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
-                              setTempMonth(selectedMonth);
-                              setMonthSheetOpen(true);
-                            }}>
-
+                            <TouchableOpacity style={styles.monthBtn} 
+                            // onPress={() => {
+                            //   setTempMonth(selectedMonth);
+                            //   setMonthSheetOpen(true);
+                            // }}
+                            >
                               <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
 
                                 <Text
@@ -1873,14 +1874,14 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           </View>
 
 
-                          <View style={styles.billingRow}>
+                          {/* <View style={styles.billingRow}>
                             <Text style={styles.billingLabel}>Refunded</Text>
                             <Text style={{
                               fontSize: 16,
                               fontFamily: "Gilroy-Bold",
                               color: "red"
                             }}> ₹ {dashboardList?.refundedAmount}</Text>
-                          </View>
+                          </View> */}
 
 
                           <View style={styles.billingRow}>
@@ -1990,10 +1991,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <Text style={styles.occupancyTitle}>Occupancy</Text>
                             </View>
 
-                            <TouchableOpacity style={styles.dropdownBtn} onPress={() => {
-                              setTempMonth(selectedMonth);
-                              setMonthSheetOpen(true);
-                            }}>
+                            <TouchableOpacity style={styles.dropdownBtn} 
+                            // onPress={() => {
+                            //   setTempMonth(selectedMonth);
+                            //   setMonthSheetOpen(true);
+                            // }}
+                            >
                               <Text style={{ fontSize: 16 }}>▾</Text>
                             </TouchableOpacity>
                           </View>
@@ -2047,10 +2050,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <Text style={styles.tenantsTitle}>Tenants</Text>
                             </View>
 
-                            <TouchableOpacity style={styles.dropdownBtn} onPress={() => {
-                              setTempMonth(selectedMonth);
-                              setMonthSheetOpen(true);
-                            }}>
+                            <TouchableOpacity style={styles.dropdownBtn} 
+                            // onPress={() => {
+                            //   setTempMonth(selectedMonth);
+                            //   setMonthSheetOpen(true);
+                            // }}
+                            >
                               <Text style={{ fontSize: 16 }}>▾</Text>
                             </TouchableOpacity>
                           </View>
@@ -2104,10 +2109,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <Text style={styles.advanceTitle}>Advance Holding</Text>
                             </View>
 
-                            <TouchableOpacity style={styles.dropdownBtn} onPress={() => {
-                              setTempMonth(selectedMonth);
-                              setMonthSheetOpen(true);
-                            }}>
+                            <TouchableOpacity style={styles.dropdownBtn} 
+                            // onPress={() => {
+                            //   setTempMonth(selectedMonth);
+                            //   setMonthSheetOpen(true);
+                            // }}
+                            >
                               <Text style={{ fontSize: 16 }}>▾</Text>
                             </TouchableOpacity>
                           </View>
@@ -2178,10 +2185,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             </View>
 
 
-                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
-                              setTempMonth(selectedMonth);
-                              setMonthSheetOpen(true);
-                            }}>
+                            <TouchableOpacity style={styles.monthBtn} 
+                            // onPress={() => {
+                            //   setTempMonth(selectedMonth);
+                            //   setMonthSheetOpen(true);
+                            // }}
+                            >
 
                               <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
 
@@ -2301,10 +2310,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             </View>
 
 
-                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
-                              setTempMonth(selectedMonth);
-                              setMonthSheetOpen(true);
-                            }}>
+                            <TouchableOpacity style={styles.monthBtn} 
+                            // onPress={() => {
+                            //   setTempMonth(selectedMonth);
+                            //   setMonthSheetOpen(true);
+                            // }}
+                            >
 
                               <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
 
@@ -2999,13 +3010,13 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           <View style={styles.chartHeader}>
                             <Text style={styles.chartTitle}>Occupancy Trend</Text>
 
-                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
-                              setTempMonth(selectedMonth);
-                              setMonthSheetOpen(true);
-                            }}>
-
+                            <TouchableOpacity style={styles.monthBtn} 
+                            //  onPress={() => {
+                            //   setTempMonth(selectedMonth);
+                            //   setMonthSheetOpen(true);
+                            // }}
+                            >
                               <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-
                                 <Text
                                   style={styles.monthText}
                                   numberOfLines={1}
@@ -3161,11 +3172,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               Revenue Trend
                             </Text>
 
-                            <TouchableOpacity style={styles.monthBtn} onPress={() => {
-                              setTempMonth(selectedMonth);
-                              setMonthSheetOpen(true);
-                            }}>
-
+                            <TouchableOpacity style={styles.monthBtn} 
+                            // onPress={() => {
+                            //   setTempMonth(selectedMonth);
+                            //   setMonthSheetOpen(true);
+                            // }}
+                            >
                               <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
 
                                 <Text
