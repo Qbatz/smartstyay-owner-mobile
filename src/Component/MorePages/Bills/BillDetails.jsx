@@ -522,7 +522,7 @@ const BillDetailsSheet = ({
       !isPaid ||
       (
         isPaid &&
-        selectedBill?.invoiceMode === "Manual" &&
+        selectedBill?.invoiceMode === "Manual" || selectedBill?.invoiceMode === "MANUAL" &&
         selectedBill?.invoiceType !== "Settlement"
       )
     );

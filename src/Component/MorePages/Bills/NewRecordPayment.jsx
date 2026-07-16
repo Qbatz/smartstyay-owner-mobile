@@ -274,7 +274,7 @@ const NewRecordPayment = ({ route }) => {
 
                     <View style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 14, marginTop: 10 }}>
                         <View style={styles.prflField}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center',flex:1 }}>
                                 {/* <Image source={Profile} style={{ width: 50, height: 50, borderRadius: 25 }} /> */}
 
                                 {BillPdfdetails?.customerInfo?.profilePic ?
@@ -286,8 +286,10 @@ const NewRecordPayment = ({ route }) => {
                                             {BillPdfdetails?.customerInfo?.initials}</Text>
                                     </View>}
 
-                                <View style={{ marginLeft: 8 }}>
-                                    <Text style={styles.tntName}>{BillPdfdetails?.customerInfo?.fullName}</Text>
+                                <View style={{ marginLeft: 8,flex:1 }}>
+                                    <Text style={[styles.tntName,{marginRight:6}]}
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail">{BillPdfdetails?.customerInfo?.fullName}</Text>
 
                                     <Text style={styles.hstlDtl}>
                                         {BillPdfdetails?.stayInfo?.floorName} || {BillPdfdetails?.stayInfo?.roomName} || {BillPdfdetails?.stayInfo?.bedName}

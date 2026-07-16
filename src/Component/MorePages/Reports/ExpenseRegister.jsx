@@ -46,14 +46,24 @@ const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
 
 useEffect(() => {
   if (!activeHostelId) return;
+    console.log("useEffect running");
+    console.log(activeHostelId)
+
 
   const fetchExpenses = async () => {
-    const response = await GetExpenseRegisterReport(activeHostelId, {
+    const filters = {
+    // period: month || undefined,
+    // category: category.length ? category : undefined,
+    // paymentMode: payment.length ? payment : undefined,
+    page: 1,
+    size: 10,
+  };
+    const response = await GetExpenseRegisterReport(activeHostelId, filters
       // startDate: startDate,
       // endDate: endDate,
-      page: 0,
-      size: 10,
-    });
+      // page: 1,
+      // size: 10,
+    );
 
     if (response.success) {
       setExpenseData(response?.data);
