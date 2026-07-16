@@ -437,7 +437,7 @@ headerTitle: {
   fontFamily: "Gilroy-Semibold",
   color: "#111827",
 
-  textAlign: "left",  
+  textAlign: "center",  
 },
 
   backIcon: {

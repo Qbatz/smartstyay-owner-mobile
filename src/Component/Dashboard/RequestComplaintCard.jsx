@@ -36,7 +36,9 @@ export default function RequestComplaintCard({
           </Text>
         </View>
 
-   <TouchableOpacity style={styles.monthBtn} onPress={onMonthPress}>
+   <TouchableOpacity style={styles.monthBtn} 
+  //  onPress={onMonthPress}
+   >
   
   <Text
     style={styles.monthText}

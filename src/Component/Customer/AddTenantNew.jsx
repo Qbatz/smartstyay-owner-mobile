@@ -122,8 +122,8 @@ export default function AddTenantNewform({ navigation, route }) {
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [showProfileSheet, setShowProfileSheet] = useState(false);
 
-        const [showBedSheet, setShowBedSheet] = useState(false);
-          const [selectedBedDetails, setSelectedBedDetails] = useState(null);
+    const [showBedSheet, setShowBedSheet] = useState(false);
+    const [selectedBedDetails, setSelectedBedDetails] = useState(null);
 
     const [searchText, setSearchText] = useState("");
     const [tenantList, setTenantList] = useState([]);
@@ -816,11 +816,25 @@ export default function AddTenantNewform({ navigation, route }) {
 
         const job = draftDetails?.jobDetails || {};
 
-        setEmploymentStatus(getValue(job.employmentStatus));
+    setEmploymentStatus(
+  jobOptions.find(
+    item => item.value === job.employmentStatus
+  ) || null
+);
+
+setJobRole(
+  jobRoleOptions.find(
+    item => item.value === job.jobRole
+  ) || null
+);
+
+setShiftType(
+  shiftTypeOptions.find(
+    item => item.value === job.shiftType
+  ) || null
+);
         setCompanyName(getValue(job.companyName));
-        setJobRole(getValue(job?.jobRole || ""));
         setWorkLocations(getValue(job.workLocation));
-        setShiftType(getValue(job.shiftType));
         setStartTime(getValue(job.shiftFrom));
         setEndTime(getValue(job.shiftTo));
 
@@ -1161,7 +1175,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
     }
 
-      const handleshowBedDetailsheet = () => {
+    const handleshowBedDetailsheet = () => {
         // if (!checkJoiningDate || !joiningDate) return
         setShowBedSheet(true);
     }
@@ -1837,6 +1851,8 @@ export default function AddTenantNewform({ navigation, route }) {
     console.log("selectedbed", bedSelected);
 
 
+
+
     const handleBookingSubmit = async () => {
         if (!validateBooking()) return;
         // if (isCheckingIn) return;
@@ -2121,12 +2137,12 @@ export default function AddTenantNewform({ navigation, route }) {
                     },
 
                     jobDetails: {
-                        employmentStatus: employmentStatus || "",
+                        employmentStatus: employmentStatus?.value || "",
                         companyName: companyName || "",
                         collegeName: "",
-                        jobRole: jobRole || "",
+                        jobRole: jobRole?.value || "",
                         workLocation: worklocation || "",
-                        shiftType: shiftType || "",
+                        shiftType: shiftType?.value || "",
                         shiftFrom: startTime || "",
                         shiftTo: endTime || "",
                     },
@@ -2134,9 +2150,13 @@ export default function AddTenantNewform({ navigation, route }) {
                     guardians: guardians.map(item => ({
                         guardianFullName: item.fullName,
                         relationshipToTenant: item.relationship,
-                        guardianOccupation: item.occupation,
+                        guardianOccupation: item.occupation ,
                         mobileNo: item.mobile,
                     })),
+
+                    shouldCollectFullRent: collectFullRent,
+                    customRent: Number(savedCustomRent || 0),
+                     oneTimeDeduction: [],
 
                     vehicleDetails: {
                         vehicleType: hasVehicle ? vehicleType : "",
@@ -2145,6 +2165,9 @@ export default function AddTenantNewform({ navigation, route }) {
                     },
                 },
             };
+            console.log("UPDATE", guardians);
+            console.log("UPDATE DRAFT", typeof hasVehicle, hasVehicle);
+            console.log("UPDATE DRAFT", typeof collectFullRent, collectFullRent);
 
             console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
 
@@ -3787,7 +3810,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                                 <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
                                                 <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}
-                                                onPress={handleshowBedDetailsheet}>
+                                                    onPress={handleshowBedDetailsheet}>
 
                                                     <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
 
@@ -4147,7 +4170,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                                 <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
                                                 <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}
-                                                  onPress={handleshowBedDetailsheet} >
+                                                    onPress={handleshowBedDetailsheet} >
 
                                                     <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
 
@@ -5380,7 +5403,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 </View>
 
 
-                                                <Text style={styles.label}>Guardian Full Name <Text style={{ color: "red" }}>*</Text></Text>
+                                                <Text style={styles.label}>Guardian Full Name </Text>
                                                 <TextInput
                                                     style={styles.input}
                                                     placeholder="Enter name"
@@ -5556,7 +5579,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 )}
 
                                                 {/* Mobile */}
-                                                <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
+                                                <Text style={styles.label}>Mobile Number </Text>
                                                 <View style={{
                                                     borderWidth: 1,
                                                     borderColor: "#E5E7EB",
@@ -5648,7 +5671,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
 
-                                        <Text style={styles.label}>Company / College Name <Text style={{ color: "red" }}>*</Text></Text>
+                                        <Text style={styles.label}>Company / College Name </Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter name"
@@ -5731,9 +5754,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     setShiftOpen(false);
                                                 }}>
                                                 <Text
+                                                
                                                     style={[
                                                         styles.dropdownText,
-                                                        !jobRoleOpen && { color: "#9CA3AF" },
+                                                        // !jobRoleOpen && { color: "#9CA3AF" },
                                                     ]}>
                                                     {jobRole?.label || "Select Job Role"}
                                                 </Text>
@@ -5768,7 +5792,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                         {jobRoleError ? <ErrorMessage message={jobRoleError} /> : null}
 
 
-                                        <Text style={styles.label}>Work Location <Text style={{ color: "red" }}>*</Text></Text>
+                                        <Text style={styles.label}>Work Location </Text>
                                         <TextInput
                                             style={styles.input}
                                             placeholder="Enter name"
@@ -6164,40 +6188,40 @@ export default function AddTenantNewform({ navigation, route }) {
                     {renderFooterButtons()}
                 </View>
 
-                 <BedDetailsSheet
-                                visible={showBedSheet}
-                                joiningDate={joiningDate || checkJoiningDate}
-                                onClose={() => setShowBedSheet(false)}
-                                onSelect={(data) => {
-                                    console.log("Selected Bed =>", data);
-                
-                                    setSelectedBedDetails(data);
-                
-                                    const floor = floors.find(f => f?.id === data?.floorId);
-                                    if (floor) {
-                                        setFloorSelected(floor);
-                                    }
-                
-                                    loadRoomsByFloor(data?.floorId).then(async () => {
-                
-                                        const room = {
-                                            id: data?.roomId,
-                                            name: data?.roomName,
-                                        };
-                                        setRoomSelected(room);
-                
-                                        await getAllBedsByRoom(data?.roomId);
-                
-                                        setBedSelected({
-                                            bedId: data?.bedId,
-                                            bedName: data?.bedName,
-                                            rentAmount: data?.rentAmount,
-                                        });
-                
-                                        setCheckinRentalAmount(String(data?.rentAmount));
-                                    });
-                                }}
-                            />
+                <BedDetailsSheet
+                    visible={showBedSheet}
+                    joiningDate={joiningDate || checkJoiningDate}
+                    onClose={() => setShowBedSheet(false)}
+                    onSelect={(data) => {
+                        console.log("Selected Bed =>", data);
+
+                        setSelectedBedDetails(data);
+
+                        const floor = floors.find(f => f?.id === data?.floorId);
+                        if (floor) {
+                            setFloorSelected(floor);
+                        }
+
+                        loadRoomsByFloor(data?.floorId).then(async () => {
+
+                            const room = {
+                                id: data?.roomId,
+                                name: data?.roomName,
+                            };
+                            setRoomSelected(room);
+
+                            await getAllBedsByRoom(data?.roomId);
+
+                            setBedSelected({
+                                bedId: data?.bedId,
+                                bedName: data?.bedName,
+                                rentAmount: data?.rentAmount,
+                            });
+
+                            setCheckinRentalAmount(String(data?.rentAmount));
+                        });
+                    }}
+                />
 
             </View>
         </>

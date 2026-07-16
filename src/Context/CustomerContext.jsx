@@ -1816,6 +1816,11 @@ console.log("PAN", panPic);
       message: "Draft update failed",
     };
   } catch (error) {
+    console.log("STATUS", error?.response?.status);
+console.log("DATA", error?.response?.data);
+console.log("HEADERS", error?.response?.headers);
+console.log("ERROR", JSON.stringify(error?.response?.data, null, 2));
+console.log("REQUEST", error);
     console.log("UPDATE DRAFT ERROR 👉", error?.response?.data);
 
     if (error?.response?.status === 401) {
