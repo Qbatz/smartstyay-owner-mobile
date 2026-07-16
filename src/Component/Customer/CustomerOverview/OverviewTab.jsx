@@ -243,7 +243,7 @@ export default function OverviewTab({ customerDetails,
     "SETTLEMENT_GENERATED",
     // "NOTICE",
     "CANCELLED",
-  ].includes(customerDetails?.hostelInfo?.currentStatus);
+  ].includes(customerDetails?.hostelInfo?.currentStatus) || customerDetails?.customerCurrentStatus== "DRAFT";
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
 
   const isNewRentApplied = customerDetails?.isNewRentApplied;

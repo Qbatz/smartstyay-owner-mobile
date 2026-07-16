@@ -16,6 +16,7 @@ export default function BillsProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [refundError, setRefundError] = useState("");
+  console.log("sonna", receiptsList)
 
   const getErrorMessage = (error) =>
     error?.response?.data?.message ||
@@ -122,33 +123,33 @@ export default function BillsProvider({ children }) {
   };
 
   const UpdateBill = async ({ hostelId, invoiceId, payload }) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const res = await axios.put(
-      `/v2/bills/${hostelId}/${invoiceId}`,
-      payload
-    );
+      const res = await axios.put(
+        `/v2/bills/${hostelId}/${invoiceId}`,
+        payload
+      );
 
-    if (res.status === 200) {
-      await GetAllBillDetails(hostelId);
+      if (res.status === 200) {
+        await GetAllBillDetails(hostelId);
 
-      return { success: true, data: res.data };
+        return { success: true, data: res.data };
+      }
+
+      return { success: false, message: "Update failed" };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      console.log(error)
+      setErrorMsg(msg);
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
     }
-
-    return { success: false, message: "Update failed" };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    console.log(error)
-    setErrorMsg(msg);
-    return { success: false, message: msg };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const RecordPayment = async ({ hostelId, invoiceId, data }) => {
@@ -396,7 +397,7 @@ export default function BillsProvider({ children }) {
 
       if (res.status === 200) {
         console.log("receiptlist", res);
-        
+
         setReceiptsList(res.data || []);
 
         return {
@@ -433,93 +434,93 @@ export default function BillsProvider({ children }) {
   };
 
   const ReceiptFilter = async ({
-  hostelId,
-  keyword = "",
-  // page = 1,
-  // size = 10,
-  period,
-  bankIds = [],
-  invoiceType,
-  collectedBy = [],
-  minAmount,
-  maxAmount,
-}) => {
-  if (!hostelId) {
-    return { success: false, message: "Invalid hostelId" };
-  }
-
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.get(`/v2/transaction/${hostelId}`, {
-      params: {
-        keyword,
-        // page,
-        // size,
-        period,
-        bankIds,
-        invoiceType,
-        collectedBy,
-        minAmount,
-        maxAmount,
-      },
-      paramsSerializer: (params) =>
-        Object.keys(params)
-          .map((key) => {
-            const value = params[key];
-
-            if (Array.isArray(value)) {
-              if (!value.length) return null;
-              return value
-                .map((v) => `${key}=${encodeURIComponent(v)}`)
-                .join("&");
-            }
-
-            if (
-              value !== undefined &&
-              value !== null &&
-              value !== ""
-            ) {
-              return `${key}=${encodeURIComponent(value)}`;
-            }
-
-            return null;
-          })
-          .filter(Boolean)
-          .join("&"),
-    });
-
-    if (res?.status === 200) {
-
-      console.log("receiptfilter", res);
-      
-      setReceiptsList(res?.data || []);
-
-      return {
-        success: true,
-        data: res.data,
-      };
+    hostelId,
+    keyword = "",
+    // page = 1,
+    // size = 10,
+    period,
+    bankIds = [],
+    invoiceType,
+    collectedBy = [],
+    minAmount,
+    maxAmount,
+  }) => {
+    if (!hostelId) {
+      return { success: false, message: "Invalid hostelId" };
     }
 
-    return {
-      success: false,
-      message: "Failed to fetch receipts",
-    };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      const axios = getAxios();
+
+      const res = await axios.get(`/v2/transaction/${hostelId}`, {
+        params: {
+          keyword,
+          // page,
+          // size,
+          period,
+          bankIds,
+          invoiceType,
+          collectedBy,
+          minAmount,
+          maxAmount,
+        },
+        paramsSerializer: (params) =>
+          Object.keys(params)
+            .map((key) => {
+              const value = params[key];
+
+              if (Array.isArray(value)) {
+                if (!value.length) return null;
+                return value
+                  .map((v) => `${key}=${encodeURIComponent(v)}`)
+                  .join("&");
+              }
+
+              if (
+                value !== undefined &&
+                value !== null &&
+                value !== ""
+              ) {
+                return `${key}=${encodeURIComponent(value)}`;
+              }
+
+              return null;
+            })
+            .filter(Boolean)
+            .join("&"),
+      });
+
+      if (res?.status === 200) {
+
+        console.log("receiptfilter", res);
+
+        setReceiptsList(res?.data || []);
+
+        return {
+          success: true,
+          data: res.data,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to fetch receipts",
+      };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const DeleteReceipt = async ({ hostelId, receiptId }) => {
@@ -534,11 +535,18 @@ export default function BillsProvider({ children }) {
       const res = await axios.delete(
         `/v2/transaction/receipts/${hostelId}/${receiptId}`
       );
+      console.log("receiptDel", res)
 
       if (res.status === 204) {
-        setReceiptsList((prev) =>
-          prev.filter((item) => item.transactionId !== receiptId)
-        );
+        // setReceiptsList((prev) =>
+        //   prev.filter((item) => item.transactionId !== receiptId)
+        // );
+        setReceiptsList((prev) => ({
+          ...prev,
+          listReceipts: prev.listReceipts.filter(
+            (item) => item.transactionId !== receiptId
+          ),
+        }));
 
         return {
           success: true,
@@ -586,7 +594,7 @@ export default function BillsProvider({ children }) {
       if (res.status === 200) {
         setBillsPdfDetails(res.data)
         console.log("res", res)
-        
+
         return { success: true, data: res.data }
       }
     } catch (error) {
@@ -746,56 +754,56 @@ export default function BillsProvider({ children }) {
 
       return { success: false, message: "Share failed" };
 
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-    return { success: false, message: msg };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
-  if (!hostelId || !invoiceId) {
-    return { success: false, message: "Invalid data" };
-  }
- 
-  try {
-    setLoading(true);
-    setErrorMsg("");
- 
-    const axios = getAxios();
- 
-    const res = await axios.put(
-      `/v2/bills/unpaid/${hostelId}/${invoiceId}`
-    );
- 
-    if (res.status === 200) {
-      await GetAllBillDetails(hostelId);
- 
-      return {
-        success: true,
-        data: res.data,
-        statusCode: res.status,
-      };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
     }
- 
-    return {
-      success: false,
-      message: "Failed to mark as unpaid",
-    };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
- 
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
+
+  const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
+    if (!hostelId || !invoiceId) {
+      return { success: false, message: "Invalid data" };
+    }
+
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.put(
+        `/v2/bills/unpaid/${hostelId}/${invoiceId}`
+      );
+
+      if (res.status === 200) {
+        await GetAllBillDetails(hostelId);
+
+        return {
+          success: true,
+          data: res.data,
+          statusCode: res.status,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to mark as unpaid",
+      };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getGlobalBillPdfDetail = async (hostelId) => {
     try {
@@ -844,396 +852,396 @@ const MarkBillAsUnpaid = async ({ hostelId, invoiceId }) => {
   }
 
   const ApplyBillDiscount = async ({
-  hostelId,
-  invoiceId,
-  discountAmount,
-  discountPercentage,
-  reason,
-}) => {
-  if (!hostelId || !invoiceId) {
-    return { success: false, message: "Invalid data" };
-  }
-
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    // const payload = {
-    //   discountAmount: discountAmount || 0,
-    //   discountPercentage: discountPercentage || 0,
-    //   reason: reason || "",
-    // };
-
-    const payload = {
-  reason: reason || "",
-  ...(discountAmount !== undefined && { discountAmount }),
-  ...(discountPercentage !== undefined && { discountPercentage }),
-};
-
-    const res = await axios.post(
-      `/v2/bills/discount/${hostelId}/${invoiceId}`,
-      payload
-    );
-
-    if (res.status === 200) {
-      await GetAllBillDetails(hostelId);
-
-      return {
-        success: true,
-        data: res.data,
-      };
+    hostelId,
+    invoiceId,
+    discountAmount,
+    discountPercentage,
+    reason,
+  }) => {
+    if (!hostelId || !invoiceId) {
+      return { success: false, message: "Invalid data" };
     }
 
-    return { success: false, message: "Discount failed" };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    return { success: false, message: msg };
-  } finally {
-    setLoading(false);
-  }
-};
+      const axios = getAxios();
 
-const UpdateBillDiscount = async ({
-  hostelId,
-  invoiceId,
-  discountAmount,
-  discountPercentage,
-  reason,
-}) => {
-  if (!hostelId || !invoiceId) {
-    return { success: false, message: "Invalid data" };
-  }
+      // const payload = {
+      //   discountAmount: discountAmount || 0,
+      //   discountPercentage: discountPercentage || 0,
+      //   reason: reason || "",
+      // };
 
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const payload = {
-      reason: reason || "",
-      ...(discountAmount !== undefined && { discountAmount }),
-      ...(discountPercentage !== undefined && { discountPercentage }),
-    };
-
-    const res = await axios.put(
-      `/v2/bills/discount/${hostelId}/${invoiceId}`,
-      payload
-    );
-
-    if (res.status === 200) {
-      await GetAllBillDetails(hostelId); 
-
-      return {
-        success: true,
-        data: res.data,
+      const payload = {
+        reason: reason || "",
+        ...(discountAmount !== undefined && { discountAmount }),
+        ...(discountPercentage !== undefined && { discountPercentage }),
       };
-    }
 
-    return { success: false, message: "Discount update failed" };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
+      const res = await axios.post(
+        `/v2/bills/discount/${hostelId}/${invoiceId}`,
+        payload
+      );
 
-    return { success: false, message: msg };
-  } finally {
-    setLoading(false);
-  }
-};
+      if (res.status === 200) {
+        await GetAllBillDetails(hostelId);
 
-const DeleteBillDiscount = async ({ hostelId, invoiceId }) => {
-  if (!hostelId || !invoiceId) {
-    return { success: false, message: "Invalid data" };
-  }
-
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.delete(
-      `/v2/bills/discount/${hostelId}/${invoiceId}`
-    );
-
-    console.log();
-    
-
-    if (res?.status === 200 || res?.status === 204) {
-      await GetAllBillDetails(hostelId); 
-
-      return {
-        success: true,
-        data: res.data,
-      };
-    }
-
-    return { success: false, message: "Failed to remove discount" };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-
-    return { success: false, message: msg };
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.delete(
-      `/v2/hostel/config/template/${hostelId}/${templateId}`,
-      {
-        data: {
-          type: type, // "logo" or "signature"
-        },
+        return {
+          success: true,
+          data: res.data,
+        };
       }
-    );
 
-    return {
-      success: true,
-      statusCode: res.status,
-    };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
+      return { success: false, message: "Discount failed" };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
 
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const GetBillDetailsById = async ({ hostelId, invoiceId }) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/bills/details/${hostelId}/${invoiceId}`
-    );
-
-    if (res.status === 200) {
-      return {
-        success: true,
-        data: res.data,
-      };
+  const UpdateBillDiscount = async ({
+    hostelId,
+    invoiceId,
+    discountAmount,
+    discountPercentage,
+    reason,
+  }) => {
+    if (!hostelId || !invoiceId) {
+      return { success: false, message: "Invalid data" };
     }
 
-    return { success: false, message: "Failed to fetch bill details" };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    return { success: false, message: msg };
-  } finally {
-    setLoading(false);
-  }
-}
+      const axios = getAxios();
 
-const GetAdvanceBookingBills = async (hostelId, page = 1, size = 10) => {
-  if (!hostelId) {
-    return { success: false, message: "Invalid hostelId" };
-  }
+      const payload = {
+        reason: reason || "",
+        ...(discountAmount !== undefined && { discountAmount }),
+        ...(discountPercentage !== undefined && { discountPercentage }),
+      };
 
-  try {
-    setLoading(true);
-    setErrorMsg("");
+      const res = await axios.put(
+        `/v2/bills/discount/${hostelId}/${invoiceId}`,
+        payload
+      );
 
-    const axios = getAxios();
+      if (res.status === 200) {
+        await GetAllBillDetails(hostelId);
 
-    const res = await axios.get(
-      `/v2/bills/advances/${hostelId}`,
-      {
-        params: {
-          page,
-          size,
-        },
+        return {
+          success: true,
+          data: res.data,
+        };
       }
-    );
 
-    if (res.status === 200) {
+      return { success: false, message: "Discount update failed" };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const DeleteBillDiscount = async ({ hostelId, invoiceId }) => {
+    if (!hostelId || !invoiceId) {
+      return { success: false, message: "Invalid data" };
+    }
+
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.delete(
+        `/v2/bills/discount/${hostelId}/${invoiceId}`
+      );
+
+      console.log();
+
+
+      if (res?.status === 200 || res?.status === 204) {
+        await GetAllBillDetails(hostelId);
+
+        return {
+          success: true,
+          data: res.data,
+        };
+      }
+
+      return { success: false, message: "Failed to remove discount" };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const deleteTemplateImage = async ({ hostelId, templateId, type }) => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.delete(
+        `/v2/hostel/config/template/${hostelId}/${templateId}`,
+        {
+          data: {
+            type: type, // "logo" or "signature"
+          },
+        }
+      );
+
+      return {
+        success: true,
+        statusCode: res.status,
+      };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const GetBillDetailsById = async ({ hostelId, invoiceId }) => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/bills/details/${hostelId}/${invoiceId}`
+      );
+
+      if (res.status === 200) {
+        return {
+          success: true,
+          data: res.data,
+        };
+      }
+
+      return { success: false, message: "Failed to fetch bill details" };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const GetAdvanceBookingBills = async (hostelId, page = 1, size = 10) => {
+    if (!hostelId) {
+      return { success: false, message: "Invalid hostelId" };
+    }
+
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/bills/advances/${hostelId}`,
+        {
+          params: {
+            page,
+            size,
+          },
+        }
+      );
+
+      if (res.status === 200) {
         setBookingBills(res?.data || []);
         console.log("res", res);
-        
-      return {
-        success: true,
-        data: res.data,
-        statusCode: res.status,
-      };
-    }
 
-    return { success: false, message: "Failed to fetch advance bills" };
-
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-}
-
-const GetInitializeAdvanceRedeem = async ({ hostelId, advanceInvoiceId }) => {
-  if (!hostelId || !advanceInvoiceId) {
-    return { success: false, message: "Invalid data" };
-  }
-
-  console.log("soru",hostelId,advanceInvoiceId)
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/bills/redeem/initialize/${hostelId}/${advanceInvoiceId}`
-    );
-
-    if (res.status === 200) {
-      setInitailizeBookingBills(res?.data || [])
-      return {
-        success: true,
-        data: res.data,
-        statusCode: res.status,
-      };
-    }
-
-    return {
-      success: false,
-      message: "Failed to fetch redeem details",
-    };
-
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-    console.log(msg)
-
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-}
-
-const ApplyAdvanceToInvoices = async ({
-  hostelId,
-  invoiceId,
-  listItems,
-}) => {
-
-  try {
-    setLoading(true);
-
-    const axios = getAxios();
-
-    const res = await axios.post(
-      `/v2/bills/redeem/${hostelId}/${invoiceId}`,
-      {
-        listItems,
+        return {
+          success: true,
+          data: res.data,
+          statusCode: res.status,
+        };
       }
-    );
 
-    return {
-      success: true,
-      data: res.data,
-    };
+      return { success: false, message: "Failed to fetch advance bills" };
 
-  } catch (error) {
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
 
-    console.log("ERROR", error?.response?.data);
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  }
 
-    const message =
+  const GetInitializeAdvanceRedeem = async ({ hostelId, advanceInvoiceId }) => {
+    if (!hostelId || !advanceInvoiceId) {
+      return { success: false, message: "Invalid data" };
+    }
+
+    console.log("soru", hostelId, advanceInvoiceId)
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/bills/redeem/initialize/${hostelId}/${advanceInvoiceId}`
+      );
+
+      if (res.status === 200) {
+        setInitailizeBookingBills(res?.data || [])
+        return {
+          success: true,
+          data: res.data,
+          statusCode: res.status,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to fetch redeem details",
+      };
+
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+      console.log(msg)
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const ApplyAdvanceToInvoices = async ({
+    hostelId,
+    invoiceId,
+    listItems,
+  }) => {
+
+    try {
+      setLoading(true);
+
+      const axios = getAxios();
+
+      const res = await axios.post(
+        `/v2/bills/redeem/${hostelId}/${invoiceId}`,
+        {
+          listItems,
+        }
+      );
+
+      return {
+        success: true,
+        data: res.data,
+      };
+
+    } catch (error) {
+
+      console.log("ERROR", error?.response?.data);
+
+      const message =
         error?.response?.data ||
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Something went wrong";
 
-    return {
+      return {
         success: false,
         message,
-    };
-}
-  finally {
-    setLoading(false);
-  }
-}
-
-
-const GetAdvanceCreditDetails = async ({
-  hostelId,
-  invoiceId,
-  type = "",
-}) => {
-  if (!hostelId || !invoiceId) {
-    return { success: false, message: "Invalid data" };
-  }
-
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/bills/advances/${hostelId}/${invoiceId}`,
-      {
-        params: {
-          type,
-        },
-      }
-    );
-
-    if (res.status === 200) {
-      setAdvanceCreditDetails(res?.data || null);
-
-      return {
-        success: true,
-        data: res.data,
-        statusCode: res.status,
       };
     }
-
-    return {
-      success: false,
-      message: "Failed to fetch advance credit details",
-    };
-
-  } catch (error) {
-
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-
-  } finally {
-    setLoading(false);
+    finally {
+      setLoading(false);
+    }
   }
-};
+
+
+  const GetAdvanceCreditDetails = async ({
+    hostelId,
+    invoiceId,
+    type = "",
+  }) => {
+    if (!hostelId || !invoiceId) {
+      return { success: false, message: "Invalid data" };
+    }
+
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/bills/advances/${hostelId}/${invoiceId}`,
+        {
+          params: {
+            type,
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        setAdvanceCreditDetails(res?.data || null);
+
+        return {
+          success: true,
+          data: res.data,
+          statusCode: res.status,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to fetch advance credit details",
+      };
+
+    } catch (error) {
+
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
@@ -1269,17 +1277,17 @@ const GetAdvanceCreditDetails = async ({
         shareReceiptOnWhatsapp,
         getGlobalBillPdfDetail,
         postGlobalBilPdfDetails,
-         MarkBillAsUnpaid,
-         ApplyBillDiscount,
-         deleteTemplateImage,
-         UpdateBillDiscount,
-         DeleteBillDiscount,
-         GetBillDetailsById,
-         GetAdvanceBookingBills,
-         GetInitializeAdvanceRedeem,
-         ApplyAdvanceToInvoices,
-         GetAdvanceCreditDetails,
-         ReceiptFilter,
+        MarkBillAsUnpaid,
+        ApplyBillDiscount,
+        deleteTemplateImage,
+        UpdateBillDiscount,
+        DeleteBillDiscount,
+        GetBillDetailsById,
+        GetAdvanceBookingBills,
+        GetInitializeAdvanceRedeem,
+        ApplyAdvanceToInvoices,
+        GetAdvanceCreditDetails,
+        ReceiptFilter,
       }}
     >
       {children}

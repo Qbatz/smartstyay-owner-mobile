@@ -207,14 +207,14 @@ export default function ExpensesDetails({ route, navigation }) {
 
 
           <Text style={styles.expenseMainTitle}>
-            {expense?.title || "-"}
+            {expense?.title || "N/A"}
           </Text>
 
           <View style={styles.badgeRow}>
             <View style={styles.expCodeBadge}>
 
               <Text style={styles.expCodeText}>
-                {expense?.referenceNumber || "-"}
+                {expense?.referenceNumber || "N/A"}
               </Text>
             </View>
 

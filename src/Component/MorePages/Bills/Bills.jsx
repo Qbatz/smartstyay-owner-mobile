@@ -1284,7 +1284,7 @@ export default function BillsDesign({ route }) {
     });
 
 
-
+    console.log("DeleteReceiptChi",res)
     if (res.success) {
       setShowReceiptDetails(false);
       setShowReceiptMenu(false)
@@ -2340,6 +2340,7 @@ export default function BillsDesign({ route }) {
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadInvoice;
   const isReceiptExportAllow = isValidSubscription && canReadReceipt;
+
 
   const showDotsbtn =
     !cancelled &&
