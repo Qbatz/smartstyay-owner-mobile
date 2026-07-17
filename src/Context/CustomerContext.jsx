@@ -1684,9 +1684,11 @@ const AddTenantDraft = async (
 
     return {
       success: false,
+      MobilenoError:  error?.response?.data.mobileStatus , 
+      EmailError:  error?.response?.data.emailStatus , 
       message:
+       JSON.stringify(error?.response?.data) ||
         error?.response?.data?.message ||
-        JSON.stringify(error?.response?.data) ||
         "Something went wrong",
     };
   } finally {
