@@ -32,6 +32,8 @@ import BedIcon from "../../Assets/Images/bed_NewIcon.png";
 import UplodIcon from "../../Assets/Images/upload.png";
 import Profile from "../../Assets/Images/Tenant_inactive.png";
 import PlusIcon from "../../Assets/Images/add-circle.png";
+import DirectionBottom from "../../Assets/Images/directionbottom.png"
+import RemoveIcon from "../../Assets/Images/remove.png"
 import { Switch } from "react-native";
 import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
@@ -816,23 +818,23 @@ export default function AddTenantNewform({ navigation, route }) {
 
         const job = draftDetails?.jobDetails || {};
 
-    setEmploymentStatus(
-  jobOptions.find(
-    item => item.value === job.employmentStatus
-  ) || null
-);
+        setEmploymentStatus(
+            jobOptions.find(
+                item => item.value === job.employmentStatus
+            ) || null
+        );
 
-setJobRole(
-  jobRoleOptions.find(
-    item => item.value === job.jobRole
-  ) || null
-);
+        setJobRole(
+            jobRoleOptions.find(
+                item => item.value === job.jobRole
+            ) || null
+        );
 
-setShiftType(
-  shiftTypeOptions.find(
-    item => item.value === job.shiftType
-  ) || null
-);
+        setShiftType(
+            shiftTypeOptions.find(
+                item => item.value === job.shiftType
+            ) || null
+        );
         setCompanyName(getValue(job.companyName));
         setWorkLocations(getValue(job.workLocation));
         setStartTime(getValue(job.shiftFrom));
@@ -988,16 +990,20 @@ setShiftType(
 
     console.log(beds)
 
-    const filteredBeds = beds.filter(bed => {
+    const filteredBeds = beds?.filter((bed) => {
         if (!floorSelected || !roomSelected) return false;
 
         return (
-            bed.floorId === floorSelected.id &&
-            bed.roomId === roomSelected.id &&
-            bed.currentStatus === "VACANT" || "NOTICE"
+            bed?.floorId === floorSelected?.id &&
+            bed?.roomId === roomSelected?.id &&
+            (
+                bed?.currentStatus === "VACANT" ||
+                bed?.currentStatus === "NOTICE"
+            )
         );
-
     });
+
+
     console.log(filteredBeds)
 
     const hasRooms = rooms && rooms?.length > 0;
@@ -1627,17 +1633,19 @@ setShiftType(
                 }, 800);
             }
             else {
-                const mobileMsg = res?.message?.mobileStatus || "";
-                const emailMsg = res?.message?.emailStatus || "";
+                const mobileMsg = res?.MobilenoError || "";
+                const emailMsg = res?.EmailError || "";
+
+                console.log("mobileMsg", mobileMsg);
+
 
                 setMobileError(mobileMsg);
                 setEmailError(emailMsg);
                 setIsSubmitClicked(false)
 
-                // 🔥 IMPORTANT: Go back to step 1 if basic error
-                if (mobileMsg || emailMsg) {
-                    setStep(1);
-                }
+                // if (mobileMsg || emailMsg) {
+                //     setStep(1);
+                // }
             }
         }
 
@@ -2150,13 +2158,13 @@ setShiftType(
                     guardians: guardians.map(item => ({
                         guardianFullName: item.fullName,
                         relationshipToTenant: item.relationship,
-                        guardianOccupation: item.occupation ,
+                        guardianOccupation: item.occupation,
                         mobileNo: item.mobile,
                     })),
 
                     shouldCollectFullRent: collectFullRent,
                     customRent: Number(savedCustomRent || 0),
-                     oneTimeDeduction: [],
+                    oneTimeDeduction: [],
 
                     vehicleDetails: {
                         vehicleType: hasVehicle ? vehicleType : "",
@@ -4572,7 +4580,13 @@ setShiftType(
                                                 ))}
 
                                                 <TouchableOpacity
-                                                    style={styles.addNewButton}
+
+                                                    disabled={refuseAdvanceAmount}
+                                                    style={[
+                                                        styles.addNewButton,
+                                                        refuseAdvanceAmount && { opacity: 0.5 }
+                                                    ]}
+                                                    // style={styles.addNewButton}
                                                     onPress={addCharge}
                                                 >
                                                     <View style={styles.addNewContent}>
@@ -4683,6 +4697,7 @@ setShiftType(
                                                         >
                                                             {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
                                                         </Text>
+                                                        <Image source={(showCustomRentEditor || isCustomRentSaved) ? RemoveIcon :  DirectionBottom } style={{height:8 , width:8 , marginLeft:13}} />
                                                     </TouchableOpacity>
 
                                                     {(showCustomRentEditor || isCustomRentSaved) && (
@@ -5754,7 +5769,7 @@ setShiftType(
                                                     setShiftOpen(false);
                                                 }}>
                                                 <Text
-                                                
+
                                                     style={[
                                                         styles.dropdownText,
                                                         // !jobRoleOpen && { color: "#9CA3AF" },
@@ -7507,7 +7522,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#EEF2FF",
         paddingVertical: 14,
         borderRadius: 10,
+        flexDirection:'row',
         alignItems: "center",
+        justifyContent:'center'
     },
 
     closeBtn: {

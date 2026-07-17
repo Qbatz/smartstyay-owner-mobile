@@ -1214,97 +1214,7 @@ const handleFloorScroll = (event) => {
         </View> */}
 
 
-        {activeHostelId && canReadPayingGuests && floors?.length > 0 && (
-          <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 13 }}>
-
-            {rooms?.length > 0 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={[styles.filterScroll, { flexGrow: 1 }]}  
-              >
-                <View style={styles.filterItem}>
-                  <View style={styles.availableDot} />
-                  <Text style={styles.filterText}>Available</Text>
-                </View>
-
-                <View style={styles.filterItem}>
-                  <View style={styles.occupiedDot} />
-                  <Text style={styles.filterText}>Occupied</Text>
-                </View>
-
-                <View style={styles.filterItem}>
-                  <Image source={IconCalendar} style={styles.filterIcon} />
-                  <Text style={styles.filterText}>Reserved</Text>
-                </View>
-
-                <View style={styles.filterItem}>
-                  <Image source={IconRupee} style={styles.filterIcon} />
-                  <Text style={styles.filterText}>Overdue</Text>
-                </View>
-
-                <View style={styles.filterItem}>
-                  <Image source={IconNotice} style={styles.filterIcon} />
-                  <Text style={styles.filterText}>Notice Period</Text>
-                </View>
-              </ScrollView>
-            )}
-
-            <TouchableOpacity
-              style={[styles.addRoomBtn, { marginLeft: "auto" }]}  
-              onPress={() => {
-                setOpenMenuRoomId(null);
-                setShowFloorMenu(prev => !prev);
-              }}
-            >
-              <Image source={Dots} style={{ width: 22, height: 22 }} />
-            </TouchableOpacity>
-
-          </View>
-        )}
-
-        {showFloorMenu && (
-          <View style={StyleSheet.absoluteFill}>
-
-            {/* 🔴 BACKDROP – only for closing */}
-            <Pressable
-              style={StyleSheet.absoluteFill}
-              onPress={() => setShowFloorMenu(false)}
-            />
-
-            {/* 🟢 MENU – fully clickable */}
-            <View style={styles.menuBox1} pointerEvents="auto">
-              <TouchableOpacity
-                // style={styles.menuItem}
-                disabled={!canUpdatePayingGuests}
-                style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
-                onPress={() => {
-                  setShowFloorMenu(false);
-                  setEditFloorData(activeFloor);
-                  setShowAddFloor(true);
-                }}
-              >
-
-                <Image source={EditIcon} style={{ width: 18, height: 18, marginRight: 10, }} />
-                <Text style={styles.menuText}>Edit</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                // style={styles.menuItem}
-                disabled={!canDeletePayingGuests}
-                style={[styles.menuItem, !canDeletePayingGuests && { opacity: 0.4 }]}
-                onPress={() => {
-                  setShowFloorMenu(false);
-                  handleFloorDelete(activeFloor.id);
-                }}
-              >
-                <Image source={DeleteIcon} style={{ width: 18, height: 18, marginRight: 10, }} />
-                <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-
-          </View>
-        )}
+       
 
 
 
@@ -1400,6 +1310,98 @@ const handleFloorScroll = (event) => {
           </View>
         )
         }
+
+         {activeHostelId && canReadPayingGuests && floors?.length > 0 && (
+          <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 13 }}>
+
+            {rooms?.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={[styles.filterScroll, { flexGrow: 1 }]}  
+              >
+                <View style={styles.filterItem}>
+                  <View style={styles.availableDot} />
+                  <Text style={styles.filterText}>Available</Text>
+                </View>
+
+                <View style={styles.filterItem}>
+                  <View style={styles.occupiedDot} />
+                  <Text style={styles.filterText}>Occupied</Text>
+                </View>
+
+                <View style={styles.filterItem}>
+                  <Image source={IconCalendar} style={styles.filterIcon} />
+                  <Text style={styles.filterText}>Reserved</Text>
+                </View>
+
+                <View style={styles.filterItem}>
+                  <Image source={IconRupee} style={styles.filterIcon} />
+                  <Text style={styles.filterText}>Overdue</Text>
+                </View>
+
+                <View style={styles.filterItem}>
+                  <Image source={IconNotice} style={styles.filterIcon} />
+                  <Text style={styles.filterText}>Notice Period</Text>
+                </View>
+              </ScrollView>
+            )}
+
+            <TouchableOpacity
+              style={[styles.addRoomBtn, { marginLeft: "auto" }]}  
+              onPress={() => {
+                setOpenMenuRoomId(null);
+                setShowFloorMenu(prev => !prev);
+              }}
+            >
+              <Image source={Dots} style={{ width: 22, height: 22 }} />
+            </TouchableOpacity>
+
+          </View>
+        )}
+
+        {showFloorMenu && (
+          <View style={StyleSheet.absoluteFill}>
+
+            {/* 🔴 BACKDROP – only for closing */}
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => setShowFloorMenu(false)}
+            />
+
+            {/* 🟢 MENU – fully clickable */}
+            <View style={styles.menuBox1} pointerEvents="auto">
+              <TouchableOpacity
+                // style={styles.menuItem}
+                disabled={!canUpdatePayingGuests}
+                style={[styles.menuItem, !canUpdatePayingGuests && { opacity: 0.4 }]}
+                onPress={() => {
+                  setShowFloorMenu(false);
+                  setEditFloorData(activeFloor);
+                  setShowAddFloor(true);
+                }}
+              >
+
+                <Image source={EditIcon} style={{ width: 18, height: 18, marginRight: 10, }} />
+                <Text style={styles.menuText}>Edit</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                // style={styles.menuItem}
+                disabled={!canDeletePayingGuests}
+                style={[styles.menuItem, !canDeletePayingGuests && { opacity: 0.4 }]}
+                onPress={() => {
+                  setShowFloorMenu(false);
+                  handleFloorDelete(activeFloor.id);
+                }}
+              >
+                <Image source={DeleteIcon} style={{ width: 18, height: 18, marginRight: 10, }} />
+                <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+
+          </View>
+        )}
 
         {showReadBlockedState && (
           <View style={styles.centerContainer}>
