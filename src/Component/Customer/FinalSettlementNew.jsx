@@ -76,7 +76,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const [showRefundableAdvance, setShowRefundableAdvance] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
-  const [ openWallet , setOpenWallet] = useState(false)
+  const [openWallet, setOpenWallet] = useState(false)
 
   const [collectFullRent, setCollectFullRent] = useState(false);
   const [showRentSheet, setShowRentSheet] = useState(false);
@@ -283,13 +283,13 @@ export default function FinalSettlementScreen({ navigation, route }) {
   });
 
   const userEnteredDeductionsTotal = extraCharges
-  .filter(item => !item.isDefault)
-  .reduce((sum, item) => {
-    const amt = Number(item.amount);
-    return sum + (isNaN(amt) ? 0 : amt);
-  }, 0);
+    .filter(item => !item.isDefault)
+    .reduce((sum, item) => {
+      const amt = Number(item.amount);
+      return sum + (isNaN(amt) ? 0 : amt);
+    }, 0);
 
- 
+
 
   // const userEnteredDeductionsTotal = extraCharges
   //   .filter(item => !item.isDefault)
@@ -483,10 +483,10 @@ export default function FinalSettlementScreen({ navigation, route }) {
     settlementDetails?.currentMonthRentInfo?.fullRent,
   ])
 
-    const totalDeduction = extraCharges.reduce((sum, item) => {
-  const amt = Number(item.amount);
-  return sum + (isNaN(amt) ? 0 : amt);
-}, 0);
+  const totalDeduction = extraCharges.reduce((sum, item) => {
+    const amt = Number(item.amount);
+    return sum + (isNaN(amt) ? 0 : amt);
+  }, 0);
 
   useEffect(() => {
     const lastRentPaid = Number(
@@ -585,14 +585,14 @@ export default function FinalSettlementScreen({ navigation, route }) {
     // }
 
     if (updatedAmountToBePaid < 0) {
-  finalAmount = isRefundable
-    ? updatedAmountToBePaid + totalDeduction
-    : updatedAmountToBePaid - totalDeduction;
-} else {
-  finalAmount = isRefundable
-    ? updatedAmountToBePaid - totalDeduction
-    : updatedAmountToBePaid + totalDeduction;
-}
+      finalAmount = isRefundable
+        ? updatedAmountToBePaid + totalDeduction
+        : updatedAmountToBePaid - totalDeduction;
+    } else {
+      finalAmount = isRefundable
+        ? updatedAmountToBePaid - totalDeduction
+        : updatedAmountToBePaid + totalDeduction;
+    }
 
     finalAmount -= Number(appliedDiscount || 0);
 
@@ -1205,7 +1205,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                    <Text style={styles.badgeLabel}>{selectedItem?.roomName || selectedBed.roomName}</Text>
                     <Image source={BedIcon} style={styles.smallIcon} />
                     <Text style={styles.badgeLabel}>{selectedItem?.bedName || selectedBed.bedName}</Text> */}
-                    
+
               </View>
 
               <View style={{ borderWidth: 0.2, marginTop: 12, marginBottom: 8, borderColor: "#E5E7EB" }} />
@@ -1421,6 +1421,26 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   }
                 </View>
               </TouchableOpacity>
+
+
+{ collectFullRent && (
+<View style={{ flexDirection: 'row', justifyContent: 'flex-end' , marginBottom:10}}>
+                <View>
+                  <Text style={styles.fullRentText}>
+                    Full Rent ₹ {customRentAmount} + Other Charges ₹ {settlementDetails?.currentMonthRentInfo?.otherItemAmount}
+                  </Text>
+                </View>
+                <View>
+                  <TouchableOpacity style={styles.infoCircle}>
+                    <Text style={{    fontSize: 10,
+    color: "#64748B",
+    fontFamily: "Gilroy-Bold",}}>i</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+)}
+              
+
 
               {openRefundRent && (
                 <View style={styles.refundBody}>
@@ -2019,7 +2039,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
               )}
             </View>
 
- {/* <View style={styles.accordionCard}>
+            {/* <View style={styles.accordionCard}>
             <TouchableOpacity
   style={styles.accordionHeader}
   onPress={() => setOpenWallet(!openWallet)}
@@ -3187,6 +3207,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 8,
+    marginRight:8
   },
 
   infoText: {
