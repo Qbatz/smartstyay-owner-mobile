@@ -68,20 +68,29 @@ export default function AssignAmenitiesSheet({
   const [amenityError, setAmenityError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const amount = selectedAmenity?.amenityAmount
-    ? String(selectedAmenity.amenityAmount)
-    : "";
+  // const amount = selectedAmenity?.amenityAmount
+  //   ? String(selectedAmenity.amenityAmount)
+  //   : "";
+
+    const amount = selectedAmenity?.price
+  ? String(selectedAmenity?.price)
+  : "";
+
 
   // ✅ already assigned remove
-  const assignedIds = useMemo(() => {
-    return customerDetails?.assignedAmenities?.map((a) => a.amenityId) || [];
-  }, [customerDetails]);
+  // const assignedIds = useMemo(() => {
+  //   return customerDetails?.assignedAmenities?.map((a) => a.amenityId) || [];
+  // }, [customerDetails]);
+
+  // const availableAmenities = useMemo(() => {
+  //   return (amenitiesAllData || []).filter(
+  //     (a) => !assignedIds.includes(a.amenityId)
+  //   );
+  // }, [amenitiesAllData, assignedIds]);
 
   const availableAmenities = useMemo(() => {
-    return (amenitiesAllData || []).filter(
-      (a) => !assignedIds.includes(a.amenityId)
-    );
-  }, [amenitiesAllData, assignedIds]);
+  return customerDetails?.availableAmenitiesList || [];
+}, [customerDetails]);
 
   useEffect(() => {
   if (visible) {
@@ -108,11 +117,11 @@ export default function AssignAmenitiesSheet({
   };
 
   // ✅ Load amenities
-  useEffect(() => {
-    if (activeHostelId) {
-      GetAllAmenities(activeHostelId);
-    }
-  }, [activeHostelId]);
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     GetAllAmenities(activeHostelId);
+  //   }
+  // }, [activeHostelId]);
 
   // ✅ Keyboard offset
   useEffect(() => {
@@ -227,7 +236,7 @@ export default function AssignAmenitiesSheet({
             setMessage(res.data);
             setShowSuccess(true);
             await onSuccess();
-              GetAllAmenities(activeHostelId);
+              // GetAllAmenities(activeHostelId);
             setTimeout(() => {
                 setShowSuccess(false);
                 resetState();

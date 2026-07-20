@@ -18,8 +18,6 @@ import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
 
 
 
-
-
 const NewRecordPayment = ({ route }) => {
 
     const navigation = useNavigation();
@@ -35,7 +33,7 @@ const NewRecordPayment = ({ route }) => {
     const [selectedMode, setSelectedMode] = useState("");
     const [showTransferAcnt, setShowTransferAcnt] = useState(false);
     const [selectedTransferAcnt, setSelectedTransferAcnt] = useState("")
-    const { GetAdvanceCreditDetails, RecordPayment, GetAllBillDetails, loading } = useContext(BillContext);
+    const { GetAdvanceCreditDetails, RecordPayment, GetAllBillDetails, loading, InitializeRecordPaymentDetails } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
     const { bankList, getBankListByHostel } = useContext(BankingContext);
     const [amountError, setAmountError] = useState("");
@@ -46,6 +44,9 @@ const NewRecordPayment = ({ route }) => {
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
     const [recordLoading, setRecordLoading] = useState(false)
+
+    console.log("InitializeRecordPaymentDetails", InitializeRecordPaymentDetails);
+
 
     console.log(selectedBill)
 
@@ -91,13 +92,22 @@ const NewRecordPayment = ({ route }) => {
         let num = parseFloat(cleaned);
         if (isNaN(num)) num = 0;
 
-        if (num > (selectedBill?.dueAmount || 0)) {
-            num = selectedBill?.dueAmount || 0;
+
+        if (num > (InitializeRecordPaymentDetails?.pendingAmount || 0)) {
+            num = InitializeRecordPaymentDetails?.pendingAmount || 0;
             cleaned = String(num);
         }
 
         setPaidAmount(cleaned);
-        setBalanceAmount((selectedBill?.dueAmount || 0) - num);
+        setBalanceAmount((InitializeRecordPaymentDetails?.pendingAmount || 0) - num)
+
+        // if (num > (selectedBill?.dueAmount || 0)) {
+        //     num = selectedBill?.dueAmount || 0;
+        //     cleaned = String(num);
+        // }
+
+        // setPaidAmount(cleaned);
+        // setBalanceAmount((selectedBill?.dueAmount || 0) - num);
     };
 
     const transactionOptions = (bankList || []).map((item) => ({
@@ -200,7 +210,7 @@ const NewRecordPayment = ({ route }) => {
                 },
             });
 
-            console.log("PayRecord",res)
+            console.log("PayRecord", res)
 
             if (res.success) {
                 await GetAllBillDetails(activeHostelId);
@@ -208,7 +218,7 @@ const NewRecordPayment = ({ route }) => {
                 //   setShowRecordPayment(false);
                 if (onPaymentSuccess) {
                     onPaymentSuccess();
-                }             
+                }
 
                 setModalType("success");
                 setModalMessage(res?.data || "Payment recorded successfully");
@@ -268,41 +278,81 @@ const NewRecordPayment = ({ route }) => {
                         }} /> */}
 
                     <View style={[styles.txtInputBox, { justifyContent: 'center' }]}>
-                        <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Medium', }}>
-                            {BillPdfdetails?.customerInfo?.fullName}</Text>
+                        {/* <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Medium', }}>
+                            {BillPdfdetails?.customerInfo?.fullName}</Text> */}
+                        <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
+                            {InitializeRecordPaymentDetails?.customerInfo?.fullName}
+                        </Text>
                     </View>
 
                     <View style={{ backgroundColor: '#F9FAFB', borderRadius: 10, padding: 14, marginTop: 10 }}>
                         <View style={styles.prflField}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center',flex:1 }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                                 {/* <Image source={Profile} style={{ width: 50, height: 50, borderRadius: 25 }} /> */}
 
-                                {BillPdfdetails?.customerInfo?.profilePic ?
+                                {/* {BillPdfdetails?.customerInfo?.profilePic ?
                                     <Image source={{ uri: BillPdfdetails?.customerInfo?.profilePic }}
                                         style={{ width: 50, height: 50, borderRadius: 25 }} />
                                     :
                                     <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: '#e1e8f0', alignItems: 'center', justifyContent: 'center' }}>
                                         <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold' }}>
                                             {BillPdfdetails?.customerInfo?.initials}</Text>
-                                    </View>}
+                                    </View>} */}
 
-                                <View style={{ marginLeft: 8,flex:1 }}>
-                                    <Text style={[styles.tntName,{marginRight:6}]}
-                                    numberOfLines={1}
-                                    ellipsizeMode="tail">{BillPdfdetails?.customerInfo?.fullName}</Text>
+                                {InitializeRecordPaymentDetails?.customerInfo?.profilePic ? (
+                                    <Image
+                                        source={{
+                                            uri: InitializeRecordPaymentDetails?.customerInfo?.profilePic,
+                                        }}
+                                        style={{ width: 50, height: 50, borderRadius: 25 }}
+                                    />
+                                ) : (
+                                    <View
+                                        style={{
+                                            width: 50,
+                                            height: 50,
+                                            borderRadius: 25,
+                                            backgroundColor: "#e1e8f0",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                        }}
+                                    >
+                                        <Text style={{ fontSize: 16, fontFamily: "Gilroy-Bold" }}>
+                                            {InitializeRecordPaymentDetails?.customerInfo?.initials}
+                                        </Text>
+                                    </View>
+                                )}
+
+                                <View style={{ marginLeft: 8, flex: 1 }}>
+                                    {/* <Text style={[styles.tntName, { marginRight: 6 }]}
+                                        numberOfLines={1}
+                                        ellipsizeMode="tail">{BillPdfdetails?.customerInfo?.fullName}</Text> */}
+
+                                    <Text
+                                        style={[styles.tntName, { marginRight: 6 }]}
+                                        numberOfLines={1}
+                                    >
+                                        {InitializeRecordPaymentDetails?.customerInfo?.fullName}
+                                    </Text>
+
+                                    {/* <Text style={styles.hstlDtl}>
+                                        {BillPdfdetails?.stayInfo?.floorName} || {BillPdfdetails?.stayInfo?.roomName} || {BillPdfdetails?.stayInfo?.bedName}
+                                    </Text> */}
 
                                     <Text style={styles.hstlDtl}>
-                                        {BillPdfdetails?.stayInfo?.floorName} || {BillPdfdetails?.stayInfo?.roomName} || {BillPdfdetails?.stayInfo?.bedName}
+                                        {InitializeRecordPaymentDetails?.stayInfo?.floorName}{" | "}
+                                        {InitializeRecordPaymentDetails?.stayInfo?.roomName}{" | "}
+                                        {InitializeRecordPaymentDetails?.stayInfo?.bedName}
                                     </Text>
                                 </View>
                             </View>
 
-                            <Image source={ActiveIcon} style={{ width: 20, height: 20,marginRight:4 }} />
+                            <Image source={ActiveIcon} style={{ width: 20, height: 20, marginRight: 4 }} />
                         </View>
 
                         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 14 }}>
                             <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', }}>Build to</Text>
-                            <Image source={EditConfigure}   style={{ width: 15, height: 15, marginLeft: 5 }} />
+                            <Image source={EditConfigure} style={{ width: 15, height: 15, marginLeft: 5 }} />
                         </View>
 
                         <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 12 }}>
@@ -343,7 +393,7 @@ const NewRecordPayment = ({ route }) => {
                                 ₹ {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem ?
                                     BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem : "N/A"}</Text></Text>
                         <TouchableOpacity onPress={handleBookingApplyInvoices}
-                        disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}>
+                            disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}>
                             <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#338BFF' }}>
                                 Apply Now
                             </Text>
@@ -516,7 +566,7 @@ const NewRecordPayment = ({ route }) => {
                     <View style={styles.sumryBox}>
                         <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Bold', color: '#FFFFFF99' }}>SUMMARY</Text>
 
-                        <Text style={styles.amntTxt}>₹ {selectedBill?.dueAmount || "0.00"}</Text>
+                        <Text style={styles.amntTxt}>₹ {InitializeRecordPaymentDetails?.pendingAmount ?? 0}</Text>
 
                         <View style={{ borderColor: '#FFFFFF1A', marginVertical: 14, borderWidth: 0.8 }} />
 
@@ -542,7 +592,7 @@ const NewRecordPayment = ({ route }) => {
                                 marginLeft: 5
                             }}>
                             <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', color: '#FFFFFF' }}>
-                                  Record {paidAmount ? `₹ ${paidAmount} →` : ""}</Text>
+                                Record {paidAmount ? `₹ ${paidAmount} →` : ""}</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -590,7 +640,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#ffffff',
         flex: 1,
         padding: 20,
-        paddingTop:40
+        paddingTop: 50
     },
     pageHead: {
         fontSize: 20,

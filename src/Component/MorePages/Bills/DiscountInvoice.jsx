@@ -7,7 +7,7 @@ import {
   TextInput,
   Image,
   SafeAreaView, ScrollView,
-  KeyboardAvoidingView ,  Platform , StatusBar
+  KeyboardAvoidingView, Platform, StatusBar
 } from "react-native";
 import { BackHandler } from "react-native";
 import { useEffect } from "react";
@@ -33,7 +33,7 @@ export default function DiscountInvoiceScreen() {
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
     UpdateBillDiscount,
-    ApplyBillDiscount, } = useContext(BillContext);
+    ApplyBillDiscount, InitializeDiscountDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -46,7 +46,10 @@ export default function DiscountInvoiceScreen() {
 
   const bill = route?.params?.bill
 
-  console.log("billty",bill)
+  console.log("billty", bill)
+
+  console.log("InitializeDiscountDetails", InitializeDiscountDetails);
+
 
   console.log("BillPdfdetails", BillPdfdetails);
 
@@ -74,8 +77,12 @@ export default function DiscountInvoiceScreen() {
     "Other",
   ];
 
+  // const invoiceAmount = Number(
+  //   BillPdfdetails?.invoiceInfo?.subTotal || totalamount
+  // )
+
   const invoiceAmount = Number(
-    BillPdfdetails?.invoiceInfo?.subTotal || totalamount
+    InitializeDiscountDetails?.invoiceInfo?.invoiceAmount || 0
   );
 
   const discountValue =
@@ -88,7 +95,9 @@ export default function DiscountInvoiceScreen() {
 
   const today = new Date();
 
-  const dueDateStr = BillPdfdetails?.dueDate; // "11/03/2026"
+  // const dueDateStr = BillPdfdetails?.dueDate; 
+  const dueDateStr =
+    InitializeDiscountDetails?.invoiceInfo?.overDueOn;
 
   const parseDate = (dateStr) => {
     if (!dateStr) return null;
@@ -304,7 +313,8 @@ export default function DiscountInvoiceScreen() {
 
     const payload = {
       hostelId: activeHostelId,
-      invoiceId: BillPdfdetails?.invoiceId || bill?.invoiceId,
+      invoiceId: InitializeDiscountDetails?.invoiceInfo?.invoiceId || bill?.invoiceId,
+      // invoiceId: BillPdfdetails?.invoiceId || bill?.invoiceId,
       reason: reason || "",
       ...(discountType === "Amount" && {
         discountAmount: Number(discount),
@@ -341,7 +351,7 @@ export default function DiscountInvoiceScreen() {
 
 
     const res = await apiFunction(payload);
-    console.log("discounty",res)
+    console.log("discounty", res)
 
     if (res?.success) {
       setModalType("success");
@@ -467,21 +477,21 @@ export default function DiscountInvoiceScreen() {
           </Text>
         </View> */}
 
-              {BillPdfdetails?.customerInfo?.profilePic ? (
+              {InitializeDiscountDetails?.customerInfo?.profilePic ? (
                 <Image
-                  source={{ uri: BillPdfdetails?.customerInfo?.profilePic }}
+                  source={{ uri: InitializeDiscountDetails?.customerInfo?.profilePic }}
                   style={styles.userImg}
                 />
               ) : (
                 <View style={styles.initialCircle}>
                   <Text style={styles.initialText}>
-                    {BillPdfdetails?.customerInfo?.initials || BillPdfdetails?.customerInfo?.fullName?.slice(0, 2)?.toUpperCase()}
+                    {InitializeDiscountDetails?.customerInfo?.initials || InitializeDiscountDetails?.customerInfo?.fullName?.slice(0, 2)?.toUpperCase()}
                   </Text>
                 </View>
               )}
 
               <View style={{ marginLeft: 10 }}>
-                <Text style={styles.name}>{BillPdfdetails?.customerInfo?.fullName}</Text>
+                <Text style={styles.name}>{InitializeDiscountDetails?.customerInfo?.fullName}</Text>
 
 
 
@@ -489,13 +499,13 @@ export default function DiscountInvoiceScreen() {
                 <View style={{ flexDirection: "row", marginTop: 5, }}>
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>
-                      {BillPdfdetails?.stayInfo?.floorName}
+                      {InitializeDiscountDetails?.stayInfo?.floorName}
                     </Text>
                   </View>
                   <Image source={room} style={{ width: 18, height: 18, marginRight: 4 }} />
-                  <Text style={styles.detailText}>{BillPdfdetails?.stayInfo?.roomName}</Text>
+                  <Text style={styles.detailText}>{InitializeDiscountDetails?.stayInfo?.roomName}</Text>
                   <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8, marginRight: 4 }} />
-                  <Text style={styles.detailText}>{BillPdfdetails?.stayInfo?.bedName}</Text>
+                  <Text style={styles.detailText}>{InitializeDiscountDetails?.stayInfo?.bedName}</Text>
                 </View>
               </View>
             </View>
@@ -660,13 +670,13 @@ export default function DiscountInvoiceScreen() {
                 </View>
 
                 <Text style={styles.smallText}>
-                  {BillPdfdetails?.invoiceNumber}
+                  {InitializeDiscountDetails?.invoiceInfo?.invoiceNumber}
                 </Text>
 
                 <View style={styles.rowBetween}>
                   <Text style={styles.label}>Invoice date</Text>
                   <Text style={styles.valueText}>
-                    {BillPdfdetails?.invoiceDate || BillPdfdetails?.invoiceInfo?.invoiceDate || "N/A"}
+                    {InitializeDiscountDetails?.invoiceInfo?.invoiceDate || "N/A"}
                   </Text>
                 </View>
                 <View style={styles.rowBetween}>
@@ -680,7 +690,7 @@ export default function DiscountInvoiceScreen() {
                       isOverdue && { color: "#FF3B30" },
                     ]}
                   >
-                    {BillPdfdetails?.dueDate || BillPdfdetails?.invoiceInfo?.dueDate || "N/A"}
+                    {InitializeDiscountDetails?.invoiceInfo?.overDueOn || "N/A"}
                   </Text>
                 </View>
 
@@ -787,7 +797,7 @@ export default function DiscountInvoiceScreen() {
             {/* Summary */}
             <View style={styles.summary}>
               <View style={styles.rowBetween}>
-                <Text style={{ fontFamily: "Gilroy-Medium" }}>Invoice Amount ({BillPdfdetails?.invoiceNumber})</Text>
+                <Text style={{ fontFamily: "Gilroy-Medium" }}>Invoice Amount ({InitializeDiscountDetails?.invoiceInfo?.invoiceNumber})</Text>
                 <Text style={{ fontFamily: "Gilroy-Bold" }}>₹ {invoiceAmount.toFixed(2)}</Text>
               </View>
 
@@ -869,14 +879,14 @@ const styles = StyleSheet.create({
   //   paddingTop: 50
   // },
   header: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingTop: Platform.OS === "android" 
-    ? StatusBar.currentHeight + 20 
-    : 20,
-  marginBottom: 20,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === "android"
+      ? StatusBar.currentHeight + 20
+      : 20,
+    marginBottom: 20,
+  },
 
   headerTitle: {
     fontSize: 16,

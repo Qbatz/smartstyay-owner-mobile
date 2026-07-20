@@ -49,7 +49,7 @@ export default function AddTenantNewform({ navigation, route }) {
     const { AddTenantDraft, UpdateTenantDraft, TenantCheckIn, SearchCustomer,
         handleGetDraftDetails, resetDraftDetails, draftDetails,
         getCustomersByHostel, checkInCustomer, bookCustomer, getBedsByHostelAndDate,
-        changeBedCustomer, getCustomerDetails } = useCustomer();
+        changeBedCustomer, getCustomerDetails, UpdateAdditionalDraftDetails } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
 
@@ -2063,7 +2063,11 @@ export default function AddTenantNewform({ navigation, route }) {
 
             return updated;
         });
-    };
+    }
+
+
+    console.log("AADHAAR URI", aadhaarImage);
+    console.log("PAN URI", pancardImage);
 
 
     const handleStepThree = async () => {
@@ -2077,73 +2081,103 @@ export default function AddTenantNewform({ navigation, route }) {
 
         try {
 
+            // const payload = {
+            //     request: {
+            //         firstName: basicDetails.firstName,
+            //         lastName: basicDetails.lastName,
+            //         mobile: basicDetails.mobile,
+            //         emailId: basicDetails.email,
+
+            //         joiningDate: joiningDate
+            //             ? dayjs(joiningDate).format("DD-MM-YYYY")
+            //             : "",
+
+            //         bookingDate: purchaseDate
+            //             ? dayjs(purchaseDate).format("DD-MM-YYYY")
+            //             : "",
+
+            //         bookingAmount: Number(bookingAmount || 0),
+
+            //         floorId: floorSelected?.id || null,
+            //         roomId: roomSelected?.id || null,
+            //         bedId: bedSelected?.bedId || null,
+
+            //         bankId: accountSelected?.bankingId || "",
+            //         referenceNumber: referenceNumber || "",
+
+            //         advanceAmount: Number(advanceAmount || 0),
+            //         rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
+
+            //         stayType: "LONG",
+
+            //         deductions: extraCharges.map(item => ({
+            //             type:
+            //                 item.type === "Others"
+            //                     ? item.title
+            //                     : item.type,
+            //             amount: Number(item.amount || 0),
+            //         })),
+
+            //         proRate: false,
+
+            //         idProof: {
+            //             type: IdproofType || "",
+            //             number: IdprooNumber || "",
+            //         },
+
+            //         address: {
+            //             flat: addressDetails.flat,
+            //             house: "",
+            //             building: "",
+            //             company: "",
+            //             apartment: "",
+            //             area: addressDetails.area,
+            //             street: "",
+            //             sector: "",
+            //             village: "",
+            //             landmark: addressDetails.landmark,
+            //             pincode: addressDetails.pincode,
+            //             city: addressDetails.city,
+            //             state: selectedState,
+            //         },
+
+            //         booking: {
+            //             joiningDateTentative: "",
+            //             refuseAdvanceAmount: refuseAdvanceAmount,
+            //         },
+
+            //         jobDetails: {
+            //             employmentStatus: employmentStatus?.value || "",
+            //             companyName: companyName || "",
+            //             collegeName: "",
+            //             jobRole: jobRole?.value || "",
+            //             workLocation: worklocation || "",
+            //             shiftType: shiftType?.value || "",
+            //             shiftFrom: startTime || "",
+            //             shiftTo: endTime || "",
+            //         },
+
+            //         guardians: guardians.map(item => ({
+            //             guardianFullName: item.fullName,
+            //             relationshipToTenant: item.relationship,
+            //             guardianOccupation: item.occupation,
+            //             mobileNo: item.mobile,
+            //         })),
+
+            //         shouldCollectFullRent: collectFullRent,
+            //         customRent: Number(savedCustomRent || 0),
+            //         oneTimeDeduction: [],
+
+            //         vehicleDetails: {
+            //             vehicleType: hasVehicle ? vehicleType : "",
+            //             vehicleNumber: hasVehicle ? vehicleNumber : "",
+            //             isParkingSpaceRequired: hasVehicle,
+            //         },
+            //     },
+            // }
+
             const payload = {
-                request: {
-                    // Basic Details
-                    firstName: basicDetails.firstName,
-                    lastName: basicDetails.lastName,
-                    mobile: basicDetails.mobile,
-                    emailId: basicDetails.email,
-
-                    // Booking
-                    joiningDate: joiningDate
-                        ? dayjs(joiningDate).format("DD-MM-YYYY")
-                        : "",
-
-                    bookingDate: purchaseDate
-                        ? dayjs(purchaseDate).format("DD-MM-YYYY")
-                        : "",
-
-                    bookingAmount: Number(bookingAmount || 0),
-
-                    floorId: floorSelected?.id || null,
-                    roomId: roomSelected?.id || null,
-                    bedId: bedSelected?.bedId || null,
-
-                    bankId: accountSelected?.bankingId || "",
-                    referenceNumber: referenceNumber || "",
-
-                    advanceAmount: Number(advanceAmount || 0),
-                    rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
-
-                    stayType: "LONG",
-
-                    deductions: extraCharges.map(item => ({
-                        type:
-                            item.type === "Others"
-                                ? item.title
-                                : item.type,
-                        amount: Number(item.amount || 0),
-                    })),
-
-                    proRate: false,
-
-                    idProof: {
-                        type: IdproofType || "",
-                        number: IdprooNumber || "",
-                    },
-
-                    address: {
-                        flat: addressDetails.flat,
-                        house: "",
-                        building: "",
-                        company: "",
-                        apartment: "",
-                        area: addressDetails.area,
-                        street: "",
-                        sector: "",
-                        village: "",
-                        landmark: addressDetails.landmark,
-                        pincode: addressDetails.pincode,
-                        city: addressDetails.city,
-                        state: selectedState,
-                    },
-
-                    booking: {
-                        joiningDateTentative: "",
-                        refuseAdvanceAmount: refuseAdvanceAmount,
-                    },
-
+                additionalData: {
                     jobDetails: {
                         employmentStatus: employmentStatus?.value || "",
                         companyName: companyName || "",
@@ -2156,34 +2190,34 @@ export default function AddTenantNewform({ navigation, route }) {
                     },
 
                     guardians: guardians.map(item => ({
-                        guardianFullName: item.fullName,
-                        relationshipToTenant: item.relationship,
-                        guardianOccupation: item.occupation,
-                        mobileNo: item.mobile,
+                        guardianFullName: item.fullName || "",
+                        relationshipToTenant: item.relationship || "",
+                        guardianOccupation: item.occupation || "",
+                        mobileNo: item.mobile || "",
                     })),
-
-                    shouldCollectFullRent: collectFullRent,
-                    customRent: Number(savedCustomRent || 0),
-                    oneTimeDeduction: [],
-
-                    vehicleDetails: {
-                        vehicleType: hasVehicle ? vehicleType : "",
-                        vehicleNumber: hasVehicle ? vehicleNumber : "",
-                        isParkingSpaceRequired: hasVehicle,
-                    },
                 },
             };
-            console.log("UPDATE", guardians);
-            console.log("UPDATE DRAFT", typeof hasVehicle, hasVehicle);
-            console.log("UPDATE DRAFT", typeof collectFullRent, collectFullRent);
+
+
+
+            // console.log("UPDATE", guardians);
+            // console.log("UPDATE DRAFT", typeof hasVehicle, hasVehicle);
+            // console.log("UPDATE DRAFT", typeof collectFullRent, collectFullRent);
 
             console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
+            console.log("UPDATE DRAFT PAYLOAD", draftCustomerId)
 
-            const res = await UpdateTenantDraft(
+
+            // const res = await UpdateAdditionalDraftDetails(
+            //     activeHostelId,
+            //     draftCustomerId,
+            //     payload,
+            // );
+
+            const res = await UpdateAdditionalDraftDetails(
                 activeHostelId,
                 draftCustomerId,
                 payload,
-                selectedImage,
                 aadhaarImage,
                 pancardImage
             );
@@ -2498,66 +2532,190 @@ export default function AddTenantNewform({ navigation, route }) {
         return total + amount;
     }, 0);
 
-    const handleNextThird = () => {
+    const handleNextThird = async () => {
 
 
-        // if (isCheckingIn) return;
-        // const chargeValid = validateExtraCharges();
+
+        if (isCheckingIn) return;
+        const chargeValid = validateExtraCharges();
         // const onetimechargevalid = validateOneTimeCharges()
-        // if (!chargeValid || !onetimechargevalid) return;
+        if (!chargeValid) return;
         // const customerId = CheckinTenantSelected?.customerId;
 
 
-        // let hasError = false;
+        let hasError = false;
 
-        // setFloorError("");
-        // setRoomError("");
-        // setBedError("");
-        // setRentalError("");
-        // setAdvanceError("");
-        // setCheckJoinDateError("");
-        // setStayTypeError("");
+        setFloorError("");
+        setRoomError("");
+        setBedError("");
+        setRentalError("");
+        setAdvanceError("");
+        setCheckJoinDateError("");
+        setStayTypeError("");
 
+        // Joining Date
+        if (!checkJoiningDate) {
+            setCheckJoinDateError("Please Select Joining Date");
+            hasError = true;
+        }
 
-        // if (!checkJoiningDate) {
-        //     setCheckJoinDateError("Please Select Joining Date");
+        // Floor
+        if (!floorSelected) {
+            setFloorError("Please Select Floor");
+            hasError = true;
+        }
+
+        // Room
+        if (!roomSelected) {
+            setRoomError("Please Select Room");
+            hasError = true;
+        }
+
+        // Bed
+        if (!bedSelected) {
+            setBedError("Please Select Bed");
+            hasError = true;
+        }
+
+        // Stay Type
+        // if (!StayTypeSelected || StayTypeSelected === "Stay Type") {
+        //     setStayTypeError("Please Select Stay Type");
         //     hasError = true;
         // }
 
+        // Rental
+        if (!checkinrentalAmount || Number(checkinrentalAmount) <= 0) {
+            setRentalError("Please Enter Rental Amount");
+            hasError = true;
+        }
 
-        // if (!floorSelected) {
-        //     setFloorError("Please Select Floor");
-        //     hasError = true;
-        // }
+        // Advance
+        if (!refuseAdvanceAmount) {
+            if (!advanceAmount || Number(advanceAmount) <= 0) {
+                setAdvanceError("Please Enter Advance Amount");
+                hasError = true;
+            }
+        }
+
+        if (hasError) return;
+
+        if (!bedSelected) {
+            setModalType("error");
+            setMessage("Bed data missing");
+            setShowSuccess(true);
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 800)
+            return;
+        }
+
+        if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
 
 
-        // if (!roomSelected) {
-        //     setRoomError("Please Select Room");
-        //     hasError = true;
-        // }
+
+        try {
+            setIsCheckingIn(true)
+            // const payload = {
+            //     floorId: selectedBed.floorId,
+            //     roomId: selectedBed.roomId,
+            //     bedId: selectedBed.bedId,
+
+            //     joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
+
+            //     advanceAmount: Number(advanceAmount),
+            //     rentalAmount: Number(rentalAmount),
+
+            //     stayType: "SHORT",
 
 
-        // if (!bedSelected) {
-        //     setBedError("Please Select Bed");
-        //     hasError = true;
-        // }
+            //     deductions: extraCharges.map((e) => ({
+            //         type:
+            //             e.type === "Others"
+            //                 ? e.title.trim().toLowerCase()
+            //                 : e.type.toLowerCase(),
+            //         amount: Number(e.amount),
+            //     })),
+            // }
+
+            const payload = {
+                floorId: bedSelected?.floorId,
+                roomId: bedSelected?.roomId,
+                bedId: bedSelected?.bedId,
+
+                joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
+
+                refundableAmount: Number(advanceAmount),
+
+                rentalAmount: Number(checkinrentalAmount),
 
 
-        // if (!checkinrentalAmount || Number(checkinrentalAmount) <= 0) {
-        //     setRentalError("Please Enter Rental Amount");
-        //     hasError = true;
-        // }
+                stayType: "long",
+                // StayTypeSelected === "LongStay" ? "long" : "short",
 
-        // if (!refuseAdvanceAmount) {
-        //     if (!advanceAmount || Number(advanceAmount) <= 0) {
-        //         setAdvanceError("Please Enter Advance Amount");
-        //         hasError = true;
-        //     }
-        // }
+                deductions: extraCharges.map((item) => ({
+                    type:
+                        item.type === "Others"
+                            ? item.title.trim()
+                            : item.type,
+                    amount: Number(item.amount),
+                })),
 
-        // if (hasError) return;
+                shouldCollectFullRent: collectFullRent,
 
-        setCurrentStep(3);
+                // customRent: 0,
+                customRent: savedCustomRent
+                    ? Number(savedCustomRent)
+                    : null,
+
+                oneTimeDeduction: onetimepaymentcharges.map((item) => ({
+                    type:
+                        item.type === "Others"
+                            ? item.title.trim()
+                            : item.type,
+                    amount: Number(item.amount),
+                })),
+            };
+
+            console.log("checkinpayload", payload);
+
+            const res = await TenantCheckIn(
+                activeHostelId,
+                draftCustomerId,
+                payload
+            );
+
+            console.log("checkined", res)
+
+            if (res.success) {
+                setModalType("success");
+                setMessage(res.data);
+                setShowSuccess(true);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                    onBedAdded && onBedAdded(selectedBed.roomId)
+                    setCurrentStep(3)
+                }, 800);
+
+
+            } else {
+                setModalType("error");
+                setMessage(res?.message);
+                setShowSuccess(true);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 800)
+            }
+        } catch (error) {
+            console.log(error)
+            setIsCheckingIn(false)
+        }
+        finally {
+            isSubmittingRef.current = false;
+        }
+
+
+
     }
 
 
@@ -4697,7 +4855,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         >
                                                             {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
                                                         </Text>
-                                                        <Image source={(showCustomRentEditor || isCustomRentSaved) ? RemoveIcon :  DirectionBottom } style={{height:8 , width:8 , marginLeft:13}} />
+                                                        <Image source={(showCustomRentEditor || isCustomRentSaved) ? RemoveIcon : DirectionBottom} style={{ height: 8, width: 8, marginLeft: 13 }} />
                                                     </TouchableOpacity>
 
                                                     {(showCustomRentEditor || isCustomRentSaved) && (
@@ -7522,9 +7680,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#EEF2FF",
         paddingVertical: 14,
         borderRadius: 10,
-        flexDirection:'row',
+        flexDirection: 'row',
         alignItems: "center",
-        justifyContent:'center'
+        justifyContent: 'center'
     },
 
     closeBtn: {

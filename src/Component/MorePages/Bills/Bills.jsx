@@ -113,7 +113,9 @@ export default function BillsDesign({ route }) {
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
-    GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter } = useContext(BillContext);
+    GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter,
+    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails } = useContext(BillContext)
+
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -1201,11 +1203,27 @@ export default function BillsDesign({ route }) {
     setModeError("");
   };
 
-  const handleShowRecordPayment = () => {
-    setShowMenu(false);
-    resetRecordPaymentForm();
-    setShowRecordPayment(true);
-  };
+  const handleShowRecordPayment = async () => {
+    // setShowMenu(false);
+    // resetRecordPaymentForm();
+    // setShowRecordPayment(true);
+
+    const res = await GetInitializeRecordPaymentDetails({
+      hostelId: activeHostelId,
+      invoiceId: BillPdfdetails?.invoiceId,
+    })
+
+    console.log("recordpaymentinitializeresponse", res);
+
+
+    navigation.navigate("NewRecordPayment",
+      {
+        selectedBill, BillPdfdetails,
+        onPaymentSuccess: setShowBillDetails(false),
+      })
+  }
+
+
   // const handleShowRecordPayment  = () => {
   //   setShowMenu(false);
   //   setShowRecordPayment(true);
@@ -1284,7 +1302,7 @@ export default function BillsDesign({ route }) {
     });
 
 
-    console.log("DeleteReceiptChi",res)
+    console.log("DeleteReceiptChi", res)
     if (res.success) {
       setShowReceiptDetails(false);
       setShowReceiptMenu(false)
@@ -1453,7 +1471,8 @@ export default function BillsDesign({ route }) {
 
     // works for dayjs & Date
     return dayjs(date).format("DD-MM-YYYY");
-  };
+  }
+
 
   const handleSaveRecordPayment = async () => {
     if (isTriggeredRef.current) return;
@@ -2144,6 +2163,22 @@ export default function BillsDesign({ route }) {
     });
   }
 
+  const handlemakeDiscount = async () => {
+    setShowMenu(false);
+    setShowBillDetails(false)
+    navigation.navigate("DiscountInvoice", {
+      bill: selectedBill,
+    })
+
+    const res = await GetInitializeDiscountDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId
+    })
+
+    console.log("res", res);
+
+  }
+
 
   const handleSaveRefund = async () => {
     setRefundAmountError("");
@@ -2237,7 +2272,7 @@ export default function BillsDesign({ route }) {
     });
     setShowBillDetails(false);
     setShowMenu(false)
-    
+
   }
 
   const handleShowBillPdf = async () => {
@@ -4181,11 +4216,14 @@ export default function BillsDesign({ route }) {
                         <View style={styles.bottomActionItem}>
                           <TouchableOpacity
                             style={[styles.recordBtn, !canWriteInvoice && { opacity: 0.4 }]}
-                            onPress={() => navigation.navigate("NewRecordPayment",
-                              {
-                                selectedBill, BillPdfdetails,
-                                onPaymentSuccess: setShowBillDetails(false),
-                              })}
+                            onPress={
+                              handleShowRecordPayment
+                              // navigation.navigate("NewRecordPayment",
+                              // {
+                              //   selectedBill, BillPdfdetails,
+                              //   onPaymentSuccess: setShowBillDetails(false),
+                              // })
+                            }
                           // onPress={handleShowRecordPayment} disabled={!canWriteInvoice}
                           >
                             <Image source={PlusIcon} style={styles.iconWhite} />
@@ -4752,13 +4790,7 @@ export default function BillsDesign({ route }) {
                     <>
                       <TouchableOpacity
                         style={styles.popupRow}
-                        onPress={() => {
-                          setShowMenu(false);
-                          setShowBillDetails(false)
-                          navigation.navigate("DiscountInvoice", {
-                            bill: selectedBill,
-                          });
-                        }}
+                        onPress={handlemakeDiscount}
                       >
                         <Image
                           source={require("../../../Assets/Images/discount-circle.png")}

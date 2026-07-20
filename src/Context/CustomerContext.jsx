@@ -2004,6 +2004,97 @@ const BookedTenantCheckIn = async (hostelId, customerId, payload) => {
 };
 
 
+const UpdateAdditionalDraftDetails = async (
+  hostelId,
+  customerId,
+  payload,
+  aadhaarImage = null,
+  pancardImage = null
+) => {
+  if (!hostelId || !customerId) {
+    return {
+      success: false,
+      message: "Missing hostelId or customerId",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const formData = new FormData();
+
+    // JSON Part (same as Web)
+    formData.append("additionalData", {
+      string: JSON.stringify(payload.additionalData),
+      type: "application/json",
+      name: "blob",
+    });
+
+    // Aadhaar Image
+    if (aadhaarImage?.uri) {
+      formData.append("aadhaarPic", {
+        uri: aadhaarImage.uri,
+        type: aadhaarImage.type || "image/jpeg",
+        name: aadhaarImage.fileName || "aadhaar.jpg",
+      });
+    }
+
+    // PAN Image
+    if (pancardImage?.uri) {
+      formData.append("panPic", {
+        uri: pancardImage.uri,
+        type: pancardImage.type || "image/jpeg",
+        name: pancardImage.fileName || "pan.jpg",
+      });
+    }
+
+    const res = await axios.put(
+      `/v3/customers/additional-details/${hostelId}/${customerId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      await GetParticularCustomerDetails(customerId);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Additional details update failed",
+    };
+  } catch (error) {
+    console.log("UPDATE ADDITIONAL DETAILS ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <CustomerContext.Provider
@@ -2028,7 +2119,7 @@ const BookedTenantCheckIn = async (hostelId, customerId, payload) => {
         addVendor, updateVendor , vendorList,
         getVendorList, deleteVendor,getDashboardByHostel , AddManualDocument , deleteManualDocument , AddAdditionalContacts , addExpense , settleExpense , settleVendorPayment , RequestKYC , 
         AddTenantDraft ,TenantCheckIn , UpdateTenantDraft , SearchCustomer ,
-        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn
+        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn , UpdateAdditionalDraftDetails
       }}
     >
       {children}

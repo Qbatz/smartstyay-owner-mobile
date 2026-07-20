@@ -12,7 +12,8 @@ export default function BillsProvider({ children }) {
   const [bookingBills, setBookingBills] = useState([]);
   const [InitializebookingBills, setInitailizeBookingBills] = useState([])
   const [advanceCreditDetails, setAdvanceCreditDetails] = useState(null);
-
+  const [InitializeRecordPaymentDetails , setInitializeRecordPaymentDetails] = useState(null)
+  const [InitializeDiscountDetails , setInitializeDiscountDetails] = useState(null)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [refundError, setRefundError] = useState("");
@@ -1241,7 +1242,91 @@ export default function BillsProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+
+  const GetInitializeRecordPaymentDetails = async ({ hostelId, invoiceId }) => {
+  if (!hostelId || !invoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bills/payment/initialize/${hostelId}/${invoiceId}`
+    );
+
+    if (res?.status === 200) {
+      setInitializeRecordPaymentDetails(res?.data || [])
+      return {
+        success: true,
+        data: res?.data,
+        statusCode: res?.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch payment initialization details",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+
+const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
+  if (!hostelId || !invoiceId) {
+    return { success: false, message: "Invalid data" };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bills/discount/${hostelId}/${invoiceId}`
+    );
+
+    if (res?.status === 200) {
+      setInitializeDiscountDetails(res?.data)
+      return {
+        success: true,
+        data: res?.data,
+        statusCode: res?.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch discount initialization details",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+}
 
 
   return (
@@ -1255,6 +1340,8 @@ export default function BillsProvider({ children }) {
         bookingBills,
         InitializebookingBills,
         advanceCreditDetails,
+        InitializeRecordPaymentDetails ,
+        InitializeDiscountDetails ,
         loading,
         errorMsg,
         refundError,
@@ -1288,6 +1375,7 @@ export default function BillsProvider({ children }) {
         ApplyAdvanceToInvoices,
         GetAdvanceCreditDetails,
         ReceiptFilter,
+        GetInitializeRecordPaymentDetails , GetInitializeDiscountDetails
       }}
     >
       {children}
