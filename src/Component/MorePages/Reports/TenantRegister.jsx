@@ -55,22 +55,48 @@ const TenantRegister = ({ navigation }) => {
     canDeleteModule: canDeleteReports,
   } = useHasPermission("Reports")
 
+  // useEffect(() => {
+  //   if (!activeHostelId) return;
+
+  //   const fetchTenantRegister = async () => {
+  //     const response = await getTenantRegisterReport(activeHostelId, {
+  //       page: 0,
+  //       size: 10,
+  //     });
+
+  //     if (response.success) {
+  //       setTenantData(response.data);
+  //     }
+  //   };
+
+  //   fetchTenantRegister();
+  // }, [activeHostelId]);
+
+
   useEffect(() => {
     if (!activeHostelId) return;
-
+      console.log("useEffect running");
+      console.log(activeHostelId)
+  
+  
     const fetchTenantRegister = async () => {
-      const response = await getTenantRegisterReport(activeHostelId, {
-        page: 0,
-        size: 10,
-      });
-
-      if (response.success) {
-        setTenantData(response.data);
-      }
+      const filters = {
+      page: 1,
+      size: 10,
     };
-
+      const response = await getTenantRegisterReport(activeHostelId, filters
+      );
+  
+      if (response.success) {
+        setTenantData(response?.data);
+      }
+       else{
+      setTenantData(null)
+    }
+    };
+  
     fetchTenantRegister();
-  }, [activeHostelId]);
+  }, [activeHostelId, ]);
 
   console.log("tenantdata", tenantData);
 
@@ -141,17 +167,22 @@ const TenantRegister = ({ navigation }) => {
     sharing = selectedSharing
   ) => {
 
-    const filters = {
-      period: month || undefined,
-      status: status.length ? status : undefined,
-      sharingType: sharing.length ? sharing : undefined,
-      page: 0,
-      size: 10
-    };
+ const filters = {
+  period: month || undefined,
+  status: status.length ? status : undefined,
+  sharingType: sharing.length ? sharing : undefined,
+  page: 1,
+  size: 10,
+};
+
+    console.log("filtervalues", filters);
+    
 
     getTenantRegisterReport(activeHostelId, filters)
       .then(res => {
         if (res.success) {
+          console.log("filterres", res);
+          
           setTenantData(res.data);
         }
       });

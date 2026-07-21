@@ -62,11 +62,32 @@ const slideAnim = useState(new Animated.Value(500))[0];
     
       
 
+// useEffect(() => {
+//   if (activeHostelId) {
+//     GetInvoiceReports(activeHostelId); 
+//   }
+// }, [activeHostelId]);
+
+
 useEffect(() => {
-  if (activeHostelId) {
-    GetInvoiceReports(activeHostelId); 
+  if (!activeHostelId) return;
+    console.log("useEffect running");
+    console.log(activeHostelId)
+
+
+  const fetchInvoices = async () => {
+    const filters = {
+    page: 1,
+    size: 10,
+  };
+    const response = await GetInvoiceReports(activeHostelId, filters
+    )
+    console.log("response", response);
+    
   }
-}, [activeHostelId]);
+
+  fetchInvoices();
+}, [activeHostelId, ])
 
     useEffect(() => {
       if (activeHostelId) {
@@ -164,16 +185,43 @@ const panResponder = PanResponder.create({
 //     invoiceTypes: type.length > 0 ? type : undefined,
 //   };
 // };
+// const applyFilters = (
+//   newMonth = selectedMonth,
+//   newStatus = billStatus,
+//   newType = type
+// ) => {
+//   const filters = {
+//     period: newMonth ? newMonth : undefined,
+//     paymentStatus: newStatus?.length ? newStatus : undefined,
+//     invoiceTypes: newType?.length ? newType : undefined,
+//   };
+
+//   GetInvoiceReports(activeHostelId, filters);
+// };
+
 const applyFilters = (
   newMonth = selectedMonth,
   newStatus = billStatus,
   newType = type
 ) => {
   const filters = {
-    period: newMonth ? newMonth : undefined,
-    paymentStatus: newStatus?.length ? newStatus : undefined,
-    invoiceTypes: newType?.length ? newType : undefined,
+    page: 1,
+    size: 10,
+
+    period: newMonth || undefined,
+
+    paymentStatus:
+      newStatus?.length > 0
+        ? newStatus
+        : undefined,
+
+    invoiceTypes:
+      newType?.length > 0
+        ? newType
+        : undefined,
   };
+
+  console.log("Invoice Filters =>", filters);
 
   GetInvoiceReports(activeHostelId, filters);
 };

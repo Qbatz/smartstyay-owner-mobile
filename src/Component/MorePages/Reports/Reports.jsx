@@ -241,12 +241,20 @@ const handleSwipe = () => {
             }}
             style={styles.searchIcon}
           />
-          <TextInput
+          {/* <TextInput
             placeholder="Search Reports"
             placeholderTextColor="#9CA3AF"
             style={styles.searchInput}
             editable={canReadReports} 
-          />
+          /> */}
+          <TextInput
+  placeholder="Search Reports"
+  placeholderTextColor="#9CA3AF"
+  style={styles.searchInput}
+  editable={false}
+  selectTextOnFocus={false}
+  pointerEvents="none"
+/>
         </View>
 
 
@@ -272,6 +280,7 @@ const handleSwipe = () => {
   title="Total Revenue (MTD)"
   value={Reportsdetails?.totalRevenue}
   prefix="₹ "
+  valueColor="#00A63E"
 />
 
 <SummaryCard
@@ -331,7 +340,11 @@ const handleSwipe = () => {
 export default Reports;
 
 
-const AnimatedNumber = ({ value, duration = 800 }) => {
+const AnimatedNumber = ({
+  value,
+  duration = 800,
+  textStyle,
+}) => {
   const animatedValue = useRef(new Animated.Value(0)).current;
   const [displayValue, setDisplayValue] = useState(0);
 
@@ -353,10 +366,21 @@ const AnimatedNumber = ({ value, duration = 800 }) => {
     };
   }, [value]);
 
-  return <Text>{displayValue}</Text>;
+ return (
+  <Text style={textStyle}>
+    {Number(displayValue).toLocaleString("en-IN")}
+  </Text>
+);
 };
 
-const SummaryCard = ({ icon, title, value, prefix, suffix }) => (
+const SummaryCard = ({
+  icon,
+  title,
+  value,
+  prefix,
+  suffix,
+  valueColor,
+}) => (
   <View style={styles.summaryCard}>
     <View style={styles.iconBox}>
       <Image source={icon} style={styles.cardIcon} />
@@ -364,16 +388,41 @@ const SummaryCard = ({ icon, title, value, prefix, suffix }) => (
 
     <Text style={styles.cardTitle}>{title}</Text>
 
-    <Text style={styles.cardValue}>
-      {prefix && <Text style={styles.symbol}>{prefix}</Text>}
+    <Text
+      style={[
+        styles.cardValue,
+        valueColor && { color: valueColor },
+      ]}
+    >
+      {prefix && (
+        <Text
+          style={[
+            styles.symbol,
+            valueColor && { color: valueColor },
+          ]}
+        >
+          {prefix}
+        </Text>
+      )}
 
-      <AnimatedNumber value={value} />
+      <AnimatedNumber
+        value={value}
+        textStyle={valueColor ? { color: valueColor } : {}}
+      />
 
-      {suffix && <Text style={styles.symbol}>{suffix}</Text>}
+      {suffix && (
+        <Text
+          style={[
+            styles.symbol,
+            valueColor && { color: valueColor },
+          ]}
+        >
+          {suffix}
+        </Text>
+      )}
     </Text>
   </View>
 );
-
 
 
 const RegisterCard = ({ icon, title, desc, bgColor, onPress }) => (

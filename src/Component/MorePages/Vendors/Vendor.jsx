@@ -632,7 +632,7 @@ export default function Vendors({ navigation }) {
                             renderItem={renderVendor}
                             ListHeaderComponent={() => (
                                 <>
-                                     {!loading && vendorList?.length > 0 && (
+                                     {!loading && vendorList?.vendors?.length > 0 && (
                 <>
                                     <ScrollView
                                         horizontal
@@ -706,7 +706,7 @@ export default function Vendors({ navigation }) {
                 )}
 
 
-                {!loading && vendorList?.length > 0 && (
+                {!loading && vendorList?.vendors.length > 0 && (
                 <>
 
 
