@@ -133,26 +133,26 @@ export default function SettingsScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
 
-        <View style={{ flex: 1 }}>
-      {/* Header */}
-      <View style={styles.header}>
-        {/* LEFT SIDE */}
-        <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Image source={BackArrow} style={styles.backIcon} />
-          </TouchableOpacity>
+      <View style={{ flex: 1 }}>
+        {/* Header */}
+        <View style={styles.header}>
+          {/* LEFT SIDE */}
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image source={BackArrow} style={styles.backIcon} />
+            </TouchableOpacity>
 
-          <Text style={styles.headerText}>Settings</Text>
-        </View>
+            <Text style={styles.headerText}>Settings</Text>
+          </View>
 
-        {/* RIGHT SIDE */}
-        {/* <TouchableOpacity>
+          {/* RIGHT SIDE */}
+          {/* <TouchableOpacity>
     <Image source={FilterIcon} style={styles.settingsIcon} />
   </TouchableOpacity> */}
-      </View>
+        </View>
 
 
-      {/* <ScrollView showsVerticalScrollIndicator={false}> */}
+        {/* <ScrollView showsVerticalScrollIndicator={false}> */}
         {/* Search box */}
 
         <View style={styles.searchContainer}>
@@ -162,82 +162,92 @@ export default function SettingsScreen({ navigation }) {
               style={styles.searchIcon}
             />
             <TextInput
+              style={styles.searchInput}
               placeholder="Search"
+              placeholderTextColor="#9C9C9C"
               value={search}
               onChangeText={handleSearch}
               autoCorrect={false}
               autoCapitalize="words"
               maxLength={30}
             />
+            {/* <TextInput
+              placeholder="Search"
+              value={search}
+              onChangeText={handleSearch}
+              autoCorrect={false}
+              autoCapitalize="words"
+              maxLength={30}
+            /> */}
           </View>
 
 
         </View>
 
-      
 
-          <ScrollView showsVerticalScrollIndicator={false}>
 
-            {mainItems.map((item, index) => (
-              <View key={index} >{renderItem(item)}</View>
-            ))}
+        <ScrollView showsVerticalScrollIndicator={false}>
 
-            <Text style={styles.sectionTitle}>PG Settings</Text>
+          {mainItems.map((item, index) => (
+            <View key={index} >{renderItem(item)}</View>
+          ))}
 
-            {/* PG Items */}
-            {pgItems.map((item, index) => (
-              <View key={index}>{renderItem(item)}</View>
-            ))}
-          </ScrollView>
+          <Text style={styles.sectionTitle}>PG Settings</Text>
 
-  {showSearchList && (
-<View style={styles.searchModal}>
-  <ScrollView
-    showsVerticalScrollIndicator={false}
-    keyboardShouldPersistTaps="handled"
-  >
-    {filteredSettings.length > 0 ? (
-              filteredSettings?.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[
-                    styles.searchItem,
-                    index === 0 && styles.firstSearchItem
-                  ]}
-                  onPress={() => {
-                    setSearch("");
-                    setShowSearchList(false);
-                    navigation.navigate(item.screen);
-                  }}
-                >
+          {/* PG Items */}
+          {pgItems.map((item, index) => (
+            <View key={index}>{renderItem(item)}</View>
+          ))}
+        </ScrollView>
 
-                  {index === 0 && (
-                    <View style={styles.activeLine} />
-                  )}
+        {showSearchList && (
+          <View style={styles.searchModal}>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {filteredSettings.length > 0 ? (
+                filteredSettings?.map((item, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.searchItem,
+                      index === 0 && styles.firstSearchItem
+                    ]}
+                    onPress={() => {
+                      setSearch("");
+                      setShowSearchList(false);
+                      navigation.navigate(item.screen);
+                    }}
+                  >
 
-                  <Image
-                    source={item.icon}
-                    style={styles.searchItemIcon}
-                  />
+                    {index === 0 && (
+                      <View style={styles.activeLine} />
+                    )}
 
-                  <Text style={styles.searchItemText}>
-                    {item.title}
-                  </Text>
+                    <Image
+                      source={item.icon}
+                      style={styles.searchItemIcon}
+                    />
 
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={styles.noResult}>No results found</Text>
-            )}
-  </ScrollView>
-</View>
- )}
-        
-         
-       
-      {/* </ScrollView> */}
+                    <Text style={styles.searchItemText}>
+                      {item.title}
+                    </Text>
 
-</View>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.noResult}>No results found</Text>
+              )}
+            </ScrollView>
+          </View>
+        )}
+
+
+
+        {/* </ScrollView> */}
+
+      </View>
     </SafeAreaView>
   );
 }
@@ -296,20 +306,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
 
     zIndex: 1001,
- ...Platform.select({
-    ios: {
-      shadowColor: "#000",
-      shadowOffset: {
-        width: 0,
-        height: 2,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
       },
-      shadowOpacity: 0.04,
-      shadowRadius: 4,
-    },
-    android: {
-      elevation: 2,
-    },
-  }),
+      android: {
+        elevation: 2,
+      },
+    }),
   },
 
   searchIcon: {
@@ -390,31 +400,31 @@ const styles = StyleSheet.create({
   //   shadowRadius: 12,
   // },
 
-searchModal: {
-  position: "absolute",
-  top: 122,
-  left: 16,
-  right: 16,
-  maxHeight: 200,
+  searchModal: {
+    position: "absolute",
+    top: 122,
+    left: 16,
+    right: 16,
+    maxHeight: 200,
 
-  backgroundColor: "#FFF",
-  borderRadius: 14,
+    backgroundColor: "#FFF",
+    borderRadius: 14,
 
-  borderWidth: 1,
-  borderColor: "#F2F2F2",
+    borderWidth: 1,
+    borderColor: "#F2F2F2",
 
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+
+    elevation: 12,
+
+    overflow: "hidden",
   },
-  shadowOpacity: 0.08,
-  shadowRadius: 16,
-
-  elevation: 12,
-
-  overflow: "hidden",
-},
 
   // searchItem: {
   //   flexDirection: "row",

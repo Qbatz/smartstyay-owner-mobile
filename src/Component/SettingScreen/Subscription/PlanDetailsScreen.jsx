@@ -11,6 +11,9 @@ import { StatusBar, Platform } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import EmptyState from "../../../Assets/Images/Empty_state.png";
+
+
 
 export default function PlanDetailsScreen({ route, navigation }) {
 
@@ -22,7 +25,6 @@ export default function PlanDetailsScreen({ route, navigation }) {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = () => {
-
 
         if (navigation.canGoBack()) {
           navigation.goBack();
@@ -244,6 +246,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
         ) : (
         <>
          <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
+           <Image source={EmptyState} style={styles.emptyImage} />
             <Text style={{fontSize:20,fontFamily:'Gilroy-Semibold',color:'black'}}>No Data Found</Text>
              <Text style={{fontSize:18,fontFamily:'Gilroy-Medium',color:'#4B4B4B',marginTop:10}}>
               No Subscription Found Yet</Text>
@@ -359,5 +362,18 @@ const styles = StyleSheet.create({
 
   billAmount: { fontSize: 16, fontWeight: "700" },
   billDate: { fontSize: 12, color: "#777" },
+    emptyImage: {
+    width: 180,
+    height: 180,
+    resizeMode: "contain",
+    opacity: 0.8
+  },
+
+  emptyText: {
+    marginTop: 14,
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+    color: "#777",
+  },
 });
 
