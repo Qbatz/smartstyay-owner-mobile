@@ -944,7 +944,7 @@ export default function TenantsScreen({ route }) {
                   </View>
                 )}
 
-                <ScrollView horizontal
+                <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
                   style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
@@ -955,10 +955,10 @@ export default function TenantsScreen({ route }) {
                               styles.filterBox,
                               billStatus.length > 0 && styles.filterBoxActive,
                             ]}
-                            onPress={() => {
-                              setTempStatus(billStatus);
-                              setStatusSheetOpen(true);
-                            }}
+                            // onPress={() => {
+                            //   setTempStatus(billStatus);
+                            //   setStatusSheetOpen(true);
+                            // }}
                           >
                             <Text
                               style={[
@@ -979,10 +979,10 @@ export default function TenantsScreen({ route }) {
                               styles.filterBox,
                               billStatus.length > 0 && styles.filterBoxActive,
                             ]}
-                            onPress={() => {
-                              setTempStatus(billStatus);
-                              setStatusSheetOpen(true);
-                            }}
+                            // onPress={() => {
+                            //   setTempStatus(billStatus);
+                            //   setStatusSheetOpen(true);
+                            // }}
                           >
                             <Text
                               style={[
@@ -1007,10 +1007,10 @@ export default function TenantsScreen({ route }) {
                               styles.filterBox,
                               type.length > 0 && styles.filterBoxActive,
                             ]}
-                            onPress={() => {
-                              setTempType(type);
-                              setTypeSheetOpen(true);
-                            }}
+                            // onPress={() => {
+                            //   setTempType(type);
+                            //   setTypeSheetOpen(true);
+                            // }}
                           >
                             <Text
                               style={[
@@ -1029,7 +1029,8 @@ export default function TenantsScreen({ route }) {
 
 
                         <TouchableOpacity style={[styles.filterIconBtn, { marginLeft: 5 }]} disabled={!canReadTenant}
-                          onPress={() => setShowFilter(true)}>
+                          // onPress={() => setShowFilter(true)}
+                          >
                           <Image source={Filter} style={{ width: 18, height: 18 }} />
                         </TouchableOpacity>
                       </View>
@@ -1464,6 +1465,7 @@ export default function TenantsScreen({ route }) {
                   </TouchableOpacity>
                   {/* <Text style={styles.modalName}>{selectedCustomer?.fullName} </Text> */}
 
+            {  selectedCustomer?.customerCurrentStatus !== "DRAFT"  && (
                   <View style={styles.detailRow}>
                     <View style={styles.floorBadge}>
                       <Text style={[styles.floorText, { flexShrink: 1 }]}
@@ -1479,6 +1481,8 @@ export default function TenantsScreen({ route }) {
                       numberOfLines={1}
                       ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.bedName}</Text>
                   </View>
+            )}
+
                 </View>
               </View>
 
@@ -1567,6 +1571,8 @@ export default function TenantsScreen({ route }) {
                   />
                 </TouchableOpacity>
               </View>
+
+              {  selectedCustomer?.customerCurrentStatus !== "DRAFT"  && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                 <View style={{ marginTop: 10, }}>
                   <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>
@@ -1585,6 +1591,8 @@ export default function TenantsScreen({ route }) {
 
 
               </View>
+              ) }
+
 
               {
                 selectedCustomer?.customerCurrentStatus == "BOOKED" && (
