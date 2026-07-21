@@ -601,7 +601,7 @@ export default function AssignTenant({ navigation, route }) {
     }
 
     if (!refuseAdvanceAmount) {
-      if (!advanceAmount || Number(advanceAmount) <= 0) {
+      if (!advanceAmount) {
         setAdvanceError("Please Enter Advance Amount");
         hasError = true;
       }

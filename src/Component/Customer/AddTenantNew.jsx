@@ -2779,7 +2779,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
         // Advance
         if (!refuseAdvanceAmount) {
-            if (!advanceAmount || Number(advanceAmount) <= 0) {
+            if (!advanceAmount) {
                 setAdvanceError("Please Enter Advance Amount");
                 hasError = true;
             }

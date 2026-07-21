@@ -114,7 +114,7 @@ const paymentOptions =
     period: month || undefined,
     category: category.length ? category : undefined,
     paymentMode: payment.length ? payment : undefined,
-    page: 0,
+    page: 1,
     size: 10,
   };
 

@@ -49,22 +49,48 @@ const [monthSheetOpen, setMonthSheetOpen] = useState(false);
 const [typeSheetOpen, setTypeSheetOpen] = useState(false);
 const [paymentSheetOpen, setPaymentSheetOpen] = useState(false);
 
-  useEffect(() => {
-  if (activeHostelId) {
-    loadReceipts();
-  }
-}, [activeHostelId]);
+//   useEffect(() => {
+//   if (activeHostelId) {
+//     loadReceipts();
+//   }
+// }, [activeHostelId]);
 
-const loadReceipts = async () => {
-  const res = await getReceiptRegisterReport(activeHostelId);
+// const loadReceipts = async () => {
+//   const res = await getReceiptRegisterReport(activeHostelId);
 
-  if (res?.success) {
-    setReceiptData(res.data);
-  }
-  else{
+//   if (res?.success) {
+//     setReceiptData(res.data);
+//   }
+//   else{
+//     setReceiptData(null)
+//   }
+// }
+
+useEffect(() => {
+  if (!activeHostelId) return;
+    console.log("useEffect running");
+    console.log(activeHostelId)
+
+
+  const fetchReceipts = async () => {
+    const filters = {
+    page: 1,
+    size: 10,
+  };
+    const response = await getReceiptRegisterReport(activeHostelId, filters
+    );
+
+    if (response.success) {
+      setReceiptData(response?.data);
+    }
+     else{
     setReceiptData(null)
   }
-}
+  };
+
+  fetchReceipts();
+}, [activeHostelId, ]);
+
 
 const filterOptions = receiptData?.filters;
 
@@ -115,8 +141,12 @@ console.log("selectpayment", selectedPayment);
 const filters = {
   period: month || undefined,
   invoiceType: type?.length ? type[0] : undefined,
- paymentMode: payment?.length ? payment : undefined,
+  paymentMode: payment?.length ? payment : undefined,
+  page: 1,
+  size: 10,
 };
+
+
   getReceiptRegisterReport(activeHostelId, filters)
     .then(res => {
       if (res?.success) {

@@ -449,6 +449,57 @@ const getReportsByHostel = async (hostelId) => {
   }
 };
 
+// const GetInvoiceReports = async (hostelId, filters = {}) => {
+//   try {
+//     setLoading(true);
+
+//     const token = await retriveData("token");
+//     const axios = getAxios();
+
+//     const res = await axios.get(
+//       `/v2/reports/invoice/${hostelId}`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//         params: {
+//           startDate: filters?.startDate,
+//           endDate: filters?.endDate,
+//           search: filters?.search,
+//           paymentStatus: filters?.paymentStatus,
+//           invoiceModes: filters?.invoiceModes,
+//           invoiceTypes: filters?.invoiceTypes,
+//           createdBy: filters?.createdBy,
+//           period: filters?.period,
+//           minPaidAmount: filters?.minPaidAmount,
+//           maxPaidAmount: filters?.maxPaidAmount,
+//           minOutstandingAmount: filters?.minOutstandingAmount,
+//           maxOutstandingAmount: filters?.maxOutstandingAmount,
+//           page: filters?.page ?? 0,
+//           size: filters?.size ?? 10,
+//         },
+//       }
+//     );
+
+//     setInvoiceReports(res?.data);
+
+//     return {
+//       success: true,
+//       data: res.data,
+//     };
+
+//   } catch (err) {
+//     return {
+//       success: false,
+//       data: err.response?.data || err.message,
+//     };
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+
 const GetInvoiceReports = async (hostelId, filters = {}) => {
   try {
     setLoading(true);
@@ -456,39 +507,60 @@ const GetInvoiceReports = async (hostelId, filters = {}) => {
     const token = await retriveData("token");
     const axios = getAxios();
 
+    const params = {
+      search: filters?.search,
+      paymentStatus: filters?.paymentStatus,
+      invoiceModes: filters?.invoiceModes,
+      invoiceTypes: filters?.invoiceTypes,
+      createdBy: filters?.createdBy,
+      period: filters?.period,
+
+      minPaidAmount: filters?.minPaidAmount,
+      maxPaidAmount: filters?.maxPaidAmount,
+      minOutstandingAmount: filters?.minOutstandingAmount,
+      maxOutstandingAmount: filters?.maxOutstandingAmount,
+
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+
+      page: filters?.page ?? 1,
+      size: filters?.size ?? 10,
+    };
+
+    // remove undefined / null / empty values
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(
+        ([_, value]) =>
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+      )
+    );
+
     const res = await axios.get(
       `/v2/reports/invoice/${hostelId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: {
-          startDate: filters?.startDate,
-          endDate: filters?.endDate,
-          search: filters?.search,
-          paymentStatus: filters?.paymentStatus,
-          invoiceModes: filters?.invoiceModes,
-          invoiceTypes: filters?.invoiceTypes,
-          createdBy: filters?.createdBy,
-          period: filters?.period,
-          minPaidAmount: filters?.minPaidAmount,
-          maxPaidAmount: filters?.maxPaidAmount,
-          minOutstandingAmount: filters?.minOutstandingAmount,
-          maxOutstandingAmount: filters?.maxOutstandingAmount,
-          page: filters?.page ?? 0,
-          size: filters?.size ?? 10,
-        },
+        params: cleanParams,
+        paramsSerializer: (params) =>
+          qs.stringify(params, { arrayFormat: "repeat" }),
       }
     );
 
-    setInvoiceReports(res?.data);
+    setInvoiceReports(res.data);
 
     return {
       success: true,
       data: res.data,
     };
-
   } catch (err) {
+    console.log(
+      "INVOICE REPORT ERROR →",
+      err.response?.data || err.message
+    );
+
     return {
       success: false,
       data: err.response?.data || err.message,
@@ -497,8 +569,6 @@ const GetInvoiceReports = async (hostelId, filters = {}) => {
     setLoading(false);
   }
 };
-
-
 
 
 
@@ -516,13 +586,17 @@ const getReceiptRegisterReport = async (hostelId, filters = {}) => {
       collectedBy: filters?.collectedBy,
       period: filters?.period,
       paymentMode: filters?.paymentMode,
-      page: filters?.page ?? 0,
+      page: filters?.page ?? 1,
       size: filters?.size ?? 10,
     };
 
-    // 🔥 Remove undefined keys
     const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(([_, v]) => v !== undefined)
+      Object.entries(params).filter(
+        ([_, value]) =>
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+      )
     );
 
     const res = await axios.get(
@@ -532,16 +606,17 @@ const getReceiptRegisterReport = async (hostelId, filters = {}) => {
           Authorization: `Bearer ${token}`,
         },
         params: cleanParams,
-    paramsSerializer: (params) =>
-  qs.stringify(params, { arrayFormat: "repeat" })
+        paramsSerializer: (params) =>
+          qs.stringify(params, {
+            arrayFormat: "repeat",
+          }),
       }
-    )
+    );
 
     return {
       success: true,
       data: res.data,
     };
-
   } catch (err) {
     return {
       success: false,
@@ -569,13 +644,17 @@ const getTenantRegisterReport = async (hostelId, filters = {}) => {
       room: filters?.room,
       search: filters?.search,
       sharingType: filters?.sharingType,
-      page: filters?.page ?? 0,
+      page: filters?.page ?? 1,
       size: filters?.size ?? 10,
     };
 
-    // remove undefined values
     const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(([_, v]) => v !== undefined)
+      Object.entries(params).filter(
+        ([_, value]) =>
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+      )
     );
 
     const res = await axios.get(
@@ -586,7 +665,9 @@ const getTenantRegisterReport = async (hostelId, filters = {}) => {
         },
         params: cleanParams,
         paramsSerializer: (params) =>
-          qs.stringify(params, { arrayFormat: "repeat" }),
+          qs.stringify(params, {
+            arrayFormat: "repeat",
+          }),
       }
     );
 
@@ -594,10 +675,7 @@ const getTenantRegisterReport = async (hostelId, filters = {}) => {
       success: true,
       data: res.data,
     };
-
   } catch (err) {
-    console.log("TENANT REGISTER ERROR →", err.response?.data || err.message);
-
     return {
       success: false,
       data: err.response?.data || err.message,
@@ -615,36 +693,46 @@ const GetExpenseRegisterReport = async (hostelId, filters = {}) => {
     const token = await retriveData("token");
     const axios = getAxios();
 
+    const params = {
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+      period: filters?.period,
+      categoryId: filters?.category,
+      paymentMode: filters?.paymentMode,
+      createdBy: filters?.createdBy,
+      paidTo: filters?.paidTo,
+      page: filters?.page ?? 1,
+      size: filters?.size ?? 10,
+    };
+
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(
+        ([_, value]) =>
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+      )
+    );
+
     const res = await axios.get(
       `/v2/reports/expense/${hostelId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-        params: {
-          startDate: filters?.startDate,
-          endDate: filters?.endDate,
-          period: filters?.period,
-          categoryId: filters?.category,
-          paymentMode: filters?.paymentMode,
-          createdBy: filters?.createdBy,
-          paidTo: filters?.paidTo,
-          page: filters?.page ?? 0,
-          size: filters?.size ?? 10,
-        },
+        params: cleanParams,
+        paramsSerializer: (params) =>
+          qs.stringify(params, {
+            arrayFormat: "repeat",
+          }),
       }
     );
-
-    console.log("EXPENSE REGISTER SUCCESS →", res.data);
 
     return {
       success: true,
       data: res.data,
     };
-
   } catch (err) {
-    console.log("EXPENSE REGISTER ERROR →", err.response?.data || err.message);
-
     return {
       success: false,
       data: err.response?.data || err.message,
