@@ -43,7 +43,7 @@ export default function SettlementCustomRentSheet({
         }
     }, [visible]);
 
-     
+
 
 
     const panResponder = useRef(
@@ -61,28 +61,28 @@ export default function SettlementCustomRentSheet({
 
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-useEffect(() => {
-    if (!visible) return;
+    useEffect(() => {
+        if (!visible) return;
 
-    const showSub = Keyboard.addListener(
-        "keyboardDidShow",
-        (e) => {
-            setKeyboardHeight(e.endCoordinates.height);
-        }
-    );
+        const showSub = Keyboard.addListener(
+            "keyboardDidShow",
+            (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+            }
+        );
 
-    const hideSub = Keyboard.addListener(
-        "keyboardDidHide",
-        () => {
-            setKeyboardHeight(0);
-        }
-    );
+        const hideSub = Keyboard.addListener(
+            "keyboardDidHide",
+            () => {
+                setKeyboardHeight(0);
+            }
+        );
 
-    return () => {
-        showSub.remove();
-        hideSub.remove();
-    };
-}, [visible]);
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, [visible]);
 
 
     // useEffect(() => {
@@ -110,11 +110,11 @@ useEffect(() => {
 
     const openSheet = () => {
         Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
+            toValue: 0,
+            useNativeDriver: true,
         }).start();
-       setRentError("")
-      };
+        setRentError("")
+    };
 
 
     const closeSheet = () => {
@@ -144,24 +144,24 @@ useEffect(() => {
                     ]}
                 > */}
                 <Animated.View
-    {...panResponder.panHandlers}
-    style={[
-        styles.sheet,
-        {
-            paddingBottom: 20 + insets.bottom,
-            transform: [
-                {
-                    translateY: Animated.subtract(
-                        translateY,
-                        new Animated.Value(
-                            keyboardHeight > 0 ? 240 : 0
-                        )
-                    ),
-                },
-            ],
-        },
-    ]}
->
+                    {...panResponder.panHandlers}
+                    style={[
+                        styles.sheet,
+                        {
+                            paddingBottom: 20 + insets.bottom,
+                            transform: [
+                                {
+                                    translateY: Animated.subtract(
+                                        translateY,
+                                        new Animated.Value(
+                                            keyboardHeight > 0 ? 240 : 0
+                                        )
+                                    ),
+                                },
+                            ],
+                        },
+                    ]}
+                >
 
                     <View
                         style={{
@@ -184,7 +184,7 @@ useEffect(() => {
                     >
                         Tenant's last rent is ₹ {rentAmount} !
                     </Text>
-                    {console.log("maad",mode)}
+                    {console.log("maad", mode)}
 
                     <Text
                         style={{
@@ -193,7 +193,7 @@ useEffect(() => {
                             marginBottom: 16,
                         }}
                     >
-                     {mode === "edit" ? "Edit Amount" : "Enter the amount you want to collect ?"}   
+                        {mode === "edit" ? "Edit Amount" : "Enter the amount you want to collect ?"}
                     </Text>
 
                     <ValidatedInput
@@ -207,7 +207,7 @@ useEffect(() => {
                             height: 50,
                             fontSize: 20,
                             fontFamily: "Gilroy-Bold",
-                            marginBottom: 50,
+                            // marginBottom: 10,
 
                         }}
                         placeholder="₹ 0.00"
@@ -222,15 +222,23 @@ useEffect(() => {
                         maxLength={7}
 
                     />
+                      <View>
+                        <Text style={styles.note}>
+                            Note: The specified amount covers rent exclusively. All other charges are added with this amount. eg: Other charges
+                        </Text>
+                    </View>
                     {rentError ? (
                         <ErrorMessage message={rentError} type="error" />
                     ) : null}
+
+                  
 
 
                     <View
                         style={{
                             flexDirection: "row",
                             gap: 12,
+                            marginTop:40
                         }}
                     >
                         <TouchableOpacity
@@ -538,5 +546,12 @@ const styles = StyleSheet.create({
         maxHeight: "85%",
 
     },
-
+ note: {
+        color: "#505F76",
+        marginTop: 10,
+        marginBottom:10,
+        lineHeight: 18,
+        fontSize: 12,
+          fontFamily: "Gilroy-Regular",
+    },
 })

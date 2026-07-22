@@ -50,7 +50,7 @@ export default function ExpensesSettings({ navigation }) {
   } = useHasPermission("Expense");
 
 
-    const isApplyTriggeredRef = useRef(false);
+  const isApplyTriggeredRef = useRef(false);
 
   // const [expenses, setExpenses] = useState([
   //   {
@@ -449,47 +449,47 @@ export default function ExpensesSettings({ navigation }) {
       return;
     }
 
-        if (isApplyTriggeredRef.current) return
-        isApplyTriggeredRef.current = true
+    if (isApplyTriggeredRef.current) return
+    isApplyTriggeredRef.current = true
 
-        try {
-  let res;
+    try {
+      let res;
 
-    if (isExpenseEdit && editingExpenseId) {
-      res = await UpdateExpenseCategory({
-        hostelId: activeHostelId,
-        categoryId: editingExpenseId,
-        newCategoryName: value,
-      });
-    } else {
-      res = await addExpenseCategory({
-        hostelId: activeHostelId,
-        categoryName: value,
-      });
-    }
+      if (isExpenseEdit && editingExpenseId) {
+        res = await UpdateExpenseCategory({
+          hostelId: activeHostelId,
+          categoryId: editingExpenseId,
+          newCategoryName: value,
+        });
+      } else {
+        res = await addExpenseCategory({
+          hostelId: activeHostelId,
+          categoryName: value,
+        });
+      }
 
-    if (!res.success) {
-      setModalMessage(res.message || "Operation failed");
-      setModalType("error");
+      if (!res.success) {
+        setModalMessage(res.message || "Operation failed");
+        setModalType("error");
+        setShowSuccessModal(true);
+        return;
+      }
+
+      setModalMessage(
+        isExpenseEdit
+          ? "Expense category updated successfully"
+          : "Expense category added successfully"
+      );
+      setModalType("success");
       setShowSuccessModal(true);
-      return;
+
+      closeExpenseSheet();
     }
 
-    setModalMessage(
-      isExpenseEdit
-        ? "Expense category updated successfully"
-        : "Expense category added successfully"
-    );
-    setModalType("success");
-    setShowSuccessModal(true);
+    finally {
+      isApplyTriggeredRef.current = false
+    }
 
-    closeExpenseSheet();
-        }
-
-  finally{
- isApplyTriggeredRef.current = false
-   }
-  
   };
 
 
@@ -554,48 +554,48 @@ export default function ExpensesSettings({ navigation }) {
       return;
     }
 
-            if (isApplyTriggeredRef.current) return
-        isApplyTriggeredRef.current = true
+    if (isApplyTriggeredRef.current) return
+    isApplyTriggeredRef.current = true
 
-        try {
+    try {
 
-    let res;
+      let res;
 
-    if (isSubAddEdit && editingSubId) {
-      res = await UpdateExpenseSubCategory({
-        hostelId: activeHostelId,
-        subCategoryId: editingSubId,
-        newSubCategoryName: value,
-      });
-    } else {
-      res = await addSubCategory({
-        hostelId: activeHostelId,
-        categoryId: selectedExpenseId,
-        subCategory: value,
-      });
-    }
+      if (isSubAddEdit && editingSubId) {
+        res = await UpdateExpenseSubCategory({
+          hostelId: activeHostelId,
+          subCategoryId: editingSubId,
+          newSubCategoryName: value,
+        });
+      } else {
+        res = await addSubCategory({
+          hostelId: activeHostelId,
+          categoryId: selectedExpenseId,
+          subCategory: value,
+        });
+      }
 
-    if (!res.success) {
-      setModalMessage(res?.message || "Operation failed");
-      setModalType("error");
+      if (!res.success) {
+        setModalMessage(res?.message || "Operation failed");
+        setModalType("error");
+        setShowSuccessModal(true);
+        return;
+      }
+
+      setModalMessage(
+        isSubAddEdit
+          ? "Sub category updated successfully"
+          : "Sub category added successfully"
+      );
+      setModalType("success");
       setShowSuccessModal(true);
-      return;
+
+      closeSubAddSheet();
+
     }
-
-    setModalMessage(
-      isSubAddEdit
-        ? "Sub category updated successfully"
-        : "Sub category added successfully"
-    );
-    setModalType("success");
-    setShowSuccessModal(true);
-
-    closeSubAddSheet();
-
-  }
- finally{
- isApplyTriggeredRef.current = false
-   }
+    finally {
+      isApplyTriggeredRef.current = false
+    }
 
   }
 
@@ -766,9 +766,13 @@ export default function ExpensesSettings({ navigation }) {
                   ) : (
                     <FlatList
                       data={expenses}
-                      keyExtractor={(i) => i.id}
+                      keyExtractor={(i) => i?.id}
                       renderItem={renderExpense}
                       contentContainerStyle={{ paddingBottom: 140 }}
+                      persistentScrollbar={false}
+                      showsVerticalScrollIndicator={false}
+                      showsHorizontalScrollIndicator={false}
+                      indicatorStyle="white"
                     />
                   )}
 
@@ -847,18 +851,18 @@ export default function ExpensesSettings({ navigation }) {
                     {subSheetTitle}
                   </Text>
                 </View>
-                 
-                  {getSelectedExpense() && getSelectedExpense().subcategories && getSelectedExpense().subcategories.length > 0 && ( 
-  <TouchableOpacity
-                  style={[styles.subAddBtn, !canWriteExpense && { opacity: 0.4 },]}
-                  disabled={!canWriteExpense}
-                  onPress={() => {
-                    openSubAddSheet(false, null, selectedExpenseId);
-                  }}>
-                  <Text style={styles.subAddText}>Add +</Text>
-                </TouchableOpacity>
-                  )}
-              
+
+                {getSelectedExpense() && getSelectedExpense().subcategories && getSelectedExpense().subcategories.length > 0 && (
+                  <TouchableOpacity
+                    style={[styles.subAddBtn, !canWriteExpense && { opacity: 0.4 },]}
+                    disabled={!canWriteExpense}
+                    onPress={() => {
+                      openSubAddSheet(false, null, selectedExpenseId);
+                    }}>
+                    <Text style={styles.subAddText}>Add +</Text>
+                  </TouchableOpacity>
+                )}
+
 
               </View>
 
@@ -912,6 +916,7 @@ export default function ExpensesSettings({ navigation }) {
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 80 }}
+                persistentScrollbar={false}
               >
                 <Text style={styles.sheetTitle}>
                   {isSubAddEdit ? "Edit Sub Category" : "Add Sub Category"}
@@ -934,8 +939,8 @@ export default function ExpensesSettings({ navigation }) {
 
                 <TouchableOpacity
                   // style={styles.addTypeBtn}
-                style={[styles.addTypeBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
-                disabled={isApplyTriggeredRef.current}
+                  style={[styles.addTypeBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                  disabled={isApplyTriggeredRef.current}
                   onPress={saveSubcategory}
                 >
                   <Text style={styles.addTypeText}>
@@ -962,6 +967,7 @@ export default function ExpensesSettings({ navigation }) {
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 80 }}   // ✅ enough
+                persistentScrollbar={false}
               >
                 <Text style={styles.sheetTitle}>
                   {isExpenseEdit ? "Edit Category" : "Add Category"}
@@ -984,11 +990,11 @@ export default function ExpensesSettings({ navigation }) {
 
                 {expenseError ? <ErrorMessage message={expenseError} type="error" /> : null}
 
-                <TouchableOpacity 
-                // style={styles.addTypeBtn} 
-                style={[styles.addTypeBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
-                disabled={isApplyTriggeredRef.current}
-                onPress={saveExpense}>
+                <TouchableOpacity
+                  // style={styles.addTypeBtn} 
+                  style={[styles.addTypeBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                  disabled={isApplyTriggeredRef.current}
+                  onPress={saveExpense}>
                   <Text style={styles.addTypeText}>
                     {isExpenseEdit ? "Save Changes" : "Save"}
                   </Text>

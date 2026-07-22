@@ -11,7 +11,7 @@ import {
     Animated,
     PanResponder,
     Dimensions, BackHandler, Keyboard, NativeModules,
-    Alert
+    Alert , KeyboardAvoidingView, Platform 
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 import { useFocusEffect } from '@react-navigation/native';
@@ -1027,6 +1027,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 onClose={() => setShowSuccessModal(false)}
                 message={modalMessage}
                 type={modalType} />
+
+
+                  <KeyboardAvoidingView
+    style={{ flex: 1 }}
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+  >
 
             <View style={styles.container}>
 
@@ -2429,6 +2435,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 </ScrollView>
 
             </View>
+            </KeyboardAvoidingView>
 
             {openPurchaseDate && (
                 <View style={styles.dateOverlay}>

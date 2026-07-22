@@ -270,7 +270,11 @@ const GetInitializeExpense = async (hostelId) => {
       `/v2/expense/initialize/${hostelId}`
     );
 
+    console.log("res", res);
+
     if (res?.status === 200) {
+      
+      
       setIntializeExpensesList(res?.data);
 
       return { success: true };

@@ -1312,6 +1312,88 @@ export default function OverviewTab({ customerDetails,
           </View>
 
 
+            <View style={styles.sectionBox}>
+
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Job & Shift Details</Text>
+              {/* <Image source={EditIcon} style={styles.editIcon} /> */}
+
+              {/* {
+                (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
+                  <TouchableOpacity
+                    disabled={!canUpdateTenant}
+                    style={!canUpdateTenant && { opacity: 0.4 }}
+                    onPress={handleEdit}>
+                    <Image source={EditIcon} style={styles.editIcon} />
+                  </TouchableOpacity>
+                )
+              } */}
+
+            </View>
+            {/* First Name */}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Employment Status</Text>
+              <Text style={styles.detailValue}>
+                {customerDetails?.jobDetails?.employmentStatus || "N/A"}
+              </Text>
+            </View>
+
+            {/* Last Name */}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Company/College Name</Text>
+              <Text style={styles.detailValue}>
+                 {customerDetails?.jobDetails?.organizationName || "N/A"}
+              </Text>
+            </View>
+
+            {/* Email */}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Job Role</Text>
+              <View style={styles.valueWithIcon}>
+                {/* <Image source={Mail} style={styles.detailIcon} /> */}
+                <Text style={styles.detailValue}>
+                  {customerDetails?.jobDetails?.role || "N/A"}
+                </Text>
+              </View>
+            </View>
+
+            {/* Mobile */}
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Work Location</Text>
+              <View style={styles.valueWithIcon}>
+                {/* <Image source={Phone} style={styles.detailIcon} /> */}
+                <Text style={styles.detailValue}>
+                  {customerDetails?.jobDetails?.workLocation || "N/A"}
+                  {/* +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"} */}
+                </Text>
+              </View>
+            </View>
+
+             <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Shift Type</Text>
+              <View style={styles.valueWithIcon}>
+                {/* <Image source={Phone} style={styles.detailIcon} /> */}
+                <Text style={styles.detailValue}>
+                   {customerDetails?.jobDetails?.shiftType || "N/A"}
+                  {/* +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"} */}
+                </Text>
+              </View>
+            </View>
+
+             <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Shift Timing</Text>
+              <View style={styles.valueWithIcon}>
+                {/* <Image source={Phone} style={styles.detailIcon} /> */}
+                <Text style={styles.detailValue}>
+                   {customerDetails?.jobDetails?.shiftTiming || "N/A"}
+                  {/* +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"} */}
+                </Text>
+              </View>
+            </View>
+
+          </View>
+
+
           <View style={styles.sectionBox}>
 
             {/* HEADER */}

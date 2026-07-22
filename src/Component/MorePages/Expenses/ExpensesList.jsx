@@ -75,6 +75,13 @@ export default function ExpensesList({ navigation }) {
         canDeleteModule,
     } = useHasPermission("Vendor");
 
+      const {
+        canWriteModule: canWriteExpense,
+        canReadModule: canReadExpense,
+        canUpdateModule: canUpdateExpense,
+        canDeleteModule: canDeleteExpense,
+      } = useHasPermission("Expense");
+
 
     useFocusEffect(
         useCallback(() => {
@@ -86,7 +93,9 @@ export default function ExpensesList({ navigation }) {
 
     useEffect(() => {
         if (activeHostelId) {
-            GetInitializeExpense(activeHostelId)
+         const res =   GetInitializeExpense(activeHostelId)
+         console.log("res", res);
+         
         }
 
     }, [activeHostelId])
@@ -113,6 +122,9 @@ export default function ExpensesList({ navigation }) {
     };
 
     const categoryList = IntializeexpensesList?.listExpenses || [];
+
+    console.log("IntializeexpensesList", IntializeexpensesList);
+    
 
     const Expensesdata =
         expensesList?.expenses || [];
@@ -321,6 +333,9 @@ export default function ExpensesList({ navigation }) {
             setTimeout(() => setShowSuccessModal(false), 1500);
             return;
         }
+
+        console.log("categoryList", categoryList);
+        
 
         if (categoryList?.length === 0) {
             setModalType("warning");
@@ -536,7 +551,7 @@ export default function ExpensesList({ navigation }) {
         </TouchableOpacity>
     );
 
-    if (!canReadVendor && !loading) {
+    if (!canReadExpense && !loading) {
         return (
             <View style={styles.container}>
                 <View style={styles.header}>
@@ -635,9 +650,9 @@ export default function ExpensesList({ navigation }) {
 
                         <TouchableOpacity style={[
                             styles.addVendorBtn,
-                            !canWriteVendor && { opacity: 0.7 }
+                            !canWriteExpense && { opacity: 0.7 }
                         ]}
-                            disabled={!canWriteVendor} onPress={handleAddExpenses}>
+                            disabled={!canWriteExpense} onPress={handleAddExpenses}>
                             <Text style={styles.addVendorText}>+ Add Expenses</Text>
                         </TouchableOpacity>
                     </View>
@@ -751,7 +766,7 @@ export default function ExpensesList({ navigation }) {
 
                                     </ScrollView>
 
-                                    <View style={styles.filterRow}>
+                                    {/* <View style={styles.filterRow}>
                                         <View style={{ display: 'flex', flexDirection: 'row' }}>
                                             <TouchableOpacity style={styles.filterChipActive}>
                                                 <Text style={styles.filterChipTextActive}>All</Text>
@@ -768,7 +783,7 @@ export default function ExpensesList({ navigation }) {
                                         >
                                             <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
                                         </TouchableOpacity>
-                                    </View>
+                                    </View> */}
                                 </>
                             )}
                             contentContainerStyle={{
@@ -794,9 +809,9 @@ export default function ExpensesList({ navigation }) {
                         <TouchableOpacity
                             style={[
                                 styles.addFab,
-                                !canWriteVendor && { opacity: 0.7 }
+                                !canWriteExpense && { opacity: 0.7 }
                             ]}
-                            disabled={!canWriteVendor}
+                            disabled={!canWriteExpense}
                             onPress={handleAddExpenses}
                         >
                             <Image source={AddIcon} style={styles.addIcon} />

@@ -855,7 +855,7 @@ export default function BookingCheckIn({ navigation, route }) {
                             <View>
 
                                 <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
-                                    {profilePic ? <Image source={{ uri: profilePic }} style={{ width: 45, height: 45 }} /> :
+                                    {profilePic ? <Image source={{ uri: profilePic }} style={{ width: 45, height: 45 , borderRadius: 22.5, }} /> :
 
                                         <View style={{
                                             width: 45, height: 45, borderRadius: 22.5, backgroundColor: '#e6e7eb',

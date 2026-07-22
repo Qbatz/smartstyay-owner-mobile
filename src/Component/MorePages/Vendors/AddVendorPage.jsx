@@ -10,7 +10,7 @@ import {
   ScrollView,
   Animated,
   PanResponder,
-  Dimensions, BackHandler, Keyboard
+  Dimensions, BackHandler, Keyboard , KeyboardAvoidingView , Platform
 } from "react-native";
 import { CustomerContext } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -817,6 +817,11 @@ export default function AddVendorSheet({ route, navigation }) {
         message={modalMessage}
         type={modalType} />
 
+<KeyboardAvoidingView
+  style={{ flex: 1 }}
+  behavior={Platform.OS === "ios" ? "padding" : "height"}
+  keyboardVerticalOffset={20}
+>
       <View style={styles.container}>
 
         {/* Header */}
@@ -1583,6 +1588,7 @@ export default function AddVendorSheet({ route, navigation }) {
         </ScrollView>
 
       </View>
+      </KeyboardAvoidingView>
 
     </>
 
