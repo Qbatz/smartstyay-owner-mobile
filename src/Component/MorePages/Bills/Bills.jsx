@@ -1282,9 +1282,6 @@ export default function BillsDesign({ route }) {
       hostelId: activeHostelId,
       receiptId: selectedReceipt?.transactionId,
     });
-
-
-    console.log("DeleteReceiptChi",res)
     if (res.success) {
       setShowReceiptDetails(false);
       setShowReceiptMenu(false)
@@ -2237,7 +2234,7 @@ export default function BillsDesign({ route }) {
     });
     setShowBillDetails(false);
     setShowMenu(false)
-    
+
   }
 
   const handleShowBillPdf = async () => {
@@ -2974,7 +2971,8 @@ export default function BillsDesign({ route }) {
 
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
-                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Payable Rent</Text>
+                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>
+                              {BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND" ? "Refundable Rent" : "Payable Ren"}t</Text>
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
@@ -3031,16 +3029,7 @@ export default function BillsDesign({ route }) {
                           </View>
                         </View>
 
-                        <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <View>
-                            <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Type</Text>
-                          </View>
-                          <View>
-                            <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
-                              Manual
-                            </Text>
-                          </View>
-                        </View>
+
 
                       </>
                     )}
@@ -3115,6 +3104,17 @@ export default function BillsDesign({ route }) {
 
                       </>
                     )}
+
+                    <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <View>
+                        <Text style={[styles.label, { fontFamily: "Gilroy-Semibold" }]}>Type</Text>
+                      </View>
+                      <View>
+                        <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold" }}>
+                          {selectedBill?.invoiceMode || "N/A"}
+                        </Text>
+                      </View>
+                    </View>
 
                     <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
@@ -4150,8 +4150,6 @@ export default function BillsDesign({ route }) {
                             </Text>
                           </View>
                         )}
-
-
 
                       </>
                     )}
@@ -8506,11 +8504,9 @@ const styles = StyleSheet.create({
     // alignItems: "center",
     // justifyContent: "center",
     backgroundColor: "#E67E22",
-    paddingVertical: 14,
+    paddingVertical: 16.5,
     paddingHorizontal: 37,
     borderRadius: 10,
-    paddingVertical: 14,
-    paddingHorizontal: 37,
     borderRadius: 10,
     // marginRight: 20
     // paddingVertical: 10,

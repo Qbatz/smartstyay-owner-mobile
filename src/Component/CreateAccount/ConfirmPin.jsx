@@ -24,11 +24,12 @@ const ConfirmMPin = ({ route }) => {
   const [enterPinError, setEnterPinError] = useState()
 
   const handleChange = (text, index) => {
+    const cleanText = text.replace(/[^0-9]/g, "");
     const newArr = [...pinArr];
-    newArr[index] = text;
+    newArr[index] = cleanText;
     setPinArr(newArr);
 
-    if (text && index < 3) inputs.current[index + 1].focus();
+    if (cleanText && index < 3) inputs.current[index + 1].focus();
 
     if (newArr.every(v => v !== "")) {
       setPin(newArr.join(""));

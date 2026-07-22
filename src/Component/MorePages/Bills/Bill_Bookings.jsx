@@ -529,7 +529,7 @@ const BillBookings = ({ onBookingDetailsShow }) => {
   />
   
 )}
-   {!loading && BillDetails?.listInvoices?.length > 0 && (
+   {/* {!loading && BillDetails?.listInvoices?.length > 0 && (
                   <>
                   
   
@@ -548,7 +548,7 @@ const BillBookings = ({ onBookingDetailsShow }) => {
                     </TouchableOpacity>
                   </>
                 )
-                }
+                } */}
 
 
 
