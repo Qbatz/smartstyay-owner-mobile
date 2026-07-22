@@ -21,11 +21,12 @@ const CreateMpin = (props) => {
     console.log(createMpin)
 
     const handlePinChange = async (text, index) => {
+        const cleanText = text.replace(/[^0-9]/g, "");
         const newPin = [...createMpin];
-        newPin[index] = text;
+        newPin[index] = cleanText;
         setCreateMpin(newPin);
 
-        if (text && index < 3) {
+        if (cleanText && index < 3) {
             inputs.current[index + 1].focus();
         }
 

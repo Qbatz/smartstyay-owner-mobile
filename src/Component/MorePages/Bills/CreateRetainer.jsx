@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, TextInput, TouchableWithoutFeedback } from "react-native";
 import { View, Text, TouchableOpacity } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -11,12 +11,16 @@ import SearchIcon from "../../../Assets/Images/SearchIcon.png"
 import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import { CustomerContext } from "../../../Context/CustomerContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 
 
 
 const NewRetainerInvoiceSheet = ({ }) => {
 
     const navigation = useNavigation();
+    const {retainerCustomerList}=useContext(CustomerContext)
+     const { activeHostelId } = useContext(CommonContexts);
 
     const [paidDate, setPaidDate] = useState("")
     const [openPaidDate, setOpenPaidDate] = useState(false);
@@ -30,6 +34,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
     const [items, setItems] = useState([emptyItem]);
     const [showTenantName, setShowTenantName] = useState(false);
     const [selectedName, setSelectedName] = useState("")
+    const [receivedFrom,setReceivedFrom]=useState("")
     const tenantNamelist = [{ id: 0, name: "Karthi" }, { id: 1, name: "Mooly" }, { id: 2, name: "Siinu" }, { id: 3, name: "Nona" }, { id: 4, name: "Sila" }]
     console.log(items)
     console.log(emptyItem)
@@ -42,6 +47,15 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
 
     const paymentModeTypes = [{ id: 0, lable: "Gpayf" }, { id: 1, lable: "phonepay" }, { id: 2, lable: "Cash" }]
+
+    useEffect(()=>{
+        const fetchCustomerRetainerList=async()=>{
+        const res= await retainerCustomerList(activeHostelId)
+        console.log("retainerList",res)
+        }
+
+        fetchCustomerRetainerList();
+    },[])
 
 
     // setItems({emptyItem.itemDetail})
@@ -275,6 +289,9 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         <TextInput
 
                             placeholder="Enter/Select the Respective Person"
+                            onChange={(text)=>{
+                                const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
+                            }}
                         />
 
                         <Image
