@@ -574,6 +574,9 @@ export default function Complaints({ route }) {
         placeholder="Search Complaints"
         placeholderTextColor="#9CA3AF"
         style={styles.searchInput}
+        editable={false}
+          selectTextOnFocus={false}
+  pointerEvents="none"
       />
     </View>
   </View>
@@ -611,7 +614,7 @@ export default function Complaints({ route }) {
         {!loading && complaintsList && complaintsList?.length > 0 &&
           <>
 
-            <TouchableOpacity style={[
+            {/* <TouchableOpacity style={[
               styles.filterBtn,
               !canReadComplaints && { opacity: 0.4 }
             ]} disabled={!canReadComplaints} onPress={() => setShowFilter(true)}>
@@ -620,7 +623,7 @@ export default function Complaints({ route }) {
                 style={{ width: 25, height: 25 }}
               />
 
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               style={[

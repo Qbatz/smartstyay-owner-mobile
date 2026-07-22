@@ -944,7 +944,7 @@ export default function TenantsScreen({ route }) {
                   </View>
                 )}
 
-                <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
+                {/* <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
                   style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
@@ -955,10 +955,10 @@ export default function TenantsScreen({ route }) {
                               styles.filterBox,
                               billStatus.length > 0 && styles.filterBoxActive,
                             ]}
-                            // onPress={() => {
-                            //   setTempStatus(billStatus);
-                            //   setStatusSheetOpen(true);
-                            // }}
+                            onPress={() => {
+                              setTempStatus(billStatus);
+                              setStatusSheetOpen(true);
+                            }}
                           >
                             <Text
                               style={[
@@ -979,10 +979,10 @@ export default function TenantsScreen({ route }) {
                               styles.filterBox,
                               billStatus.length > 0 && styles.filterBoxActive,
                             ]}
-                            // onPress={() => {
-                            //   setTempStatus(billStatus);
-                            //   setStatusSheetOpen(true);
-                            // }}
+                            onPress={() => {
+                              setTempStatus(billStatus);
+                              setStatusSheetOpen(true);
+                            }}
                           >
                             <Text
                               style={[
@@ -1007,10 +1007,10 @@ export default function TenantsScreen({ route }) {
                               styles.filterBox,
                               type.length > 0 && styles.filterBoxActive,
                             ]}
-                            // onPress={() => {
-                            //   setTempType(type);
-                            //   setTypeSheetOpen(true);
-                            // }}
+                            onPress={() => {
+                              setTempType(type);
+                              setTypeSheetOpen(true);
+                            }}
                           >
                             <Text
                               style={[
@@ -1029,7 +1029,7 @@ export default function TenantsScreen({ route }) {
 
 
                         <TouchableOpacity style={[styles.filterIconBtn, { marginLeft: 5 }]} disabled={!canReadTenant}
-                          // onPress={() => setShowFilter(true)}
+                          onPress={() => setShowFilter(true)}
                           >
                           <Image source={Filter} style={{ width: 18, height: 18 }} />
                         </TouchableOpacity>
@@ -1037,7 +1037,7 @@ export default function TenantsScreen({ route }) {
                     )
                     }
                   </>
-                </ScrollView>
+                </ScrollView> */}
 
 
 
