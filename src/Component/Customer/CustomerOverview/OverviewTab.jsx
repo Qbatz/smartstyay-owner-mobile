@@ -38,12 +38,13 @@ import Loader from "../../Loader/Loader";
 import KYCPendingSheet from "./KYCPendingSheet"
 // import RNFS from "react-native-fs";
 import LeftArrow from "../../../Assets/Images/Arrow_left.png";
-
+import RighArrow from "../../../Assets/Images/arrow_up_white.png"
+import Remainderbtn from "../../../Assets/Images/RemainderIcon.png"
 
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  , openAdditionalContact, handleshowKYCPendingSheet }) {
+  , openAdditionalContact, handleshowKYCPendingSheet, handleJobdetails }) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
@@ -70,6 +71,10 @@ export default function OverviewTab({ customerDetails,
   }
   const handleAdressEdit = () => {
     handleEditAdressDetails()
+  }
+
+  const handleshowJobDetails = () => {
+    handleJobdetails()
   }
 
   const {
@@ -243,7 +248,7 @@ export default function OverviewTab({ customerDetails,
     "SETTLEMENT_GENERATED",
     // "NOTICE",
     "CANCELLED",
-  ].includes(customerDetails?.hostelInfo?.currentStatus) || customerDetails?.customerCurrentStatus== "DRAFT";
+  ].includes(customerDetails?.hostelInfo?.currentStatus) || customerDetails?.customerCurrentStatus == "DRAFT";
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
 
   const isNewRentApplied = customerDetails?.isNewRentApplied;
@@ -255,7 +260,7 @@ export default function OverviewTab({ customerDetails,
   const canEditAdvance = customerDetails?.advanceInfo?.canEditAdvance;
 
   const status = customerDetails?.customerCurrentStatus;
-  
+
 
   const DraftTenant = status === "DRAFT"
 
@@ -263,17 +268,25 @@ export default function OverviewTab({ customerDetails,
     status === "BOOKED" ||
     status === "VACATED" ||
     status === "NOTICE" ||
-    status === "CANCELLED_BOOKING" 
-    // status === "DRAFT"
+    status === "CANCELLED_BOOKING"
+  // status === "DRAFT"
 
   const disabledocEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
-    status === "CANCELLED_BOOKING" 
+    status === "CANCELLED_BOOKING"
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isSubscriptionAllow = isValidSubscription
 
+
+  const hasJobDetails =
+    customerDetails?.jobDetails?.employmentStatus ||
+    customerDetails?.jobDetails?.organizationName ||
+    customerDetails?.jobDetails?.role ||
+    customerDetails?.jobDetails?.workLocation ||
+    customerDetails?.jobDetails?.shiftType ||
+    customerDetails?.jobDetails?.shiftTiming;
 
 
   return (
@@ -292,35 +305,35 @@ export default function OverviewTab({ customerDetails,
         <View style={{ paddingBottom: 30, padding: 5 }}>
 
 
-         { !["VACATED", "INACTIVE" , "DRAFT"].includes(customerDetails?.customerCurrentStatus) &&
+          {!["VACATED", "INACTIVE", "DRAFT"].includes(customerDetails?.customerCurrentStatus) &&
 
-          <View style={styles.pendingCard}>
-            <View style={styles.pendingTopRow}>
-              <View style={styles.pendingLeft}>
-                <Image
-                  source={RequestAmenitiesIcon} // document icon
-                  style={styles.pendingIcon}
-                />
+            <View style={styles.pendingCard}>
+              <View style={styles.pendingTopRow}>
+                <View style={styles.pendingLeft}>
+                  <Image
+                    source={RequestAmenitiesIcon} // document icon
+                    style={styles.pendingIcon}
+                  />
 
-                <Text style={styles.pendingText}>
-                  <Text style={styles.pendingCount}>2</Text> Pending action(s)
+                  <Text style={styles.pendingText}>
+                    <Text style={styles.pendingCount}>2</Text> Pending action(s)
+                  </Text>
+                </View>
+
+                <View style={styles.progressBadge}>
+                  <Text style={styles.progressArrow}>↑</Text>
+                  <Text style={styles.progressText}>30%</Text>
+                </View>
+              </View>
+
+              <TouchableOpacity style={[styles.pendingBtn, customerDetails?.customerCurrentStatus == "BOOKED" && { opacity: 0.4 }]}
+                disabled={customerDetails?.customerCurrentStatus == "BOOKED" ? true : false}
+                onPress={handleshowkycsheet}>
+                <Text style={styles.pendingBtnText}>
+                  See Pending Actions
                 </Text>
-              </View>
-
-              <View style={styles.progressBadge}>
-                <Text style={styles.progressArrow}>↑</Text>
-                <Text style={styles.progressText}>30%</Text>
-              </View>
+              </TouchableOpacity>
             </View>
-
-            <TouchableOpacity style={[styles.pendingBtn ,customerDetails?.customerCurrentStatus =="BOOKED" && {opacity:0.4}  ]} 
-            disabled = {customerDetails?.customerCurrentStatus =="BOOKED" ? true :false}
-            onPress={handleshowkycsheet}>
-              <Text style={styles.pendingBtnText}>
-                See Pending Actions
-              </Text>
-            </TouchableOpacity>
-          </View>
           }
 
           <View style={styles.sectionBox}>
@@ -1312,84 +1325,134 @@ export default function OverviewTab({ customerDetails,
           </View>
 
 
-            <View style={styles.sectionBox}>
+          <View style={styles.sectionBox}>
 
             <View style={styles.sectionHeaderRow}>
-              <Text style={styles.sectionTitle}>Job & Shift Details</Text>
-              {/* <Image source={EditIcon} style={styles.editIcon} /> */}
+              <Text style={styles.sectionTitle}>Job Details</Text>
 
-              {/* {
-                (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
+              {hasJobDetails && (
+                <TouchableOpacity
+                  disabled={!canUpdateTenant || disableAssignBtn}
+                  style={(!canUpdateTenant || disableAssignBtn )&& { opacity: 0.4 }}
+                  onPress={handleshowJobDetails}
+                >
+                  <Image source={EditIcon} style={styles.editIcon} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {!hasJobDetails ? (
+              <View style={styles.jobEmptyContainer}>
+                <Image
+                  source={EmptyState}
+                  style={styles.jobEmptyImage}
+                />
+
+                <Text style={styles.jobEmptyText}>
+                  Job Details aren't added yet!
+                </Text>
+
+                <View style={styles.jobButtonRow}>
+
                   <TouchableOpacity
-                    disabled={!canUpdateTenant}
-                    style={!canUpdateTenant && { opacity: 0.4 }}
-                    onPress={handleEdit}>
-                    <Image source={EditIcon} style={styles.editIcon} />
+                    // style={styles.remindBtn}
+                       style={[styles.remindBtn ,disableAssignBtn && { opacity: 0.4 }]}
+                  // onPress={handleSendReminder}
+                  //  disabled={disableAssignBtn}
+                  disabled
+                  >
+                    <Text style={styles.remindText}>
+                      Send Reminder
+                    </Text>
+                    <Image source={Remainderbtn} style={{
+                      width: 16,
+                      height: 16,
+                      marginRight: 6,
+                      marginLeft: 6,
+                      resizeMode: "contain",
+                    }} />
                   </TouchableOpacity>
-                )
-              } */}
 
-            </View>
-            {/* First Name */}
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Employment Status</Text>
-              <Text style={styles.detailValue}>
-                {customerDetails?.jobDetails?.employmentStatus || "N/A"}
-              </Text>
-            </View>
+                  <TouchableOpacity
+                    style={[styles.addNowBtn ,disableAssignBtn && { opacity: 0.4 }]}
+                    onPress={handleshowJobDetails}
+                    //  disabled={disableAssignBtn}
+                    disabled
+                  >
+                    <Text style={styles.addNowText}>
+                      Add Now
+                    </Text>
+                    <Image source={RighArrow} style={{
+                      width: 16,
+                      height: 16,
+                      marginRight: 6,
+                      marginLeft: 6,
+                      resizeMode: "contain", transform: 'rotate(90deg)'
+                    }} />
+                  </TouchableOpacity>
 
-            {/* Last Name */}
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Company/College Name</Text>
-              <Text style={styles.detailValue}>
-                 {customerDetails?.jobDetails?.organizationName || "N/A"}
-              </Text>
-            </View>
-
-            {/* Email */}
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Job Role</Text>
-              <View style={styles.valueWithIcon}>
-                {/* <Image source={Mail} style={styles.detailIcon} /> */}
-                <Text style={styles.detailValue}>
-                  {customerDetails?.jobDetails?.role || "N/A"}
-                </Text>
+                </View>
               </View>
-            </View>
+            ) : (
+              <>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Employment Status</Text>
+                  <Text style={styles.detailValue}>
+                    {customerDetails?.jobDetails?.employmentStatus || "N/A"}
+                  </Text>
+                </View>
 
-            {/* Mobile */}
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Work Location</Text>
-              <View style={styles.valueWithIcon}>
-                {/* <Image source={Phone} style={styles.detailIcon} /> */}
-                <Text style={styles.detailValue}>
-                  {customerDetails?.jobDetails?.workLocation || "N/A"}
-                  {/* +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"} */}
-                </Text>
-              </View>
-            </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Company/College Name</Text>
+                  <Text style={styles.detailValue}>
+                    {customerDetails?.jobDetails?.organizationName || "N/A"}
+                  </Text>
+                </View>
 
-             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Shift Type</Text>
-              <View style={styles.valueWithIcon}>
-                {/* <Image source={Phone} style={styles.detailIcon} /> */}
-                <Text style={styles.detailValue}>
-                   {customerDetails?.jobDetails?.shiftType || "N/A"}
-                  {/* +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"} */}
-                </Text>
-              </View>
-            </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Job Role</Text>
+                  <View style={styles.valueWithIcon}>
+                    {/* <Image source={Mail} style={styles.detailIcon} /> */}
+                    <Text style={styles.detailValue}>
+                      {customerDetails?.jobDetails?.role || "N/A"}
+                    </Text>
+                  </View>
+                </View>
 
-             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Shift Timing</Text>
-              <View style={styles.valueWithIcon}>
-                {/* <Image source={Phone} style={styles.detailIcon} /> */}
-                <Text style={styles.detailValue}>
-                   {customerDetails?.jobDetails?.shiftTiming || "N/A"}
-                  {/* +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"} */}
-                </Text>
-              </View>
-            </View>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Work Location</Text>
+                  <View style={styles.valueWithIcon}>
+                    {/* <Image source={Phone} style={styles.detailIcon} /> */}
+                    <Text style={styles.detailValue}>
+                      {customerDetails?.jobDetails?.workLocation || "N/A"}
+                      {/* +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"} */}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Shift Type</Text>
+                  <View style={styles.valueWithIcon}>
+                    {/* <Image source={Phone} style={styles.detailIcon} /> */}
+                    <Text style={styles.detailValue}>
+                      {customerDetails?.jobDetails?.shiftType || "N/A"}
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Shift Timing</Text>
+                  <View style={styles.valueWithIcon}>
+                    {/* <Image source={Phone} style={styles.detailIcon} /> */}
+                    <Text style={styles.detailValue}>
+                      {customerDetails?.jobDetails?.shiftTiming || "N/A"}
+                    </Text>
+                  </View>
+                </View>
+              </>
+            )}
+
+
 
           </View>
 
@@ -2297,6 +2360,58 @@ const styles = StyleSheet.create({
   pendingBtnText: {
     color: "#FFFFFF",
     fontSize: 18,
+    fontFamily: "Gilroy-Semibold",
+  },
+  jobEmptyContainer: {
+    alignItems: "center",
+    paddingVertical: 25,
+  },
+
+  jobEmptyImage: {
+    width: 140,
+    height: 110,
+    resizeMode: "contain",
+  },
+
+  jobEmptyText: {
+    marginTop: 14,
+    fontSize: 14,
+    color: "#4B5563",
+    fontFamily: "Gilroy-Medium",
+  },
+
+  jobButtonRow: {
+    flexDirection: "row",
+    marginTop: 20,
+  },
+
+  remindBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: "#2563EB",
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    marginRight: 12,
+  },
+
+  remindText: {
+    color: "#2563EB",
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  addNowBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: "#2563EB",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+  },
+
+  addNowText: {
+    color: "#FFF",
     fontFamily: "Gilroy-Semibold",
   },
 });
