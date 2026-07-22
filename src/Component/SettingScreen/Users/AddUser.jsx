@@ -124,7 +124,7 @@ const countryList = [
 
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const mobileRegex = /^[6-9]\d{9}$/;
+  const mobileRegex = /^[1-9]\d{9}$/;
   const passwordRegex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
