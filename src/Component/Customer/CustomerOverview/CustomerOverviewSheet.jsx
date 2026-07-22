@@ -65,6 +65,8 @@ import Room_NewIcon from "../../../Assets/Images/room_NewIcon.png"
 import Loader from "../../Loader/Loader"
 import TransactionDetailSheet from "../../../Component/Customer/CustomerOverview/TransactionDetailSheet"
 import KYCPendingSheet from "./KYCPendingSheet"
+import AddJobDetails from "./AddJobDetailsSheet"
+import JobDetailsSheet from "./AddJobDetailsSheet";
 
 
 
@@ -101,6 +103,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
   const [selectedBill, setSelectedBill] = useState(null);
 
+  const [showJobdetails, setShowJobDetails] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [reason, setReason] = useState("");
@@ -200,6 +203,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const handleshowKYCPendingSheet = () => {
     console.log("Pendingbuttonclicked");
     setShowKYCPendingSheet(true)
+  }
+
+  const handleshowJobdetails = () => {
+    setShowJobDetails(true)
   }
 
   const fetchCustomerDetails = async () => {
@@ -710,7 +717,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     status === "VACATED" ||
     status === "CANCELLED_BOOKING" ||
     status === "SETTLEMENT_GENERATED" || status === "INACTIVE" ||
-    status ===  "DRAFT"
+    status === "DRAFT"
   // (status === "NOTICE" && isAfterLeavingDate);
 
   const renderTab = () => {
@@ -754,6 +761,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             handleShowAmenities={handleShowAmenities}
             openAdditionalContact={() => setShowContactSheet(true)}
             handleshowKYCPendingSheet={handleshowKYCPendingSheet}
+            handleJobdetails={handleshowJobdetails}
           />
         );
     }
@@ -1481,6 +1489,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         visible={showkycPendingSheet}
         onClose={() => setShowKYCPendingSheet(false)}
         customerDetails={customerDetails}
+      />
+
+      <AddJobDetails 
+             visible={showJobdetails}
+          onClose={() => setShowJobDetails(false)}
+          customerDetails={customerDetails}
+          onSuccess={fetchCustomerDetails}
       />
     </>
   );
