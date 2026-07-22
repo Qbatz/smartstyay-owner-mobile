@@ -195,6 +195,7 @@ export default function Vendors({ navigation }) {
         })
     ).current;
 
+
     const handleEdit = (vendor) => {
         if (!canUpdateModule) return;
         setEditVendor(vendor);
@@ -667,7 +668,7 @@ export default function Vendors({ navigation }) {
                                             prefix="₹ "
                                         />
                                     </ScrollView>
-
+{/* 
                                     <View style={styles.filterRow}>
                                         <TouchableOpacity style={styles.filterChipActive}>
                                             <Text style={styles.filterChipTextActive}>All</Text>
@@ -690,7 +691,7 @@ export default function Vendors({ navigation }) {
                                         >
                                             <Image source={Filter} style={{ width: 18, height: 18 }} />
                                         </TouchableOpacity>
-                                    </View>
+                                    </View> */}
 
 </>
                                      )}
@@ -706,7 +707,7 @@ export default function Vendors({ navigation }) {
                 )}
 
 
-                {!loading && vendorList?.vendors.length > 0 && (
+                {!loading && vendorList?.vendors?.length > 0 && (
                 <>
 
 
