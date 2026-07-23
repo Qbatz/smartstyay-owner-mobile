@@ -23,7 +23,7 @@ const ConfirmMPin = ({ route }) => {
   const [type, setType] = useState("success");
   const [enterPinError, setEnterPinError] = useState()
 
-  const handleChange = (text, index) => {
+  const handleChange =async(text, index) => {
     const cleanText = text.replace(/[^0-9]/g, "");
     const newArr = [...pinArr];
     newArr[index] = cleanText;
@@ -35,6 +35,25 @@ const ConfirmMPin = ({ route }) => {
       setPin(newArr.join(""));
     }
   };
+
+  console.log(pinArr)
+  // const handleChange = async (text, index) => {
+  //       const cleanText = text.replace(/[^0-9]/g, "");
+  //       const newPin = [...pinArr];
+  //       newPin[index] = cleanText;
+  //       setPinArr(newPin);
+
+  //       if (cleanText && index < 3) {
+  //           inputs.current[index + 1].focus();
+  //       }
+
+  //       if(newPin.every((digit)=>digit !== "")){
+  //           const pinNumber=newPin.join("");
+  //           setPin(pinNumber)
+  //           console.log(pinNumber)
+  //       }
+  //   }
+
 
   const handleKeyPress = (e, index) => {
     if (e.nativeEvent.key === "Backspace" && pinArr[index] === "" && index > 0) {
@@ -121,6 +140,7 @@ const ConfirmMPin = ({ route }) => {
             style={styles.pinBox}
             keyboardType="number-pad"
             maxLength={1}
+            value={d}
             onChangeText={(t) => {
               handleChange(t, i)
               setEnterPinError("")
