@@ -298,6 +298,46 @@ export default function VendorProvider({ children }) {
       setLoading(false);
     }
   };
+  const updateVendorCategory = async (
+  categoryId,
+  categoryName,
+  hostelId
+) => {
+  try {
+    setLoading(true);
+
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/vendors/categories/${categoryId}?hostelId=${hostelId}`,
+      {
+        categoryName,
+      }
+    );
+
+    if (res?.status === 200) {
+      await getVendorCategories(hostelId);
+
+      return {
+        success: true,
+        message: "Vendor Category updated successfully",
+        data: res?.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to update vendor category",
+    };
+  } catch (err) {
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   const deleteVendorCategory = async (
@@ -696,6 +736,7 @@ export default function VendorProvider({ children }) {
         addVendorComment,
         updateVendorComment,
         deleteVendorComment,
+        updateVendorCategory
       }}
     >
       {children}

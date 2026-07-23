@@ -46,7 +46,7 @@ export default function vendorSettings({ navigation }) {
     const {
         vendorCategories,
         getVendorCategories, addVendorCategory,
-        deleteVendorCategory,
+        deleteVendorCategory, updateVendorCategory
     } = useContext(VendorContext);
 
     const {
@@ -238,60 +238,96 @@ export default function vendorSettings({ navigation }) {
     }, []);
 
 
+    // const handleSave = async () => {
+
+    //     if (isEdit) {
+    //         const newValue = complaintText.trim();
+    //         const oldValue = originalComplaintName.trim();
+
+    //         if (newValue === oldValue) {
+    //             setModalType("warning");
+    //             setModalMessage("No changes detected");
+    //             setShowSuccessModal(true);
+
+    //             setTimeout(() => setShowSuccessModal(false), 1500);
+    //             return;
+    //         }
+    //     }
+
+
+    
+
+    //     let res = await addVendorCategory(
+    //         complaintText,
+    //         activeHostelId
+    //     );
+    //     if (!res.success) {
+    //         setModalType("warning");
+    //         setModalMessage(res.message);
+    //         setShowSuccessModal(true);
+
+    //         setTimeout(() => setShowSuccessModal(false), 1500);
+    //         return;
+    //     }
+
+    //     setModalType("success");
+    //     setModalMessage(res.message);
+    //     setShowSuccessModal(true);
+    //     getVendorCategories(activeHostelId)
+    //     setTimeout(() => setShowSuccessModal(false), 1500);
+
+    //     closeSheet();
+    // };
+
+
+
     const handleSave = async () => {
+  if (isEdit) {
+    const newValue = complaintText.trim();
+    const oldValue = originalComplaintName.trim();
 
-        if (isEdit) {
-            const newValue = complaintText.trim();
-            const oldValue = originalComplaintName.trim();
+    if (newValue === oldValue) {
+      setModalType("warning");
+      setModalMessage("No changes detected");
+      setShowSuccessModal(true);
 
-            if (newValue === oldValue) {
-                setModalType("warning");
-                setModalMessage("No changes detected");
-                setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+  }
 
-                setTimeout(() => setShowSuccessModal(false), 1500);
-                return;
-            }
-        }
+  let res;
 
+  if (isEdit) {
+    res = await updateVendorCategory(
+      editingId,
+      complaintText.trim(),
+      activeHostelId
+    );
+  } else {
+    res = await addVendorCategory(
+      complaintText.trim(),
+      activeHostelId
+    );
+  }
 
-        //   let res;
+  if (!res.success) {
+    setModalType("warning");
+    setModalMessage(res.message);
+    setShowSuccessModal(true);
+   
+    setTimeout(() => setShowSuccessModal(false), 1500);
+    return;
+  }
 
-        //   if (isEdit) {
-        //      res = await editComplaintType({
-        //     id: editingId,
-        //     complaintTypeName: complaintText,
-        //     isActive: true,
-        //     hostelId: activeHostelId,
-        //   });
-        //   } else {
+  setModalType("success");
+  setModalMessage(res.message);
+  setShowSuccessModal(true);
+   getVendorCategories(activeHostelId)
+  setTimeout(() => setShowSuccessModal(false), 1500);
 
-        //     let res = await addVendorCategory(complaintText);
-        //   }
-
-        let res = await addVendorCategory(
-            complaintText,
-            activeHostelId
-        );
-        if (!res.success) {
-            setModalType("warning");
-            setModalMessage(res.message);
-            setShowSuccessModal(true);
-
-            setTimeout(() => setShowSuccessModal(false), 1500);
-            return;
-        }
-
-        setModalType("success");
-        setModalMessage(res.message);
-        setShowSuccessModal(true);
-        getVendorCategories(activeHostelId)
-        setTimeout(() => setShowSuccessModal(false), 1500);
-
-        closeSheet();
-    };
-
-
+  closeSheet();
+};
 
 
 
@@ -331,45 +367,45 @@ export default function vendorSettings({ navigation }) {
     console.log("vendorCategories", vendorCategories);
     
 
-    const renderPopupMenu = (item) => {
-        if (showMenuId !== item.id) return null;
+    // const renderPopupMenu = (item) => {
+    //     if (showMenuId !== item.id) return null;
 
-        return (
-            <View style={styles.popupOverlayArea}>
+    //     return (
+    //         <View style={styles.popupOverlayArea}>
 
-                <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
-                    <View style={styles.menuOutsideArea} />
-                </TouchableWithoutFeedback>
+    //             <TouchableWithoutFeedback onPress={() => setShowMenuId(null)}>
+    //                 <View style={styles.menuOutsideArea} />
+    //             </TouchableWithoutFeedback>
 
-                <View style={styles.popupMenu}>
-                    {/* <TouchableOpacity
-      style={styles.popupItem}
-      onPress={() => {
-        setShowMenuId(null);
-        openSheet(true, item);
-      }}
-    >
-      <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
-      <Text style={styles.popupText}>Edit</Text>
-    </TouchableOpacity> */}
+    //             <View style={styles.popupMenu}>
+    //                 <TouchableOpacity
+    //   style={styles.popupItem}
+    //   onPress={() => {
+    //     setShowMenuId(null);
+    //     openSheet(true, item);
+    //   }}
+    // >
+    //   <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
+    //   <Text style={styles.popupText}>Edit</Text>
+    // </TouchableOpacity>
 
-                    <TouchableOpacity
-                        style={styles.popupItem}
-                        onPress={() => {
-                            setDeleteId(item?.id);
-                            setShowMenuId(null);
-                            setShowDeleteConfirm(true);
-                        }}
-                    >
-                        <Image source={require("../../../Assets/Images/trash.png")} style={[styles.popupIcon, { tintColor: "red" }]} />
-                        <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
-                    </TouchableOpacity>
-                </View>
+    //                 <TouchableOpacity
+    //                     style={styles.popupItem}
+    //                     onPress={() => {
+    //                         setDeleteId(item?.id);
+    //                         setShowMenuId(null);
+    //                         setShowDeleteConfirm(true);
+    //                     }}
+    //                 >
+    //                     <Image source={require("../../../Assets/Images/trash.png")} style={[styles.popupIcon, { tintColor: "red" }]} />
+    //                     <Text style={[styles.popupText, { color: "red" }]}>Delete</Text>
+    //                 </TouchableOpacity>
+    //             </View>
 
-            </View>
+    //         </View>
 
-        );
-    };
+    //     );
+    // };
 
 
     const renderComplaint = ({ item }) => (
@@ -384,20 +420,29 @@ export default function vendorSettings({ navigation }) {
 
 
                 <TouchableOpacity
+                    // onPress={(e) => {
+                    //     e.target.measure((fx, fy, width, height, px, py) => {
+                    //         setMenuPosition({ x: px, y: py });
+                    //         setMenuComplaintId(item?.id);
+                    //           setShowMenuId(item.id);
+                    //         setShowMenu(true);
+                    //     })
+                    // }}
+
                     onPress={(e) => {
-                        e.target.measure((fx, fy, width, height, px, py) => {
-                            setMenuPosition({ x: px, y: py });
-                            setMenuComplaintId(item?.id);
-                            setShowMenu(true);
-                        })
-                    }}
+    e.target.measure((fx, fy, width, height, px, py) => {
+        setMenuPosition({ x: px, y: py });
+        setMenuComplaintId(item.id);
+        setShowMenu(true);
+    });
+}}
                 >
                     <Image source={Dots} style={styles.dots} />
                 </TouchableOpacity>
 
             </View>
 
-            {renderPopupMenu(item)}
+            {/* {renderPopupMenu(item)} */}
 
         </View>
     );
@@ -499,7 +544,7 @@ export default function vendorSettings({ navigation }) {
                                 },
                             ]}
                         >
-                            {/* <TouchableOpacity
+                            <TouchableOpacity
           style={[styles.menuItem ,  {opacity: canUpdateVendor ? 1 : 0.4} ]}
           disabled={!canUpdateVendor}
           onPress={() => {
@@ -514,7 +559,7 @@ export default function vendorSettings({ navigation }) {
           <Text style={styles.menuText}>Edit</Text>
         </TouchableOpacity>
 
-        <View style={styles.menuDivider} /> */}
+        <View style={styles.menuDivider} />
 
                             <TouchableOpacity
                                 style={[styles.menuItem, { opacity: canDeleteVendor ? 1 : 0.4 }]}

@@ -1398,12 +1398,13 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
 
                             <TouchableOpacity
-                                disabled={environment === "PROD"}
-                                onPress={() => {
-                                    if (environment !== "PROD") {
-                                        setLinkVendor(true);
-                                    }
-                                }}
+                              onPress={() => setLinkVendor(true)}
+                                // disabled={environment === "PROD"}
+                                // onPress={() => {
+                                //     if (environment !== "PROD") {
+                                //         setLinkVendor(true);
+                                //     }
+                                // }}
                                 style={{
                                     flex: 1,
                                     justifyContent: "center",
@@ -1412,7 +1413,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                     backgroundColor: linkVendor
                                         ? "#2F54EB"
                                         : "transparent",
-                                    opacity: environment === "PROD" ? 0.5 : 1,
+                                    opacity:  1,
                                 }}
                             >
                                 <Text

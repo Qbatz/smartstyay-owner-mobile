@@ -2133,6 +2133,64 @@ const UpdateAdditionalDraftDetails = async (
     }
  }
 
+const UpdateJobDetails = async (hostelId, customerId, payload) => {
+  if (!hostelId || !customerId) {
+    return {
+      success: false,
+      message: "Missing hostelId or customerId",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v3/customers/job/${hostelId}/${customerId}`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      await GetParticularCustomerDetails(customerId);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Job details update failed",
+    };
+  } catch (error) {
+    console.log("UPDATE JOB DETAILS ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        JSON.stringify(error?.response?.data) ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <CustomerContext.Provider
@@ -2157,7 +2215,7 @@ const UpdateAdditionalDraftDetails = async (
         addVendor, updateVendor, vendorList,
         getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,
-        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn , UpdateAdditionalDraftDetails, retainerCustomerList
+        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn , UpdateAdditionalDraftDetails, UpdateJobDetails,retainerCustomerList
       }}
     >
       {children}

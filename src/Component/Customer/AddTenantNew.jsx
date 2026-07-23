@@ -184,7 +184,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const [guardians, setGuardians] = useState([]);
 
-    console.log("profileimage", selectedImage);
+    console.log("roomSelected", roomSelected);
 
 
 
@@ -2181,7 +2181,7 @@ export default function AddTenantNewform({ navigation, route }) {
                     jobDetails: {
                         employmentStatus: employmentStatus?.value || "",
                         companyName: companyName || "",
-                        collegeName: "",
+                        collegeName: companyName || "",
                         jobRole: jobRole?.value || "",
                         workLocation: worklocation || "",
                         shiftType: shiftType?.value || "",
@@ -2532,6 +2532,9 @@ export default function AddTenantNewform({ navigation, route }) {
         return total + amount;
     }, 0);
 
+    console.log('bedSelected', floorSelected);
+    
+
     const handleNextThird = async () => {
 
 
@@ -2639,8 +2642,8 @@ export default function AddTenantNewform({ navigation, route }) {
             // }
 
             const payload = {
-                floorId: bedSelected?.floorId,
-                roomId: bedSelected?.roomId,
+                floorId: bedSelected?.floorId || floorSelected?.id,
+                roomId: bedSelected?.roomId || roomSelected?.id,
                 bedId: bedSelected?.bedId,
 
                 joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
@@ -2827,10 +2830,13 @@ export default function AddTenantNewform({ navigation, route }) {
             // }
 
             const payload = {
-                floorId: bedSelected?.floorId,
-                roomId: bedSelected?.roomId,
-                bedId: bedSelected?.bedId,
+                // floorId: bedSelected?.floorId,
+                // roomId: bedSelected?.roomId,
+                // bedId: bedSelected?.bedId,
 
+                floorId: bedSelected?.floorId || floorSelected?.id,
+                roomId: bedSelected?.roomId || roomSelected?.id,
+                bedId: bedSelected?.bedId,
                 joiningDate: dayjs(checkJoiningDate).format("DD-MM-YYYY"),
 
                 refundableAmount: Number(advanceAmount),
