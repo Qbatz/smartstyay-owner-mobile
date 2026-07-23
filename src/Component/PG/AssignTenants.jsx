@@ -772,21 +772,36 @@ export default function AssignTenant({ navigation, route }) {
 
   const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
 
+  // useEffect(() => {
+  //   if (!checkJoiningDate) return;
+
+  //   const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+
+  //   setCollectFullRent(currentMonth);
+
+  //   if (!currentMonth) {
+  //     setShowCustomRentEditor(false);
+  //     setCustomRentAmount("");
+  //     setSavedCustomRent("");
+  //     setIsCustomRentSaved(false);
+  //     setCustomRentError("");
+  //   }
+  // }, [checkJoiningDate])
+
   useEffect(() => {
-    if (!checkJoiningDate) return;
+  if (!checkJoiningDate) return;
 
-    const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+  const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
 
-    setCollectFullRent(currentMonth);
-
-    if (!currentMonth) {
-      setShowCustomRentEditor(false);
-      setCustomRentAmount("");
-      setSavedCustomRent("");
-      setIsCustomRentSaved(false);
-      setCustomRentError("");
-    }
-  }, [checkJoiningDate])
+  if (!currentMonth) {
+    setCollectFullRent(false);
+    setShowCustomRentEditor(false);
+    setCustomRentAmount("");
+    setSavedCustomRent("");
+    setIsCustomRentSaved(false);
+    setCustomRentError("");
+  }
+}, [checkJoiningDate]);
 
   const isBookingDateDisabled = (d) => {
     if (!d) return false;

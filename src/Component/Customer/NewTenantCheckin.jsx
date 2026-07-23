@@ -794,21 +794,37 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
     const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
 
+    // useEffect(() => {
+    //     if (!checkJoiningDate) return;
+
+    //     const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+
+    //     setCollectFullRent(currentMonth);
+
+    //     if (!currentMonth) {
+    //         setShowCustomRentEditor(false);
+    //         setCustomRentAmount("");
+    //         setSavedCustomRent("");
+    //         setIsCustomRentSaved(false);
+    //         setCustomRentError("");
+    //     }
+    // }, [checkJoiningDate])
+
     useEffect(() => {
-        if (!checkJoiningDate) return;
+    if (!checkJoiningDate) return;
 
-        const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+    const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
 
-        setCollectFullRent(currentMonth);
+    if (!currentMonth) {
+        setCollectFullRent(false);
 
-        if (!currentMonth) {
-            setShowCustomRentEditor(false);
-            setCustomRentAmount("");
-            setSavedCustomRent("");
-            setIsCustomRentSaved(false);
-            setCustomRentError("");
-        }
-    }, [checkJoiningDate])
+        setShowCustomRentEditor(false);
+        setCustomRentAmount("");
+        setSavedCustomRent("");
+        setIsCustomRentSaved(false);
+        setCustomRentError("");
+    }
+}, [checkJoiningDate]);
 
     const summaryAdvanceAmount = Number(advanceAmount || 0);
 
@@ -878,12 +894,12 @@ export default function NewTenantCheckIn({ navigation, route }) {
         }
 
         // Advance
-        if (!refuseAdvanceAmount) {
-            if (!advanceAmount || Number(advanceAmount) <= 0) {
-                setAdvanceError("Please Enter Advance Amount");
-                hasError = true;
-            }
-        }
+     if (!refuseAdvanceAmount) {
+    if (advanceAmount === "" || advanceAmount === null || advanceAmount === undefined) {
+        setAdvanceError("Please Enter Advance Amount");
+        hasError = true;
+    }
+}
 
         if (hasError) return;
 

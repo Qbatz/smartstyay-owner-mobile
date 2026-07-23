@@ -14,7 +14,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
   console.log("editBedData", editBedData)
 
 
-
+  const isApplyTriggeredRef = useRef(false);
 
   const amountRef = useRef(null);
 
@@ -22,6 +22,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
 
   const { activeHostelId } = useContext(CommonContexts);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const safeKeyboardHeight = keyboardHeight > 0 ? 240 : 0;
@@ -75,6 +76,8 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
         setAmount("");
         setBedNameError("")
         setAmountError("")
+        setBedId("");
+        // isApplyTriggeredRef.current = false;
       });
     }
   }, [visible]);
@@ -110,11 +113,12 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
 
 
   if (!visible) return null;
+
+
   const handleSaveBed = async () => {
     let valid = true;
 
     const trimmedBedName = bedName.trim();
-    // const trimmedAmount = amount.trim();
     const trimmedAmount = amount?.toString().trim();
 
     if (!trimmedBedName) {
@@ -124,12 +128,6 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
       setBedNameError("");
     }
 
-    // if (!trimmedAmount) {
-    //   setAmountError("Amount is required");
-    //   valid = false;
-    // } else {
-    //   setAmountError("");
-    // }
 
 
     if (!trimmedAmount) {
@@ -144,54 +142,71 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
 
     if (!valid) return;
 
-    let res;
+    if (isSubmitting) return;
 
-    if (isEdit) {
-      // ✅ EDIT BED
-      if (
-        trimmedBedName === initialBedName &&
-        trimmedAmount === initialAmount
-      ) {
-        setModalType("warning");
-        setMessage("No changes detected");
+setIsSubmitting(true);
+
+
+    if (isApplyTriggeredRef.current) return
+    isApplyTriggeredRef.current = true
+
+    try {
+
+      let res;
+
+      if (isEdit) {
+        // ✅ EDIT BED
+        if (
+          trimmedBedName === initialBedName &&
+          trimmedAmount === initialAmount
+        ) {
+          setModalType("warning");
+          setMessage("No changes detected");
+          setShowSuccess(true);
+
+          setTimeout(() => {
+            setShowSuccess(false);
+          }, 800);
+
+          return;
+        }
+        res = await updateBed({
+          bedId: bedId,
+          bedName: trimmedBedName,
+          amount: trimmedAmount,
+        });
+      } else {
+        // ✅ ADD BED
+        res = await addBed({
+          bedName: trimmedBedName,
+          roomId: selectedRoomId,
+          hostelId: activeHostelId,
+          amount: trimmedAmount,
+        });
+      }
+
+      if (res.success) {
+        setModalType("success");
+        setMessage(
+          isEdit ? "Bed Updated Successfully" : "Bed Added Successfully"
+        );
         setShowSuccess(true);
 
         setTimeout(() => {
           setShowSuccess(false);
+          onBedAdded(selectedRoomId);
+          onClose();
         }, 800);
-
-        return;
+      } else {
+        console.log("resbed", res)
+        setBedNameError(res.message);
       }
-      res = await updateBed({
-        bedId: bedId,
-        bedName: trimmedBedName,
-        amount: trimmedAmount,
-      });
-    } else {
-      // ✅ ADD BED
-      res = await addBed({
-        bedName: trimmedBedName,
-        roomId: selectedRoomId,
-        hostelId: activeHostelId,
-        amount: trimmedAmount,
-      });
     }
-
-    if (res.success) {
-      setModalType("success");
-      setMessage(
-        isEdit ? "Bed Updated Successfully" : "Bed Added Successfully"
-      );
-      setShowSuccess(true);
-
-      setTimeout(() => {
-        setShowSuccess(false);
-        onBedAdded(selectedRoomId);
-        onClose();
-      }, 800);
-    } else {
-      console.log("resbed", res)
-      setBedNameError(res.message);
+    catch (error) {
+      console.log(error);
+    } finally {
+      isApplyTriggeredRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
@@ -271,7 +286,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
                 }
               }}
               onChangeText={(text) => {
-               const onlyNumbers = text.replace(/[^0-9]/g, "");
+                const onlyNumbers = text.replace(/[^0-9]/g, "");
                 setAmount(onlyNumbers);
                 setAmountError("");
               }}
@@ -280,14 +295,15 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
             {amountError && <ErrorMessage message={amountError} type="error" />}
 
             <TouchableOpacity
-              style={styles.addButton}
-              // disabled={isDisabled}
+              style={[styles.addButton, isSubmitting && { opacity: 0.6 }]}
+              disabled={isSubmitting}
               onPress={handleSaveBed}
             >
               <Text style={styles.addButtonText}> {isEdit ? "Update Bed" : "Add Bed"}</Text>
             </TouchableOpacity>
           </ScrollView>
         </Animated.View>
+        
 
       </View>
     </>
@@ -314,8 +330,8 @@ const styles = StyleSheet.create({
     width: 60, height: 5, backgroundColor: "#ccc",
     alignSelf: "center", borderRadius: 3, marginBottom: 15,
   },
-  title: { fontSize: 18,  fontFamily: "Gilroy-Bold", marginBottom: 15 },
-  label: { marginTop: 10,   fontFamily: "Gilroy-Semibold", color: "#444" },
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold", marginBottom: 15 },
+  label: { marginTop: 10, fontFamily: "Gilroy-Semibold", color: "#444" },
   input: {
     height: 45,
     borderWidth: 1,
@@ -323,7 +339,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     marginTop: 5,
-      fontFamily: "Gilroy-Regular"
+    fontFamily: "Gilroy-Regular"
   },
   addButton: {
     marginTop: 25,
@@ -340,6 +356,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     textAlign: "center",
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 });
