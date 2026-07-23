@@ -71,10 +71,10 @@ const BillDetailsSheet = ({
 
 
 
-  const { BillDetails, loading, GetAllBillDetails,
-    RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
-    , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
+  const { BillDetails, loading, GetAllBillDetails,RecordPayment, GetInitializeRefundDetails, CreateRefund,
+     refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails,
+     GetInitializeAdvanceRedeem,GetInitializeRecordPaymentDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -386,8 +386,13 @@ const BillDetailsSheet = ({
     }
   }
 
-  const handleShowRecordPayment = () => {
+  const handleShowRecordPayment =async() => {
     setShowMenu(false);
+     const res = await GetInitializeRecordPaymentDetails({
+      hostelId: activeHostelId,
+      invoiceId: BillPdfdetails?.invoiceId || selectedBill?.invoiceId,
+    })
+    console.log(res)
      navigation.navigate("NewRecordPayment",
                               {
                                 selectedBill, BillPdfdetails,

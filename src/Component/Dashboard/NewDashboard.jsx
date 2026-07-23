@@ -111,7 +111,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
   const { getDashboard, getParticularHostelDetails, PGDetails, loading } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
-  const {  GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt, } = useContext(BillContext);
+  const {  GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+          GetInitializeRecordPaymentDetails } = useContext(BillContext);
   const [unreadCount, setUnreadCount] = useState(0);
   const [dashboardList, setDashboardList] = useState([])
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -578,6 +579,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
 
   const handleShowRecordPayment =async (item) => {
+
+    const res = await GetInitializeRecordPaymentDetails({
+      hostelId: activeHostelId,
+      invoiceId: item?.invoiceId,
+    })
+
     // setShowRecordPayment(true)
     if(activeHostelId){
       if (activeHostelId) {

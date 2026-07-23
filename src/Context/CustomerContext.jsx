@@ -2097,6 +2097,42 @@ const UpdateAdditionalDraftDetails = async (
   }
 };
 
+ const retainerCustomerList=async(hostelId)=>{
+
+    try{
+      const token=retriveData("token");
+      const axios =getAxios();
+
+      const res= await axios.get(`/v2/customers/get/${hostelId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          // purpose: "ADVANCE_HOLDING"
+           purpose: "BILL"
+        }
+      })
+       return {
+        success: true,
+        data: res.data || [],
+      };
+    }catch (error) {
+      console.log("Retainer List ERROR 👉", error?.response?.data);
+
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext);
+      }
+
+      return {
+        success: false,
+        data: [],
+        message:
+          error?.response?.data?.message ||
+          "Customer search failed",
+      };
+    }
+ }
+
 const UpdateJobDetails = async (hostelId, customerId, payload) => {
   if (!hostelId || !customerId) {
     return {
@@ -2179,7 +2215,7 @@ const UpdateJobDetails = async (hostelId, customerId, payload) => {
         addVendor, updateVendor, vendorList,
         getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,
-        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn , UpdateAdditionalDraftDetails, UpdateJobDetails
+        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn , UpdateAdditionalDraftDetails, UpdateJobDetails,retainerCustomerList
       }}
     >
       {children}
