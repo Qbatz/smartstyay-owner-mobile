@@ -3246,7 +3246,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                             type="mobile"
                                             inputType="numeric"
                                             keyboardType="numeric"
-                                            placeholder="9876543210"
+                                            placeholder="Enter Mobile Number"
                                             value={searchText}
                                             onFocus={() => setShowTenantList(true)}
                                             onChangeText={(t) => {
@@ -3432,7 +3432,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                         <TextInput
                                             style={styles.mobileInput}
                                             keyboardType="number-pad"
-                                            placeholder="9876543210"
+                                           placeholder="Enter Mobile Number"
                                             placeholderTextColor="#A1A1A1"
                                             maxLength={10}
                                             value={basicDetails.mobile}

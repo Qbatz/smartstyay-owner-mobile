@@ -43,7 +43,7 @@ import TickIcon from "../../../Assets/Images/tick-circle.png"
 import CommingSoon from "../../../Assets/Images/Coming_soon.png"
 
 
-const BillBookings = ({ onBookingDetailsShow }) => {
+const BillBookings = ({ onBookingDetailsShow , showRetainerFiltersheet}) => {
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, GetAdvanceBookingBills } = useContext(BillContext);
@@ -552,6 +552,16 @@ const BillBookings = ({ onBookingDetailsShow }) => {
 
 
 
+
+        {!loading && Advancebookingbills && Advancebookingbills?.length > 0 && (
+          <TouchableOpacity
+            style={[styles.filterButton, !canReadBooking && { opacity: 0.4 }]}
+            disabled={!canReadBooking}
+            onPress={showRetainerFiltersheet} 
+            >
+            <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
+          </TouchableOpacity>
+        )}
 
 
 

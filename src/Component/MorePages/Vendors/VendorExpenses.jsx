@@ -1,16 +1,17 @@
-import React , {useState , useEffect , useContext} from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   FlatList,
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,Image
+  TouchableOpacity, Image
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { VendorContext } from "../../../Context/VendorContext";
 import { useHasPermission } from "../../../Utils/useHasPermission"
 import { CustomerContext } from "../../../Context/CustomerContext"
 import { CommonContexts } from "../../../Context/CommonContext";
+import { ExpensesContext } from "../../../Context/ExpensesContext";
 import Loader from "../../../Component/Loader/Loader"
 import SuccessModal from "../../../ToastFile/ToastPage";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
@@ -108,89 +109,128 @@ const DATA = [
 
 
 
-export default function VendorExpenses({vendor ,
-  onExpensePress = () => {},
+export default function VendorExpenses({ vendor,
+  onExpensePress = () => { },
 }) {
 
-   const {loading ,
-  getVendorExpenses,
-  vendorExpenses,
-  getVendorExpensePayments,
-  vendorExpensePayments,
-} = useContext(VendorContext);
+  const { loading,
+    getVendorExpenses,
+    vendorExpenses,
+    getVendorExpensePayments,
+    vendorExpensePayments, 
+  } = useContext(VendorContext);
+ 
+      const { expensesList, GetExpenseList, IntializeexpensesList, GetInitializeExpense,
+          DeleteExpense
+      } = useContext(ExpensesContext);
+
+    const { activeHostelId } = useContext(CommonContexts)
+
+     const [showSuccessModal, setShowSuccessModal] = useState(false);
+      const [modalMessage, setModalMessage] = useState("");
+      const [modalType, setModalType] = useState("success");
 
 
-const navigation = useNavigation()
-
-useEffect(() => {
-  getVendorExpenses(vendor?.id);
-  // getVendorExpensePayments(vendor?.id);
-}, []);
+  const navigation = useNavigation()
 
 
-console.log("vendorExpenses", vendorExpenses);
+
+  useEffect(() => {
+    getVendorExpenses(vendor?.id);
+    // getVendorExpensePayments(vendor?.id);
+  }, [])
+
+  useEffect(() => {
+    if (activeHostelId) {
+      const res = GetInitializeExpense(activeHostelId)
+      console.log("res", res);
+    }
+  }, [activeHostelId])
+
+
+
+  const categoryList = IntializeexpensesList?.listExpenses || [];
+
+
+  const handleAddExpenses = () => {
+    if (categoryList?.length === 0) {
+      setModalType("warning");
+      setModalMessage("Please add a Expense Category option in Settings");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+
+    navigation.navigate("AddExpensesPage", {
+      vendorData: vendor
+    })
+
+  }
+
+
+  console.log("vendorExpenses", vendorExpenses);
 
   const renderItem = ({ item }) => (
-  <TouchableOpacity
-    activeOpacity={0.8}
-    onPress={() =>
-     onExpensePress({
-  id: item.expenseId,
-  title: item.categoryName,
-  amount: item.totalAmount,
-  date: item.transactionDate,
-  code: item.referenceNumber,
-  status: item.paymentStatus,
-  items: (item.expenseItems || []).map(
-    (expenseItem) => ({
-      name: expenseItem.item,
-      quantity: expenseItem.quantity,
-      unit: expenseItem.unit,
-      rate: expenseItem.unitPrice,
-      amount: expenseItem.totalAmount,
-    })
-  ),
-  payments: item.expensePayments || [],
-})
-    }
-    style={styles.expenseCard}
-  >
-    <View style={styles.leftSection}>
-      <Text style={styles.expenseTitle}>
-        {item?.categoryName || "Expense"}
-      </Text>
-
-      <View style={styles.metaRow}>
-        <Text style={styles.expenseCode}>
-          {item?.referenceNumber}
+    <TouchableOpacity
+      activeOpacity={0.8}
+      onPress={() =>
+        onExpensePress({
+          id: item.expenseId,
+          title: item.categoryName,
+          amount: item.totalAmount,
+          date: item.transactionDate,
+          code: item.referenceNumber,
+          status: item.paymentStatus,
+          items: (item.expenseItems || []).map(
+            (expenseItem) => ({
+              name: expenseItem.item,
+              quantity: expenseItem.quantity,
+              unit: expenseItem.unit,
+              rate: expenseItem.unitPrice,
+              amount: expenseItem.totalAmount,
+            })
+          ),
+          payments: item.expensePayments || [],
+        })
+      }
+      style={styles.expenseCard}
+    >
+      <View style={styles.leftSection}>
+        <Text style={styles.expenseTitle}>
+          {item?.categoryName || "Expense"}
         </Text>
 
-        <Text style={styles.dot}>•</Text>
+        <View style={styles.metaRow}>
+          <Text style={styles.expenseCode}>
+            {item?.referenceNumber}
+          </Text>
 
-        <Text
-          style={[
-            styles.statusText,
-            item?.paymentStatus === "Full"
-              ? styles.paidText
-              : styles.partialText,
-          ]}
-        >
-          ✓ {item?.paymentStatus}
+          <Text style={styles.dot}>•</Text>
+
+          <Text
+            style={[
+              styles.statusText,
+              item?.paymentStatus === "Full"
+                ? styles.paidText
+                : styles.partialText,
+            ]}
+          >
+            ✓ {item?.paymentStatus}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.rightSection}>
+        <Text style={styles.amountText}>
+          ₹ {Number(item?.totalAmount || 0).toLocaleString()}
+        </Text>
+
+        <Text style={styles.dateText}>
+          {item?.transactionDate}
         </Text>
       </View>
-    </View>
-
-    <View style={styles.rightSection}>
-      <Text style={styles.amountText}>
-        ₹ {Number(item?.totalAmount || 0).toLocaleString()}
-      </Text>
-
-      <Text style={styles.dateText}>
-        {item?.transactionDate}
-      </Text>
-    </View>
-  </TouchableOpacity>
-);
+    </TouchableOpacity>
+  );
 
   return (
     // <FlatList
@@ -200,10 +240,10 @@ console.log("vendorExpenses", vendorExpenses);
     //   showsVerticalScrollIndicator={false}
     //   contentContainerStyle={styles.listContainer}
     // />
-<>
-     {/* {loading && <Loader />} */}
+    <>
+      {/* {loading && <Loader />} */}
 
-    {/* <FlatList
+      {/* <FlatList
   data={vendorExpenses?.expenses || []}
   keyExtractor={(item) => item?.expenseId}
   renderItem={renderItem}
@@ -228,78 +268,84 @@ console.log("vendorExpenses", vendorExpenses);
   }
 /> */}
 
-<View style={styles.container}>
+<>
+ <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType} />
 
-  <TouchableOpacity
-    style={styles.addExpenseBtn}
-    onPress={() => {
-       navigation.navigate("AddExpensesPage", { vendorData:vendor
-        })
-    }}
-  >
-    <Text style={styles.addExpenseText}>+ Add Expense</Text>
-  </TouchableOpacity>
 
-  <FlatList
-    data={vendorExpenses?.expenses || []}
-    keyExtractor={(item) => item?.expenseId?.toString()}
-    renderItem={renderItem}
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={styles.listContainer}
-    ListEmptyComponent={
-      <View style={styles.emptyContainer}>
-        <Image
-          source={EmptyState}
-          style={styles.emptyIcon}
-          resizeMode="contain"
+
+      <View style={styles.container}>
+
+        <TouchableOpacity
+          style={styles.addExpenseBtn}
+          onPress={handleAddExpenses}
+        >
+          <Text style={styles.addExpenseText}>+ Add Expense</Text>
+        </TouchableOpacity>
+
+        <FlatList
+          data={vendorExpenses?.expenses || []}
+          keyExtractor={(item) => item?.expenseId?.toString()}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContainer}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Image
+                source={EmptyState}
+                style={styles.emptyIcon}
+                resizeMode="contain"
+              />
+              <Text style={styles.emptyTitle}>No Expenses</Text>
+              <Text style={styles.emptySubTitle}>
+                No Expenses have been added yet.
+              </Text>
+            </View>
+          }
         />
-        <Text style={styles.emptyTitle}>No Expenses</Text>
-        <Text style={styles.emptySubTitle}>
-          No Expenses have been added yet.
-        </Text>
       </View>
-    }
-  />
-
-</View>
-</>
+      </>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
 
   container: {
-  flex: 1,
-  backgroundColor: "#FFF",
-},
+    flex: 1,
+    backgroundColor: "#FFF",
+  },
 
-listContainer: {
-  paddingTop: 60, // button overlap avoid
-  paddingBottom: 120,
-},
+  listContainer: {
+    paddingTop: 60, // button overlap avoid
+    paddingBottom: 120,
+  },
 
-addExpenseBtn: {
-  position: "absolute",
-  top: 10,
-  right: 20,
-  zIndex: 100,
+  addExpenseBtn: {
+    position: "absolute",
+    top: 10,
+    right: 20,
+    zIndex: 100,
 
-  backgroundColor: "#2F54EB",
-  borderRadius: 10,
-  paddingHorizontal: 14,
-  height: 38,
+    backgroundColor: "#2F54EB",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    height: 38,
 
-  justifyContent: "center",
-  alignItems: "center",
+    justifyContent: "center",
+    alignItems: "center",
 
-  elevation: 5,
-},
+    elevation: 5,
+  },
 
-addExpenseText: {
-  color: "#FFF",
-  fontSize: 14,
-  fontFamily: "Gilroy-Bold",
-},
+  addExpenseText: {
+    color: "#FFF",
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold",
+  },
   // listContainer: {
   //   backgroundColor: "#FFFFFF",
   //   paddingBottom: 120,
@@ -377,31 +423,31 @@ addExpenseText: {
     color: "#6B7280",
     fontFamily: "Gilroy-Medium",
   },
-   emptyContainer: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 20,
-  marginTop: 20,
-},
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    marginTop: 20,
+  },
 
-emptyIcon: {
-  width: 200,
-  height: 100,
-  // opacity: 0.5,
-},
+  emptyIcon: {
+    width: 200,
+    height: 100,
+    // opacity: 0.5,
+  },
 
-emptyTitle: {
-  marginTop: 4,
-  fontSize: 18,
-  color: "#111827",
-  fontFamily: "Gilroy-Bold",
-},
+  emptyTitle: {
+    marginTop: 4,
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
 
-emptySubTitle: {
-  marginTop: 6,
-  fontSize: 14,
-  color: "#6B7280",
-  textAlign: "center",
-},
+  emptySubTitle: {
+    marginTop: 6,
+    fontSize: 14,
+    color: "#6B7280",
+    textAlign: "center",
+  },
 });
