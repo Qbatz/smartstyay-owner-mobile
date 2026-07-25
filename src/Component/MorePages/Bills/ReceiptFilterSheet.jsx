@@ -8,7 +8,7 @@ import {
   BackHandler,
   PanResponder,
   StyleSheet,
-  Image, Modal
+  Image, Modal , ScrollView
 } from "react-native";
 import dayjs from "dayjs"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -66,7 +66,22 @@ const ReceiptFilterSheet = ({
   const [openTo, setOpenTo] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
 
+  const amountRangeOptions = [
+    { label: "₹0 - ₹1,000", value: "0-1000" },
+    { label: "₹1,001 - ₹5,000", value: "1001-5000" },
+    { label: "₹5,001 - ₹10,000", value: "5001-10000" },
+    { label: "₹10,000+", value: "10000+" },
+  ];
 
+  const [amountRange, setAmountRange] = useState([]);
+
+
+  const modeOptions = [
+    { label: "Auto generated", value: "AUTO_GENERATED" },
+    { label: "Manual", value: "MANUAL" },
+  ];
+
+  const [mode, setMode] = useState([]);
 
   const formatDate = (d) => {
     if (!d) return "Select Date";
@@ -164,6 +179,29 @@ const ReceiptFilterSheet = ({
     return () => sub.remove();
   }, [visible]);
 
+
+  // new design changes ==>
+
+  //   const filters = {
+  //   startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+  //   endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+  //   paymentStatus: billStatus,
+  //   type,
+  //   amountRange,
+  //   paymentMethod: paymentmode,
+  //   collectedBy,
+  //   mode,
+  // };
+
+  // const hasAnyFilter =
+  //   filters.startDate ||
+  //   filters.endDate ||
+  //   type.length > 0 ||
+  //   amountRange.length > 0 ||
+  //   paymentmode.length > 0 ||
+  //   collectedBy.length > 0 ||
+  //   mode.length > 0;
+
   const handleApplyFilter = async () => {
     if (!canReadReceipt) return;
     if (!fromDate && toDate) {
@@ -208,26 +246,27 @@ const ReceiptFilterSheet = ({
 
 
 
- const handleResetFilters = async () => {
-  if (!canReadReceipt) return;
+  const handleResetFilters = async () => {
+    if (!canReadReceipt) return;
 
-  setFromDate(null);
-  setToDate(null);
-  setCollectedBy([]);
-  setBillStatus([]);
-  setType([]);
-  setPaymentMode([]);
-  setSelectedPeriod("");
-  setFilterError("");
+    setFromDate(null);
+    setToDate(null);
+    setCollectedBy([]);
+    setBillStatus([]);
+    setType([]);
+    setPaymentMode([]);
+    setSelectedPeriod("");
+    setFilterError("");
+    setAmountRange([]);
+    setMode([]);
+    // remove chips
+    setAppliedFilters(null);
 
-  // remove chips
-  setAppliedFilters(null);
+    // call parent reset
+    onResetFilter?.();
 
-  // call parent reset
-  onResetFilter?.();
-
-  onClose();
-};
+    onClose();
+  };
 
   if (!visible) return null;
 
@@ -240,18 +279,23 @@ const ReceiptFilterSheet = ({
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
 
-        <Animated.View
-          style={[
-            styles.transactionSheet,
-            {
-              transform: [
-                { translateY: detailsY }
-              ],
-            },
-          ]}
-          {...detailsfilter.panHandlers}
-        >
-          <View style={styles.sheetHandle} />
+      <Animated.View
+  style={[
+    styles.transactionSheet,
+    {
+      transform: [{ translateY: detailsY }],
+    },
+  ]}
+  {...detailsfilter.panHandlers}
+>
+
+  <View style={styles.sheetHandle} />
+
+  <ScrollView
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{ paddingBottom: 30 }}
+    keyboardShouldPersistTaps="handled"
+  >
 
           <View style={styles.filterHeaderRow}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -286,45 +330,77 @@ const ReceiptFilterSheet = ({
             onChange={setType}
           />
 
-          <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-            <Text style={styles.label}>From </Text>
-            <TouchableOpacity
-              onPress={() => {
-                setFromDate(null);
-                setToDate(null);
-                setFilterError("")
-              }}
-            >
-              <Text style={styles.resetTextSmall}>Reset</Text>
-            </TouchableOpacity>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, }}>
+
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>From </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>To</Text>
+            </View>
+
           </View>
 
           <View style={styles.dateRow}>
-            <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
+            {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
               <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
               <Image source={CalendarIcon} style={styles.calIcon} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+            <TouchableOpacity
+  style={styles.dateBox}
+  onPress={() => setOpenFrom(true)}
+>
+  <Text style={styles.dateText}>
+    {formatDate(fromDate)}
+  </Text>
 
-            <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
+  <View style={styles.calendarBg}>
+    <Image source={CalendarIcon} style={styles.calIcon} />
+  </View>
+</TouchableOpacity>
+
+<TouchableOpacity
+  style={styles.dateBox}
+  onPress={() => setOpenTo(true)}
+>
+  <Text style={styles.dateText}>
+    {formatDate(toDate)}
+  </Text>
+
+  <View style={styles.calendarBg}>
+    <Image source={CalendarIcon} style={styles.calIcon} />
+  </View>
+</TouchableOpacity>
+
+            {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
               <Text style={styles.dateText}>{formatDate(toDate)}</Text>
               <Image source={CalendarIcon} style={styles.calIcon} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
 
 
 
           <View style={styles.quickRow}>
-            <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+            <TouchableOpacity   style={[
+    styles.quickBtn,
+    selectedPeriod === "today" && styles.activeQuickBtn,
+  ]} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+              <Text style={styles.quickText}>Today</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity   style={[
+    styles.quickBtn,
+    selectedPeriod === "week" && styles.activeQuickBtn,
+  ]} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
+              <Text style={styles.quickText}>This Week</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity   style={[
+    styles.quickBtn,
+    selectedPeriod === "month" && styles.activeQuickBtn,
+  ]} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
               <Text style={styles.quickText}>This Month</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-              <Text style={styles.quickText}>Last Month</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-              <Text style={styles.quickText}>Last 3 Months</Text>
             </TouchableOpacity>
           </View>
 
@@ -346,6 +422,16 @@ const ReceiptFilterSheet = ({
             }}
           />
 
+          <MultiSelectDropdown
+            label="Amount Range"
+            dropdownKey="amountRange"
+            placeholder="Select Amount Range"
+            activeDropdown={activeDropdown}
+            setActiveDropdown={setActiveDropdown}
+            options={amountRangeOptions}
+            selected={amountRange}
+            onChange={setAmountRange}
+          />
 
 
           <MultiSelectDropdown
@@ -371,6 +457,17 @@ const ReceiptFilterSheet = ({
             options={collectedByOptions}
             selected={collectedBy}
             onChange={setCollectedBy}
+          />
+
+          <MultiSelectDropdown
+            label="Mode"
+            dropdownKey="mode"
+            placeholder="Select Mode"
+            activeDropdown={activeDropdown}
+            setActiveDropdown={setActiveDropdown}
+            options={modeOptions}
+            selected={mode}
+            onChange={setMode}
           />
 
 
@@ -402,6 +499,7 @@ const ReceiptFilterSheet = ({
               <Text style={styles.applyBtnText}>Apply</Text>
             </TouchableOpacity>
           </View>
+            </ScrollView>
 
         </Animated.View>
       </View>
@@ -493,14 +591,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
   },
 
-  transactionSheet: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    paddingBottom: 30,
-    minHeight: 400,
-  },
+transactionSheet: {
+  backgroundColor: "#fff",
+  borderTopLeftRadius: 25,
+  borderTopRightRadius: 25,
+  height: "85%",
+  paddingHorizontal: 20,
+  paddingTop: 15,
+  paddingBottom: 20,
+},
   sheetHandle: {
     width: 60,
     height: 5,
@@ -548,7 +647,18 @@ const styles = StyleSheet.create({
   resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold", marginLeft: 10 },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-  dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
+dateBox: {
+  width: "48%",
+  height: 44,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  borderRadius: 10,
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  paddingLeft: 16,
+  overflow: "hidden",
+},
   // dateText: { color: "#111" },
   calIcon: { width: 20, height: 20 },
 
@@ -566,7 +676,7 @@ const styles = StyleSheet.create({
   sheetHeaderRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", },
   selectedText: { fontSize: 15, color: "#000", flex: 1 },
   quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
-  quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
+  // quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
   quickText: { color: "#111", fontFamily: "Gilroy-Medium" },
   //  bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 72 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
@@ -636,5 +746,52 @@ const styles = StyleSheet.create({
     bottom: 0,
   },
 
+calendarBg: {
+  width: 64,
+  height: "100%",
+  backgroundColor: "#EEF2FF",
+  justifyContent: "center",
+  alignItems: "center",
+},
 
+calIcon: {
+  width: 24,
+  height: 24,
+  tintColor: "#374151",
+},
+
+dateText: {
+  fontSize: 16,
+  fontFamily: "Gilroy-Medium",
+  color: "#4B5563",
+},
+quickRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  marginTop: 16,
+},
+
+quickBtn: {
+  width: "31.5%",
+  height: 44,
+  borderRadius: 10,
+  backgroundColor: "#fff",
+  justifyContent: "center",
+  alignItems: "center",
+      borderWidth: 1,
+    borderColor: "#E0E0E0",
+},
+activeQuickBtn: {
+  backgroundColor: "#2D6CDF",
+},
+
+activeQuickText: {
+  color: "#FFFFFF",
+},
+
+quickText: {
+  fontSize: 16,
+  fontFamily: "Gilroy-Medium",
+  color: "#374151",
+},
 })
