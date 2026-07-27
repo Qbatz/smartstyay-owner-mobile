@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useContext} from "react";
 import {
   View,
   Text,
@@ -30,14 +30,40 @@ import FilterIcon from "../../Assets/Images/filter.png";
 import UserIcon from "../../Assets/Images/userImage.png";
 import RoleIcon from "../../Assets/Images/RoleImage.png";
 import AgreementIcon from "../../Assets/Images/AgreementImg.png";
+import { UseSetting } from "../../Context/SettingContext";
+import { CommonContexts } from "../../Context/CommonContext";
 
 export default function SettingsScreen({ navigation }) {
+
+
+   const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription, verfiyPayment, currentPlan } = UseSetting();
+     const { activeHostelId } = useContext(CommonContexts);
+
+    useFocusEffect(
+      useCallback(() => {
+        if (activeHostelId) {
+          fetchCurrentPlan();
+        }
+      }, [activeHostelId])
+    )
+  
+    const fetchCurrentPlan = async () => {
+      const res = await getCurrentHostelPlan(activeHostelId);
+  
+      if (res.success) {
+        console.log("Current Plan →", res.data);
+        // setCurrentPlan(res.data);
+      }
+    };
+  
+    const TrailPlan = currentPlan?.isTrial
 
   const mainItems = [
     { icon: General, title: "General", screen: "GeneralDetailsScreen" },
     { icon: Manage, title: "Manage PG", screen: "SettingsPG" },
     { icon: Security, title: "Security", screen: "SettingsSecurity" },
-    { icon: Subscription, title: "Subscription", screen: "PlanDetailsScreen" },
+    // { icon: Subscription, title: "Subscription", screen: TrailPlan ? "SubscriptionPlans":  "PlanDetailsScreen" },
+    { icon: Subscription, title: "Subscription", screen:  "PlanDetailsScreen" },
     { icon: Integration, title: "Integration", screen: "Integration" },
   ];
 
