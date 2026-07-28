@@ -2619,7 +2619,7 @@ if(showFilter){
 
               {canReadInvoice && !loading && (
                 <>
-                  <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
+                  {/* <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
                     style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
                     <>
                       {BillDetails?.listInvoices?.length > 0 && (
@@ -2713,7 +2713,7 @@ if(showFilter){
                       )
                       }
                     </>
-                  </ScrollView>
+                  </ScrollView> */}
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
