@@ -1780,7 +1780,8 @@ export default function AddTenantNewform({ navigation, route }) {
                         setCurrentStep(2)
                     }
                     if (currentStep === 2) {
-                        setCurrentStep(3)
+                        // setCurrentStep(3)
+                         navigation.goBack();
                     }
 
                     if (currentStep === 3) {
