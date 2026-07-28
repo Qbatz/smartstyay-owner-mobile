@@ -75,7 +75,7 @@ const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60
 //             }
 
 export default function TenantsScreen({ route }) {
-  const { setShowTabBar } = route.params;
+  // const { setShowTabBar } = route.params;
   const screenWidth = Dimensions.get("window").width;
   const { activeHostelId } = useContext(CommonContexts);
   const { getCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
@@ -113,7 +113,7 @@ export default function TenantsScreen({ route }) {
   console.log("activeHostelId", activeHostelId)
   console.log("reassignCustomer", reassignCustomer);
 
-  const { handleScroll } = useHideTabbarOnScroll(setShowTabBar);
+  // const { handleScroll } = useHideTabbarOnScroll(setShowTabBar);
 
 
   const sheetTranslateY = useRef(
@@ -452,25 +452,25 @@ export default function TenantsScreen({ route }) {
   // ]);
 
 
-  useLayoutEffect(() => {
-    if (
-      showDetailModal ||
-      showFilter ||
-      showCheckout ||
-      showNotice ||
-      showInactiveSheet ||
-      showReAssignbed
-    ) {
-      setShowTabBar(false);
-    } else {
-      setShowTabBar(isTabBarVisible.current);
-    }
-  }, [showDetailModal,
-    showFilter,
-    showCheckout,
-    showNotice,
-    showInactiveSheet,
-    showReAssignbed]);
+  // useLayoutEffect(() => {
+  //   if (
+  //     showDetailModal ||
+  //     showFilter ||
+  //     showCheckout ||
+  //     showNotice ||
+  //     showInactiveSheet ||
+  //     showReAssignbed
+  //   ) {
+  //     setShowTabBar(false);
+  //   } else {
+  //     setShowTabBar(isTabBarVisible.current);
+  //   }
+  // }, [showDetailModal,
+  //   showFilter,
+  //   showCheckout,
+  //   showNotice,
+  //   showInactiveSheet,
+  //   showReAssignbed]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -478,8 +478,8 @@ export default function TenantsScreen({ route }) {
       () => {
         if (navigation.canGoBack()) {
 
-          setShowTabBar(true);
-          isTabBarVisible.current = true;
+          // setShowTabBar(true);
+          // isTabBarVisible.current = true;
 
           navigation.goBack();
         }
@@ -1047,7 +1047,6 @@ export default function TenantsScreen({ route }) {
                     paddingBottom: 50,
                     paddingHorizontal: 16,
                   }}
-                  onScroll={handleScroll}
                   scrollEventThrottle={16}
 
                 >
@@ -1369,10 +1368,14 @@ export default function TenantsScreen({ route }) {
         )}
 
         {activeTab === "Checkout" && (
-          <CheckoutList searchText={searchText} setShowTabBar={setShowTabBar} />
+          <CheckoutList searchText={searchText} 
+          // setShowTabBar={setShowTabBar} 
+          />
         )}
         {activeTab === "Walk-In" && (
-          <WalkinScreen setShowTabBar={setShowTabBar} navigation={navigation}
+          <WalkinScreen 
+          // setShowTabBar={setShowTabBar}
+           navigation={navigation}
             handleWalkinFilter={handleWalkinFilter} searchText={searchText} />
         )}
 
@@ -2580,7 +2583,7 @@ export default function TenantsScreen({ route }) {
           onCheckout={() => {
             setShowCheckout(false);
           }}
-          setShowTabBar={setShowTabBar}
+          // setShowTabBar={setShowTabBar}
           selectedItem={selectedItem}
           onSuccess={handleCheckoutSuccess}
 
