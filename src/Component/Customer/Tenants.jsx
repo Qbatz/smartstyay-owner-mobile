@@ -824,6 +824,11 @@ export default function TenantsScreen({ route }) {
     },
   ];
 
+
+  const isValidImageUrl = (url) => {
+  return typeof url === "string" && /^https?:\/\//i.test(url.trim());
+};
+
   // if (!canReadTenant && !loading) {
   //       return (
   //          <View style={styles.container}>
@@ -1214,7 +1219,7 @@ export default function TenantsScreen({ route }) {
                           // onPress={() => openCustomerDetails(item)}
                           style={{ position: "relative" }}
                         >
-                          {item?.profilePic ? (
+                          {/* {item?.profilePic ? (
                             <Image
                               source={{ uri: item.profilePic }}
                               style={styles.profileImg}
@@ -1227,7 +1232,21 @@ export default function TenantsScreen({ route }) {
                                   "--"}
                               </Text>
                             </View>
-                          )}
+                          )} */}
+                          {isValidImageUrl(item?.profilePic) ? (
+  <Image
+    source={{ uri: item.profilePic }}
+    style={styles.profileImg}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {item?.initials ||
+        item?.fullName?.slice(0, 2)?.toUpperCase() ||
+        "--"}
+    </Text>
+  </View>
+)}
 
                           {/* ✅ STATUS DOT */}
                           <View
