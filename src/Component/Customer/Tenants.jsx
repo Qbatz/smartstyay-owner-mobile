@@ -59,7 +59,7 @@ import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 import ListView from "../../Assets/Images/listview.png";
 import RoomView from "../../Assets/Images/Roomview.png";
 import RoomIcon from "../../Assets/Images/Room_Icon.png"
-
+import LeftArrow from "../../Assets/Images/Arrow_left.png"
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -856,25 +856,40 @@ export default function TenantsScreen({ route }) {
       {loading && <Loader />}
 
       <SafeAreaView style={styles.container}>
-        <View style={{ paddingHorizontal: 16 }}>
 
-          <View style={styles.searchContainer}>
-            <Image source={SearchIcon} style={styles.searchIcon} />
+       
+        <View style={{ paddingHorizontal: 16 , }}>
 
-            <TextInput
-              // style={styles.searchInput}
-              style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
-              disabled={!canReadTenant}
-              placeholder="Search Tenants"
-              placeholderTextColor="#9CA3AF"
-              value={searchText}
-              onChangeText={(t) => {
-                // ✅ emoji remove + only normal text
-                const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
-                setSearchText(cleanText);
-              }}
-            />
-          </View>
+ {/* <View style={{ flexDirection:'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
+          </TouchableOpacity> */}
+
+           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <TouchableOpacity 
+      onPress={() => navigation.goBack()}
+      style={{ marginRight: 10 }}
+    >
+      <Image source={LeftArrow} style={{ width: 20, height: 20 }} />
+    </TouchableOpacity>
+
+    <View style={[styles.searchContainer, { flex: 1 }]}>
+      <Image source={SearchIcon} style={styles.searchIcon} />
+
+      <TextInput
+        style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
+        disabled={!canReadTenant}
+        placeholder="Search Tenants"
+        placeholderTextColor="#9CA3AF"
+        value={searchText}
+        onChangeText={(t) => {
+          const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
+          setSearchText(cleanText);
+        }}
+      />
+    </View>
+  </View>
+          {/* </View> */}
 
 
           <View style={styles.tabContainer}>

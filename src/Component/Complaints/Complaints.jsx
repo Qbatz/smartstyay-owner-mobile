@@ -514,17 +514,24 @@ export default function Complaints({ route }) {
       <View style={styles.container}>
 
         {/* Header */}
-        <View style={styles.headerRow}>
-          {complaintsList && complaintsList?.length == 0 &&
-            <Text style={styles.headerTitle}>Complaints</Text>}
-          {/* {!loading &&  complaintsList && complaintsList?.length > 0 && (
- <TouchableOpacity onPress={() => setShowFilter(true)}   disabled={!canReadComplaints}
-  style={!canReadComplaints && { opacity: 0.4 }}>
-    <Image source={FilterIcon} style={styles.headerFilterIcon} />
-  </TouchableOpacity>
- )} */}
+      <View style={styles.headerRow}>
+  {complaintsList?.length === 0 && (
+    <>
+    <View style={{flexDirection:'row', alignItems:'center'}}>
+      <TouchableOpacity onPress={() => navigation.goBack()}>
+        <Image
+          source={LeftArrow}
+          style={{ width: 20, height: 20, marginRight: 12 }}
+        />
+      </TouchableOpacity>
 
-        </View>
+      <Text style={styles.headerTitle}>Complaints</Text>
+      </View>
+    </>
+  // ) : (
+  //   <Text style={styles.headerTitle}>Complaints</Text>
+  )}
+</View>
 
 
         {/* Search Box */}
