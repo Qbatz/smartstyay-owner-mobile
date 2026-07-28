@@ -35,7 +35,7 @@ import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
 import Download from "../../../Assets/Images/download.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 
-const RecurringBills = ({onSelectRecurringBill}) => {
+const RecurringBills = ({onSelectRecurringBill , setShowTabBar}) => {
 
 
   const { BillDetails, loading, GetAllBillDetails, RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError,
@@ -50,6 +50,30 @@ const RecurringBills = ({onSelectRecurringBill}) => {
     canUpdateModule: canUpdateRecurringBills,
     canDeleteModule: canDeleteRecurringBills,
   } = useHasPermission("Recurring bills")
+
+      const lastScrollY = useRef(0);
+      const isTabBarVisible = useRef(true);
+    
+      const handleScroll = (event) => {
+        const currentY = event.nativeEvent.contentOffset.y;
+        const diff = currentY - lastScrollY.current;
+    
+        if (Math.abs(diff) < 10) return;
+    
+        if (diff > 0 && currentY > 50) {
+          if (isTabBarVisible.current) {
+            setShowTabBar(false);
+            isTabBarVisible.current = false;
+          }
+        } else if (diff < 0) {
+          if (!isTabBarVisible.current) {
+            setShowTabBar(true);
+            isTabBarVisible.current = true;
+          }
+        }
+    
+        lastScrollY.current = currentY;
+      };
 
   // styles ==>
 
@@ -458,6 +482,7 @@ const RecurringBills = ({onSelectRecurringBill}) => {
               paddingBottom: vs(120),
             }}
             ListEmptyComponent={!loading && <EmptyRecurringState />}
+              onScroll={handleScroll}
           />
         )}
 

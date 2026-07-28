@@ -1,4 +1,4 @@
-import React,{useState ,useContext, useEffect} from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  BackHandler , NativeModules
+  BackHandler, NativeModules
 } from "react-native";
 
 import HostelImage from "../../Assets/Images/PgImg.png"
@@ -26,19 +26,19 @@ import { CommonContexts } from "../../Context/CommonContext";
 
 export default function MoreDesign({ navigation }) {
 
-  const {hostelList,activeHostelId}=useContext(CommonContexts)
+  const { hostelList, activeHostelId } = useContext(CommonContexts)
 
-    const [environment, setEnvironment] = useState("")
-  
-    const { CommonModule } = NativeModules;
+  const [environment, setEnvironment] = useState("")
 
-      useEffect(() => {
-        CommonModule.fetchEnvironment().then(r => {
-          setEnvironment(r)
-        })
-      }, [])
+  const { CommonModule } = NativeModules;
 
-      console.log("Environment", environment);
+  useEffect(() => {
+    CommonModule.fetchEnvironment().then(r => {
+      setEnvironment(r)
+    })
+  }, [])
+
+  console.log("Environment", environment);
 
   // useEffect(() => {
   //   const backHandler = BackHandler.addEventListener(
@@ -48,23 +48,23 @@ export default function MoreDesign({ navigation }) {
   //       return true; 
   //     }
   //   );
-  
+
   //   return () => backHandler.remove();
   // }, []);
 
-    // useEffect(() => {
-    //             const backHandler = BackHandler.addEventListener(
-    //               "hardwareBackPress",
-    //               () => {
-    //                 navigation.goBack();  
-    //                 return true;
-    //               }
-    //             );
-              
-    //             return () => backHandler.remove();
-    //           }, [])
+  // useEffect(() => {
+  //             const backHandler = BackHandler.addEventListener(
+  //               "hardwareBackPress",
+  //               () => {
+  //                 navigation.goBack();  
+  //                 return true;
+  //               }
+  //             );
 
-     
+  //             return () => backHandler.remove();
+  //           }, [])
+
+
   // const menuItems = [
   //   { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
   //   { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
@@ -79,17 +79,17 @@ export default function MoreDesign({ navigation }) {
   // ];
 
   const menuItems = [
-  { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
-  { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
-  
-//   ...(environment !== "PROD"
-//     ? [
-//  { title: "New Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "NewBankingScreen" },
-//  ]
-//     : []),
+    { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
+    { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
 
-     ...(environment?.toUpperCase() !== "PROD"
-    ? [
+    //   ...(environment !== "PROD"
+    //     ? [
+    //  { title: "New Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "NewBankingScreen" },
+    //  ]
+    //     : []),
+
+    ...(environment?.toUpperCase() !== "PROD"
+      ? [
         {
           title: "New Banking",
           icon: Bankingimage,
@@ -97,65 +97,77 @@ export default function MoreDesign({ navigation }) {
           screen: "NewBankingScreen",
         },
       ]
-    : []),
-  
-  { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
-  { title: "Electricity", icon: Electricityimage, bg: "#FF2E2E", screen: "Electricity" },
-  // { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
+      : []),
 
-  // ...(environment !== "PROD"
-  //   ? [
-        {
-          title: "Expenses",
-          icon: Expensesimage,
-          bg: "#16C25B",
-          screen: "ExpensesList",
-        },
+    // { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
+    {
+      title: "Tenants",
+      icon: Billsimage,
+      bg: "#13B5E6",
+      screen: "Tenant"
+    },
+    {
+      title: "Complaints",
+      icon: Billsimage,
+      bg: "#5B3FD6",
+      screen: "Complaints"
+    },
+    { title: "Electricity", icon: Electricityimage, bg: "#FF2E2E", screen: "Electricity" },
+    // { title: "Expenses", icon: Expensesimage, bg: "#16C25B", screen: "Expenses" },
+
+    // ...(environment !== "PROD"
+    //   ? [
+    {
+      title: "Expenses",
+      icon: Expensesimage,
+      bg: "#16C25B",
+      screen: "ExpensesList",
+    },
     //   ]
     // : [])
     ,
 
-  { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
-  // { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
+    { title: "Reports", icon: Reportsimage, bg: "#A92EFF", screen: "Reports" },
+    // { title: "Vendor", icon: Vendorimage, bg: "#FF7A00", screen: "VendorsList" },
 
-  // ...(environment !== "PROD"
-  //   ? [
-        {
-          title: "Vendor",
-          icon: Vendorimage,
-          bg: "#FF7A00",
-          screen: "Vendor",
-        },
+    // ...(environment !== "PROD"
+    //   ? [
+    {
+      title: "Vendor",
+      icon: Vendorimage,
+      bg: "#FF7A00",
+      screen: "Vendor",
+    },
     //   ]
     // : [])
     ,
 
-  {
-    title: "Settings",
-    icon: SettingsImage,
-    bg: "#1E45E1",
-    screen: "SettingsScreen",
-  },
-];
+    {
+      title: "Settings",
+      icon: SettingsImage,
+      bg: "#1E45E1",
+      screen: "SettingsScreen",
+    },
+  ];
 
   const activeHostel =
-  hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
-  hostelList?.[0] ??
-  {};
+    hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+    hostelList?.[0] ??
+    {};
 
   console.log(activeHostel)
 
   return (
     <View style={styles.container}>
-      
+
       <View style={styles.header}>
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          {activeHostel?.mainImage ? <Image source={{uri:activeHostel?.mainImage}} style={styles.profileImg}/> :
-          <View style={[styles.profileImg,{ backgroundColor: "#E5E7EB",alignItems:'center',justifyContent:'center'}]}>
-            <Text style={{fontSize:14, fontFamily: "Gilroy-Semibold"}}>{activeHostel?.initials}</Text>
-          </View>
-           }
-          
+          {activeHostel?.mainImage ? <Image source={{ uri: activeHostel?.mainImage }} style={styles.profileImg} /> :
+            <View style={[styles.profileImg, { backgroundColor: "#E5E7EB", alignItems: 'center', justifyContent: 'center' }]}>
+              <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{activeHostel?.initials}</Text>
+            </View>
+          }
+
           <Text style={styles.headerTitle}>More</Text>
         </View>
 
@@ -192,8 +204,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFF",
     paddingHorizontal: 30,
-    paddingTop:60
-   
+    paddingTop: 60
+
   },
 
   header: {
@@ -207,13 +219,13 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 20,
-    marginLeft:10,
+    marginLeft: 10,
     fontFamily: "Gilroy-Semibold"
   },
 
   headerTitle: {
     fontSize: 20,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     marginLeft: 20,
     color: "#000",
   },
@@ -249,7 +261,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 17,
     // fontWeight: "500",
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#222222",
   },
 

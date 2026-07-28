@@ -6,6 +6,8 @@ import { View } from "react-native";
 import MyTabs from '../src/Component/Tabs/BottomTabs'
 import AddTenant from "../src/Component/Customer/AddTenants";
 import AddTenantNew from "../src/Component/Customer/AddTenantNew";
+import Tenant from "../src/Component/Customer/Tenants";
+import Complaints from "../src/Component/Complaints/Complaints";
 import TenantCheckIn from "../src/Component/Customer/TenantCheckIn";
 import NewTenantCheckIn from "../src/Component/Customer/NewTenantCheckin";
 import AddWalkin from "../src/Component/Customer/AddWalkin";
@@ -129,13 +131,14 @@ const SuccessFlow = (props) => {
 
                     <Navigation.Screen name="MyTabs" component={MyTabs} />
                     <Navigation.Screen name="AddTenant" component={AddTenant} />
-                     <Navigation.Screen name="AddTenantNew" component={AddTenantNew} />
+                    <Navigation.Screen name="AddTenantNew" component={AddTenantNew} />
                     <Navigation.Screen name="TenantCheckin" component={TenantCheckIn} />
-                     <Navigation.Screen name="NewTenantCheckIn" component={NewTenantCheckIn} />
+                    <Navigation.Screen name="NewTenantCheckIn" component={NewTenantCheckIn} />
                     <Navigation.Screen name="AddBooking" component={AddBookingScreen} />
                     <Navigation.Screen name="AddWalkin" component={AddWalkin} />
                     <Navigation.Screen name="FinalSettlement" component={FinalSettlement} />
-
+                    <Navigation.Screen  name="Tenant" component={Tenant} />
+                    <Navigation.Screen  name="Complaints" component={Complaints} />
                     <Navigation.Screen name="ForgotPassword" component={ForgotPassword} />
                     <Navigation.Screen name="OtpVerification" component={OtpVerification} />
                     <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
@@ -153,8 +156,8 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="VendorPayment" component={VendorPayment} />
                     <Navigation.Screen name="CreditCardPayment" component={CreditCardPayment} />
                     <Navigation.Screen name="Investment" component={Investment} />
-                     <Navigation.Screen name="BankTransfer" component={BankTransfer} />
-                     <Navigation.Screen name="AddPaymentMethod" component={AddPaymentMethod} />
+                    <Navigation.Screen name="BankTransfer" component={BankTransfer} />
+                    <Navigation.Screen name="AddPaymentMethod" component={AddPaymentMethod} />
                     <Navigation.Screen name="AddTransaction" component={AddTransaction} />
                     <Navigation.Screen name="Electricity" component={Electricity} />
                     <Navigation.Screen name="RoomDetails" component={RoomDetails} />

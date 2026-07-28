@@ -98,7 +98,8 @@ import BillBookingDetails from "./Bill_BookingDetails"
 import ReceiptFilterSheet from "./ReceiptFilterSheet"
 import FilterBottomSheet from "../Reports/FilterBottomSheet";
 import RetainerFiltersheet from "./RetainerFilterSheet"
-
+import { useHideTabbarOnScroll }
+  from "../../../Utils/useHideTabbarOnScroll";
 
 
 
@@ -109,6 +110,11 @@ export default function BillsDesign({ route }) {
   //  const { CommonModule } = NativeModules;
 
   const detailDotsRef = useRef(null);
+
+  const { setShowTabBar } = route.params;
+
+  const { handleScroll } =
+    useHideTabbarOnScroll(setShowTabBar);
 
   const { BillDetails, loading, GetAllBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
@@ -1046,6 +1052,34 @@ export default function BillsDesign({ route }) {
       },
     })
   ).current;
+
+  useLayoutEffect(() => {
+
+if(showFilter){
+   setShowTabBar(false);
+}else{
+   setShowTabBar(true);
+}
+
+},[])
+
+  // useLayoutEffect(() => {
+
+  //   if (
+  //     showFilter ||
+  //     showBillSheet ||
+  //     showPaymentSheet
+  //   ) {
+  //     setShowTabBar(false);
+  //   } else {
+  //     setShowTabBar(true);
+  //   }
+
+  // }, [
+  //   showFilter,
+  //   showBillSheet,
+  //   showPaymentSheet
+  // ])
 
 
 
@@ -2585,10 +2619,105 @@ export default function BillsDesign({ route }) {
 
               {canReadInvoice && !loading && (
                 <>
+                  <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
+                    style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
+                    <>
+                      {BillDetails?.listInvoices?.length > 0 && (
+                        <View style={styles.filterRow}>
+
+                          <TouchableOpacity
+                            style={[
+                              styles.filterBox,
+                              billStatus.length > 0 && styles.filterBoxActive,
+                            ]}
+                            onPress={() => {
+                              setTempStatus(billStatus);
+                              setStatusSheetOpen(true);
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.filterText,
+                                billStatus.length > 0 && styles.filterTextActive,
+                              ]}
+                            >
+                              {billStatus.length === 0
+                                ? "Status"
+                                : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
+                                }`}
+                            </Text>
+                            <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+                          </TouchableOpacity>
+
+                          <TouchableOpacity
+                            style={[
+                              styles.filterBox,
+                              type.length > 0 && styles.filterBoxActive,
+                            ]}
+                            onPress={() => {
+                              setTempType(type);
+                              setTypeSheetOpen(true);
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.filterText,
+                                type.length > 0 && styles.filterTextActive,
+                              ]}
+                            >
+                              {type.length === 0
+                                ? "Type"
+                                : `${type[0]} ${type.length > 1 ? `+${type.length - 1} more` : ""
+                                }`}
+                            </Text>
+                            <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+                          </TouchableOpacity>
+
+
+                          <TouchableOpacity
+                            style={[
+                              styles.filterBox,
+                              billStatus.length > 0 && styles.filterBoxActive,
+                            ]}
+                            onPress={() => {
+                              setTempStatus(billStatus);
+                              setStatusSheetOpen(true);
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.filterText,
+                                billStatus.length > 0 && styles.filterTextActive,
+                              ]}
+                            >
+                              {billStatus.length === 0
+                                ? "Mode"
+                                : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
+                                }`}
+                            </Text>
+                            <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+                          </TouchableOpacity>
+
+
+
+
+
+
+
+                          <TouchableOpacity style={[styles.filterIconBtn, { marginLeft: 5 }]} disabled={!canReadInvoice}
+                            onPress={() => setShowFilter(true)}
+                          >
+                            <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
+                          </TouchableOpacity>
+                        </View>
+                      )
+                      }
+                    </>
+                  </ScrollView>
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
-                      contentContainerStyle={{ paddingBottom: 150, }}
+                      contentContainerStyle={{ paddingBottom: 150, }} onScroll={handleScroll}
                     >
 
 
@@ -2597,7 +2726,7 @@ export default function BillsDesign({ route }) {
                       {appliedFilters && (
                         <View style={{ marginTop: 10 }}>
 
-                          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                          <ScrollView horizontal showsHorizontalScrollIndicator={false} >
                             <View style={{ flexDirection: "row", alignItems: "center" }}>
 
 
@@ -2729,101 +2858,7 @@ export default function BillsDesign({ route }) {
                     </ScrollView>
                   )}
 
-                  <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
-                    style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
-                    <>
-                      {BillDetails?.listInvoices?.length > 0 && (
-                        <View style={styles.filterRow}>
 
-                          <TouchableOpacity
-                            style={[
-                              styles.filterBox,
-                              billStatus.length > 0 && styles.filterBoxActive,
-                            ]}
-                            onPress={() => {
-                              setTempStatus(billStatus);
-                              setStatusSheetOpen(true);
-                            }}
-                          >
-                            <Text
-                              style={[
-                                styles.filterText,
-                                billStatus.length > 0 && styles.filterTextActive,
-                              ]}
-                            >
-                              {billStatus.length === 0
-                                ? "Status"
-                                : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
-                                }`}
-                            </Text>
-                            <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-                          </TouchableOpacity>
-
-                            <TouchableOpacity
-                            style={[
-                              styles.filterBox,
-                              type.length > 0 && styles.filterBoxActive,
-                            ]}
-                            onPress={() => {
-                              setTempType(type);
-                              setTypeSheetOpen(true);
-                            }}
-                          >
-                            <Text
-                              style={[
-                                styles.filterText,
-                                type.length > 0 && styles.filterTextActive,
-                              ]}
-                            >
-                              {type.length === 0
-                                ? "Type"
-                                : `${type[0]} ${type.length > 1 ? `+${type.length - 1} more` : ""
-                                }`}
-                            </Text>
-                            <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-                          </TouchableOpacity>
-
-
-                          <TouchableOpacity
-                            style={[
-                              styles.filterBox,
-                              billStatus.length > 0 && styles.filterBoxActive,
-                            ]}
-                            onPress={() => {
-                              setTempStatus(billStatus);
-                              setStatusSheetOpen(true);
-                            }}
-                          >
-                            <Text
-                              style={[
-                                styles.filterText,
-                                billStatus.length > 0 && styles.filterTextActive,
-                              ]}
-                            >
-                              {billStatus.length === 0
-                                ? "Mode"
-                                : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
-                                }`}
-                            </Text>
-                            <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-                          </TouchableOpacity>
-
-
-
-
-                        
-
-
-                          <TouchableOpacity style={[styles.filterIconBtn, { marginLeft: 5 }]} disabled={!canReadTenant}
-                            onPress={() => setShowFilter(true)}
-                          >
-                            <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
-                          </TouchableOpacity>
-                        </View>
-                      )
-                      }
-                    </>
-                  </ScrollView>
 
                   {(
                     !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0) &&
@@ -2873,19 +2908,21 @@ export default function BillsDesign({ route }) {
             </View>
           )}
           {activeTab === "Retainer" && (
-            <BillBookings onBookingDetailsShow={handleBillsBookingDetails} 
+            <BillBookings onBookingDetailsShow={handleBillsBookingDetails}
               showRetainerFiltersheet={() => setShowRetainerFilter(true)}
+              setShowTabBar={setShowTabBar}
             />
           )}
 
           {activeTab === "RecurringBills" && (
-            <RecurringBills onSelectRecurringBill={handleRecurringBill} />
+            <RecurringBills onSelectRecurringBill={handleRecurringBill}  setShowTabBar={setShowTabBar}/>
           )}
           {activeTab === "Receipt" && (
             <Receipt onSelectReceipt={handleOpenReceiptSheet}
               showReceiptFiltersheet={() => setShowReceiptFilter(true)}
               appliedFilters={receiptAppliedFilters}
               handleResetFilters={handleReceiptResetFilters}
+              setShowTabBar={setShowTabBar}
             />
           )}
 
@@ -4359,7 +4396,7 @@ export default function BillsDesign({ route }) {
               onResetFilter={handleReceiptResetFilters}
             />
 
-             <RetainerFiltersheet
+            <RetainerFiltersheet
               visible={showRetainerFilter}
               onClose={() => setShowRetainerFilter(false)}
               onApply={(filters) => {
@@ -6519,79 +6556,79 @@ export default function BillsDesign({ route }) {
           </Modal>
 
 
-           <FilterBottomSheet
-                    visible={statusSheetOpen}
-                    title="Tenant Status"
-                    options={billStatusOptions || []}
-                    selectedValues={tempStatus}
-                    setSelectedValues={setTempStatus}
-                  
-                    onReset={() => {
-                      setTempStatus([]);
-                      setBillStatus([]);
-                      setStatusSheetOpen(false);
-                  
-                      // applyFilters(selectedMonth, [], type);
-                    }}
-                  
-                    onApply={() => {
-                      setBillStatus(tempStatus);
-                      setStatusSheetOpen(false);
-                  
-                      // applyFilters(selectedMonth, tempStatus, type);
-                    }}
-                  
-                    onClose={() => setStatusSheetOpen(false)}
-                  />
-          
-                   <FilterBottomSheet
-                    visible={modesheetOpen}
-                    title="Mode"
-                    options={billStatusOptions || []}
-                    selectedValues={tempmode}
-                    setSelectedValues={setModeSheetOpen}
-                  
-                    onReset={() => {
-                      setTempMode([]);
-                      setSheetMode([]);
-                      setModeSheetOpen(false);
-                      // applyFilters(selectedMonth, [], type);
-                    }}
-                  
-                    onApply={() => {
-                      setSheetMode(tempmode);
-                      setModeSheetOpen(false);
-                  
-                      // applyFilters(selectedMonth, tempStatus, type);
-                    }}
-                  
-                    onClose={() => setModeSheetOpen(false)}
-                  />
-                  
-                  <FilterBottomSheet
-                    visible={typeSheetOpen}
-                    title="Stay Type"
-                    options={typeOptions || []}
-                    selectedValues={tempType}
-                    setSelectedValues={setTempType}
-                  
-                    onReset={() => {
-                      setTempType([]);
-                      setType([]);
-                      setTypeSheetOpen(false);
-                  
-                      // applyFilters(selectedMonth, billStatus, []);
-                    }}
-                  
-                    onApply={() => {
-                      setType(tempType);
-                      setTypeSheetOpen(false);
-                  
-                      // applyFilters(selectedMonth, billStatus, tempType);
-                    }}
-                  
-                    onClose={() => setTypeSheetOpen(false)}
-                  />
+          <FilterBottomSheet
+            visible={statusSheetOpen}
+            title="Bill Status"
+            options={billStatusOptions || []}
+            selectedValues={tempStatus}
+            setSelectedValues={setTempStatus}
+
+            onReset={() => {
+              setTempStatus([]);
+              setBillStatus([]);
+              setStatusSheetOpen(false);
+
+              // applyFilters(selectedMonth, [], type);
+            }}
+
+            onApply={() => {
+              setBillStatus(tempStatus);
+              setStatusSheetOpen(false);
+
+              // applyFilters(selectedMonth, tempStatus, type);
+            }}
+
+            onClose={() => setStatusSheetOpen(false)}
+          />
+
+          <FilterBottomSheet
+            visible={modesheetOpen}
+            title="Mode"
+            options={billStatusOptions || []}
+            selectedValues={tempmode}
+            setSelectedValues={setModeSheetOpen}
+
+            onReset={() => {
+              setTempMode([]);
+              setSheetMode([]);
+              setModeSheetOpen(false);
+              // applyFilters(selectedMonth, [], type);
+            }}
+
+            onApply={() => {
+              setSheetMode(tempmode);
+              setModeSheetOpen(false);
+
+              // applyFilters(selectedMonth, tempStatus, type);
+            }}
+
+            onClose={() => setModeSheetOpen(false)}
+          />
+
+          <FilterBottomSheet
+            visible={typeSheetOpen}
+            title="Stay Type"
+            options={typeOptions || []}
+            selectedValues={tempType}
+            setSelectedValues={setTempType}
+
+            onReset={() => {
+              setTempType([]);
+              setType([]);
+              setTypeSheetOpen(false);
+
+              // applyFilters(selectedMonth, billStatus, []);
+            }}
+
+            onApply={() => {
+              setType(tempType);
+              setTypeSheetOpen(false);
+
+              // applyFilters(selectedMonth, billStatus, tempType);
+            }}
+
+            onClose={() => setTypeSheetOpen(false)}
+          />
 
 
           {billbookingDetailsShow && (
@@ -8896,6 +8933,90 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     fontSize: 12,
     fontFamily: "Gilroy-Medium",
+  },
+  filterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    // marginTop: 4,
+    marginBottom: 8,
+  },
+  filterBox: {
+    flex: 1,
+    paddingVertical: 4,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    // borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginRight: 8,
+    marginLeft: 8,
+    backgroundColor: "#fff",
+    flexDirection: "row", justifyContent: "center", alignItems: "center"
+  },
+
+  filterBoxActive: {
+    backgroundColor: "#1D4ED8",
+    borderColor: "#1D4ED8",
+  },
+
+  filterText: {
+    textAlign: "center",
+    color: "#374151",
+  },
+
+  filterTextActive: {
+    color: "#fff",
+  },
+
+  filterChip: {
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 8,
+    paddingHorizontal: 30,
+    borderRadius: 20,
+    marginLeft: 4
+  },
+
+  filterChipActive: {
+    display: 'flex',
+    flexDirection: 'row',
+    backgroundColor: "#E6F0FF",
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+  },
+
+  filterChipText: {
+    fontSize: 13,
+    color: "#374151",
+  },
+
+  filterChipTextActive: {
+    fontSize: 13,
+    color: "#2D6CDF",
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  filterIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    // backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
+  chipContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  chipArrow: {
+    width: 14,
+    height: 14,
+    marginLeft: 6,
   },
 
 });

@@ -59,7 +59,7 @@ export default function Complaints({ route }) {
   const [showStatusSheet, setShowStatusSheet] = useState(false);
 
 
-  const { setShowTabBar } = route.params
+  // const { setShowTabBar } = route.params
   const navigation = useNavigation();
   const [showFilter, setShowFilter] = useState(false);
   const [status, setStatus] = useState("All");
@@ -73,7 +73,7 @@ export default function Complaints({ route }) {
   const lastScrollY = useRef(0);
   const isTabBarVisible = useRef(true);
 
-  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
+  // const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -285,19 +285,19 @@ export default function Complaints({ route }) {
   //   setShowTabBar(!showFilter && !showSheet && !showAssignSheet && !showStatusSheet && !showCommentSheet);
   // }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
 
-  useLayoutEffect(() => {
-    if (
-      showFilter ||
-      showSheet ||
-      showAssignSheet ||
-      showStatusSheet ||
-      showCommentSheet
-    ) {
-      setShowTabBar(false);
-    } else {
-      setShowTabBar(isTabBarVisible.current);
-    }
-  }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
+  // useLayoutEffect(() => {
+  //   if (
+  //     showFilter ||
+  //     showSheet ||
+  //     showAssignSheet ||
+  //     showStatusSheet ||
+  //     showCommentSheet
+  //   ) {
+  //     setShowTabBar(false);
+  //   } else {
+  //     setShowTabBar(isTabBarVisible.current);
+  //   }
+  // }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
 
   useEffect(() => {
   const backHandler = BackHandler.addEventListener(
@@ -329,8 +329,8 @@ export default function Complaints({ route }) {
         return true;
       }
 
-      setShowTabBar(true);
-      isTabBarVisible.current = true;
+      // setShowTabBar(true);
+      // isTabBarVisible.current = true;
 
       navigation.goBack();
       return true;
@@ -591,7 +591,7 @@ export default function Complaints({ route }) {
             showsVerticalScrollIndicator={false}
             style={{ flex: 1 }}
             contentContainerStyle={{ paddingBottom: 200 }}
-            onScroll={handleScroll}
+            // onScroll={handleScroll}
             scrollEventThrottle={16}
           />)}
 

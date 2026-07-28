@@ -45,7 +45,7 @@ import ReactNativeBlobUtil from "react-native-blob-util";
 
 
 const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
-  handleResetFilters, }) => {
+  handleResetFilters, setShowTabBar}) => {
 
 
 
@@ -77,6 +77,30 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
   const [showBillDetails, setShowBillDetails] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
+
+    const lastScrollY = useRef(0);
+    const isTabBarVisible = useRef(true);
+  
+    const handleScroll = (event) => {
+      const currentY = event.nativeEvent.contentOffset.y;
+      const diff = currentY - lastScrollY.current;
+  
+      if (Math.abs(diff) < 10) return;
+  
+      if (diff > 0 && currentY > 50) {
+        if (isTabBarVisible.current) {
+          setShowTabBar(false);
+          isTabBarVisible.current = false;
+        }
+      } else if (diff < 0) {
+        if (!isTabBarVisible.current) {
+          setShowTabBar(true);
+          isTabBarVisible.current = true;
+        }
+      }
+  
+      lastScrollY.current = currentY;
+    };
 
 
   const [fromDate, setFromDate] = useState(dayjs());
@@ -613,6 +637,7 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
                 paddingBottom: 120,
               }}
               ListEmptyComponent={!loading && <EmptyReceiptState />}
+               onScroll={handleScroll}
             />
           </>
         )}

@@ -31,7 +31,7 @@ import dayjs from "dayjs";
 import { useLayoutEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 
-export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, navigation, searchText }) {
+export default function WalkinScreen({  handleWalkinFilter, navigation, searchText }) {
   const { getCustomersByHostel, deleteCustomer, loading } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
 
@@ -176,9 +176,9 @@ export default function WalkinScreen({ setShowTabBar, handleWalkinFilter, naviga
   }
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
-  useLayoutEffect(() => {
-    setShowTabBar(!showFilter);
-  }, [showFilter]);
+  // useLayoutEffect(() => {
+  //   setShowTabBar(!showFilter);
+  // }, [showFilter]);
 
 
   const filteredWalkins = walkinCustomers.filter((item) => {
