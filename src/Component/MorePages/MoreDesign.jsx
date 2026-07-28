@@ -19,6 +19,8 @@ import Electricityimage from "../../Assets/Images/electricity.png"
 import Expensesimage from "../../Assets/Images/Expenses.png"
 import Reportsimage from "../../Assets/Images/Reports.png"
 import Vendorimage from "../../Assets/Images/vendor.png"
+import Tenantimage from "../../Assets/Images/user-square.png"
+import Complaintimage from "../../Assets/Images/complaint_Inactive.png";
 
 import RightArrow from "../../Assets/Images/right_direction.png"
 import { CommonContexts } from "../../Context/CommonContext";
@@ -102,13 +104,13 @@ export default function MoreDesign({ navigation }) {
     // { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
     {
       title: "Tenants",
-      icon: Billsimage,
+      icon: Tenantimage,
       bg: "#13B5E6",
       screen: "Tenant"
     },
     {
       title: "Complaints",
-      icon: Billsimage,
+      icon: Complaintimage,
       bg: "#5B3FD6",
       screen: "Complaints"
     },
