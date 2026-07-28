@@ -1354,30 +1354,12 @@ export default function OverviewTab({ customerDetails,
 
                 <View style={styles.jobButtonRow}>
 
-                  <TouchableOpacity
-                    // style={styles.remindBtn}
-                       style={[styles.remindBtn ,disableAssignBtn && { opacity: 0.4 }]}
-                  // onPress={handleSendReminder}
-                  //  disabled={disableAssignBtn}
-                  disabled
-                  >
-                    <Text style={styles.remindText}>
-                      Send Reminder
-                    </Text>
-                    <Image source={Remainderbtn} style={{
-                      width: 16,
-                      height: 16,
-                      marginRight: 6,
-                      marginLeft: 6,
-                      resizeMode: "contain",
-                    }} />
-                  </TouchableOpacity>
+                
 
                   <TouchableOpacity
                     style={[styles.addNowBtn ,disableAssignBtn && { opacity: 0.4 }]}
                     onPress={handleshowJobDetails}
-                    //  disabled={disableAssignBtn}
-                    disabled
+                     disabled={disableAssignBtn}
                   >
                     <Text style={styles.addNowText}>
                       Add Now
