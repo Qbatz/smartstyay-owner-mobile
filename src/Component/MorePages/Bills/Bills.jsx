@@ -2358,7 +2358,8 @@ export default function BillsDesign({ route }) {
   const isPending = selectedBill?.paymentStatus === "Pending";
   const cancelled = selectedBill?.paymentStatus === "Cancelled";
   const pendingRefund = selectedBill?.paymentStatus === "Pending Refund";
-  const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded"
+  const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded" || BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND"
+
   const FullyRefund = selectedBill?.paymentStatus === "Refunded"
 
   const isPendingRefund =
@@ -2920,7 +2921,7 @@ export default function BillsDesign({ route }) {
 
                     <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
-                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Total Amount</Text>
+                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>{["PARTIAL_REFUND", "REFUNDED"].includes(BillPdfdetails?.invoiceInfo?.status) ? "Refundable Amount" : "Total Amount"}</Text>
                       </View>
                       <View>
                         <View style={{ display: 'flex', flexDirection: 'column' }}>
@@ -3007,7 +3008,7 @@ export default function BillsDesign({ route }) {
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
                             <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>
-                              {BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND" ? "Refundable Rent" : "Payable Ren"}t</Text>
+                              {BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND" ? "Refundable Rent" : "Payable Rent"}</Text>
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
@@ -3138,6 +3139,25 @@ export default function BillsDesign({ route }) {
                         )}
 
                       </>
+                    )}
+
+                    {(partiallyRefund) && (
+                      <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
+                        </View>
+                        <View>
+                          <Text
+                            style={[
+                              styles.amountValue,
+                              { color: "#FF0000" },
+                            ]}
+                          >
+                            ₹ {Math.round(BillPdfdetails?.invoiceInfo?.totalPayable ?? 0)}
+                          </Text>
+                        </View>
+                      </View>
+
                     )}
 
                     <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -3271,16 +3291,19 @@ export default function BillsDesign({ route }) {
                             {BillPdfdetails?.refundHistory?.map((pay, index) => (
                               <View key={index} style={styles.paymentCard}>
 
-                                <TouchableOpacity style={styles.paymentTopRow}>
-                                  <Text >
-                                    #{BillPdfdetails?.invoiceNumber}
-                                    <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14 }} />
-                                  </Text>
+                                <View style={styles.paymentTopRow}>
+                                  <TouchableOpacity onPress={() => handleOpenReceiptFromBill(pay)}
+                                    style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Semibold" }}>
+                                      #{pay?.referenceNumber}
+                                    </Text>
+                                    <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7 }} />
+                                  </TouchableOpacity>
 
                                   <Text style={styles.paymentAmount}>
                                     ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
                                   </Text>
-                                </TouchableOpacity>
+                                </View>
 
                                 <View style={styles.divider} />
 
@@ -3625,32 +3648,46 @@ export default function BillsDesign({ route }) {
 
                               {/* <Text style={styles.sectionLabel}>Pending Invoices</Text> */}
 
-                              {BillPdfdetails?.currentMonthEbInfo?.ebItemsList.map((item, index) => (
-                                <View key={index} style={styles.ebRowWeb}>
+                              {BillPdfdetails?.currentMonthEbInfo?.ebItemsList.length > 0 ? (
+                                BillPdfdetails?.currentMonthEbInfo?.ebItemsList.map((item, index) => (
+                                  <View key={index} style={styles.ebRowWeb}>
 
-                                  <View style={{ flex: 1 }}>
-                                    <Text style={styles.ebText}>
-                                      {item?.floorName || "Floor"} | {item?.roomName || "Room"} - {item?.bedName || "Bed"}
-                                    </Text>
+                                    <View style={{ flex: 1 }}>
+                                      <Text style={styles.ebText}>
+                                        {item?.floorName || "Floor"} | {item?.roomName || "Room"} - {item?.bedName || "Bed"}
+                                      </Text>
 
-                                    <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
-                                      <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
-                                        {formatEBDate(item?.fromDate)} - {formatEBDate(item?.toDate)}
+                                      <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
+                                        <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
+                                          {formatEBDate(item?.fromDate)} - {formatEBDate(item?.toDate)}
+                                        </Text>
+                                      </View>
+                                    </View>
+
+                                    <View style={styles.ebRightBox}>
+                                      <Text style={styles.unitText}>
+                                        ({item.consumption} Units)
+                                      </Text>
+                                      <Text style={styles.amountText}>
+                                        ₹ {item?.totalAmount}
                                       </Text>
                                     </View>
+
                                   </View>
 
-                                  <View style={styles.ebRightBox}>
-                                    <Text style={styles.unitText}>
-                                      ({item.consumption} Units)
-                                    </Text>
-                                    <Text style={styles.amountText}>
-                                      ₹ {item?.totalAmount}
-                                    </Text>
+                                ))
+                              ) : (
+                                <View style={styles.emptyWallet}>
+                                  <View style={styles.emptyState}>
+                                    <Text style={styles.emptyWalletText}>No EB invoices</Text>
                                   </View>
-
                                 </View>
-                              ))}
+                              )
+
+
+                              }
+
+
 
 
 
