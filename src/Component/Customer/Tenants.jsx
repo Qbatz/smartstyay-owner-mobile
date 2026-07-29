@@ -383,18 +383,18 @@ export default function TenantsScreen({ route }) {
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
-        const [billStatus, setBillStatus] = useState([]);
-        const [type, setType] = useState([]);
-        const [mode, setMode] = useState([]);
-            const [sharingtype, setSharingTypes] = useState([]);
-          const [filterError, setFilterError] = useState("");
-          const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  const [billStatus, setBillStatus] = useState([]);
+  const [type, setType] = useState([]);
+  const [mode, setMode] = useState([]);
+  const [sharingtype, setSharingTypes] = useState([]);
+  const [filterError, setFilterError] = useState("");
+  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
-    const [sharingtypeOpen, setSharingTypeOpen] = useState(false);
-  
+  const [sharingtypeOpen, setSharingTypeOpen] = useState(false);
+
   const [tempStatus, setTempStatus] = useState([]);
   const [tempType, setTempType] = useState([]);
-    const [tempsharingType, setTempSharingype] = useState([]);
+  const [tempsharingType, setTempSharingype] = useState([]);
 
   const [monthSheetOpen, setMonthSheetOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
@@ -402,31 +402,31 @@ export default function TenantsScreen({ route }) {
 
   const isTabBarVisible = useRef(true);
 
-  const [filterOptions , setFilterOptions] = useState([])
+  const [filterOptions, setFilterOptions] = useState([])
 
   const billStatusOptions = filterOptions?.paymentStatus?.map(i => ({
     label: i?.name,
     value: i?.type,
   }));
 
-    const typeOptions = filterOptions?.invoiceTypes?.map(i => ({
+  const typeOptions = filterOptions?.invoiceTypes?.map(i => ({
     label: i?.name,
     value: i?.type,
   }));
 
-//   const applyFilters = (
-//   newMonth = selectedMonth,
-//   newStatus = billStatus,
-//   newType = type
-// ) => {
-//   const filters = {
-//     period: newMonth ? newMonth : undefined,
-//     paymentStatus: newStatus?.length ? newStatus : undefined,
-//     invoiceTypes: newType?.length ? newType : undefined,
-//   };
+  //   const applyFilters = (
+  //   newMonth = selectedMonth,
+  //   newStatus = billStatus,
+  //   newType = type
+  // ) => {
+  //   const filters = {
+  //     period: newMonth ? newMonth : undefined,
+  //     paymentStatus: newStatus?.length ? newStatus : undefined,
+  //     invoiceTypes: newType?.length ? newType : undefined,
+  //   };
 
-//   GetInvoiceReports(activeHostelId, filters);
-// };
+  //   GetInvoiceReports(activeHostelId, filters);
+  // };
 
 
   // useLayoutEffect(() => {
@@ -793,17 +793,37 @@ export default function TenantsScreen({ route }) {
     );
   });
 
+  // const getStatusColor = (status) => {
+  //   switch (status) {
+  //     case "Checked In":
+  //       return "#00A32E";
+  //     case "Booked":
+  //       return "#1E45E1"; 
+  //     case "Notice Period":
+  //     case "Settlement Generated":
+  //       return "#FF0000";
+  //     default:
+  //       return "#D1D5DB"; 
+  //   }
+  // };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Checked In":
-        return "#00A32E"; // Green
+        return "#00A32E";
+
       case "Booked":
-        return "#1E45E1"; // Blue
+        return "#1E45E1";
+
+      case "Draft":
+        return "#66CFFF"; // Sky Blue
+
       case "Notice Period":
       case "Settlement Generated":
-        return "#FF0000"; // Red
+        return "#FF0000";
+
       default:
-        return "#D1D5DB"; // Grey fallback
+        return "#D1D5DB";
     }
   };
 
@@ -826,8 +846,8 @@ export default function TenantsScreen({ route }) {
 
 
   const isValidImageUrl = (url) => {
-  return typeof url === "string" && /^https?:\/\//i.test(url.trim());
-};
+    return typeof url === "string" && /^https?:\/\//i.test(url.trim());
+  };
 
   // if (!canReadTenant && !loading) {
   //       return (
@@ -857,38 +877,38 @@ export default function TenantsScreen({ route }) {
 
       <SafeAreaView style={styles.container}>
 
-       
-        <View style={{ paddingHorizontal: 16 , }}>
 
- {/* <View style={{ flexDirection:'row'}}>
+        <View style={{ paddingHorizontal: 16, }}>
+
+          {/* <View style={{ flexDirection:'row'}}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
           </TouchableOpacity> */}
 
-           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-    <TouchableOpacity 
-      onPress={() => navigation.goBack()}
-      style={{ marginRight: 10 }}
-    >
-      <Image source={LeftArrow} style={{ width: 20, height: 20 }} />
-    </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity
+              onPress={() => navigation.goBack()}
+              style={{ marginRight: 10 }}
+            >
+              <Image source={LeftArrow} style={{ width: 20, height: 20 }} />
+            </TouchableOpacity>
 
-    <View style={[styles.searchContainer, { flex: 1 }]}>
-      <Image source={SearchIcon} style={styles.searchIcon} />
+            <View style={[styles.searchContainer, { flex: 1 }]}>
+              <Image source={SearchIcon} style={styles.searchIcon} />
 
-      <TextInput
-        style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
-        disabled={!canReadTenant}
-        placeholder="Search Tenants"
-        placeholderTextColor="#9CA3AF"
-        value={searchText}
-        onChangeText={(t) => {
-          const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
-          setSearchText(cleanText);
-        }}
-      />
-    </View>
-  </View>
+              <TextInput
+                style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
+                disabled={!canReadTenant}
+                placeholder="Search Tenants"
+                placeholderTextColor="#9CA3AF"
+                value={searchText}
+                onChangeText={(t) => {
+                  const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
+                  setSearchText(cleanText);
+                }}
+              />
+            </View>
+          </View>
           {/* </View> */}
 
 
@@ -1249,19 +1269,19 @@ export default function TenantsScreen({ route }) {
                             </View>
                           )} */}
                           {isValidImageUrl(item?.profilePic) ? (
-  <Image
-    source={{ uri: item.profilePic }}
-    style={styles.profileImg}
-  />
-) : (
-  <View style={styles.initialCircle}>
-    <Text style={styles.initialText}>
-      {item?.initials ||
-        item?.fullName?.slice(0, 2)?.toUpperCase() ||
-        "--"}
-    </Text>
-  </View>
-)}
+                            <Image
+                              source={{ uri: item.profilePic }}
+                              style={styles.profileImg}
+                            />
+                          ) : (
+                            <View style={styles.initialCircle}>
+                              <Text style={styles.initialText}>
+                                {item?.initials ||
+                                  item?.fullName?.slice(0, 2)?.toUpperCase() ||
+                                  "--"}
+                              </Text>
+                            </View>
+                          )}
 
                           {/* ✅ STATUS DOT */}
                           <View
@@ -1287,6 +1307,40 @@ export default function TenantsScreen({ route }) {
                             ellipsizeMode="tail">{item.fullName}</Text>
 
                           <View style={styles.detailRow}>
+                            {item.currentStatus === "Draft" ? (
+                              <View style={styles.floorBadge}>
+                                <Text style={styles.floorText}>Draft</Text>
+                              </View>
+                            ) : (
+                              <>
+                                {item.floorName && (
+                                  <View style={[styles.floorBadge, { flex: 1, alignItems: 'center' }]}>
+                                    <Text style={[styles.floorText]} numberOfLines={1}
+                                      ellipsizeMode="tail">{item.floorName}</Text>
+                                  </View>
+                                )}
+
+                                {item.roomName && (
+                                  <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
+                                    <Image source={room} style={styles.iconSmall} />
+                                    <Text style={[styles.detailText, { flexShrink: 1 }]} numberOfLines={1}
+                                      ellipsizeMode="tail">{item.roomName}</Text>
+
+                                  </View>
+
+                                )}
+
+                                {item.bedName && (
+                                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                                    <Image source={Bed} style={styles.iconSmall} />
+                                    <Text style={[styles.detailText, { flexShrink: 1 }]} numberOfLines={1}
+                                      ellipsizeMode="tail">{item.bedName}</Text>
+                                  </View>
+                                )}
+                              </>
+                            )}
+                          </View>
+                          {/* <View style={styles.detailRow}>
                             {item.floorName && (
                               <View style={[styles.floorBadge, { flex: 1, alignItems: 'center' }]}>
                                 <Text style={[styles.floorText]} numberOfLines={1}
@@ -1311,7 +1365,7 @@ export default function TenantsScreen({ route }) {
                                   ellipsizeMode="tail">{item.bedName}</Text>
                               </View>
                             )}
-                          </View>
+                          </View> */}
                         </View >
 
                         <View style={styles.rightSection}>
@@ -1402,14 +1456,14 @@ export default function TenantsScreen({ route }) {
         )}
 
         {activeTab === "Checkout" && (
-          <CheckoutList searchText={searchText} 
+          <CheckoutList searchText={searchText}
           // setShowTabBar={setShowTabBar} 
           />
         )}
         {activeTab === "Walk-In" && (
-          <WalkinScreen 
-          // setShowTabBar={setShowTabBar}
-           navigation={navigation}
+          <WalkinScreen
+            // setShowTabBar={setShowTabBar}
+            navigation={navigation}
             handleWalkinFilter={handleWalkinFilter} searchText={searchText} />
         )}
 
@@ -1502,23 +1556,23 @@ export default function TenantsScreen({ route }) {
                   </TouchableOpacity>
                   {/* <Text style={styles.modalName}>{selectedCustomer?.fullName} </Text> */}
 
-            {  selectedCustomer?.customerCurrentStatus !== "DRAFT"  && (
-                  <View style={styles.detailRow}>
-                    <View style={styles.floorBadge}>
-                      <Text style={[styles.floorText, { flexShrink: 1 }]}
+                  {selectedCustomer?.customerCurrentStatus !== "DRAFT" && (
+                    <View style={styles.detailRow}>
+                      <View style={styles.floorBadge}>
+                        <Text style={[styles.floorText, { flexShrink: 1 }]}
+                          numberOfLines={1}
+                          ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.floorName}</Text>
+                      </View>
+                      <Image source={room} style={{ width: 18, height: 18, marginRight: 4 }} />
+                      <Text style={[styles.detailText, { flexShrink: 1 }]}
                         numberOfLines={1}
-                        ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.floorName}</Text>
+                        ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.roomName}</Text>
+                      <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8, marginRight: 4 }} />
+                      <Text style={[styles.detailText, { flexShrink: 1 }]}
+                        numberOfLines={1}
+                        ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.bedName}</Text>
                     </View>
-                    <Image source={room} style={{ width: 18, height: 18, marginRight: 4 }} />
-                    <Text style={[styles.detailText, { flexShrink: 1 }]}
-                      numberOfLines={1}
-                      ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.roomName}</Text>
-                    <Image source={Bed} style={{ width: 18, height: 18, marginLeft: 8, marginRight: 4 }} />
-                    <Text style={[styles.detailText, { flexShrink: 1 }]}
-                      numberOfLines={1}
-                      ellipsizeMode="tail">{selectedCustomer?.hostelInfo?.bedName}</Text>
-                  </View>
-            )}
+                  )}
 
                 </View>
               </View>
@@ -1609,26 +1663,26 @@ export default function TenantsScreen({ route }) {
                 </TouchableOpacity>
               </View>
 
-              {  selectedCustomer?.customerCurrentStatus !== "DRAFT"  && (
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <View style={{ marginTop: 10, }}>
-                  <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>
-                    {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date (Tentative)" : "Joined Date"}
-                  </Text>
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    <Image
-                      source={dateImg}
-                      style={{ width: 15, height: 15, marginRight: 5 }}
-                      resizeMode="contain"
-                    />
-                    <Text style={styles.infoValue}>
-                      {customerExpectedJoiningDate?.expectedJoiningDate || selectedCustomer?.hostelInfo?.joiningDate}</Text>
+              {selectedCustomer?.customerCurrentStatus !== "DRAFT" && (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <View style={{ marginTop: 10, }}>
+                    <Text style={{ fontSize: 13, color: "#6B7280", fontFamily: "Gilroy-Semibold" }}>
+                      {selectedCustomer?.customerCurrentStatus == "BOOKED" ? "Joining Date (Tentative)" : "Joined Date"}
+                    </Text>
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      <Image
+                        source={dateImg}
+                        style={{ width: 15, height: 15, marginRight: 5 }}
+                        resizeMode="contain"
+                      />
+                      <Text style={styles.infoValue}>
+                        {customerExpectedJoiningDate?.expectedJoiningDate || selectedCustomer?.hostelInfo?.joiningDate}</Text>
+                    </View>
                   </View>
+
+
                 </View>
-
-
-              </View>
-              ) }
+              )}
 
 
               {
@@ -2461,71 +2515,71 @@ export default function TenantsScreen({ route }) {
           options={billStatusOptions || []}
           selectedValues={tempStatus}
           setSelectedValues={setTempStatus}
-        
+
           onReset={() => {
             setTempStatus([]);
             setBillStatus([]);
             setStatusSheetOpen(false);
-        
+
             // applyFilters(selectedMonth, [], type);
           }}
-        
+
           onApply={() => {
             setBillStatus(tempStatus);
             setStatusSheetOpen(false);
-        
+
             // applyFilters(selectedMonth, tempStatus, type);
           }}
-        
+
           onClose={() => setStatusSheetOpen(false)}
         />
 
-         <FilterBottomSheet
+        <FilterBottomSheet
           visible={sharingtypeOpen}
           title="Sharing Type"
           options={billStatusOptions || []}
           selectedValues={tempsharingType}
           setSelectedValues={setSharingTypeOpen}
-        
+
           onReset={() => {
             setTempSharingype([]);
             setSharingTypes([]);
             setSharingTypeOpen(false);
             // applyFilters(selectedMonth, [], type);
           }}
-        
+
           onApply={() => {
             setSharingTypes(tempsharingType);
             setSharingTypeOpen(false);
-        
+
             // applyFilters(selectedMonth, tempStatus, type);
           }}
-        
+
           onClose={() => setSharingTypeOpen(false)}
         />
-        
+
         <FilterBottomSheet
           visible={typeSheetOpen}
           title="Stay Type"
           options={typeOptions || []}
           selectedValues={tempType}
           setSelectedValues={setTempType}
-        
+
           onReset={() => {
             setTempType([]);
             setType([]);
             setTypeSheetOpen(false);
-        
+
             // applyFilters(selectedMonth, billStatus, []);
           }}
-        
+
           onApply={() => {
             setType(tempType);
             setTypeSheetOpen(false);
-        
+
             // applyFilters(selectedMonth, billStatus, tempType);
           }}
-        
+
           onClose={() => setTypeSheetOpen(false)}
         />
 
@@ -3406,8 +3460,8 @@ const styles = StyleSheet.create({
 
   addBtn: {
     position: "absolute",
-    bottom: 0,
-    right: 20,
+    bottom: 80,
+    right: 40,
     backgroundColor: "#00A32E",
     width: 50,
     height: 50,
@@ -3434,30 +3488,30 @@ const styles = StyleSheet.create({
   },
 
   filterBox: {
-  flex: 1,
+    flex: 1,
     paddingVertical: 4,
     paddingHorizontal: 14,
     borderRadius: 20,
-  // borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  marginRight: 8,
-  marginLeft:8,
-  backgroundColor: "#fff",
-  flexDirection: "row", justifyContent: "center", alignItems: "center" 
-},
+    // borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginRight: 8,
+    marginLeft: 8,
+    backgroundColor: "#fff",
+    flexDirection: "row", justifyContent: "center", alignItems: "center"
+  },
 
-filterBoxActive: {
-  backgroundColor: "#1D4ED8",
-  borderColor: "#1D4ED8",
-},
+  filterBoxActive: {
+    backgroundColor: "#1D4ED8",
+    borderColor: "#1D4ED8",
+  },
 
-filterText: {
-  textAlign: "center",
-  color: "#374151",
-},
+  filterText: {
+    textAlign: "center",
+    color: "#374151",
+  },
 
-filterTextActive: {
-  color: "#fff",
-},
+  filterTextActive: {
+    color: "#fff",
+  },
 });

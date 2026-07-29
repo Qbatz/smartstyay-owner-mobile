@@ -782,8 +782,8 @@ const styles = StyleSheet.create({
 
   addBtn: {
     position: "absolute",
-    bottom: 0,
-    right: 20,
+    bottom: 80,
+    right: 30,
     backgroundColor: "#00A32E",
     width: 50,
     height: 50,

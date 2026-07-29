@@ -2364,16 +2364,40 @@ if(showFilter){
   }, [activeTab])
 
 
+  const clearBillFilters = () => {
+  setFromDate(null);
+  setToDate(null);
+  setBillStatus([]);
+  setType([]);
+  setMode([]);
+  setCreatedBy([]);
+  setAppliedFilters(null);
+  setFilterError("");
+  setSearchText("");
+};
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-
-    setSearchText("");
-
-    if (tab === "Invoices") {
-      GetAllBillDetails(activeHostelId);
-    }
+const handleTabChange = (tab) => {
+  if (activeTab === "Invoices" && tab !== "Invoices") {
+    clearBillFilters();
   }
+
+setSearchText("");
+  setActiveTab(tab);
+
+  if (tab === "Invoices") {
+    GetAllBillDetails(activeHostelId);
+  }
+};
+
+  // const handleTabChange = (tab) => {
+  //   setActiveTab(tab);
+
+  //   setSearchText("");
+
+  //   if (tab === "Invoices") {
+  //     GetAllBillDetails(activeHostelId);
+  //   }
+  // }
 
   const getPaymentIcon = (status) => {
     switch (status) {
@@ -2869,7 +2893,17 @@ if(showFilter){
                       <Image source={EmptyFloor} style={styles.image} />
                       <Text style={styles.noFloorText}>No bills are there!</Text>
 
-                      <TouchableOpacity
+                      {appliedFilters ? (
+  <TouchableOpacity
+    style={{width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" , marginTop:10}}
+    onPress={handleResetFilters}
+  >
+    <Text style={styles.resetText}>
+      Reset Filters
+    </Text>
+  </TouchableOpacity>
+                      ): (
+  <TouchableOpacity
                         style={[
                           styles.addFloorBtn,
                           !canWriteInvoice && { opacity: 0.4 }
@@ -2878,6 +2912,9 @@ if(showFilter){
                         onPress={handleCreateBill}>
                         <Text style={styles.addFloorText}>+ Add Bill</Text>
                       </TouchableOpacity>
+                      )}
+
+                    
                     </View>
                   )}
 
