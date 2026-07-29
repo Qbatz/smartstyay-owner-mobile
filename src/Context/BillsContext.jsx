@@ -1247,6 +1247,7 @@ export default function BillsProvider({ children }) {
 
 
   const GetInitializeRecordPaymentDetails = async ({ hostelId, invoiceId }) => {
+    console.log("sonna",hostelId,invoiceId)
   if (!hostelId || !invoiceId) {
     return { success: false, message: "Invalid data" };
   }

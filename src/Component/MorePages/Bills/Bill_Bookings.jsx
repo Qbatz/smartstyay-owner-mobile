@@ -559,7 +559,8 @@ const BillBookings = ({setShowTabBar , onBookingDetailsShow, showRetainerFilters
           />
 
         )}
-        {/* {!loading && BillDetails?.listInvoices?.length > 0 && (
+
+         {!loading && Advancebookingbills?.length > 0 && (
                   <>
                   
   
@@ -579,6 +580,7 @@ const BillBookings = ({setShowTabBar , onBookingDetailsShow, showRetainerFilters
                   </>
                 )
                 }
+        {/*
 
 
 

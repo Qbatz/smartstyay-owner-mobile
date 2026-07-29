@@ -395,6 +395,8 @@ export default function BillsDesign({ route }) {
   //   }, [activeHostelId, canReadInvoice, activeTab])
   // );
 
+  console.log("activehost",activeHostelId)
+
 
   useEffect(() => {
     if (
@@ -404,7 +406,7 @@ export default function BillsDesign({ route }) {
     ) {
       GetAllBillDetails(activeHostelId);
     }
-  }, [activeTab]);
+  }, [activeTab,activeHostelId]);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -1255,7 +1257,7 @@ if(showFilter){
 
     const res = await GetInitializeRecordPaymentDetails({
       hostelId: activeHostelId,
-      invoiceId: BillPdfdetails?.invoiceId,
+      invoiceId: BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId || selectedBill?.invoiceId,
     })
 
     console.log("recordpaymentinitializeresponse", res);
