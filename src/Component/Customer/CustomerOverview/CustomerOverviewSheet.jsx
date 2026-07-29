@@ -809,7 +809,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               </Text>
               {/* </View> */}
 
-              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
+              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING" && customerDetails?.customerCurrentStatus != "DRAFT") && (
                 <TouchableOpacity onPress={(e) => {
                   openMenu(e, customerDetails);
                 }}>

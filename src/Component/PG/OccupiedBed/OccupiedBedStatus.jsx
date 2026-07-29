@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState , useContext} from "react";
+import React, { useRef, useEffect, useState, useContext } from "react";
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   TouchableWithoutFeedback,
-  PanResponder , NativeModules , Linking
+  PanResponder, NativeModules, Linking
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
@@ -39,20 +39,20 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
   const [bookedItems, setBookedItems] = useState("")
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const navigation = useNavigation();
-   const {CommonModule}=NativeModules;
-     const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
- const { activeHostelId } = useContext(CommonContexts);
+  const { CommonModule } = NativeModules;
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const { activeHostelId } = useContext(CommonContexts);
 
-      const [showSuccessModal, setShowSuccessModal] = useState(false);
-      const [modalMessage, setModalMessage] = useState("");
-      const [modalType, setModalType] = useState("success");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
 
-         useEffect(() => {
-           if (activeHostelId) {
-             getParticularHostelDetails(activeHostelId);
-           }
-         }, [activeHostelId])
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId])
 
 
   const handleMoveClick = () => {
@@ -65,8 +65,19 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
     //   handleMakeUsInActive()
     setBookedItems(item)
   }
-  const handleBookToCheckin = () => {
-    handleCheckIn()
+  // const handleBookToCheckin = () => {
+  //   handleCheckIn()
+  // }
+
+  const handleBookToCheckin = (details) => {
+    setMenuOpen(false)
+    onClose()
+    navigation.navigate("BookingCheckIn", {
+      selectedBedReserv: details,
+      PGselectedBed: selectedBed
+    })
+    console.log("emtybed", details)
+    console.log("emtybed", selectedBed)
   }
   const handleEdit = () => {
     if (!handleEditBed || !selectedBed) return;
@@ -81,12 +92,12 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
     onReAssign()
   }
 
-  const handleCallPhone=(mobile)=>{
-    console.log("mobile",mobile)
-    if(mobile){
+  const handleCallPhone = (mobile) => {
+    console.log("mobile", mobile)
+    if (mobile) {
       CommonModule.makeCall(mobile)
     }
-    
+
   }
 
   useEffect(() => {
@@ -130,23 +141,23 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
   } = useHasPermission("Customers");
 
   const {
-        canReadModule: canReadPayingGuests,
+    canReadModule: canReadPayingGuests,
     canUpdateModule: canUpdatePayingGuests,
     // canDeleteModule: canDeletePayingGuests,
 
   } = useHasPermission("Paying Guests");
 
 
-  const disableCheckin= selectedBed?.isOccupied
+  const disableCheckin = selectedBed?.isOccupied
 
 
   const handleOpenWhatsapp = (item) => {
     console.log("mobile", item);
     if (!item) return;
-  
+
     let mobile = item?.mobileNo || item?.mobile;
     let countryCode = item?.countryCode || "91";
-  
+
     if (!mobile) {
       setModalType("warning");
       setModalMessage("Mobile number not available");
@@ -154,18 +165,18 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
       setTimeout(() => setShowSuccessModal(false), 1500);
       return;
     }
-  
+
     mobile = mobile.toString().replace(/\D/g, "");
-  
+
     if (mobile.startsWith(countryCode)) {
       mobile = mobile.slice(countryCode.length);
     }
-  
+
     const phoneNumber = `${countryCode}${mobile}`;
     const url = `https://wa.me/${phoneNumber}`;
-  
+
     console.log("url", url);
-  
+
     Linking.openURL(url).catch(() => {
       setModalType("warning");
       setModalMessage("WhatsApp not installed");
@@ -173,10 +184,10 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
       setTimeout(() => setShowSuccessModal(false), 1500);
     });
   };
-  
 
-const isValidSubscription = PGDetails?.isSubscriptionActive;
-const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
+
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+  const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
   const hasReserved = selectedBed?.newTenantInfo?.length > 0;
 
@@ -185,7 +196,7 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
   return (
     <>
 
-       <SuccessModal
+      <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
         message={modalMessage}
@@ -231,14 +242,14 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
               <Text style={styles.tagText}>{selectedBed.roomName} - {selectedBed.bedName}</Text>
             </View>
           </View>
-      
+
 
           <ScrollView
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             indicatorStyle="white"
           >
-                  <View style={styles.divider} />
+            <View style={styles.divider} />
             <Text style={styles.sub}>Occupied by</Text>
 
             {/* <View style={styles.userRow}>
@@ -327,25 +338,25 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
               </View>
             )}
 
-                                <View style={styles.actionRow}>
-            
-                                  <TouchableOpacity
-                                   style={[styles.chatBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
-                                   disabled={!isSubscriptionAllow} 
-                                   onPress={() =>handleOpenWhatsapp(selectedBed?.currentTenantInfo[0])}>
-                                    <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-                                    <Text style={styles.chatText}>Chat</Text>
-                                  </TouchableOpacity>
-            
-                                  <TouchableOpacity
-                                  style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
-                                  disabled={!isSubscriptionAllow}
-                                  onPress={()=>handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
-                                    <Image source={Call} style={styles.actionIcon} />
-                                    <Text style={styles.callText}>Call</Text>
-                                  </TouchableOpacity>
-            
-                                </View>
+            <View style={styles.actionRow}>
+
+              <TouchableOpacity
+                style={[styles.chatBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                disabled={!isSubscriptionAllow}
+                onPress={() => handleOpenWhatsapp(selectedBed?.currentTenantInfo[0])}>
+                <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                <Text style={styles.chatText}>Chat</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.callBtn, !isSubscriptionAllow && { opacity: 0.4 }]}
+                disabled={!isSubscriptionAllow}
+                onPress={() => handleCallPhone(selectedBed?.currentTenantInfo[0]?.mobile)}>
+                <Image source={Call} style={styles.actionIcon} />
+                <Text style={styles.callText}>Call</Text>
+              </TouchableOpacity>
+
+            </View>
 
             {/* RENTAL AMOUNT */}
             <Text style={styles.label}>Rental Amount</Text>
@@ -437,51 +448,51 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
 
                         </View>
 
-                                                        <View style={styles.actionRow}>
-            
-                                  <TouchableOpacity style={styles.chatBtn} >
-                                    <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
-                                    <Text style={styles.chatText}>Chat</Text>
-                                  </TouchableOpacity>
-            
-                                  <TouchableOpacity style={styles.callBtn} onPress={()=>handleCallPhone(item?.mobile)}>
-                                    <Image source={Call} style={styles.actionIcon} />
-                                    <Text style={styles.callText}>Call</Text>
-                                  </TouchableOpacity>
-            
-                                </View>
+                        <View style={styles.actionRow}>
+
+                          <TouchableOpacity style={styles.chatBtn} >
+                            <Image source={WhatsappGreenIcon} style={styles.actionIcon} />
+                            <Text style={styles.chatText}>Chat</Text>
+                          </TouchableOpacity>
+
+                          <TouchableOpacity style={styles.callBtn} onPress={() => handleCallPhone(item?.mobile)}>
+                            <Image source={Call} style={styles.actionIcon} />
+                            <Text style={styles.callText}>Call</Text>
+                          </TouchableOpacity>
+
+                        </View>
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Booking Amount</Text>
 
-                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
                             <Image source={Money} style={styles.icon} />
                             <Text style={styles.value}>₹  {item.bookingAmount}</Text>
-                          </View>     
+                          </View>
                         </View>
 
                         <View style={styles.infoRow}>
                           <Text style={styles.label}>Check-In Date</Text>
 
-                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
-                              <Image source={Calendar} style={{width: 20, height: 20,marginRight:5}} />
-                               <Text style={styles.value}> {item.joiningDate}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                            <Image source={Calendar} style={{ width: 20, height: 20, marginRight: 5 }} />
+                            <Text style={styles.value}> {item.joiningDate}</Text>
                           </View>
-                         
+
                         </View>
 
 
-                      {item.lastInvoiceNumber &&(
-                        <View style={styles.infoRow}>
-                          <Text style={styles.label}>Last Invoice</Text>
-                          <View style={{flexDirection:'row',alignItems:'center',marginTop:3}}>
-                            <Image source={Invoice} style={styles.icon} />
-                             <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}</Text>
+                        {item.lastInvoiceNumber && (
+                          <View style={styles.infoRow}>
+                            <Text style={styles.label}>Last Invoice</Text>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 3 }}>
+                              <Image source={Invoice} style={styles.icon} />
+                              <Text style={styles.link}>{item.lastInvoiceNumber || "N/A"}</Text>
+                            </View>
+
                           </View>
-                         
-                        </View>
                         )}
-                        
+
                         {showReservedMenu === index && (
                           <>
                             <TouchableWithoutFeedback onPress={() => setShowReservedMenu(null)}>
@@ -491,10 +502,10 @@ const isSubscriptionAllow = isValidSubscription && canReadPayingGuests;
                             <View style={styles.inlineMenu}>
                               <TouchableOpacity
                                 // style={styles.menuItem}
-                                disabled={!canWriteCustomers || disableCheckin}
-                                style={[styles.menuItem, !canWriteCustomers || disableCheckin && { opacity: 0.4 }]}
-                                onPress={handleBookToCheckin}
-
+                                disabled={!canWriteCustomers}
+                                style={[styles.menuItem, !canWriteCustomers && { opacity: 0.4 }]}
+                                // onPress={handleBookToCheckin}
+                                onPress={() => handleBookToCheckin(item)}
                               >
                                 <Image
                                   style={styles.menuIconAdd}
@@ -814,15 +825,15 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Semibold",
     marginLeft: 6
   },
- actionIcon: {
+  actionIcon: {
     width: 18,
     height: 18
   },
-divider: {
-  height: 0.6,
-  backgroundColor: "#E5E7EB", 
-  marginBottom: 4,
-  marginTop:10
-},
+  divider: {
+    height: 0.6,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 4,
+    marginTop: 10
+  },
 
 });

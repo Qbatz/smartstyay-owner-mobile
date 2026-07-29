@@ -207,13 +207,13 @@ export default function FinalSettlementScreen({ navigation, route }) {
     }
   }, [settlementDetails]);
 
-   useEffect(() => {
-  setAppliedDiscount(
-    Number(
-      settlementDetails?.currentMonthRentInfo?.discountAmount || 0
-    )
-  );
-}, [settlementDetails])
+  useEffect(() => {
+    setAppliedDiscount(
+      Number(
+        settlementDetails?.currentMonthRentInfo?.discountAmount || 0
+      )
+    );
+  }, [settlementDetails])
 
 
   // useEffect(() => {
@@ -496,12 +496,12 @@ export default function FinalSettlementScreen({ navigation, route }) {
   //   return sum + (isNaN(amt) ? 0 : amt);
   // }, 0);
 
-const totalDeduction = extraCharges
-  .filter(item => !item.isDefault)
-  .reduce((sum, item) => {
-    const amt = Number(item.amount);
-    return sum + (isNaN(amt) ? 0 : amt);
-  }, 0);
+  const totalDeduction = extraCharges
+    .filter(item => !item.isDefault)
+    .reduce((sum, item) => {
+      const amt = Number(item.amount);
+      return sum + (isNaN(amt) ? 0 : amt);
+    }, 0);
 
   useEffect(() => {
     const lastRentPaid = Number(
@@ -619,9 +619,9 @@ const totalDeduction = extraCharges
     setReturnAmount(normalizedAmount);
 
     console.log("updatedAmountToBePaid", updatedAmountToBePaid);
-console.log("totalDeduction", totalDeduction);
-console.log("discount", appliedDiscount);
-console.log("finalAmount", finalAmount);
+    console.log("totalDeduction", totalDeduction);
+    console.log("discount", appliedDiscount);
+    console.log("finalAmount", finalAmount);
   }, [
     settlementDetails,
     appliedDiscount,
@@ -639,6 +639,21 @@ console.log("finalAmount", finalAmount);
     ios: 160,
     android: 140,
   });
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // useEffect(() => {
   //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -676,13 +691,38 @@ console.log("finalAmount", finalAmount);
   // };
   const [isDiscountFocused, setIsDiscountFocused] = useState(false)
   const discountScrollY = 900;
+  // const handleDiscountFocus = () => {
+  //   setTimeout(() => {
+  //     scrollRef.current?.scrollTo({
+  //       y: discountScrollY,
+  //       animated: true,
+  //     });
+  //   }, 200);
+  // };
+
+
+  const currentScrollY = useRef(0);
+
   const handleDiscountFocus = () => {
+    if (!discountRef.current || !scrollRef.current) return;
+
     setTimeout(() => {
-      scrollRef.current?.scrollTo({
-        y: discountScrollY,
-        animated: true,
+      discountRef.current.measureInWindow((x, y, width, height) => {
+        const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+        const kbHeight = keyboardHeight || 300;
+        const footerHeight = 90;
+        const visibleBottom = SCREEN_HEIGHT - kbHeight - footerHeight;
+
+        if (y + height <= visibleBottom && y >= 0) return;
+
+        const offset = (y + height) - visibleBottom + 20;
+
+        scrollRef.current.scrollTo({
+          y: currentScrollY.current + offset,
+          animated: true,
+        });
       });
-    }, 200);
+    }, Platform.OS === "ios" ? 250 : 350);
   };
   useEffect(() => {
 
@@ -983,7 +1023,7 @@ console.log("finalAmount", finalAmount);
   console.log("appliedDiscount", appliedDiscount);
   console.log("ReturnAmount", ReturnAmount);
 
- 
+
 
   const validateDiscount = () => {
     let valid = true;
@@ -1171,7 +1211,10 @@ console.log("finalAmount", finalAmount);
             ref={scrollRef}
             contentContainerStyle={{ paddingBottom: 200 }}
             keyboardShouldPersistTaps="handled"
-
+            onScroll={(e) => {
+              currentScrollY.current = e.nativeEvent.contentOffset.y;
+            }}
+            scrollEventThrottle={16}
           >
             {/* ✅ TOP CUSTOMER CARD */}
             <View style={styles.customerCard}>
@@ -1194,7 +1237,8 @@ console.log("finalAmount", finalAmount);
                       alignItems: "center", justifyContent: "center"
                     }}>
                       <Text style={{
-                        fontSize: 17, fontFamily: "Gilroy-Semibold", color: "#374151",}}>
+                        fontSize: 17, fontFamily: "Gilroy-Semibold", color: "#374151",
+                      }}>
                         {settlementDetails?.customerInfo?.initials}
                       </Text>
                     </View>
@@ -1441,196 +1485,196 @@ console.log("finalAmount", finalAmount);
               </TouchableOpacity>
 
 
-{ collectFullRent && (
-<View style={{ flexDirection: 'row', justifyContent: 'flex-end' , marginBottom:10}}>
-                <View>
-                  <Text style={styles.fullRentText}>
-                    Full Rent ₹ {customRentAmount} + Other Charges ₹ {settlementDetails?.currentMonthRentInfo?.otherItemAmount}
-                  </Text>
+              {collectFullRent && (
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 10 }}>
+                  <View>
+                    <Text style={styles.fullRentText}>
+                      Full Rent ₹ {customRentAmount} + Other Charges ₹ {settlementDetails?.currentMonthRentInfo?.otherItemAmount}
+                    </Text>
+                  </View>
+                  <View>
+                    <TouchableOpacity style={styles.infoCircle}>
+                      <Text style={{ fontSize: 10, color: "#64748B", fontFamily: "Gilroy-Bold", }}>i</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <View>
-                  <TouchableOpacity style={styles.infoCircle}>
-                    <Text style={{    fontSize: 10, color: "#64748B", fontFamily: "Gilroy-Bold",}}>i</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-)}
-              
+              )}
+
 
 
               {openRefundRent && (
                 <>
-                <View style={styles.refundBody}>
-                  <TouchableOpacity
-                    activeOpacity={0.8}
-                    style={styles.fullRentRow}
+                  <View style={styles.refundBody}>
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      style={styles.fullRentRow}
 
-                    onPress={() => {
-                      if (collectFullRent) {
-                        setCollectFullRent(false);
-                        setCustomRentAmount(settlementDetails?.currentMonthRentInfo?.fullRent || 0)
-                        setFinalAmountSetClicked(false);
-                      } else {
-                        setShowRentSheet(true);
-                        setMode("add")
-                      }
-                    }}
-                  >
-                    <View
-                      style={[
-                        styles.checkbox,
-                        collectFullRent && styles.checkedBox,
-                      ]}
+                      onPress={() => {
+                        if (collectFullRent) {
+                          setCollectFullRent(false);
+                          setCustomRentAmount(settlementDetails?.currentMonthRentInfo?.fullRent || 0)
+                          setFinalAmountSetClicked(false);
+                        } else {
+                          setShowRentSheet(true);
+                          setMode("add")
+                        }
+                      }}
                     >
-                      {collectFullRent && (
-                        <Text style={styles.checkMark}>✓</Text>
-                      )}
-                    </View>
+                      <View
+                        style={[
+                          styles.checkbox,
+                          collectFullRent && styles.checkedBox,
+                        ]}
+                      >
+                        {collectFullRent && (
+                          <Text style={styles.checkMark}>✓</Text>
+                        )}
+                      </View>
 
-                    <Text style={styles.fullRentText}>
-                      Do you want to collect Full Rent for current month?
-                    </Text>
+                      <Text style={styles.fullRentText}>
+                        Do you want to collect Full Rent for current month?
+                      </Text>
 
-                    <TouchableOpacity style={styles.infoCircle}>
-                      <Text style={styles.infoText}>i</Text>
+                      <TouchableOpacity style={styles.infoCircle}>
+                        <Text style={styles.infoText}>i</Text>
+                      </TouchableOpacity>
                     </TouchableOpacity>
-                  </TouchableOpacity>
 
-                  <View style={styles.divider} />
+                    <View style={styles.divider} />
 
-                 
-                  <TouchableOpacity
-                    style={styles.rowBetween}
-                    onPress={() => setShowLastRentDetails(!showLastRentDetails)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Text style={styles.descText}>
-                        Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days)
-                      </Text>
 
-                      <Image
-                        source={DownArrow}
-                        style={[
-                          styles.arrowSmall,
-                          showLastRentDetails && { transform: [{ rotate: "180deg" }] },
-                        ]}
-                      />
-                    </View>
+                    <TouchableOpacity
+                      style={styles.rowBetween}
+                      onPress={() => setShowLastRentDetails(!showLastRentDetails)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Text style={styles.descText}>
+                          Last Rent Paid ({settlementDetails?.currentMonthRentInfo?.paidDays} days)
+                        </Text>
 
-                    <Text style={styles.amountText}>
-                      ₹ {Number(
-                        settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
-                      ).toLocaleString("en-IN")}
-                    </Text>
-                  </TouchableOpacity>
+                        <Image
+                          source={DownArrow}
+                          style={[
+                            styles.arrowSmall,
+                            showLastRentDetails && { transform: [{ rotate: "180deg" }] },
+                          ]}
+                        />
+                      </View>
 
-                  {showLastRentDetails && (
-                    <View style={styles.detailCard}>
-                      <Text style={styles.sectionLabel}>Actual Rent</Text>
                       <Text style={styles.amountText}>
-                        ₹ {settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0}
+                        ₹ {Number(
+                          settlementDetails?.currentMonthRentInfo?.currentRentPaid || 0
+                        ).toLocaleString("en-IN")}
                       </Text>
-                    </View>
-                  )}
+                    </TouchableOpacity>
 
-                  {showLastRentDetails && settlementDetails?.currentMonthRentInfo?.discountAmount > 0 && (
-                    <View style={styles.detailCard}>
-                      <Text style={styles.sectionLabel}>Discount</Text>
-                      <Text style={styles.rightMuted}>
-                        ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount}
-                      </Text>
-                    </View>
-                  )}
-
-                  <TouchableOpacity
-                    style={styles.rowBetween}
-                    onPress={() => setShowDetails(!showDetails)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Text style={styles.descText}>
-                        Actual Stay Days (Rent) ({settlementDetails?.currentMonthRentInfo?.stayDays} days)
-                      </Text>
-
-                      <Image
-                        source={DownArrow}
-                        style={[
-                          styles.arrowSmall,
-                          showDetails && { transform: [{ rotate: "180deg" }] },
-                        ]}
-                      />
-                    </View>
-
-                    <Text style={styles.amountText}>
-                      ₹{" "}
-                      {Number(
-                        settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0
-                      ).toLocaleString("en-IN")}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {showDetails &&
-                    settlementDetails?.currentMonthRentInfo?.rentLists?.map(
-                      (item, index) => (
-                      
-
-                        <View key={index} style={styles.detailCard}>
-                          <Text style={styles.linkText}>
-                            {item.floorName} | {item.roomName} - {item.bedName}
-                          </Text>
-
-                          <Text
-                            style={styles.rightMuted}
-                            numberOfLines={0}
-                          >
-                            ({item.noOfDays} {item.noOfDays === 1 ? "day" : "days"} × {item.rentPerDay} = {item.totalRent})
-                          </Text>
-                        </View>
-
-                      )
+                    {showLastRentDetails && (
+                      <View style={styles.detailCard}>
+                        <Text style={styles.sectionLabel}>Actual Rent</Text>
+                        <Text style={styles.amountText}>
+                          ₹ {settlementDetails?.currentMonthRentInfo?.currentMonthRent || 0}
+                        </Text>
+                      </View>
                     )}
-                  <TouchableOpacity
-                    style={styles.rowBetween}
-                    onPress={() => setShowOtherDetails(!showOtherDetails)}
-                    activeOpacity={0.7}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      <Text style={styles.descText}>
-                        Other Charges
-                      </Text>
 
-                      <Image
-                        source={DownArrow}
-                        style={[
-                          styles.arrowSmall,
-                          showOtherDetails && { transform: [{ rotate: "180deg" }] },
-                        ]}
-                      />
-                    </View>
-
-                    <Text style={styles.amountText}>
-                      ₹ {Number(
-                        settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
-                      ).toLocaleString("en-IN")}
-                    </Text>
-                  </TouchableOpacity>
-
-                  {showOtherDetails &&
-                    settlementDetails?.currentMonthRentInfo?.currentMonthOtherItems?.map(
-                      (i, index) => (
-                        <View key={index} style={styles.detailCard}>
-                          <Text style={styles.linkText}>
-                            {i?.item}
-                          </Text>
-
-                          <Text style={styles.rightMuted}>
-                            ₹ {i?.amount}
-                          </Text>
-                        </View>
-                      )
+                    {showLastRentDetails && settlementDetails?.currentMonthRentInfo?.discountAmount > 0 && (
+                      <View style={styles.detailCard}>
+                        <Text style={styles.sectionLabel}>Discount</Text>
+                        <Text style={styles.rightMuted}>
+                          ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount}
+                        </Text>
+                      </View>
                     )}
-                </View>
+
+                    <TouchableOpacity
+                      style={styles.rowBetween}
+                      onPress={() => setShowDetails(!showDetails)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Text style={styles.descText}>
+                          Actual Stay Days (Rent) ({settlementDetails?.currentMonthRentInfo?.stayDays} days)
+                        </Text>
+
+                        <Image
+                          source={DownArrow}
+                          style={[
+                            styles.arrowSmall,
+                            showDetails && { transform: [{ rotate: "180deg" }] },
+                          ]}
+                        />
+                      </View>
+
+                      <Text style={styles.amountText}>
+                        ₹{" "}
+                        {Number(
+                          settlementDetails?.currentMonthRentInfo?.currentPayableRent || 0
+                        ).toLocaleString("en-IN")}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {showDetails &&
+                      settlementDetails?.currentMonthRentInfo?.rentLists?.map(
+                        (item, index) => (
+
+
+                          <View key={index} style={styles.detailCard}>
+                            <Text style={styles.linkText}>
+                              {item.floorName} | {item.roomName} - {item.bedName}
+                            </Text>
+
+                            <Text
+                              style={styles.rightMuted}
+                              numberOfLines={0}
+                            >
+                              ({item.noOfDays} {item.noOfDays === 1 ? "day" : "days"} × {item.rentPerDay} = {item.totalRent})
+                            </Text>
+                          </View>
+
+                        )
+                      )}
+                    <TouchableOpacity
+                      style={styles.rowBetween}
+                      onPress={() => setShowOtherDetails(!showOtherDetails)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={{ flexDirection: "row", alignItems: "center" }}>
+                        <Text style={styles.descText}>
+                          Other Charges
+                        </Text>
+
+                        <Image
+                          source={DownArrow}
+                          style={[
+                            styles.arrowSmall,
+                            showOtherDetails && { transform: [{ rotate: "180deg" }] },
+                          ]}
+                        />
+                      </View>
+
+                      <Text style={styles.amountText}>
+                        ₹ {Number(
+                          settlementDetails?.currentMonthRentInfo?.otherItemAmount || 0
+                        ).toLocaleString("en-IN")}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {showOtherDetails &&
+                      settlementDetails?.currentMonthRentInfo?.currentMonthOtherItems?.map(
+                        (i, index) => (
+                          <View key={index} style={styles.detailCard}>
+                            <Text style={styles.linkText}>
+                              {i?.item}
+                            </Text>
+
+                            <Text style={styles.rightMuted}>
+                              ₹ {i?.amount}
+                            </Text>
+                          </View>
+                        )
+                      )}
+                  </View>
                 </>
               )}
             </View>
@@ -1651,7 +1695,7 @@ console.log("finalAmount", finalAmount);
 
               {openEBill && (
                 <View style={styles.accordionBody}>
-               
+
                   {settlementDetails?.ebInfo?.missedEb?.length > 0 && (
                     <Text style={styles.sectionLabel}>Missed Electricity</Text>
                   )}
@@ -1672,11 +1716,11 @@ console.log("finalAmount", finalAmount);
                         </View>
                       </View>
 
-                   
+
                       <TouchableOpacity
                         onPress={() => {
                           setShowRoomReadingSheet(true);
-                          setSelectedPendingEb(item); 
+                          setSelectedPendingEb(item);
                         }}
                       >
                         <Text style={styles.addText}>+ Add</Text>
@@ -1753,7 +1797,7 @@ console.log("finalAmount", finalAmount);
                   </View>
 
 
-         
+
 
                   <View style={styles.rowBetween}>
                     <Text style={styles.label}>Refundable Advance</Text>
@@ -1766,7 +1810,7 @@ console.log("finalAmount", finalAmount);
                     <Text style={styles.label}>Total Deductions</Text>
                     <Text style={styles.negativeamountlabel}>
                       {!isRefundable ? "-" : ""} ₹ {settlementDetails?.settlementInfo?.totalDeductions ?? 0}
-                      
+
                       {/* {settlementDetails?.deductionsInfo?.totalDeductionsAmount || totalDeduction} */}
                     </Text>
                   </View>
@@ -2007,46 +2051,46 @@ console.log("finalAmount", finalAmount);
               )}
             </View>
 
-  <View style={styles.accordionCard}>
-  <TouchableOpacity
-    style={styles.accordionHeader}
-    onPress={() => setOpenWallet(!openWallet)}
-  >
-    <Animated.Image
-      source={DownArrow}
-      style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
-    />
-    <Text style={styles.cardTitle}>
-      Wallet
-    </Text>
+            <View style={styles.accordionCard}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setOpenWallet(!openWallet)}
+              >
+                <Animated.Image
+                  source={DownArrow}
+                  style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                />
+                <Text style={styles.cardTitle}>
+                  Wallet
+                </Text>
 
-    <Text style={styles.amountText}>
-      ₹ {settlementDetails?.walletInfo?.walletAmount || 0}
-    </Text>
-  </TouchableOpacity>
+                <Text style={styles.amountText}>
+                  ₹ {settlementDetails?.walletInfo?.walletAmount || 0}
+                </Text>
+              </TouchableOpacity>
 
-  {openWallet && (
-    <View style={styles.accordionBody}>
-      {settlementDetails?.walletInfo?.transactions?.length > 0 ? (
-        settlementDetails.walletInfo.transactions.map((item, index) => (
-          <View key={index} style={styles.detailCard}>
-            <Text style={styles.linkText}>
-              {item?.source}
-            </Text>
+              {openWallet && (
+                <View style={styles.accordionBody}>
+                  {settlementDetails?.walletInfo?.transactions?.length > 0 ? (
+                    settlementDetails.walletInfo.transactions.map((item, index) => (
+                      <View key={index} style={styles.detailCard}>
+                        <Text style={styles.linkText}>
+                          {item?.source}
+                        </Text>
 
-            <Text style={styles.rightMuted}>
-              ₹ {item?.amount}
-            </Text>
-          </View>
-        ))
-      ) : (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyText}>No wallet transactions available</Text>
-        </View>
-      )}
-    </View>
-  )}
-</View>
+                        <Text style={styles.rightMuted}>
+                          ₹ {item?.amount}
+                        </Text>
+                      </View>
+                    ))
+                  ) : (
+                    <View style={styles.emptyState}>
+                      <Text style={styles.emptyText}>No wallet transactions available</Text>
+                    </View>
+                  )}
+                </View>
+              )}
+            </View>
 
             <View style={styles.nonRefund}>
               <View style={styles.extraHeader}>
@@ -2269,6 +2313,7 @@ console.log("finalAmount", finalAmount);
                   <TextInput
                     ref={discountRef}
                     value={discountValue}
+
                     onChangeText={(t) => {
                       let cleaned = t.replace(/[^0-9.]/g, "");
 
@@ -2285,12 +2330,11 @@ console.log("finalAmount", finalAmount);
                     }
                     }
 
-
-
                     keyboardType="numeric"
                     placeholder="Enter discount"
                     style={{ flex: 1, fontSize: 16 }}
-                    onPress={handleDiscountFocus}
+                    // onPress={handleDiscountFocus}
+                     onFocus={handleDiscountFocus}  
                   />
 
                   <TouchableOpacity
@@ -3176,7 +3220,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 8,
-    marginRight:8
+    marginRight: 8
   },
 
   infoText: {

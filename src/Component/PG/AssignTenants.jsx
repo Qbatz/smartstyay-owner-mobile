@@ -589,10 +589,10 @@ export default function AssignTenant({ navigation, route }) {
       hasError = true;
     }
 
-    if (!advanceAmount || Number(advanceAmount) < 0) {
-      setAdvanceError("Enter Valid Advance Amount");
-      hasError = true;
-    }
+    // if (!advanceAmount || Number(advanceAmount) < 0) {
+    //   setAdvanceError("Enter Valid Advance Amount");
+    //   hasError = true;
+    // }
 
 
     if (!checkJoiningDate) {
@@ -600,12 +600,19 @@ export default function AssignTenant({ navigation, route }) {
       hasError = true;
     }
 
-    if (!refuseAdvanceAmount) {
-      if (!advanceAmount) {
+       if (!refuseAdvanceAmount) {
+    if (advanceAmount === "" || advanceAmount === null || advanceAmount === undefined) {
         setAdvanceError("Please Enter Advance Amount");
         hasError = true;
-      }
     }
+}
+
+    // if (!refuseAdvanceAmount) {
+    //   if (!advanceAmount) {
+    //     setAdvanceError("Please Enter Advance Amount");
+    //     hasError = true;
+    //   }
+    // }
 
     if (hasError) return;
 
@@ -695,6 +702,9 @@ export default function AssignTenant({ navigation, route }) {
         }))
         ,
       };
+
+      console.log("payload", payload);
+      
 
       const res = await TenantCheckIn(
         activeHostelId,

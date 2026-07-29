@@ -274,7 +274,7 @@ export default function OverviewTab({ customerDetails,
   const disabledocEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
-    status === "CANCELLED_BOOKING"
+    status === "CANCELLED_BOOKING" || status === "DRAFT"
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isSubscriptionAllow = isValidSubscription
