@@ -1333,7 +1333,7 @@ export default function OverviewTab({ customerDetails,
               {hasJobDetails && (
                 <TouchableOpacity
                   disabled={!canUpdateTenant || disableAssignBtn}
-                  style={(!canUpdateTenant || disableAssignBtn )&& { opacity: 0.4 }}
+                  style={(!canUpdateTenant || disableAssignBtn) && { opacity: 0.4 }}
                   onPress={handleshowJobDetails}
                 >
                   <Image source={EditIcon} style={styles.editIcon} />
@@ -1354,30 +1354,12 @@ export default function OverviewTab({ customerDetails,
 
                 <View style={styles.jobButtonRow}>
 
-                  <TouchableOpacity
-                    // style={styles.remindBtn}
-                       style={[styles.remindBtn ,disableAssignBtn && { opacity: 0.4 }]}
-                  // onPress={handleSendReminder}
-                  //  disabled={disableAssignBtn}
-                  disabled
-                  >
-                    <Text style={styles.remindText}>
-                      Send Reminder
-                    </Text>
-                    <Image source={Remainderbtn} style={{
-                      width: 16,
-                      height: 16,
-                      marginRight: 6,
-                      marginLeft: 6,
-                      resizeMode: "contain",
-                    }} />
-                  </TouchableOpacity>
+
 
                   <TouchableOpacity
-                    style={[styles.addNowBtn ,disableAssignBtn && { opacity: 0.4 }]}
+                    style={[styles.addNowBtn, disableAssignBtn && { opacity: 0.4 }]}
                     onPress={handleshowJobDetails}
-                    //  disabled={disableAssignBtn}
-                    disabled
+                    disabled={disableAssignBtn}
                   >
                     <Text style={styles.addNowText}>
                       Add Now
@@ -1445,7 +1427,10 @@ export default function OverviewTab({ customerDetails,
                   <View style={styles.valueWithIcon}>
                     {/* <Image source={Phone} style={styles.detailIcon} /> */}
                     <Text style={styles.detailValue}>
-                      {customerDetails?.jobDetails?.shiftTiming || "N/A"}
+                      {customerDetails?.jobDetails?.shiftTiming &&
+                        customerDetails?.jobDetails?.shiftTiming !== "null:null"
+                        ? customerDetails.jobDetails.shiftTiming
+                        : "N/A"}
                     </Text>
                   </View>
                 </View>

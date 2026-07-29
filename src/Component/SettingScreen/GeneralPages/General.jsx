@@ -750,9 +750,9 @@ export default function GeneralDetailsScreen({ navigation }) {
               <TouchableOpacity
                 style={[
                   styles.masterButton,
-                  !canUpdateProfile && { opacity: 0.4 },
+                  !canWriteProfile && { opacity: 0.4 },
                 ]}
-                disabled={!canUpdateProfile}
+                disabled={!canWriteProfile}
                 onPress={() =>
                   navigation.navigate("AddGeneralScreen")
                 }

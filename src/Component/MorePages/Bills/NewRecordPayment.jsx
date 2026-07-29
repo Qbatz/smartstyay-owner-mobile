@@ -375,7 +375,7 @@ const NewRecordPayment = ({ route }) => {
 
                     <TextInput
                         style={styles.txtInputBox}
-                        placeholder="₹ 1700"
+                        placeholder="Enter Paid Amount"
                         value={paidAmount}
                         keyboardType="number-pad"
                         // onChangeText={(text) => {

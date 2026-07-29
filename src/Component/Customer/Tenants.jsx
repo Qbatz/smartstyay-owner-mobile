@@ -59,7 +59,7 @@ import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 import ListView from "../../Assets/Images/listview.png";
 import RoomView from "../../Assets/Images/Roomview.png";
 import RoomIcon from "../../Assets/Images/Room_Icon.png"
-
+import LeftArrow from "../../Assets/Images/Arrow_left.png"
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -75,7 +75,7 @@ const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60
 //             }
 
 export default function TenantsScreen({ route }) {
-  const { setShowTabBar } = route.params;
+  // const { setShowTabBar } = route.params;
   const screenWidth = Dimensions.get("window").width;
   const { activeHostelId } = useContext(CommonContexts);
   const { getCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
@@ -113,7 +113,7 @@ export default function TenantsScreen({ route }) {
   console.log("activeHostelId", activeHostelId)
   console.log("reassignCustomer", reassignCustomer);
 
-  const { handleScroll } = useHideTabbarOnScroll(setShowTabBar);
+  // const { handleScroll } = useHideTabbarOnScroll(setShowTabBar);
 
 
   const sheetTranslateY = useRef(
@@ -452,25 +452,25 @@ export default function TenantsScreen({ route }) {
   // ]);
 
 
-  useLayoutEffect(() => {
-    if (
-      showDetailModal ||
-      showFilter ||
-      showCheckout ||
-      showNotice ||
-      showInactiveSheet ||
-      showReAssignbed
-    ) {
-      setShowTabBar(false);
-    } else {
-      setShowTabBar(isTabBarVisible.current);
-    }
-  }, [showDetailModal,
-    showFilter,
-    showCheckout,
-    showNotice,
-    showInactiveSheet,
-    showReAssignbed]);
+  // useLayoutEffect(() => {
+  //   if (
+  //     showDetailModal ||
+  //     showFilter ||
+  //     showCheckout ||
+  //     showNotice ||
+  //     showInactiveSheet ||
+  //     showReAssignbed
+  //   ) {
+  //     setShowTabBar(false);
+  //   } else {
+  //     setShowTabBar(isTabBarVisible.current);
+  //   }
+  // }, [showDetailModal,
+  //   showFilter,
+  //   showCheckout,
+  //   showNotice,
+  //   showInactiveSheet,
+  //   showReAssignbed]);
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -478,8 +478,8 @@ export default function TenantsScreen({ route }) {
       () => {
         if (navigation.canGoBack()) {
 
-          setShowTabBar(true);
-          isTabBarVisible.current = true;
+          // setShowTabBar(true);
+          // isTabBarVisible.current = true;
 
           navigation.goBack();
         }
@@ -824,6 +824,11 @@ export default function TenantsScreen({ route }) {
     },
   ];
 
+
+  const isValidImageUrl = (url) => {
+  return typeof url === "string" && /^https?:\/\//i.test(url.trim());
+};
+
   // if (!canReadTenant && !loading) {
   //       return (
   //          <View style={styles.container}>
@@ -851,25 +856,40 @@ export default function TenantsScreen({ route }) {
       {loading && <Loader />}
 
       <SafeAreaView style={styles.container}>
-        <View style={{ paddingHorizontal: 16 }}>
 
-          <View style={styles.searchContainer}>
-            <Image source={SearchIcon} style={styles.searchIcon} />
+       
+        <View style={{ paddingHorizontal: 16 , }}>
 
-            <TextInput
-              // style={styles.searchInput}
-              style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
-              disabled={!canReadTenant}
-              placeholder="Search Tenants"
-              placeholderTextColor="#9CA3AF"
-              value={searchText}
-              onChangeText={(t) => {
-                // ✅ emoji remove + only normal text
-                const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
-                setSearchText(cleanText);
-              }}
-            />
-          </View>
+ {/* <View style={{ flexDirection:'row'}}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
+          </TouchableOpacity> */}
+
+           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <TouchableOpacity 
+      onPress={() => navigation.goBack()}
+      style={{ marginRight: 10 }}
+    >
+      <Image source={LeftArrow} style={{ width: 20, height: 20 }} />
+    </TouchableOpacity>
+
+    <View style={[styles.searchContainer, { flex: 1 }]}>
+      <Image source={SearchIcon} style={styles.searchIcon} />
+
+      <TextInput
+        style={[styles.searchInput, !canReadTenant && { opacity: 0.4 }]}
+        disabled={!canReadTenant}
+        placeholder="Search Tenants"
+        placeholderTextColor="#9CA3AF"
+        value={searchText}
+        onChangeText={(t) => {
+          const cleanText = t.replace(/[^\p{L}\p{N}\s]/gu, "");
+          setSearchText(cleanText);
+        }}
+      />
+    </View>
+  </View>
+          {/* </View> */}
 
 
           <View style={styles.tabContainer}>
@@ -1047,7 +1067,6 @@ export default function TenantsScreen({ route }) {
                     paddingBottom: 50,
                     paddingHorizontal: 16,
                   }}
-                  onScroll={handleScroll}
                   scrollEventThrottle={16}
 
                 >
@@ -1215,7 +1234,7 @@ export default function TenantsScreen({ route }) {
                           // onPress={() => openCustomerDetails(item)}
                           style={{ position: "relative" }}
                         >
-                          {item?.profilePic ? (
+                          {/* {item?.profilePic ? (
                             <Image
                               source={{ uri: item.profilePic }}
                               style={styles.profileImg}
@@ -1228,7 +1247,21 @@ export default function TenantsScreen({ route }) {
                                   "--"}
                               </Text>
                             </View>
-                          )}
+                          )} */}
+                          {isValidImageUrl(item?.profilePic) ? (
+  <Image
+    source={{ uri: item.profilePic }}
+    style={styles.profileImg}
+  />
+) : (
+  <View style={styles.initialCircle}>
+    <Text style={styles.initialText}>
+      {item?.initials ||
+        item?.fullName?.slice(0, 2)?.toUpperCase() ||
+        "--"}
+    </Text>
+  </View>
+)}
 
                           {/* ✅ STATUS DOT */}
                           <View
@@ -1369,10 +1402,14 @@ export default function TenantsScreen({ route }) {
         )}
 
         {activeTab === "Checkout" && (
-          <CheckoutList searchText={searchText} setShowTabBar={setShowTabBar} />
+          <CheckoutList searchText={searchText} 
+          // setShowTabBar={setShowTabBar} 
+          />
         )}
         {activeTab === "Walk-In" && (
-          <WalkinScreen setShowTabBar={setShowTabBar} navigation={navigation}
+          <WalkinScreen 
+          // setShowTabBar={setShowTabBar}
+           navigation={navigation}
             handleWalkinFilter={handleWalkinFilter} searchText={searchText} />
         )}
 
@@ -2580,7 +2617,7 @@ export default function TenantsScreen({ route }) {
           onCheckout={() => {
             setShowCheckout(false);
           }}
-          setShowTabBar={setShowTabBar}
+          // setShowTabBar={setShowTabBar}
           selectedItem={selectedItem}
           onSuccess={handleCheckoutSuccess}
 

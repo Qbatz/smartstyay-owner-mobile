@@ -4,7 +4,8 @@ import Calendar from "../../../Assets/Images/calendar.png";
 import { useFocusEffect } from '@react-navigation/native';
 import StatusIcon from "../../../Assets/Images/StatusIcon.png";
 import Arrow from "../../../Assets/Images/Arrow_left.png";
-import crown from "../../../Assets/Images/crown.png";
+import crown from "../../../Assets/Images/crownIcon.png";
+import PremiumIcon from "../../../Assets/Images/crown.png";
 import BillingIcon from "../../../Assets/Images/direct-right.png";
 import ChecksIcon from "../../../Assets/Images/checks.png";
 import { StatusBar, Platform } from "react-native";
@@ -12,12 +13,12 @@ import { UseSetting } from "../../../Context/SettingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
-
+import LinearGradient from "react-native-linear-gradient";
 
 
 export default function PlanDetailsScreen({ route, navigation }) {
 
-  const { getCurrentHostelPlan,currentPlan} = UseSetting();
+  const { getCurrentHostelPlan, currentPlan } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
 
   // const [currentPlan, setCurrentPlan] = useState(null);
@@ -48,8 +49,8 @@ export default function PlanDetailsScreen({ route, navigation }) {
       fetchCurrentPlan();
     }
   }, [activeHostelId]);
-  console.log("currentPlan",currentPlan)
-  
+  console.log("currentPlan", currentPlan)
+
 
   const fetchCurrentPlan = async () => {
     const res = await getCurrentHostelPlan(activeHostelId);
@@ -65,6 +66,11 @@ export default function PlanDetailsScreen({ route, navigation }) {
   // const isPremium = planId === 1;
   const isExpired = currentPlan?.numberOfDaysRemaining <= 0;
   const isPremium = currentPlan?.planId === 1;
+  const [expandedIndex, setExpandedIndex] = useState(null);
+
+  const handleToggle = (index) => {
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
 
   const {
     canWriteModule: canWriteProfile,
@@ -102,7 +108,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
         ? StatusBar.currentHeight
         : 40,
     }}>
-      <ScrollView style={{ paddingHorizontal: 16 }} contentContainerStyle={{flexGrow:1}}>
+      <ScrollView style={{ paddingHorizontal: 16 }} contentContainerStyle={{ flexGrow: 1 }}>
 
 
         <View style={styles.row}>
@@ -118,23 +124,124 @@ export default function PlanDetailsScreen({ route, navigation }) {
 
           <View style={styles.card}>
             <View style={styles.rowBetween}>
-              <Text style={styles.planTitle}>{currentPlan?.planName} Plan</Text>
+              <Text style={styles.planTitle}>Current Plan</Text>
 
-              <View style={styles.activeBadge}>
-                <View style={styles.greenDot} />
-                <Text style={styles.activeText}>{isExpired ? "Plan Expired" : currentPlan?.status}</Text>
+
+              <View style={{ flexDirection: 'column' }}>
+                <View style={[styles.activeBadge, { backgroundColor: isExpired ? "#EB6617" : "#00A32E" }]}>
+                  {/* <View style={styles.greenDot} /> */}
+                  <Text style={{ color: '#fff' }}>{isExpired ? "Plan Expired" : "Active"}</Text>
+                </View>
+                {!isExpired && (
+                  <Text style={styles.expiryText}>
+                    Expires in {currentPlan?.numberOfDaysRemaining} days
+                  </Text>
+                )}
               </View>
             </View>
 
             <Text style={styles.price}>{currentPlan?.planAmount}</Text>
 
-            <TouchableOpacity style={styles.changeBtn}
+            {/* <TouchableOpacity style={styles.changeBtn}
               onPress={() => navigation.navigate("SubscriptionPlans")}>
               <Text style={styles.changeBtnText}>Change Plan</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
+
+            {/* Buttons */}
+
+            {isExpired ? (
+
+              <TouchableOpacity
+                style={styles.primaryBtn}
+                onPress={() => navigation.navigate("SubscriptionPlans")}
+              >
+                <Text style={styles.primaryBtnText}>
+                  Renew Now
+                </Text>
+              </TouchableOpacity>
+
+            ) : (
+
+              <View style={styles.buttonRow}>
+
+                <TouchableOpacity
+                  style={styles.secondaryBtn}
+                  onPress={() => navigation.navigate("SubscriptionPlans")}
+                >
+                  <Text style={styles.secondaryBtnText}>
+                    {isPremium ? "Change Plan" : "Upgrade Plan"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.primaryBtn}
+                  onPress={() => {
+                    // Get Invoice API
+                  }}
+                >
+                  <Text style={styles.primaryBtnText}>
+                    Get Invoice
+                  </Text>
+                </TouchableOpacity>
+
+              </View>
+
+            )}
+
+            {isExpired ? (
+
+              <>
+                <View style={styles.detailsRow}>
+                  <Text style={styles.leftLabel}>Expired on</Text>
+                  <Text style={styles.rightValue}>
+                    {currentPlan?.renewalDate || "-"}
+                  </Text>
+                </View>
+
+                <View style={styles.detailsRow}>
+                  <Text style={styles.leftLabel}>Status</Text>
+                  <Text style={[styles.rightValue, { color: "#222" }]}>
+                    Expired
+                  </Text>
+                </View>
+              </>
+
+            ) : (
+
+              <>
+                <View style={styles.detailsRow}>
+                  <Text style={styles.leftLabel}>Plan start date</Text>
+                  <Text style={styles.rightValue}>
+                    {currentPlan?.planStartDate || "N/A"}
+                  </Text>
+                </View>
+
+                <View style={styles.detailsRow}>
+                  <Text style={styles.leftLabel}>Plan end date</Text>
+                  <Text style={styles.rightValue}>
+                    {currentPlan?.renewalDate || "N/A"}
+                  </Text>
+                </View>
+
+                <View style={styles.detailsRow}>
+                  <Text style={styles.leftLabel}>Payment mode</Text>
+                  <Text style={styles.rightValue}>
+                    {currentPlan?.paymentMethod || "N/A"}
+                  </Text>
+                </View>
+
+                <View style={styles.detailsRow}>
+                  <Text style={styles.leftLabel}>Ref No</Text>
+                  <Text style={styles.rightValue}>
+                    {currentPlan?.referenceNumber || "N/A"}
+                  </Text>
+                </View>
+              </>
+
+            )}
 
 
-            <View style={styles.infoRow}>
+            {/* <View style={styles.infoRow}>
               <Image source={Calendar} style={styles.icon} />
               <View>
                 <Text style={styles.infoLabel}>Renewal Date</Text>
@@ -158,56 +265,123 @@ export default function PlanDetailsScreen({ route, navigation }) {
                 <Text style={styles.infoLabel}>Status</Text>
                 <Text style={styles.statusBlue}>{isExpired ? "Plan Expired" : currentPlan?.status}</Text>
               </View>
-            </View>
+            </View> */}
+
+
           </View>
 
 
           {currentPlan?.planName !== "Advance" && (
-            <View style={styles.upgradeCard}>
 
-              <View style={styles.rowBetween}>
-                <Text style={styles.planUpgradeTitle}>Upgrade to Premium Plan</Text>
-                <Image
-                  source={crown}
-                  style={{ width: 20, height: 20 }}
-                />
+
+            <LinearGradient
+              colors={["#5053A6", "#2E2F86", "#14156E"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.upgradeCard}
+            >
+              {/* Watermark Crown */}
+              <Image source={crown} style={styles.crownWatermark} />
+
+              {/* Left Top Icon */}
+              <Image source={StatusIcon} style={styles.planIcon} />
+
+              {/* Title */}
+              <Text style={styles.upgradeTitle}>
+                Upgrade to Premium Plan
+              </Text>
+
+              <Text style={styles.upgradeSubtitle}>
+                Features to get add on
+              </Text>
+
+              {/* Features */}
+              <View style={styles.featureRow}>
+                <Image source={ChecksIcon} style={styles.tick} />
+                <Text style={styles.featureText}>
+                  WhatsApp Integration
+                </Text>
               </View>
-
 
               <View style={styles.featureRow}>
-                <Image
-                  source={ChecksIcon}
-                  style={styles.tick}
-                />
-                <Text style={styles.featureText}>WhatsApp Integration</Text>
+                <Image source={ChecksIcon} style={styles.tick} />
+                <Text style={styles.featureText}>
+                  Digital KYC
+                </Text>
               </View>
 
               <View style={styles.featureRow}>
-                <Image
-                  source={ChecksIcon}
-                  style={styles.tick}
-                />
-                <Text style={styles.featureText}>Digital KYC</Text>
+                <Image source={ChecksIcon} style={styles.tick} />
+                <Text style={styles.featureText}>
+                  Legal E-Sign
+                </Text>
               </View>
 
-              <View style={styles.featureRow}>
-                <Image
-                  source={ChecksIcon}
-                  style={styles.tick}
-                />
+              {/* Bottom */}
+              <View style={styles.bottomContainer}>
 
-                <Text style={styles.featureText}>Legal E-Sign</Text>
-              </View>
+                <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
+                  <Text style={styles.priceText}>₹999</Text>
+                  <Text style={styles.monthText}> /month</Text>
+                </View>
 
-              <View style={styles.rowBetween}>
-                <Text style={styles.upgradePrice}>₹999 /month</Text>
-
-                <TouchableOpacity style={styles.upgradeNowBtn}>
-                  <Text style={styles.upgradeNowText}>Upgrade Now</Text>
+                <TouchableOpacity
+                  style={styles.upgradeButton}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.upgradeButtonText}>
+                    Upgrade Now
+                  </Text>
                 </TouchableOpacity>
+
               </View>
 
-            </View>
+            </LinearGradient>
+            // <View style={styles.upgradeCard}>
+
+            //   <View style={styles.rowBetween}>
+            //     <Text style={styles.planUpgradeTitle}>Upgrade to Premium Plan</Text>
+            //     <Image
+            //       source={crown}
+            //       style={{ width: 20, height: 20 }}
+            //     />
+            //   </View>
+
+
+            //   <View style={styles.featureRow}>
+            //     <Image
+            //       source={ChecksIcon}
+            //       style={styles.tick}
+            //     />
+            //     <Text style={styles.featureText}>WhatsApp Integration</Text>
+            //   </View>
+
+            //   <View style={styles.featureRow}>
+            //     <Image
+            //       source={ChecksIcon}
+            //       style={styles.tick}
+            //     />
+            //     <Text style={styles.featureText}>Digital KYC</Text>
+            //   </View>
+
+            //   <View style={styles.featureRow}>
+            //     <Image
+            //       source={ChecksIcon}
+            //       style={styles.tick}
+            //     />
+
+            //     <Text style={styles.featureText}>Legal E-Sign</Text>
+            //   </View>
+
+            //   <View style={styles.rowBetween}>
+            //     <Text style={styles.upgradePrice}>₹999 /month</Text>
+
+            //     <TouchableOpacity style={styles.upgradeNowBtn}>
+            //       <Text style={styles.upgradeNowText}>Upgrade Now</Text>
+            //     </TouchableOpacity>
+            //   </View>
+
+            // </View>
           )}
 
 
@@ -215,43 +389,143 @@ export default function PlanDetailsScreen({ route, navigation }) {
 
           {!currentPlan.isTrial && currentPlan?.billingHistory.length > 0 ?
             currentPlan?.billingHistory.map((item, idx) => (
+              // <View key={idx} style={styles.billCard}>
+              //   <View style={{ flexDirection: "row", alignItems: "center" }}>
+              //     <View style={{ backgroundColor: '#1E45E10F', borderRadius: 24, justifyContent: 'center', alignItems: 'center', width: 48, height: 48, marginRight: 10 }}>
+              //       <Image
+              //         source={BillingIcon}
+              //         style={styles.billIcon}
+              //       />
+              //     </View>
+              //     <View>
+              //       <Text style={styles.billTitle}>Invoice {item?.invoiceNumber || "-"}</Text>
+
+              //       <View style={styles.premiumChip}>
+              //         <Text style={styles.premiumChipText}>{item.planName}</Text>
+              //       </View>
+              //     </View>
+              //   </View>
+
+              //   <View style={{ alignItems: "flex-end" }}>
+              //     <Text style={styles.billAmount}>₹ {item?.totalAmount}</Text>
+              //     <Text style={styles.billDate}>{item?.createdAt}</Text>
+              //   </View>
+              // </View>
               <View key={idx} style={styles.billCard}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <View style={{ backgroundColor: '#1E45E10F', borderRadius: 24, justifyContent: 'center', alignItems: 'center', width: 48, height: 48, marginRight: 10 }}>
+
+                {/* Header */}
+                <View style={styles.billTop}>
+
+                  <View style={{ flex: 1 }}>
+
+                    <Text style={styles.billPrice}>
+                      ₹ {item.totalAmount}
+                    </Text>
+
+                    <Text style={styles.purchaseText}>
+                      Purchased on {item.createdAt}
+                    </Text>
+
+                  </View>
+
+                  <View style={styles.planChip}>
                     <Image
-                      source={BillingIcon}
-                      style={styles.billIcon}
+                      source={PremiumIcon}
+                      style={styles.planChipIcon}
                     />
-                  </View>
-                  <View>
-                    <Text style={styles.billTitle}>Invoice {item?.invoiceNumber || "-"}</Text>
 
-                    <View style={styles.premiumChip}>
-                      <Text style={styles.premiumChipText}>{item.planName}</Text>
+                    <Text style={styles.planChipText}>
+                      {item.planName}
+                    </Text>
+
+                  </View>
+
+                </View>
+
+                <View style={styles.billDivider} />
+
+                <View style={styles.billRow}>
+                  <Text style={styles.billLabel}>
+                    Payment mode
+                  </Text>
+
+                  <Text style={styles.billValue}>
+                    {item.paymentMethod}
+                  </Text>
+                </View>
+
+                <View style={styles.billRow}>
+                  <Text style={styles.billLabel}>
+                    Ref No
+                  </Text>
+
+                  <Text style={styles.billValue}>
+                    {item.referenceNumber}
+                  </Text>
+                </View>
+
+                {expandedIndex === idx && (
+
+                  <>
+
+                    <View style={styles.billRow}>
+                      <Text style={styles.billLabel}>
+                        Plan start date
+                      </Text>
+
+                      <Text style={styles.billValue}>
+                        {item.planStartDate}
+                      </Text>
                     </View>
-                  </View>
-                </View>
 
-                <View style={{ alignItems: "flex-end" }}>
-                  <Text style={styles.billAmount}>₹ {item?.totalAmount}</Text>
-                  <Text style={styles.billDate}>{item?.createdAt}</Text>
-                </View>
+                    <View style={styles.billRow}>
+                      <Text style={styles.billLabel}>
+                        Plan end date
+                      </Text>
+
+                      <Text style={styles.billValue}>
+                        {item.planEndDate}
+                      </Text>
+                    </View>
+
+                    <TouchableOpacity style={styles.invoiceButton}>
+                      <Text style={styles.invoiceText}>
+                        Get Invoice
+                      </Text>
+                    </TouchableOpacity>
+
+                  </>
+
+                )}
+
+                <TouchableOpacity
+                  onPress={() => handleToggle(idx)}
+                >
+
+                  <Text style={styles.viewText}>
+                    {expandedIndex === idx
+                      ? "View less"
+                      : "View more"}
+                  </Text>
+
+                </TouchableOpacity>
+
               </View>
             ))
             : <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 15 }}>
               <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', color: '#b3b6bb' }}>No Billing History</Text>
             </View>
           }
-          </>
+        </>
         ) : (
-        <>
-         <View style={{flex:1,justifyContent:'center',alignItems:'center'}}>
-           <Image source={EmptyState} style={styles.emptyImage} />
-            <Text style={{fontSize:20,fontFamily:'Gilroy-Semibold',color:'black'}}>No Data Found</Text>
-             <Text style={{fontSize:18,fontFamily:'Gilroy-Medium',color:'#4B4B4B',marginTop:10}}>
-              No Subscription Found Yet</Text>
-         </View>
-        </>)
+          <>
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+              <Image source={EmptyState} style={styles.emptyImage} />
+              <Text style={{ fontSize: 20, fontFamily: 'Gilroy-Semibold', color: 'black' }}>No Data Found</Text>
+              <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Medium', color: '#4B4B4B', marginTop: 10 }}>
+                No Subscription Found Yet</Text>
+            </View>
+          </>)
         }
 
       </ScrollView>
@@ -280,7 +554,7 @@ const styles = StyleSheet.create({
   activeBadge: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#D7FFD7",
+    justifyContent: 'center',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 14,
@@ -310,18 +584,112 @@ const styles = StyleSheet.create({
 
   // Upgrade card
   upgradeCard: {
-    borderWidth: 1,
-    borderColor: "#4A6CFF",
-    padding: 16,
-    borderRadius: 12,
+    marginTop: 16,
     marginBottom: 20,
+    borderRadius: 20,
+    padding: 20,
+    overflow: "hidden",
+    position: "relative",
   },
 
+  crownWatermark: {
+    position: "absolute",
+    right: -10,
+    top: -5,
+    width: 120,
+    height: 120,
+    opacity: 1,
+    resizeMode: "contain",
+  },
+
+  planIcon: {
+    width: 34,
+    height: 34,
+    tintColor: "#FFFFFF",
+  },
+
+  upgradeTitle: {
+    marginTop: 18,
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontFamily: "Gilroy-Bold",
+  },
+
+  upgradeSubtitle: {
+    marginTop: 8,
+    marginBottom: 18,
+    color: "rgba(255,255,255,0.70)",
+    fontSize: 15,
+    fontFamily: "Gilroy-Regular",
+  },
+
+  featureRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+
+  tick: {
+    width: 22,
+    height: 22,
+    resizeMode: "contain",
+    marginRight: 12,
+  },
+
+  featureText: {
+    color: "#FFFFFF",
+    fontSize: 17,
+    fontFamily: "Gilroy-SemiBold"
+  },
+
+  bottomContainer: {
+    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+  },
+
+  priceText: {
+    color: "#FFFFFF",
+    fontSize: 30,
+    fontFamily: "Gilroy-Bold",
+  },
+
+  monthText: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    marginBottom: 4,
+    fontFamily: "Gilroy-Regular",
+  },
+
+  upgradeButton: {
+    backgroundColor: "#2F54EB",
+    height: 48,
+    width: 165,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
+
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    elevation: 6,
+  },
+
+  upgradeButtonText: {
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontFamily: "Gilroy-SemiBold",
+  },
   planUpgradeTitle: { fontSize: 16, fontWeight: "700" },
 
   featureRow: { flexDirection: "row", alignItems: "center", marginVertical: 6 },
   tick: { height: 16, width: 16, marginRight: 10 },
-  featureText: { fontSize: 14 },
+  featureText: { fontSize: 14, color: '#fff' },
 
   upgradePrice: { fontSize: 20, fontWeight: "700" },
 
@@ -336,33 +704,31 @@ const styles = StyleSheet.create({
 
   billingHeader: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
 
-  billCard: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    padding: 16,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#eee",
-    marginBottom: 12,
-  },
+ billCard: {
+  backgroundColor: "#FFF",
+  borderRadius: 14,
+  borderWidth: 1,
+  borderColor: "#ECECEC",
+  padding: 18,
+  marginBottom: 16,
+},
 
   billIcon: { width: 34, height: 34, },
   billTitle: { fontSize: 14, fontWeight: "700" },
 
-  premiumChip: {
-    backgroundColor: "#FFE7C2",
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    borderRadius: 6,
-    marginTop: 4,
-  },
+  // premiumChip: {
+  //   backgroundColor: "#FFE7C2",
+  //   paddingHorizontal: 10,
+  //   paddingVertical: 3,
+  //   borderRadius: 6,
+  //   marginTop: 4,
+  // },
 
   premiumChipText: { fontSize: 11, fontWeight: "700", color: "#A56A00" },
 
   billAmount: { fontSize: 16, fontWeight: "700" },
   billDate: { fontSize: 12, color: "#777" },
-    emptyImage: {
+  emptyImage: {
     width: 180,
     height: 180,
     resizeMode: "contain",
@@ -375,5 +741,208 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Semibold",
     color: "#777",
   },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 18,
+    marginBottom: 18,
+  },
+
+  primaryBtn: {
+    flex: 1,
+    height: 46,
+    backgroundColor: "#2F54EB",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  secondaryBtn: {
+    flex: 1,
+    height: 46,
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    backgroundColor: "#FFF",
+  },
+
+  primaryBtnText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontFamily: "Gilroy-SemiBold",
+  },
+
+  secondaryBtnText: {
+    color: "#333",
+    fontSize: 16,
+    fontFamily: "Gilroy-Medium",
+  },
+  detailsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 12,
+  },
+
+  leftLabel: {
+    fontSize: 16,
+    color: "#9A9A9A",
+    fontFamily: "Gilroy-Regular",
+  },
+
+  rightValue: {
+    fontSize: 16,
+    color: "#222",
+    fontFamily: "Gilroy-SemiBold",
+  },
+  expiryText: {
+    marginTop: 6,
+    textAlign: "right",
+    fontSize: 15,
+    color: "#4B4B4B",
+    fontFamily: "Gilroy-Italic",
+  },
+  billHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+
+  planLabel: {
+    fontSize: 14,
+    color: "#888",
+    fontFamily: "Gilroy-Regular",
+  },
+
+  divider: {
+    height: 1,
+    backgroundColor: "#ECECEC",
+    marginVertical: 18,
+  },
+
+  invoiceBtn: {
+    marginTop: 20,
+    height: 48,
+    backgroundColor: "#2F54EB",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  invoiceBtnText: {
+    color: "#FFF",
+    fontSize: 16,
+    fontFamily: "Gilroy-SemiBold",
+  },
+
+  viewMore: {
+    textAlign: "center",
+    color: "#2F54EB",
+    fontSize: 16,
+    fontFamily: "Gilroy-SemiBold",
+  },
+
+  chipIcon: {
+    width: 16,
+    height: 16,
+    marginRight: 6,
+  },
+
+  premiumChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF4E5",
+    borderRadius: 18,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  billTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start"
+  },
+
+  billDivider: {
+    height: 1,
+    backgroundColor: "#ECECEC",
+    marginVertical: 18
+  },
+
+  billRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 14
+  },
+
+  billLabel: {
+    fontSize: 13,
+    color: "#A3A3A3",
+    fontFamily: "Gilroy-Regular"
+  },
+
+  billValue: {
+    fontSize: 16,
+    color: "#222",
+    fontFamily: "Gilroy-SemiBold"
+  },
+
+  billPrice: {
+    fontSize: 24,
+    fontFamily: "Gilroy-Bold",
+    color: "#202020"
+  },
+
+  purchaseText: {
+    marginTop: 10,
+    fontSize: 13,
+    color: "#444",
+    fontFamily: "Gilroy-Regular"
+  },
+
+  planChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFF3DF",
+    paddingHorizontal: 8,
+    paddingVertical: 7,
+    borderRadius: 18
+  },
+
+  planChipIcon: {
+    width: 18,
+    height: 18,
+    // marginRight: 6
+  },
+
+  planChipText: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Medium"
+  },
+
+  invoiceButton: {
+    marginTop: 10,
+    height: 48,
+    borderRadius: 10,
+    backgroundColor: "#2F54EB",
+    justifyContent: "center",
+    alignItems: "center"
+  },
+
+  invoiceText: {
+    color: "#FFF",
+    fontSize: 14,
+    fontFamily: "Gilroy-SemiBold"
+  },
+
+  viewText: {
+    marginTop: 18,
+    textAlign: "center",
+    color: "#1E45E1",
+    fontSize: 14,
+    fontFamily: "Gilroy-SemiBold"
+  }
+
 });
 

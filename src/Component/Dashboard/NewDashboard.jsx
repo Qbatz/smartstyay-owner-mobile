@@ -111,8 +111,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
   const { getDashboard, getParticularHostelDetails, PGDetails, loading } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
-  const {  GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-          GetInitializeRecordPaymentDetails } = useContext(BillContext);
+  const { GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+    GetInitializeRecordPaymentDetails } = useContext(BillContext);
   const [unreadCount, setUnreadCount] = useState(0);
   const [dashboardList, setDashboardList] = useState([])
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -466,6 +466,12 @@ export default function DashboardNewDesign({ initialParams, route }) {
     canDeleteModule: canDeleteInvoice,
   } = useHasPermission("Bills")
 
+  const {
+    canWriteModule: canWriteCustomers,
+    // canUpdateModule: canUpdatePayingGuests,
+    // canDeleteModule: canDeletePayingGuests,
+  } = useHasPermission("Customers");
+
   const dashboardLists = {
     totalCustomers: 306,
     checkinTenants: 43,
@@ -567,7 +573,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     console.log("item", item);
 
     const res = await GetParticularCustomerDetails(item.tenantId)
-    console.log("customerD",res)
+    console.log("customerD", res)
     if (res?.success) {
       navigation.navigate("BookingCheckIn", {
         customerId: item?.tenantId,
@@ -578,7 +584,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
   }
 
 
-  const handleShowRecordPayment =async (item) => {
+  const handleShowRecordPayment = async (item) => {
 
     const res = await GetInitializeRecordPaymentDetails({
       hostelId: activeHostelId,
@@ -586,35 +592,35 @@ export default function DashboardNewDesign({ initialParams, route }) {
     })
 
     // setShowRecordPayment(true)
-    if(activeHostelId){
+    if (activeHostelId) {
       if (activeHostelId) {
         try {
-            const res = await getBillsPdfDetails(activeHostelId,item?.invoiceId);
+          const res = await getBillsPdfDetails(activeHostelId, item?.invoiceId);
 
-            console.log("recordPaid", res);
-            console.log(res.data);
+          console.log("recordPaid", res);
+          console.log(res.data);
 
-            setSelectedBill(item);
-            if(res?.success){
-               navigation.navigate("NewRecordPayment", {
-                selectedBill: item,
-                BillPdfdetails: res.data,
-                onPaymentSuccess: fetchDashboard,
+          setSelectedBill(item);
+          if (res?.success) {
+            navigation.navigate("NewRecordPayment", {
+              selectedBill: item,
+              BillPdfdetails: res.data,
+              onPaymentSuccess: fetchDashboard,
             });
-            }else{
-              setShowSuccessModal(true)
-              setModalMessage(res?.message || "Something Went Wrong")
-              setModalType("error")
-              setTimeout(() => {
-                setShowSuccessModal(false)
-              }, 800);
-            }
+          } else {
+            setShowSuccessModal(true)
+            setModalMessage(res?.message || "Something Went Wrong")
+            setModalType("error")
+            setTimeout(() => {
+              setShowSuccessModal(false)
+            }, 800);
+          }
         } catch (err) {
-            console.log(err);
+          console.log(err);
         }
+      }
     }
-     }
-     
+
     setSelectedBill(item)
 
   }
@@ -1831,7 +1837,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               </View>
                             </TouchableOpacity> */}
 
-                            <TouchableOpacity style={styles.monthBtn} 
+                            <TouchableOpacity style={styles.monthBtn}
                             // onPress={() => {
                             //   setTempMonth(selectedMonth);
                             //   setMonthSheetOpen(true);
@@ -1998,7 +2004,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <Text style={styles.occupancyTitle}>Occupancy</Text>
                             </View>
 
-                            <TouchableOpacity style={styles.dropdownBtn} 
+                            <TouchableOpacity style={styles.dropdownBtn}
                             // onPress={() => {
                             //   setTempMonth(selectedMonth);
                             //   setMonthSheetOpen(true);
@@ -2057,7 +2063,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <Text style={styles.tenantsTitle}>Tenants</Text>
                             </View>
 
-                            <TouchableOpacity style={styles.dropdownBtn} 
+                            <TouchableOpacity style={styles.dropdownBtn}
                             // onPress={() => {
                             //   setTempMonth(selectedMonth);
                             //   setMonthSheetOpen(true);
@@ -2116,7 +2122,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               <Text style={styles.advanceTitle}>Advance Holding</Text>
                             </View>
 
-                            <TouchableOpacity style={styles.dropdownBtn} 
+                            <TouchableOpacity style={styles.dropdownBtn}
                             // onPress={() => {
                             //   setTempMonth(selectedMonth);
                             //   setMonthSheetOpen(true);
@@ -2192,7 +2198,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             </View>
 
 
-                            <TouchableOpacity style={styles.monthBtn} 
+                            <TouchableOpacity style={styles.monthBtn}
                             // onPress={() => {
                             //   setTempMonth(selectedMonth);
                             //   setMonthSheetOpen(true);
@@ -2245,11 +2251,16 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                       <Text style={styles.viewText}>View</Text>
                                     </TouchableOpacity>
 
-                                    <TouchableOpacity style={styles.checkinBtn} onPress={() => handleShowTennantCheckin(item)}>
+                                    <TouchableOpacity
+                                      // style={styles.checkinBtn}
+                                      disabled={!canWriteCustomers}
+                                      style={[styles.checkinBtn, !canWriteCustomers && { opacity: 0.4 }]}
+                                      onPress={() => handleShowTennantCheckin(item)}>
                                       <Text style={styles.checkinText}>Check-in</Text>
                                     </TouchableOpacity>
                                   </View>
                                 </View>
+
                               ))
                             ) : (
                               <View style={styles.noDataContainer}>
@@ -2317,7 +2328,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             </View>
 
 
-                            <TouchableOpacity style={styles.monthBtn} 
+                            <TouchableOpacity style={styles.monthBtn}
                             // onPress={() => {
                             //   setTempMonth(selectedMonth);
                             //   setMonthSheetOpen(true);
@@ -2417,7 +2428,11 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                   </View>
 
                                   <View style={styles.actionRow}>
-                                    <TouchableOpacity style={styles.paymentBtn} onPress={() => handleShowRecordPayment(item)}>
+                                    <TouchableOpacity
+                                      //  style={styles.paymentBtn}
+                                      style={[styles.paymentBtn, !canWriteInvoice && { opacity: 0.4 }]}
+                                      disabled={!canWriteInvoice}
+                                      onPress={() => handleShowRecordPayment(item)}>
                                       <Text style={styles.paymentText}>Record Payment</Text>
                                     </TouchableOpacity>
                                   </View>
@@ -3017,7 +3032,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           <View style={styles.chartHeader}>
                             <Text style={styles.chartTitle}>Occupancy Trend</Text>
 
-                            <TouchableOpacity style={styles.monthBtn} 
+                            <TouchableOpacity style={styles.monthBtn}
                             //  onPress={() => {
                             //   setTempMonth(selectedMonth);
                             //   setMonthSheetOpen(true);
@@ -3179,7 +3194,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               Revenue Trend
                             </Text>
 
-                            <TouchableOpacity style={styles.monthBtn} 
+                            <TouchableOpacity style={styles.monthBtn}
                             // onPress={() => {
                             //   setTempMonth(selectedMonth);
                             //   setMonthSheetOpen(true);

@@ -167,6 +167,8 @@ export default function Vendors({ navigation }) {
         });
     };
 
+    const vendors = vendorList?.vendors ?? [];
+
     const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
     const translateY = useRef(new Animated.Value(0)).current;
     const panResponder = useRef(
@@ -537,7 +539,7 @@ export default function Vendors({ navigation }) {
 
 
 
-                {!loading && vendorList?.vendors?.length === 0 ? (
+                {!loading && vendors?.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Image
                             source={EmptyState}
@@ -608,23 +610,6 @@ export default function Vendors({ navigation }) {
                             )
 
                         }
-
-
-                        {/* <FlatList
-                            //   data={vendorList}
-                            data={filteredVendors}
-                            keyExtractor={(item) => item?.id.toString()}
-                            renderItem={renderVendor}
-                            contentContainerStyle={{
-                                paddingTop: 0,
-                                paddingHorizontal: 16,
-                                paddingBottom: 200,
-                            }}
-                            ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-                            showsVerticalScrollIndicator={false}
-                        /> */}
-
-
 
 
                         <FlatList

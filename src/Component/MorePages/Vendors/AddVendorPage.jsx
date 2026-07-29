@@ -10,7 +10,7 @@ import {
   ScrollView,
   Animated,
   PanResponder,
-  Dimensions, BackHandler, Keyboard , KeyboardAvoidingView , Platform
+  Dimensions, BackHandler, Keyboard, KeyboardAvoidingView, Platform
 } from "react-native";
 import { CustomerContext } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -219,7 +219,7 @@ export default function AddVendorSheet({ route, navigation }) {
       mobile: vendorData.contactPersonMobile || "",
       email: vendorData.emailId || "",
       street: vendorData.houseNo || "",
-      landmark : vendorData?.landMark || "",
+      landmark: vendorData?.landMark || "",
       city: vendorData.city || "",
       stateName: vendorData.state || "",
       pinCode: vendorData.pinCode
@@ -732,78 +732,78 @@ export default function AddVendorSheet({ route, navigation }) {
     isApplyTriggeredRef.current = true
 
 
-      try {
-     if (vendorData && initialData) {
-      const currentData = getCurrentData();
+    try {
+      if (vendorData && initialData) {
+        const currentData = getCurrentData();
 
-      const dataSame =
-        JSON.stringify(initialData) ===
-        JSON.stringify(currentData);
+        const dataSame =
+          JSON.stringify(initialData) ===
+          JSON.stringify(currentData);
 
-      if (dataSame) {
+        if (dataSame) {
+          setModalType("error");
+          setModalMessage("No Changes Detected");
+          setShowSuccessModal(true);
+
+          setTimeout(() => {
+            setShowSuccessModal(false);
+          }, 1500);
+
+          return;
+        }
+      }
+
+
+
+      let response;
+
+      if (vendorData?.id) {
+        response = await updateVendor(
+          vendorData?.id,
+          updatePayload,
+          selectedImage
+        );
+      } else {
+        response = await addVendor(
+          payLoads,
+          selectedImage
+        );
+      }
+
+
+
+      console.log("response", response);
+
+      if (response?.success) {
+        setModalType("success");
+        setModalMessage(vendorData ? "Vendor Updated Successfully" : "Vendor Added Successfully");
+        setShowSuccessModal(true);
+        // await getVendorList(activeHostelId);
+
+        setTimeout(() => {
+          const res = getVendorDetails(vendorData?.id)
+          setShowSuccessModal(false);
+          navigation.goBack();
+        }, 1500);
+
+      } else {
+
         setModalType("error");
-        setModalMessage("No Changes Detected");
+        setModalMessage(response?.message || "Something went wrong");
         setShowSuccessModal(true);
 
         setTimeout(() => {
           setShowSuccessModal(false);
         }, 1500);
-
-        return;
       }
     }
-
-
-
-    let response;
-
-    if (vendorData?.id) {
-      response = await updateVendor(
-        vendorData?.id,
-        updatePayload,
-        selectedImage
-      );
-    } else {
-      response = await addVendor(
-        payLoads,
-        selectedImage
-      );
+    catch (error) {
+      console.log(error);
+    } finally {
+      isApplyTriggeredRef.current = false;
     }
 
 
-
-    console.log("response", response);
-
-    if (response?.success) {
-      setModalType("success");
-      setModalMessage(vendorData ? "Vendor Updated Successfully" : "Vendor Added Successfully");
-      setShowSuccessModal(true);
-      // await getVendorList(activeHostelId);
-
-      setTimeout(() => {
-        const res = getVendorDetails(vendorData?.id)
-        setShowSuccessModal(false);
-        navigation.goBack();
-      }, 1500);
-
-    } else {
-
-      setModalType("error");
-      setModalMessage(response?.message || "Something went wrong");
-      setShowSuccessModal(true);
-
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1500);
-    }
-  } 
-  catch (error) {
-    console.log(error);
-  } finally {
-    isApplyTriggeredRef.current = false;
-  }
-
-  
   };
 
 
@@ -817,340 +817,340 @@ export default function AddVendorSheet({ route, navigation }) {
         message={modalMessage}
         type={modalType} />
 
-<KeyboardAvoidingView
-  style={{ flex: 1 }}
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-  keyboardVerticalOffset={20}
->
-      <View style={styles.container}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={20}
+      >
+        <View style={styles.container}>
 
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}
-            style={styles.backBtn}
-          >
-            <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
-          </TouchableOpacity>
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}
+              style={styles.backBtn}
+            >
+              <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
+            </TouchableOpacity>
 
-          <Text style={styles.headerTitle}>
-            {vendorData ? "Edit Vendor" : "Add New Vendor"}
-          </Text>
-        </View>
-
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.content}
-        >
-
-          {/* Vendor Information */}
-
-
-          <View style={styles.sectionHeader}>
-            <View style={styles.blueBar} />
-            <Text style={styles.sectionTitle}>
-              Vendor Information
+            <Text style={styles.headerTitle}>
+              {vendorData ? "Edit Vendor" : "Add New Vendor"}
             </Text>
           </View>
 
-          <Text style={styles.label}>
-            Vendor Name <Text style={{ color: "red" }}>*</Text>
-          </Text>
 
-          <ValidatedInput
-            type="name"
-            inputType="text"
-            value={vendorName}
-            onChangeText={(text) => {
-              setvendorName(text);
-              setErrors(prev => ({
-                ...prev,
-                vendorName: ""
-              }));
-            }}
-            placeholder="Enter Vendor Name"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-          />
-
-          {errors.vendorName && (
-            <ErrorMessage
-              message={errors.vendorName}
-              type="error"
-            />
-          )}
-
-
-
-          <Text style={styles.label}>
-            Business Name <Text style={{ color: "red" }}>*</Text>
-          </Text>
-
-          <ValidatedInput
-            type="name"
-            inputType="text"
-            value={businessName}
-            onChangeText={(text) => {
-              setBusinessName(text);
-              setErrors(prev => ({
-                ...prev,
-                businessName: ""
-              }));
-            }}
-            placeholder="Enter Vendor Name"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-          />
-
-          {errors.businessName && (
-            <ErrorMessage
-              message={errors.businessName}
-              type="error"
-            />
-          )}
-
-          <Text style={styles.note}>
-            Note : Max 50 Characters
-          </Text>
-
-
-
-          <Text style={styles.label}>
-            Vendor   Category <Text style={{ color: "red" }}>*</Text>
-          </Text>
-
-          <TouchableOpacity
-            style={styles.expensesDropdownBox}
-            onPress={() => {
-              setCategoryOpen(!categoryOpen)
-            }}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.content}
           >
-            <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
-              {selectedCategory?.label || "Select Category"}
 
+            {/* Vendor Information */}
+
+
+            <View style={styles.sectionHeader}>
+              <View style={styles.blueBar} />
+              <Text style={styles.sectionTitle}>
+                Vendor Information
+              </Text>
+            </View>
+
+            <Text style={styles.label}>
+              Vendor Name <Text style={{ color: "red" }}>*</Text>
             </Text>
-            <Image source={DownArrow} style={styles.expensesArrowIcon} />
-          </TouchableOpacity>
 
-          {categoryOpen && (
-            <View style={styles.expensesDropdownMenu}>
-              <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                {categoryOptions.length === 0 ? (
-                  <Text style={styles.expensesNoDataText}>
-                    No category found
-                  </Text>
-                ) : (
-                  categoryOptions.map((item, index) => {
-                    const isSelected =
-                      selectedCategory?.value === item?.value;
+            <ValidatedInput
+              type="name"
+              inputType="text"
+              value={vendorName}
+              onChangeText={(text) => {
+                setvendorName(text);
+                setErrors(prev => ({
+                  ...prev,
+                  vendorName: ""
+                }));
+              }}
+              placeholder="Enter Vendor Name"
+              placeholderTextColor="#9CA3AF"
+              style={styles.input}
+            />
 
-                    return (
+            {errors.vendorName && (
+              <ErrorMessage
+                message={errors.vendorName}
+                type="error"
+              />
+            )}
+
+
+
+            <Text style={styles.label}>
+              Business Name <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            <ValidatedInput
+              type="name"
+              inputType="text"
+              value={businessName}
+              onChangeText={(text) => {
+                setBusinessName(text);
+                setErrors(prev => ({
+                  ...prev,
+                  businessName: ""
+                }));
+              }}
+              placeholder="Enter Vendor Name"
+              placeholderTextColor="#9CA3AF"
+              style={styles.input}
+            />
+
+            {errors.businessName && (
+              <ErrorMessage
+                message={errors.businessName}
+                type="error"
+              />
+            )}
+
+            <Text style={styles.note}>
+              Note : Max 50 Characters
+            </Text>
+
+
+
+            <Text style={styles.label}>
+              Vendor   Category <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            <TouchableOpacity
+              style={styles.expensesDropdownBox}
+              onPress={() => {
+                setCategoryOpen(!categoryOpen)
+              }}
+            >
+              <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
+                {selectedCategory?.label || "Select Category"}
+
+              </Text>
+              <Image source={DownArrow} style={styles.expensesArrowIcon} />
+            </TouchableOpacity>
+
+            {categoryOpen && (
+              <View style={styles.expensesDropdownMenu}>
+                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                  {categoryOptions.length === 0 ? (
+                    <Text style={styles.expensesNoDataText}>
+                      No category found
+                    </Text>
+                  ) : (
+                    categoryOptions.map((item, index) => {
+                      const isSelected =
+                        selectedCategory?.value === item?.value;
+
+                      return (
+                        <TouchableOpacity
+                          key={index}
+                          style={[
+                            styles.expensesOption,
+                            isSelected && styles.expensesOptionSelected,
+                          ]}
+                          onPress={() => {
+                            setSelectedCategory(item);
+                            setCategoryErr("");
+                            setNochangeErr("");
+                            setCategoryOpen(false);
+                            setErrors(prev => ({ ...prev, category: "" }))
+                          }}
+
+                        >
+                          <Text
+                            style={[
+                              styles.expensesOptionText,
+                              isSelected && styles.expensesOptionTextSelected,
+                            ]}
+                          >
+                            {item?.label}
+                          </Text>
+                        </TouchableOpacity>
+                      )
+                    })
+
+
+                  )}
+                </ScrollView>
+              </View>
+            )}
+
+            {errors.category && (
+              <ErrorMessage
+                message={errors.category}
+                type="error"
+              />
+            )}
+
+            <Text style={styles.label}>
+              Business Mob Number <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            <View style={styles.mobileWrapper}>
+              <TouchableOpacity
+                style={styles.countryCodeBox}
+                onPress={() => setCountryCodeOpen(!countryCodeOpen)}
+              >
+                <Text style={styles.countryCodeText}>
+                  {selectedCountry?.code || selectedCountry || "+91"}</Text>
+                <Image source={DownArrow} style={styles.countryArrow} />
+              </TouchableOpacity>
+
+              <View ref={mobileRef}>
+                <ValidatedInput
+                  style={styles.mobileInput}
+                  type="mobile"
+                  inputType="numeric"
+                  keyboardType="numeric"
+                  placeholder="Enter Mobile Number"
+                  placeholderTextColor="#9CA3AF"
+                  value={businessmobile}
+                  onChangeText={(t) => {
+                    const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10)
+                    setBusinessMobile(cleaned)
+                    setErrors({ ...errors, businessmobile: "" })
+                    setNoChangeError("")
+                  }}
+                  onFocus={() => scrollToField(mobileRef)}
+                />
+
+              </View>
+
+            </View>
+
+
+            {errors.businessmobile && (
+              <ErrorMessage
+                message={errors.businessmobile}
+                type="error"
+              />
+            )}
+            {countryCodeOpen && (
+              <>
+                <TouchableWithoutFeedback onPress={() => setCountryCodeOpen(false)}>
+                  <View style={styles.dropdownOverlay} />
+                </TouchableWithoutFeedback>
+
+                <View style={styles.countryDropdownMenu}>
+                  <ScrollView>
+                    {countryList.map((item, index) => (
                       <TouchableOpacity
                         key={index}
-                        style={[
-                          styles.expensesOption,
-                          isSelected && styles.expensesOptionSelected,
-                        ]}
+                        style={styles.countryOption}
                         onPress={() => {
-                          setSelectedCategory(item);
-                          setCategoryErr("");
-                          setNochangeErr("");
-                          setCategoryOpen(false);
-                          setErrors(prev => ({ ...prev, category: "" }))
+                          setSelectedCountry(item);
+                          setCountryCodeOpen(false);
                         }}
-
                       >
-                        <Text
-                          style={[
-                            styles.expensesOptionText,
-                            isSelected && styles.expensesOptionTextSelected,
-                          ]}
-                        >
-                          {item?.label}
+                        <Text style={styles.countryOptionText}>
+                          {item?.label} ({item?.code})
                         </Text>
                       </TouchableOpacity>
-                    )
-                  })
+                    ))}
+                  </ScrollView>
+                </View>
+              </>
+            )}
 
+            <Text style={styles.label}>
+              Proprietor / Contact Person Name
+            </Text>
 
-                )}
-              </ScrollView>
-            </View>
-          )}
-
-          {errors.category && (
-            <ErrorMessage
-              message={errors.category}
-              type="error"
+            <ValidatedInput
+              type="name"
+              inputType="text"
+              value={contactPerson}
+              // onChangeText={setContactPerson}
+              onChangeText={(t) => {
+                // const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
+                setContactPerson(t);
+                setErrors({ ...errors, contactPerson: "" })
+                setNoChangeError("")
+              }}
+              placeholder="Enter Name"
+              placeholderTextColor="#9CA3AF"
+              style={styles.input}
             />
-          )}
 
-          <Text style={styles.label}>
-            Business Mob Number <Text style={{ color: "red" }}>*</Text>
-          </Text>
-
-          <View style={styles.mobileWrapper}>
-            <TouchableOpacity
-              style={styles.countryCodeBox}
-              onPress={() => setCountryCodeOpen(!countryCodeOpen)}
-            >
-              <Text style={styles.countryCodeText}>
-                {selectedCountry?.code || selectedCountry || "+91"}</Text>
-              <Image source={DownArrow} style={styles.countryArrow} />
-            </TouchableOpacity>
-
-            <View ref={mobileRef}>
-              <ValidatedInput
-                style={styles.mobileInput}
-                type="mobile"
-                inputType="numeric"
-                keyboardType="numeric"
-                placeholder="Enter Mobile Number"
-                placeholderTextColor="#9CA3AF"
-                value={businessmobile}
-                onChangeText={(t) => {
-                  const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10)
-                  setBusinessMobile(cleaned)
-                  setErrors({ ...errors, businessmobile: "" })
-                  setNoChangeError("")
-                }}
-                onFocus={() => scrollToField(mobileRef)}
+            {errors.contactPerson && (
+              <ErrorMessage
+                message={errors.contactPerson}
+                type="error"
               />
+            )}
+
+            <Text style={styles.label}>
+              Mob Number
+            </Text>
+
+            <View style={styles.mobileWrapper}>
+              <TouchableOpacity
+                style={styles.countryCodeBox}
+                onPress={() => setCountryCodeOpen(!countryCodeOpen)}
+              >
+                <Text style={styles.countryCodeText}>
+                  {selectedCountry?.code || selectedCountry || "+91"}</Text>
+                <Image source={DownArrow} style={styles.countryArrow} />
+              </TouchableOpacity>
+
+              <View ref={mobileRef}>
+                <ValidatedInput
+                  style={styles.mobileInput}
+                  type="mobile"
+                  inputType="numeric"
+                  keyboardType="numeric"
+                  placeholder="Enter Mobile Number"
+                  placeholderTextColor="#9CA3AF"
+                  value={mobile}
+                  onChangeText={(t) => {
+                    const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10)
+                    setMobile(cleaned)
+                    setErrors({ ...errors, mobile: "" })
+                    setNoChangeError("")
+                  }}
+                  onFocus={() => scrollToField(mobileRef)}
+                />
+              </View>
 
             </View>
 
-          </View>
 
+            <ErrorMessage message={errors.mobile} type="error" />
+            {countryCodeOpen && (
+              <>
+                <TouchableWithoutFeedback onPress={() => setCountryCodeOpen(false)}>
+                  <View style={styles.dropdownOverlay} />
+                </TouchableWithoutFeedback>
 
-          {errors.businessmobile && (
-            <ErrorMessage
-              message={errors.businessmobile}
-              type="error"
-            />
-          )}
-          {countryCodeOpen && (
-            <>
-              <TouchableWithoutFeedback onPress={() => setCountryCodeOpen(false)}>
-                <View style={styles.dropdownOverlay} />
-              </TouchableWithoutFeedback>
+                <View style={styles.countryDropdownMenu}>
+                  <ScrollView>
+                    {countryList.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.countryOption}
+                        onPress={() => {
+                          setSelectedCountry(item);
+                          setCountryCodeOpen(false);
+                        }}
+                      >
+                        <Text style={styles.countryOptionText}>
+                          {item?.label} ({item?.code})
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </>
+            )}
 
-              <View style={styles.countryDropdownMenu}>
-                <ScrollView>
-                  {countryList.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.countryOption}
-                      onPress={() => {
-                        setSelectedCountry(item);
-                        setCountryCodeOpen(false);
-                      }}
-                    >
-                      <Text style={styles.countryOptionText}>
-                        {item?.label} ({item?.code})
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </>
-          )}
+            <Text style={styles.label}>
+              Email Address
+            </Text>
 
-          <Text style={styles.label}>
-            Proprietor / Contact Person Name 
-          </Text>
-
-          <ValidatedInput
-            type="name"
-            inputType="text"
-            value={contactPerson}
-            // onChangeText={setContactPerson}
-            onChangeText={(t) => {
-              // const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
-              setContactPerson(t);
-              setErrors({ ...errors, contactPerson: "" })
-              setNoChangeError("")
-            }}
-            placeholder="Enter Name"
-            placeholderTextColor="#9CA3AF"
-            style={styles.input}
-          />
-
-          {errors.contactPerson && (
-            <ErrorMessage
-              message={errors.contactPerson}
-              type="error"
-            />
-          )}
-
-          <Text style={styles.label}>
-            Mob Number 
-          </Text>
-
-          <View style={styles.mobileWrapper}>
-            <TouchableOpacity
-              style={styles.countryCodeBox}
-              onPress={() => setCountryCodeOpen(!countryCodeOpen)}
-            >
-              <Text style={styles.countryCodeText}>
-                {selectedCountry?.code || selectedCountry || "+91"}</Text>
-              <Image source={DownArrow} style={styles.countryArrow} />
-            </TouchableOpacity>
-
-            <View ref={mobileRef}>
-              <ValidatedInput
-                style={styles.mobileInput}
-                type="mobile"
-                inputType="numeric"
-                keyboardType="numeric"
-                placeholder="Enter Mobile Number"
-                placeholderTextColor="#9CA3AF"
-                value={mobile}
-                onChangeText={(t) => {
-                  const cleaned = t.replace(/[^0-9]/g, "").slice(0, 10)
-                  setMobile(cleaned)
-                  setErrors({ ...errors, mobile: "" })
-                  setNoChangeError("")
-                }}
-                onFocus={() => scrollToField(mobileRef)}
-              />
-            </View>
-
-          </View>
-
-
-          <ErrorMessage message={errors.mobile} type="error" />
-          {countryCodeOpen && (
-            <>
-              <TouchableWithoutFeedback onPress={() => setCountryCodeOpen(false)}>
-                <View style={styles.dropdownOverlay} />
-              </TouchableWithoutFeedback>
-
-              <View style={styles.countryDropdownMenu}>
-                <ScrollView>
-                  {countryList.map((item, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.countryOption}
-                      onPress={() => {
-                        setSelectedCountry(item);
-                        setCountryCodeOpen(false);
-                      }}
-                    >
-                      <Text style={styles.countryOptionText}>
-                        {item?.label} ({item?.code})
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            </>
-          )}
-
-          <Text style={styles.label}>
-            Email Address
-          </Text>
-
-          {/* <ValidatedInput
+            {/* <ValidatedInput
           type="email"
           inputType="email"
           value={email}
@@ -1160,199 +1160,199 @@ export default function AddVendorSheet({ route, navigation }) {
           style={styles.input}
         /> */}
 
-          <View ref={emailRef}>
+            <View ref={emailRef}>
+              <ValidatedInput
+                type="email"
+                inputType="email"
+                value={email}
+                onChangeText={(t) => {
+                  const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
+                  setEmail(sanitized);
+                  setErrors({ ...errors, email: "" })
+                  setNoChangeError("")
+                }}
+                style={styles.input}
+                placeholder="Enter Email"
+                onFocus={() => scrollToField(emailRef)}
+                placeholderTextColor="#9CA3AF"
+              />
+            </View>
+            {errors.email && (
+              <ErrorMessage message={errors.email} type="error" />
+            )}
+
+            <Text style={styles.label}>
+              Commercial address (No,Area/Street, Sector )  <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
             <ValidatedInput
-              type="email"
-              inputType="email"
-              value={email}
+              type="description"
+              inputType="text"
+              multiline
+              value={street}
               onChangeText={(t) => {
-                const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
-                setEmail(sanitized);
-                setErrors({ ...errors, email: "" })
+                // const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
+                setStreet(t);
+                setErrors({ ...errors, street: "" })
                 setNoChangeError("")
               }}
-              style={styles.input}
-              placeholder="Enter Email"
-              onFocus={() => scrollToField(emailRef)}
+              // onChangeText={setStreet}
+              placeholder="Enter Address"
               placeholderTextColor="#9CA3AF"
+              style={styles.textArea}
             />
-          </View>
-          {errors.email && (
-            <ErrorMessage message={errors.email} type="error" />
-          )}
 
-          <Text style={styles.label}>
-            Commercial address (No,Area/Street, Sector )  <Text style={{ color: "red" }}>*</Text>
-          </Text>
-
-          <ValidatedInput
-            type="description"
-            inputType="text"
-            multiline
-            value={street}
-            onChangeText={(t) => {
-              // const sanitized = t.toLowerCase().replace(/[^a-z0-9@._\-+!#%&'*?^`{|}~]/g, "");
-              setStreet(t);
-              setErrors({ ...errors, street: "" })
-              setNoChangeError("")
-            }}
-            // onChangeText={setStreet}
-            placeholder="Enter Address"
-            placeholderTextColor="#9CA3AF"
-            style={styles.textArea}
-          />
-
-          {errors.street && (
-            <ErrorMessage
-              message={errors.street}
-              type="error"
-            />
-          )}
-
-
-          <View style={styles.row}>
-            <View style={styles.half}>
-              <Text style={styles.label}>
-                Landmark
-              </Text>
-
-
-              <ValidatedInput
-                value={landmark}
-                onChangeText={(t) => {
-                  setLandmark(t.replace(/[^a-zA-Z\s]/g, ""))
-                  setNoChangeError("")
-                }}
-                style={styles.input}
-                placeholder="Enter Landmark"
-                onFocus={() => scrollToField(landmarkRef)}
+            {errors.street && (
+              <ErrorMessage
+                message={errors.street}
+                type="error"
               />
-            </View>
-
-            <View style={styles.half}>
-              <Text style={styles.label}>
-                City <Text style={{ color: "red" }}>*</Text>
-              </Text>
+            )}
 
 
+            <View style={styles.row}>
+              <View style={styles.half}>
+                <Text style={styles.label}>
+                  Landmark
+                </Text>
 
-              <ValidatedInput
-                type="name"
-                inputType="text"
-                value={city}
-                onChangeText={(t) => {
-                  setCity(t.replace(/[^a-zA-Z\s]/g, ""));
-                  setErrors({ ...errors, city: "" })
-                  setNoChangeError("")
-                }}
-                style={styles.input}
-                placeholder="Enter City"
-                placeholderTextColor="#9CA3AF"
-                onFocus={() => scrollToField(cityRef)}
-              />
-            </View>
-          </View>
 
-          <View style={styles.row}>
-            <View style={styles.half}>
-              <Text style={styles.label}>
-                State <Text style={{ color: "red" }}>*</Text>
-              </Text>
-
-              <View style={{ position: "relative", marginBottom: 6 }}>
-                <View ref={stateRef}>
-                  <TextInput
-                    style={styles.select}
-                    placeholder="Select State"
-                    placeholderTextColor="#9CA3AF"
-                    value={stateOpen ? stateQuery : stateName}
-                    editable={true}
-                    // onFocus={() => {
-                    //   setStateOpen(true);
-                    //   setStateQuery("");
-                    //    setIsInputFocused(true);
-                    // }}
-                    onChangeText={(t) => {
-                      setStateQuery(t);
-                      setStateOpen(true);
-                    }}
-                    onFocus={() => {
-                      if (!stateOpen) {
-                        setStateOpen(true);
-                        Keyboard.dismiss()
-                      }
-                      else {
-                        setStateOpen(false)
-                      }
-
-                      setStateQuery("")
-                      scrollToField(stateRef)
-                    }}
-
-                  // onBlur={() => {
-                  //   setIsInputFocused(false);
-                  // }}
-                  />
-                </View>
-
-                <Image source={DownArrow} style={styles.arrowIcon} />
-
-                {stateOpen && (
-
-                  <View style={styles.dropdownMenu}>
-                    <TouchableWithoutFeedback onPress={() => setStateOpen(false)}>
-                      <View style={{ flex: 1 }} />
-                    </TouchableWithoutFeedback>
-                    <ScrollView
-                      keyboardShouldPersistTaps="handled"
-                      nestedScrollEnabled={true}
-                    >
-                      {filteredStateList.length > 0 ? (
-                        filteredStateList.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={[
-                              styles.option,
-                              stateName === v.label && styles.selectedOption,
-                            ]}
-                            onPress={() => {
-                              setStateName(v.label);
-                              setStateQuery("");
-                              setStateOpen(false);
-                              setErrors({ ...errors, stateName: "" });
-                              setNoChangeError("");
-                            }}
-                          >
-                            <Text
-                              style={[
-                                styles.optionText,
-                                stateName === v.label && styles.selectedOptionText,
-                              ]}
-                            >
-                              {v.label}
-                            </Text>
-                          </TouchableOpacity>
-                        ))
-                      ) : (
-                        <Text style={styles.noResult}>No state found</Text>
-                      )}
-                    </ScrollView>
-                  </View>
-                )}
-
+                <ValidatedInput
+                  value={landmark}
+                  onChangeText={(t) => {
+                    setLandmark(t.replace(/[^a-zA-Z\s]/g, ""))
+                    setNoChangeError("")
+                  }}
+                  style={styles.input}
+                  placeholder="Enter Landmark"
+                  onFocus={() => scrollToField(landmarkRef)}
+                />
               </View>
 
-              {errors.stateName && (
-                <ErrorMessage message={errors.stateName} type="error" />
-              )}
+              <View style={styles.half}>
+                <Text style={styles.label}>
+                  City <Text style={{ color: "red" }}>*</Text>
+                </Text>
+
+
+
+                <ValidatedInput
+                  type="name"
+                  inputType="text"
+                  value={city}
+                  onChangeText={(t) => {
+                    setCity(t.replace(/[^a-zA-Z\s]/g, ""));
+                    setErrors({ ...errors, city: "" })
+                    setNoChangeError("")
+                  }}
+                  style={styles.input}
+                  placeholder="Enter City"
+                  placeholderTextColor="#9CA3AF"
+                  onFocus={() => scrollToField(cityRef)}
+                />
+              </View>
             </View>
 
-            <View style={styles.half}>
-              <Text style={styles.label}>
-                Pincode <Text style={{ color: "red" }}>*</Text>
-              </Text>
+            <View style={styles.row}>
+              <View style={styles.half}>
+                <Text style={styles.label}>
+                  State <Text style={{ color: "red" }}>*</Text>
+                </Text>
 
-              {/* <ValidatedInput
+                <View style={{ position: "relative", marginBottom: 6 }}>
+                  <View ref={stateRef}>
+                    <TextInput
+                      style={styles.select}
+                      placeholder="Select State"
+                      placeholderTextColor="#9CA3AF"
+                      value={stateOpen ? stateQuery : stateName}
+                      editable={true}
+                      // onFocus={() => {
+                      //   setStateOpen(true);
+                      //   setStateQuery("");
+                      //    setIsInputFocused(true);
+                      // }}
+                      onChangeText={(t) => {
+                        setStateQuery(t);
+                        setStateOpen(true);
+                      }}
+                      onFocus={() => {
+                        if (!stateOpen) {
+                          setStateOpen(true);
+                          Keyboard.dismiss()
+                        }
+                        else {
+                          setStateOpen(false)
+                        }
+
+                        setStateQuery("")
+                        scrollToField(stateRef)
+                      }}
+
+                    // onBlur={() => {
+                    //   setIsInputFocused(false);
+                    // }}
+                    />
+                  </View>
+
+                  <Image source={DownArrow} style={styles.arrowIcon} />
+
+                  {stateOpen && (
+
+                    <View style={styles.dropdownMenu}>
+                      <TouchableWithoutFeedback onPress={() => setStateOpen(false)}>
+                        <View style={{ flex: 1 }} />
+                      </TouchableWithoutFeedback>
+                      <ScrollView
+                        keyboardShouldPersistTaps="handled"
+                        nestedScrollEnabled={true}
+                      >
+                        {filteredStateList.length > 0 ? (
+                          filteredStateList.map((v, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              style={[
+                                styles.option,
+                                stateName === v.label && styles.selectedOption,
+                              ]}
+                              onPress={() => {
+                                setStateName(v.label);
+                                setStateQuery("");
+                                setStateOpen(false);
+                                setErrors({ ...errors, stateName: "" });
+                                setNoChangeError("");
+                              }}
+                            >
+                              <Text
+                                style={[
+                                  styles.optionText,
+                                  stateName === v.label && styles.selectedOptionText,
+                                ]}
+                              >
+                                {v.label}
+                              </Text>
+                            </TouchableOpacity>
+                          ))
+                        ) : (
+                          <Text style={styles.noResult}>No state found</Text>
+                        )}
+                      </ScrollView>
+                    </View>
+                  )}
+
+                </View>
+
+                {errors.stateName && (
+                  <ErrorMessage message={errors.stateName} type="error" />
+                )}
+              </View>
+
+              <View style={styles.half}>
+                <Text style={styles.label}>
+                  Pincode <Text style={{ color: "red" }}>*</Text>
+                </Text>
+
+                {/* <ValidatedInput
               type="pincode"
               inputType="numeric"
               value={pinCode}
@@ -1362,232 +1362,244 @@ export default function AddVendorSheet({ route, navigation }) {
               style={styles.input}
             /> */}
 
-              <ValidatedInput
-                type="pincode"
-                inputType="numeric"
-                value={pinCode}
-                keyboardType="numeric"
-                onChangeText={(text) => {
-                  const cleaned = text.replace(/[^0-9]/g, "").slice(0, 6);
-                  setPinCode(cleaned);
+                <ValidatedInput
+                  type="pincode"
+                  inputType="numeric"
+                  value={pinCode}
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    const cleaned = text.replace(/[^0-9]/g, "").slice(0, 6);
+                    setPinCode(cleaned);
 
-                  const errorMsg = validatePincode(cleaned);
-                  setErrors({ ...errors, pinCode: errorMsg })
-                  setNoChangeError("")
-                }}
-                style={styles.input}
-                placeholder="Enter Pincode"
-                placeholderTextColor="#9CA3AF"
-                onFocus={() => scrollToField(pincodeRef)}
-              />
-              {errors.pinCode && (
-                <ErrorMessage message={errors.pinCode} type="error" />
-              )}
+                    const errorMsg = validatePincode(cleaned);
+                    setErrors({ ...errors, pinCode: errorMsg })
+                    setNoChangeError("")
+                  }}
+                  style={styles.input}
+                  placeholder="Enter Pincode"
+                  placeholderTextColor="#9CA3AF"
+                  onFocus={() => scrollToField(pincodeRef)}
+                />
+                {errors.pinCode && (
+                  <ErrorMessage message={errors.pinCode} type="error" />
+                )}
+              </View>
             </View>
-          </View>
 
-          <Text style={styles.label}>
-            Description
-          </Text>
-
-          <ValidatedInput
-            type="description"
-            inputType="text"
-            multiline
-            numberOfLines={4}
-            style={styles.textArea}
-            value={description}
-            onChangeText={setDescription}
-            placeholder="Ex : Wifi Bill Paid for May"
-          />
-
-          <View style={styles.sectionHeader}>
-            <View style={styles.blueBar} />
-            <Text style={styles.sectionTitle}>
-              Business Details
+            <Text style={styles.label}>
+              Description
             </Text>
-          </View>
 
-          <Text style={styles.label}>
-            GST IN Number (Optional)
-          </Text>
-
-          <ValidatedInput
-            type="gst"
-            inputType="text"
-            value={gstNumber}
-            onChangeText={(text) => {
-              setGstNumber(text);
-              setErrors(prev => ({
-                ...prev,
-                gstNumber: "",
-              }));
-            }}
-            placeholder="Enter GSTIN"
-            autoCapitalize="characters"
-            style={styles.input}
-          />
-          {errors.gstNumber && (
-            <ErrorMessage
-              message={errors.gstNumber}
-              type="error"
+            <ValidatedInput
+              type="description"
+              inputType="text"
+              multiline
+              numberOfLines={4}
+              style={styles.textArea}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Ex : Wifi Bill Paid for May"
             />
-          )}
 
-
-          <Text style={styles.label}>
-            PAN Number (Optional)
-          </Text>
-
-
-          <ValidatedInput
-            type="pan"
-            inputType="text"
-            value={panNumber}
-            onChangeText={(text) => {
-              setPanNumber(text);
-              setErrors(prev => ({
-                ...prev,
-                panNumber: "",
-              }));
-            }}
-            placeholder="Enter PAN Number"
-            autoCapitalize="characters"
-            style={styles.input}
-          />
-          {errors.panNumber && (
-            <ErrorMessage
-              message={errors.panNumber}
-              type="error"
-            />
-          )}
-
-          {vendorData && (
-            <>
-              <Text style={styles.label}>
-                Vendor Code
+            <View style={styles.sectionHeader}>
+              <View style={styles.blueBar} />
+              <Text style={styles.sectionTitle}>
+                Business Details
               </Text>
+            </View>
 
-              <TextInput
-                editable={false}
-                value={vendorData?.vendorCode || ""}
-                style={[
-                  styles.input,
-                  { backgroundColor: "#F8F9FA" }
-                ]}
+            <Text style={styles.label}>
+              GST IN Number (Optional)
+            </Text>
+
+            <ValidatedInput
+              type="gst"
+              inputType="text"
+              value={gstNumber}
+              onChangeText={(text) => {
+                setGstNumber(text);
+                setErrors(prev => ({
+                  ...prev,
+                  gstNumber: "",
+                }));
+              }}
+              placeholder="Enter GSTIN"
+              autoCapitalize="characters"
+              style={styles.input}
+            />
+            {errors.gstNumber && (
+              <ErrorMessage
+                message={errors.gstNumber}
+                type="error"
               />
-            </>
-          )}
+            )}
 
-          <TouchableOpacity
-            style={styles.creditRow}
-            onPress={() => setAllowCredit(!allowCredit)}
-          >
-            <View
-              style={[
-                styles.checkbox,
-                allowCredit &&
-                styles.checkboxActive
-              ]}
-            >
-              {allowCredit && (
-                <Text style={{ color: "#FFF" }}>
-                  ✓
+
+            <Text style={styles.label}>
+              PAN Number (Optional)
+            </Text>
+
+
+            <ValidatedInput
+              type="pan"
+              inputType="text"
+              value={panNumber}
+              onChangeText={(text) => {
+                setPanNumber(text);
+                setErrors(prev => ({
+                  ...prev,
+                  panNumber: "",
+                }));
+              }}
+              placeholder="Enter PAN Number"
+              autoCapitalize="characters"
+              style={styles.input}
+            />
+            {errors.panNumber && (
+              <ErrorMessage
+                message={errors.panNumber}
+                type="error"
+              />
+            )}
+
+            {vendorData && (
+              <>
+                <Text style={styles.label}>
+                  Vendor Code
                 </Text>
-              )}
-            </View>
 
-            <View style={{ flex: 1 }}>
-              <Text style={styles.creditTitle}>
-                Allow Credit Purchases
-              </Text>
-
-              <Text style={styles.creditSub}>
-                It's like similar to debt purchase and will pay later
-              </Text>
-            </View>
-          </TouchableOpacity>
-
-          {allowCredit && (
-            <>
-              <Text style={styles.label}>
-                Credit Limit ₹ INR
-              </Text>
-
-              <ValidatedInput
-                style={styles.input}
-                value={creditLimit}
-                onChangeText={setCreditLimit}
-                keyboardType="numeric"
-                type="numberOnly"
-                inputType="numeric"
-                placeholder="Enter Amount Limit"
-              />
-
-              {errors.creditLimit && (
-                <ErrorMessage
-                  message={errors.creditLimit}
-                  type="error"
+                <TextInput
+                  editable={false}
+                  value={vendorData?.vendorCode || ""}
+                  style={[
+                    styles.input,
+                    { backgroundColor: "#F8F9FA" }
+                  ]}
                 />
-              )}
-
-
-
-              <Text style={styles.label}>
-                Credit Period
-              </Text>
-
-              <ValidatedInput
-                style={styles.input}
-                value={creditPeriod}
-                onChangeText={setCreditPeriod}
-                keyboardType="numeric"
-                type="numberOnly"
-                inputType="numeric"
-                placeholder="Enter Days"
-              />
-
-              {errors.creditPeriod && (
-                <ErrorMessage
-                  message={errors.creditPeriod}
-                  type="error"
-                />
-              )}
-
-              <Text style={styles.creditNote}>
-                Note : Create the Credit limit for the Vendor which avoids the exemption of the Credit Balance.
-              </Text>
-            </>
-          )}
-
-          <View style={styles.footerRow}>
-            <TouchableOpacity
-              style={styles.cancelBtn}
-              onPress={() => navigation.goBack()}
-            >
-              <Text style={{
-                fontFamily: "Gilroy-Bold",
-                fontSize: 16,
-              }}>
-                Cancel
-              </Text>
-            </TouchableOpacity>
-
+              </>
+            )}
 
             <TouchableOpacity
-              style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
-              disabled={isApplyTriggeredRef.current}
-              onPress={handleSubmit}
+              style={styles.creditRow}
+              onPress={() => setAllowCredit(!allowCredit)}
             >
-              <Text style={styles.submitText}>
-                {vendorData ? "Update Vendor" : "Add Vendor"}
-              </Text>
+              <View
+                style={[
+                  styles.checkbox,
+                  allowCredit &&
+                  styles.checkboxActive
+                ]}
+              >
+                {allowCredit && (
+                  <Text style={{ color: "#FFF" }}>
+                    ✓
+                  </Text>
+                )}
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.creditTitle}>
+                  Allow Credit Purchases
+                </Text>
+
+                <Text style={styles.creditSub}>
+                  It's like similar to debt purchase and will pay later
+                </Text>
+              </View>
             </TouchableOpacity>
-          </View>
 
-        </ScrollView>
+            {allowCredit && (
+              <>
+                <Text style={styles.label}>
+                  Credit Limit ₹ INR
+                </Text>
 
-      </View>
+                <ValidatedInput
+                  style={styles.input}
+                  value={creditLimit}
+                  onChangeText={(text) => {
+                    setCreditLimit(text);
+                    setErrors((prev) => ({
+                      ...prev,
+                      creditLimit: "",
+                    }));
+                  }}
+                  keyboardType="numeric"
+                  type="numberOnly"
+                  inputType="numeric"
+                  placeholder="Enter Amount Limit"
+                />
+
+                {errors.creditLimit && (
+                  <ErrorMessage
+                    message={errors.creditLimit}
+                    type="error"
+                  />
+                )}
+
+
+
+                <Text style={styles.label}>
+                  Credit Period
+                </Text>
+
+                <ValidatedInput
+                  style={styles.input}
+                  value={creditPeriod}
+                  onChangeText={(text) => {
+                    setCreditPeriod(text);
+                    setErrors((prev) => ({
+                      ...prev,
+                      creditPeriod: "",
+                    }));
+                  }}
+                  keyboardType="numeric"
+                  type="numberOnly"
+                  inputType="numeric"
+                  placeholder="Enter Days"
+                />
+
+                {errors.creditPeriod && (
+                  <ErrorMessage
+                    message={errors.creditPeriod}
+                    type="error"
+                  />
+                )}
+
+                <Text style={styles.creditNote}>
+                  Note : Create the Credit limit for the Vendor which avoids the exemption of the Credit Balance.
+                </Text>
+              </>
+            )}
+
+            <View style={styles.footerRow}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => navigation.goBack()}
+              >
+                <Text style={{
+                  fontFamily: "Gilroy-Bold",
+                  fontSize: 16,
+                }}>
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+
+
+              <TouchableOpacity
+                style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                disabled={isApplyTriggeredRef.current}
+                onPress={handleSubmit}
+              >
+                <Text style={styles.submitText}>
+                  {vendorData ? "Update Vendor" : "Add Vendor"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+          </ScrollView>
+
+        </View>
       </KeyboardAvoidingView>
 
     </>

@@ -43,13 +43,13 @@ import TickIcon from "../../../Assets/Images/tick-circle.png"
 import CommingSoon from "../../../Assets/Images/Coming_soon.png"
 
 
-const BillBookings = ({ onBookingDetailsShow }) => {
+const BillBookings = ({setShowTabBar , onBookingDetailsShow, showRetainerFiltersheet }) => {
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, GetAdvanceBookingBills } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
-    const {
+  const {
     canReadModule: canReadBooking,
   } = useHasPermission("Booking");
 
@@ -59,6 +59,30 @@ const BillBookings = ({ onBookingDetailsShow }) => {
 
   const dotsRefs = useRef({});
   const navigation = useNavigation();
+
+  const lastScrollY = useRef(0);
+  const isTabBarVisible = useRef(true);
+
+  const handleScroll = (event) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const diff = currentY - lastScrollY.current;
+
+    if (Math.abs(diff) < 10) return;
+
+    if (diff > 0 && currentY > 50) {
+      if (isTabBarVisible.current) {
+        setShowTabBar(false);
+        isTabBarVisible.current = false;
+      }
+    } else if (diff < 0) {
+      if (!isTabBarVisible.current) {
+        setShowTabBar(true);
+        isTabBarVisible.current = true;
+      }
+    }
+
+    lastScrollY.current = currentY;
+  };
 
   const [stayType, setStayType] = useState("Long Stay");
   const [openDropdown, setOpenDropdown] = useState(false);
@@ -174,10 +198,10 @@ const BillBookings = ({ onBookingDetailsShow }) => {
   // }, [activeHostelId])
 
   useEffect(() => {
-  if (activeHostelId && canReadBooking) {
-    GetAdvanceBookingBills(activeHostelId);
-  }
-}, [activeHostelId, canReadBooking]);
+    if (activeHostelId && canReadBooking) {
+      GetAdvanceBookingBills(activeHostelId);
+    }
+  }, [activeHostelId, canReadBooking]);
 
 
 
@@ -337,7 +361,7 @@ const BillBookings = ({ onBookingDetailsShow }) => {
 
   const handleViewBookingDetails = (item) => {
     console.log("item", item);
-    
+
     onBookingDetailsShow(item)
   }
 
@@ -431,7 +455,7 @@ const BillBookings = ({ onBookingDetailsShow }) => {
 
 
 
-        <View style={{ flex: 1,marginRight:5 }}>
+        <View style={{ flex: 1, marginRight: 5 }}>
           {/* <TouchableOpacity  > */}
           <Text style={styles.name} numberOfLines={1}
           >{item.fullName}</Text>
@@ -503,38 +527,39 @@ const BillBookings = ({ onBookingDetailsShow }) => {
         /> */}
 
         {!canReadBooking && !loading ? (
-  <View style={styles.emptyContainer}>
-    <Image
-      source={EmptyFloor}
-      style={styles.emptyImage}
-      resizeMode="contain"
-    />
-    <Text style={styles.emptyText}>
-      You don’t have permission to view bookings
-    </Text>
-  </View>
-) : (
-  <FlatList
-    data={Advancebookingbills}
-    renderItem={renderItem}
-    keyExtractor={(item, index) =>
-      item?.invoiceId
-        ? item.invoiceId.toString()
-        : index.toString()
-    }
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={{
-      paddingTop: 0,
-      flexGrow: 1,
-      paddingBottom: 120,
-    }}
-    ListEmptyComponent={
-      !loading && <EmptyReceiptState />
-    }
-  />
-  
-)}
-   {!loading && Advancebookingbills?.length > 0 && (
+          <View style={styles.emptyContainer}>
+            <Image
+              source={EmptyFloor}
+              style={styles.emptyImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.emptyText}>
+              You don’t have permission to view bookings
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={Advancebookingbills}
+            renderItem={renderItem}
+            keyExtractor={(item, index) =>
+              item?.invoiceId
+                ? item.invoiceId.toString()
+                : index.toString()
+            }
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingTop: 0,
+              flexGrow: 1,
+              paddingBottom: 120,
+            }}
+            ListEmptyComponent={
+              !loading && <EmptyReceiptState />
+            }
+            onScroll={handleScroll}
+          />
+
+        )}
+        {/* {!loading && BillDetails?.listInvoices?.length > 0 && (
                   <>
                   
   
@@ -557,6 +582,16 @@ const BillBookings = ({ onBookingDetailsShow }) => {
 
 
 
+
+        {!loading && Advancebookingbills && Advancebookingbills?.length > 0 && (
+          <TouchableOpacity
+            style={[styles.filterButton, !canReadBooking && { opacity: 0.4 }]}
+            disabled={!canReadBooking}
+            onPress={showRetainerFiltersheet}
+          >
+            <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
+          </TouchableOpacity>
+        )}
 
 
 
@@ -834,7 +869,7 @@ const BillBookings = ({ onBookingDetailsShow }) => {
                   <Text style={styles.resetBtnText}>Reset All</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity  style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+                <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
                   <Text style={styles.applyBtnText}>Apply</Text>
                 </TouchableOpacity>
               </View>
@@ -1395,7 +1430,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#777",
   },
-  addButton:{
+  addButton: {
     position: "absolute",
     bottom: 60,
     right: 10,

@@ -30,7 +30,7 @@ import { PGContext } from "../../../Context/PGContext";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { useNavigation } from "@react-navigation/native";
 
-export default function CheckoutList({ searchText , setShowTabBar }) {
+export default function CheckoutList({ searchText  }) {
   const { activeHostelId } = useContext(CommonContexts);
   const { getCheckoutCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -56,26 +56,26 @@ export default function CheckoutList({ searchText , setShowTabBar }) {
   const lastScrollY = useRef(0);
 const isTabBarVisible = useRef(true);
 
-const handleScroll = (event) => {
-  const currentY = event.nativeEvent.contentOffset.y;
-  const diff = currentY - lastScrollY.current;
+// const handleScroll = (event) => {
+//   const currentY = event.nativeEvent.contentOffset.y;
+//   const diff = currentY - lastScrollY.current;
 
-  if (Math.abs(diff) < 10) return;
+//   if (Math.abs(diff) < 10) return;
 
-  if (diff > 0 && currentY > 50) {
-    if (isTabBarVisible.current) {
-      setShowTabBar(false);   // ⬇️ scroll down
-      isTabBarVisible.current = false;
-    }
-  } else if (diff < 0) {
-    if (!isTabBarVisible.current) {
-      setShowTabBar(true);   // ⬆️ scroll up
-      isTabBarVisible.current = true;
-    }
-  }
+//   if (diff > 0 && currentY > 50) {
+//     if (isTabBarVisible.current) {
+//       setShowTabBar(false);  
+//       isTabBarVisible.current = false;
+//     }
+//   } else if (diff < 0) {
+//     if (!isTabBarVisible.current) {
+//       setShowTabBar(true);  
+//       isTabBarVisible.current = true;
+//     }
+//   }
 
-  lastScrollY.current = currentY;
-};
+//   lastScrollY.current = currentY;
+// };
 
   const translateY = useRef(new Animated.Value(500)).current;
   console.log("selectedCustomer", selectedCustomer)
@@ -336,7 +336,7 @@ const handleScroll = (event) => {
             renderItem={renderItem}
             contentContainerStyle={{ paddingBottom: 60 }}
             showsVerticalScrollIndicator={false}
-              onScroll={handleScroll}
+              // onScroll={handleScroll}
              scrollEventThrottle={16}
           />
         )}
