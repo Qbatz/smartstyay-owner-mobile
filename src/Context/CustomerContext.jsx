@@ -15,7 +15,8 @@ export const CustomerProvider = ({ children }) => {
   const [draftDetails, setDraftDetails] = useState(null);
   const [ReAssignStatusCode, setReAssignStatusCode] = useState(0)
   const loginContext = useContext(LoginContexts)
-  const [retainerList, setReatinerList] = useState()
+  const [retainerList, setReatinerList] = useState([])
+  const [retainerBankList, setRetainerBankList]=useState([])
 
 
   const [ParticularcustomerDetails, setParticularCustomerDetails] = useState(null);
@@ -2108,10 +2109,15 @@ const UpdateAdditionalDraftDetails = async (
           Authorization: `Bearer ${token}`,
         },
         params: {
-          // purpose: "ADVANCE_HOLDING"
-           purpose: "BILL"
+          purpose: "ADVANCE_HOLDING"
+          //  purpose: "BILL"
         }
       })
+      console.log(res)
+      if(res.status === 200){
+        setReatinerList(res?.data?.customersLists)
+        setRetainerBankList(res?.data?.listBanks)
+      }
        return {
         success: true,
         data: res.data || [],
@@ -2215,7 +2221,8 @@ const UpdateJobDetails = async (hostelId, customerId, payload) => {
         addVendor, updateVendor, vendorList,
         getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,
-        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn , UpdateAdditionalDraftDetails, UpdateJobDetails,retainerCustomerList
+        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn , UpdateAdditionalDraftDetails, UpdateJobDetails,retainerCustomerList,
+        retainerList,retainerBankList
       }}
     >
       {children}
