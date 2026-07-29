@@ -316,9 +316,9 @@ export default function SubscriptionPlans({ navigation }) {
                   Upgrade to continue unlimited access once your trial ends.
                 </Text>
 
-                <TouchableOpacity style={styles.upgradeBtn}>
+                {/* <TouchableOpacity style={styles.upgradeBtn}>
                   <Text style={styles.upgradeText}>Upgrade to Premium</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 <View style={styles.dateRow}>
                   <Image source={Calendar} style={styles.calendarIcon} />
