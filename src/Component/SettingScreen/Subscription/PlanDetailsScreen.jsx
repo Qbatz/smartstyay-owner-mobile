@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, BackHandler } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, BackHandler , NativeModules } from "react-native";
 import Calendar from "../../../Assets/Images/calendar.png";
 import { useFocusEffect } from '@react-navigation/native';
 import StatusIcon from "../../../Assets/Images/StatusIcon.png";
@@ -18,8 +18,10 @@ import LinearGradient from "react-native-linear-gradient";
 
 export default function PlanDetailsScreen({ route, navigation }) {
 
-  const { getCurrentHostelPlan, currentPlan } = UseSetting();
+  const { getCurrentHostelPlan, currentPlan , downloadSubscriptionBill } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
+
+    const { CommonModule } = NativeModules;
 
   // const [currentPlan, setCurrentPlan] = useState(null);
 
@@ -99,6 +101,18 @@ export default function PlanDetailsScreen({ route, navigation }) {
       billingTag: "Basic",
     };
 
+    const handleDownloadInvoice = async (subscriptionId) => {
+  const res = await downloadSubscriptionBill(activeHostelId, subscriptionId);
+
+  if (res?.success && res?.url) {
+      await CommonModule.downloadAndViewDocument(res.url);
+    } 
+   else {
+    // error toast/modal
+    console.log("Invoice download failed", res?.message);
+  }
+};
+
 
   console.log(currentPlan?.billingHistory)
 
@@ -173,16 +187,15 @@ export default function PlanDetailsScreen({ route, navigation }) {
                   </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={styles.primaryBtn}
                   onPress={() => {
-                    // Get Invoice API
                   }}
                 >
                   <Text style={styles.primaryBtnText}>
                     Get Invoice
                   </Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
               </View>
 
@@ -271,7 +284,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
           </View>
 
 
-          {currentPlan?.planName !== "Advance" && (
+          {/* {currentPlan?.planName !== "Advance" && (
 
 
             <LinearGradient
@@ -280,13 +293,10 @@ export default function PlanDetailsScreen({ route, navigation }) {
               end={{ x: 1, y: 1 }}
               style={styles.upgradeCard}
             >
-              {/* Watermark Crown */}
               <Image source={crown} style={styles.crownWatermark} />
 
-              {/* Left Top Icon */}
               <Image source={StatusIcon} style={styles.planIcon} />
 
-              {/* Title */}
               <Text style={styles.upgradeTitle}>
                 Upgrade to Premium Plan
               </Text>
@@ -295,7 +305,6 @@ export default function PlanDetailsScreen({ route, navigation }) {
                 Features to get add on
               </Text>
 
-              {/* Features */}
               <View style={styles.featureRow}>
                 <Image source={ChecksIcon} style={styles.tick} />
                 <Text style={styles.featureText}>
@@ -317,7 +326,6 @@ export default function PlanDetailsScreen({ route, navigation }) {
                 </Text>
               </View>
 
-              {/* Bottom */}
               <View style={styles.bottomContainer}>
 
                 <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
@@ -337,52 +345,9 @@ export default function PlanDetailsScreen({ route, navigation }) {
               </View>
 
             </LinearGradient>
-            // <View style={styles.upgradeCard}>
 
-            //   <View style={styles.rowBetween}>
-            //     <Text style={styles.planUpgradeTitle}>Upgrade to Premium Plan</Text>
-            //     <Image
-            //       source={crown}
-            //       style={{ width: 20, height: 20 }}
-            //     />
-            //   </View>
-
-
-            //   <View style={styles.featureRow}>
-            //     <Image
-            //       source={ChecksIcon}
-            //       style={styles.tick}
-            //     />
-            //     <Text style={styles.featureText}>WhatsApp Integration</Text>
-            //   </View>
-
-            //   <View style={styles.featureRow}>
-            //     <Image
-            //       source={ChecksIcon}
-            //       style={styles.tick}
-            //     />
-            //     <Text style={styles.featureText}>Digital KYC</Text>
-            //   </View>
-
-            //   <View style={styles.featureRow}>
-            //     <Image
-            //       source={ChecksIcon}
-            //       style={styles.tick}
-            //     />
-
-            //     <Text style={styles.featureText}>Legal E-Sign</Text>
-            //   </View>
-
-            //   <View style={styles.rowBetween}>
-            //     <Text style={styles.upgradePrice}>₹999 /month</Text>
-
-            //     <TouchableOpacity style={styles.upgradeNowBtn}>
-            //       <Text style={styles.upgradeNowText}>Upgrade Now</Text>
-            //     </TouchableOpacity>
-            //   </View>
-
-            // </View>
-          )}
+      
+          )} */}
 
 
           <Text style={styles.billingHeader}>Billing History</Text>
@@ -488,7 +453,8 @@ export default function PlanDetailsScreen({ route, navigation }) {
                       </Text>
                     </View>
 
-                    <TouchableOpacity style={styles.invoiceButton}>
+                    <TouchableOpacity style={styles.invoiceButton}
+                      onPress={() => handleDownloadInvoice(item.historyId)}>
                       <Text style={styles.invoiceText}>
                         Get Invoice
                       </Text>

@@ -969,11 +969,50 @@ const verfiyPayment=async(hostelId,paymentId)=>{
   }
 }
 
+const downloadSubscriptionBill = async (hostelId, subscriptionId) => {
+  if (!hostelId || !subscriptionId) {
+    return { success: false, message: "Invalid hostelId or subscriptionId" };
+  }
+
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/subscription/download/${hostelId}/${subscriptionId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res?.status === 200) {
+      return {
+        success: true,
+        url: res.data,
+      };
+    }
+
+    return { success: false, message: "Download failed" };
+
+  } catch (err) {
+    return {
+      success: false,
+      message: err.response?.data || err.message,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
     getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport ,
-     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule,postSubscription,verfiyPayment,currentPlan }}>
+     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule,postSubscription,verfiyPayment,currentPlan  , downloadSubscriptionBill}}>
       {children}
     </ElectricityContext.Provider>
   );
