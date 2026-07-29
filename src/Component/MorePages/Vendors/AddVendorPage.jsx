@@ -1242,7 +1242,7 @@ export default function AddVendorSheet({ route, navigation }) {
                   value={city}
                   onChangeText={(t) => {
                     setCity(t.replace(/[^a-zA-Z\s]/g, ""));
-                    setErrors({ ...errors, city: "" })
+                    setErrors(prev => ({ ...prev, city: "",}))
                     setNoChangeError("")
                   }}
                   style={styles.input}
@@ -1250,6 +1250,12 @@ export default function AddVendorSheet({ route, navigation }) {
                   placeholderTextColor="#9CA3AF"
                   onFocus={() => scrollToField(cityRef)}
                 />
+                {errors.city && (
+                  <ErrorMessage
+                    message={errors.city}
+                    type="error"
+                  />
+                )}
               </View>
             </View>
 

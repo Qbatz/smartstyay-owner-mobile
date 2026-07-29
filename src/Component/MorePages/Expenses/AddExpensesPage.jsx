@@ -743,17 +743,16 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             }
         }
 
-      if (paymentStatus === "Credit / Pending") {
-    if (!creditType?.trim()) {
-        newErrors.creditType = "Please Enter Credit Period";
-    } else if (Number(creditType) <= 0) {
-        newErrors.creditType = "Credit Period should be greater than 0";
-    }
-}
-        else {
+        //       if (paymentStatus === "Credit / Pending") {
+        //     if (!creditType?.trim()) {
+        //         newErrors.creditType = "Please Enter Credit Period";
+        //     } else if (Number(creditType) <= 0) {
+        //         newErrors.creditType = "Credit Period should be greater than 0";
+        //     }
+        // }
+        if (paymentStatus !== "Credit / Pending") {
             if (!selectedMode) {
-                newErrors.paymentMethod =
-                    "Please Select Payment Method";
+                newErrors.paymentMethod = "Please Select Payment Method";
             }
         }
         const hasItems = items.some(
@@ -881,6 +880,28 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         }
     }, [amount, paidAmount, paymentStatus])
 
+
+  useEffect(() => {
+  const total = Number(amount || 0);
+
+  if (paymentStatus === "Fully Paid") {
+    setPaidAmount(String(total));
+    setBalanceAmount("0");
+
+    setErrors(prev => ({
+      ...prev,
+      paidAmount: "",
+    }));
+  } else if (paymentStatus === "Partially Paid") {
+    // Clear previous full amount
+    setPaidAmount("");
+    setBalanceAmount("");
+  } else {
+    setPaidAmount("");
+    setBalanceAmount("0");
+  }
+}, [paymentStatus, amount]);
+
     // const itemTotal = items.reduce(
     //     (sum, item) => sum + Number(item.amount || 0),
     //     0
@@ -905,10 +926,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
 
     const handleSubmit = async () => {
+        console.log("Submit Clicked");
         if (!validateExpenseForm()) return;
 
         console.log("validateExpenseForm", validateExpenseForm);
-
+        console.log("Validation Passed");
 
         if (isApplyTriggeredRef.current) return
         isApplyTriggeredRef.current = true
@@ -938,7 +960,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
                     count: items.length,
                     totalAmount,
-                    creditPeriod: Number(creditType),
+                    // creditPeriod: Number(creditType),
+                    // creditPeriod: creditType ? Number(creditType) : "",
+                    ...(creditType && {
+                        creditPeriod: Number(creditType),
+                    }),
                     bankId: selectedMode?.id || "",
 
                     description,
@@ -1719,7 +1745,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                 <Text style={{ color: "red" }}> *</Text>
                                             </Text>
 
-                                            <ValidatedInput
+                                            {/* <ValidatedInput
                                                 keyboardType="numeric"
                                                 type="numberOnly"
                                                 inputType="numeric"
@@ -1732,6 +1758,38 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                     }));
                                                 }}
                                                 placeholder="₹ 2,500"
+                                                style={styles.input}
+                                            /> */}
+
+                                            <ValidatedInput
+                                                keyboardType="numeric"
+                                                type="numberOnly"
+                                                inputType="numeric"
+                                                value={paidAmount}
+                                                 editable={paymentStatus !== "Fully Paid"}
+                                                onChangeText={(text) => {
+                                                    const total = Number(amount || 0);
+                                                    const paid = Number(text || 0);
+
+                                                    setErrors(prev => ({
+                                                        ...prev,
+                                                        paidAmount: "",
+                                                    }));
+
+                                                    if (paymentStatus === "Partially Paid") {
+                                                        if (paid >= total && total > 0) {
+                                                            setErrors(prev => ({
+                                                                ...prev,
+                                                                paidAmount: "",
+                                                            }));
+                                                            return; 
+                                                        }
+                                                    }
+
+                                                    setPaidAmount(text);
+                                                    setBalanceAmount(String(total - paid));
+                                                }}
+                                                placeholder="Enter Paid Amount"
                                                 style={styles.input}
                                             />
                                             {errors.paidAmount && (
@@ -1766,7 +1824,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                             <ValidatedInput
                                                 editable={false}
                                                 value={balanceAmount}
-                                                placeholder="₹ 3,000"
+                                                placeholder="Enter Balance Amount"
                                                 style={styles.input}
                                                 keyboardType="numeric"
                                                 type="numberOnly"
@@ -1861,7 +1919,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                 {paymentStatus === "Credit / Pending" && (
                                     <>
                                         <Text style={styles.label}>
-                                            Credit Period (for this expense only) <Text style={{ color: "red" }}>*</Text>
+                                            Credit Period (for this expense only)
                                         </Text>
 
                                         <ValidatedInput
@@ -1881,12 +1939,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                             style={styles.input}
                                         />
 
-                                        {errors.creditType && (
+                                        {/* {errors.creditType && (
                                             <ErrorMessage
                                                 message={errors.creditType}
                                                 type="error"
                                             />
-                                        )}
+                                        )} */}
                                     </>
                                 )}
 

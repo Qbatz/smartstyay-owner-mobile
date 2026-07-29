@@ -1113,6 +1113,8 @@ export default function BookingCheckIn({ navigation, route }) {
                                             if (value) {
                                                 setAdvanceAmount("");
                                                 setAdvanceError("");
+                                                 setExtraCharges([]);
+                                                 setOpenDropdownId(null)
                                             }
                                         }}
                                     />
