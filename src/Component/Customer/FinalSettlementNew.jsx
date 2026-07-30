@@ -1196,7 +1196,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? "padding" : undefined}
+        // keyboardVerticalOffset={Platform.OS === "ios" ? "padding" : undefined}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 20}
       >
         <SafeAreaView style={styles.safeArea}>
           {/* ✅ HEADER */}
@@ -2334,7 +2335,17 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     placeholder="Enter discount"
                     style={{ flex: 1, fontSize: 16 }}
                     // onPress={handleDiscountFocus}
-                     onFocus={handleDiscountFocus}  
+                    //  onFocus={handleDiscountFocus}  
+                    onFocus={() => {
+                      setIsDiscountFocused(true);
+
+                      setTimeout(() => {
+                        scrollRef.current?.scrollToEnd({
+                          animated: true,
+                        });
+                      }, 250);
+                    }}
+
                   />
 
                   <TouchableOpacity

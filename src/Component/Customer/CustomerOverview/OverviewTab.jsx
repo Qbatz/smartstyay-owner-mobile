@@ -264,7 +264,8 @@ export default function OverviewTab({ customerDetails,
 
   const DraftTenant = status === "DRAFT"
 
-  const disableFinancialEdit =
+  const disableFinancialEdit = 
+  
     status === "BOOKED" ||
     status === "VACATED" ||
     status === "NOTICE" ||

@@ -222,91 +222,49 @@ export default function EditManualAddressSheet({
     let hasError = false;
     setFormError("");
 
-    if (!city) {
-      setCityError("Please enter City");
-      if (!focused) {
-        cityRef.current?.focus();
-        focused = true;
-      }
-      hasError = true;
-    } else {
-      setCityError("")
-    }
+   
 
-    const pinString = String(pincode || "").trim();
+const pinString = String(pincode || "").trim();
 
-    // 🔴 PINCODE VALIDATION
-    if (pinString && pinString.length !== 6) {
-      setPincodeError("Pin Code must be exactly 6 digits");
-      if (!focused) {
-        pincodeRef.current?.focus();
-        focused = true;
-      }
-      hasError = true;
-    } else if (!pinString) {
-      setPincodeError("Pin Code is required");
-      if (!focused) {
-        pincodeRef.current?.focus();
-        focused = true;
-      }
-      hasError = true;
-    }
-    else if (pinString === "000000") {
-      setPincodeError("Pin Code cannot be all zeros");
-      if (!focused) {
-        pincodeRef.current?.focus();
-        focused = true;
-      }
-      hasError = true;
-    } else if (pinString.startsWith("0")) {
-      setPincodeError("Pin Code cannot start with 0");
-      if (!focused) {
-        pincodeRef.current?.focus();
-        focused = true;
-      }
-      hasError = true;
-    } else if (pinString.slice(-3) === "000") {
-      setPincodeError("Last 3 digits cannot be 000");
-      if (!focused) {
-        pincodeRef.current?.focus();
-        focused = true;
-      }
-      hasError = true;
-    } else {
-      setPincodeError("");
-    }
-
-    // if (!stateError) {
-    //   setStateError("Please select state")
-    //   if (!focused) {
-    //     focused = true;
-    //   }
-    //   hasError = true;
-    // } else {
-    //   setStateError("")
-    // }
-
-    if (!selectedState?.trim()) {
-  setStateError("Please select state");
-  if (!focused) {
-    focused = true;
+if (pinString) {
+  if (pinString.length !== 6) {
+    setPincodeError("Pin Code must be exactly 6 digits");
+    hasError = true;
+  } else if (pinString === "000000") {
+    setPincodeError("Pin Code cannot be all zeros");
+    hasError = true;
+  } else if (pinString.startsWith("0")) {
+    setPincodeError("Pin Code cannot start with 0");
+    hasError = true;
+  } else if (pinString.slice(-3) === "000") {
+    setPincodeError("Last 3 digits cannot be 000");
+    hasError = true;
+  } else {
+    setPincodeError("");
   }
-  hasError = true;
 } else {
-  setStateError("");
+  setPincodeError("");
 }
 
-    if (hasError) return;
+if (hasError) return;
 
 
     if (initialAddress) {
+      // const noChanges =
+      //   flat === initialAddress.houseNo &&
+      //   area === initialAddress.street &&
+      //   landmark === initialAddress.landmark &&
+      //   city === initialAddress.city &&
+      //   pinString === initialAddress.pincode &&
+      //   selectedState === initialAddress.state;
+
       const noChanges =
-        flat === initialAddress.houseNo &&
-        area === initialAddress.street &&
-        landmark === initialAddress.landmark &&
-        city === initialAddress.city &&
-        pinString === initialAddress.pincode &&
-        selectedState === initialAddress.state;
+  (flat || "") === (initialAddress?.houseNo || "") &&
+  (area || "") === (initialAddress?.street || "") &&
+  (landmark || "") === (initialAddress?.landmark || "") &&
+  (city || "") === (initialAddress?.city || "") &&
+  pinString === (initialAddress?.pincode || "") &&
+  (selectedState || "") === (initialAddress?.state || "");
 
       if (noChanges) {
 
@@ -316,9 +274,7 @@ export default function EditManualAddressSheet({
 
         setTimeout(() => {
           setShowSuccess(false);
-
-
-        }, 800);
+        }, 1200);
         return;
       }
     }
@@ -427,7 +383,7 @@ export default function EditManualAddressSheet({
                   setLandmark(filtered)
                 }}
               />
-              <Text style={styles.label}>City<Text style={{ marginRight: 3, color: "red", }}>*</Text></Text>
+              <Text style={styles.label}>City</Text>
               <TextInput
                 style={{ borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 10, padding: 12, }}
                 placeholder="City"
@@ -440,9 +396,9 @@ export default function EditManualAddressSheet({
                   }
                 }}
               />
-              {cityError && <ErrorMessage message={cityError} type="error" />}
+              {/* {cityError && <ErrorMessage message={cityError} type="error" />} */}
 
-              <Text style={[styles.label, { marginTop: 12 }]}>Pincode  <Text style={{ marginRight: 3, color: "red", }}>*</Text></Text>
+              <Text style={[styles.label, { marginTop: 12 }]}>Pincode  </Text>
               <TextInput
                 style={{ borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 10, padding: 12, }}
                 placeholder="Pincode"
@@ -460,7 +416,7 @@ export default function EditManualAddressSheet({
               {pincodeError && <ErrorMessage message={pincodeError} type="error" />}
 
               {/* STATE DROPDOWN */}
-              <Text style={[styles.label, { marginTop: 12 }]}>State<Text style={{ marginRight: 3, color: "red", }}>*</Text></Text>
+              <Text style={[styles.label, { marginTop: 12 }]}>State</Text>
 
               <View style={{ position: "relative" }}>
                 <TextInput
@@ -539,7 +495,7 @@ export default function EditManualAddressSheet({
                     </View>
                   </>
                 )}
-                {stateError && <ErrorMessage message={stateError} type="error" />}
+                {/* {stateError && <ErrorMessage message={stateError} type="error" />} */}
 
               </View>
               {formError && <ErrorMessage message={formError} type="error" />}
