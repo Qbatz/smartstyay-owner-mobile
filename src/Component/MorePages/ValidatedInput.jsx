@@ -37,6 +37,10 @@ const validationRules = {
     return text;
   },
 
+  alphaNumeric: (text) => {
+  return text.replace(/[^a-zA-Z0-9\s]/g, "");
+},
+
   gst: (text) => {
   return text
     .toUpperCase()
@@ -61,6 +65,7 @@ const keyboardTypes = {
   description: "default",
   gst : "default",
   pan :  "default",
+  alphaNumeric: "default",
 };
 
 const maxLengths = {
