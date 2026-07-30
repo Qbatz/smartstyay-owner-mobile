@@ -8,7 +8,7 @@ import {
   BackHandler,
   PanResponder,
   StyleSheet,
-  Image, Modal , ScrollView
+  Image, Modal, ScrollView
 } from "react-native";
 import dayjs from "dayjs"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -279,33 +279,33 @@ const ReceiptFilterSheet = ({
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
 
-      <Animated.View
-  style={[
-    styles.transactionSheet,
-    {
-      transform: [{ translateY: detailsY }],
-    },
-  ]}
-  {...detailsfilter.panHandlers}
->
+        <Animated.View
+          style={[
+            styles.transactionSheet,
+            {
+              transform: [{ translateY: detailsY }],
+            },
+          ]}
+          {...detailsfilter.panHandlers}
+        >
 
-  <View style={styles.sheetHandle} />
+          <View style={styles.sheetHandle} />
 
-  <ScrollView
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={{ paddingBottom: 30 }}
-    keyboardShouldPersistTaps="handled"
-  >
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 30 }}
+            keyboardShouldPersistTaps="handled"
+          >
 
-          <View style={styles.filterHeaderRow}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
-              <Text style={styles.filterTitle}>  Filter by</Text>
+            <View style={styles.filterHeaderRow}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
+                <Text style={styles.filterTitle}>  Filter by</Text>
+              </View>
             </View>
-          </View>
 
 
-          {/* <MultiSelectDropdown
+            {/* <MultiSelectDropdown
                   label="Type"
                   dropdownKey="type"
                   placeholder="Select Type"
@@ -319,110 +319,110 @@ const ReceiptFilterSheet = ({
                   }}
                 /> */}
 
-          <MultiSelectDropdown
-            label="Type"
-            dropdownKey="type"
-            placeholder="Select Type"
-            activeDropdown={activeDropdown}
-            setActiveDropdown={setActiveDropdown}
-            options={typeOptions}
-            selected={type}
-            onChange={setType}
-          />
+            <MultiSelectDropdown
+              label="Type"
+              dropdownKey="type"
+              placeholder="Select Type"
+              activeDropdown={activeDropdown}
+              setActiveDropdown={setActiveDropdown}
+              options={typeOptions}
+              selected={type}
+              onChange={setType}
+            />
 
-          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, }}>
 
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>From </Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>From </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.label}>To</Text>
+              </View>
+
             </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.label}>To</Text>
-            </View>
 
-          </View>
-
-          <View style={styles.dateRow}>
-            {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
+            <View style={styles.dateRow}>
+              {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
               <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
               <Image source={CalendarIcon} style={styles.calIcon} />
             </TouchableOpacity> */}
-            <TouchableOpacity
-  style={styles.dateBox}
-  onPress={() => setOpenFrom(true)}
->
-  <Text style={styles.dateText}>
-    {formatDate(fromDate)}
-  </Text>
+              <TouchableOpacity
+                style={styles.dateBox}
+                onPress={() => setOpenFrom(true)}
+              >
+                <Text style={styles.dateText}>
+                  {formatDate(fromDate)}
+                </Text>
 
-  <View style={styles.calendarBg}>
-    <Image source={CalendarIcon} style={styles.calIcon} />
-  </View>
-</TouchableOpacity>
+                <View style={styles.calendarBg}>
+                  <Image source={CalendarIcon} style={styles.calIcon} />
+                </View>
+              </TouchableOpacity>
 
-<TouchableOpacity
-  style={styles.dateBox}
-  onPress={() => setOpenTo(true)}
->
-  <Text style={styles.dateText}>
-    {formatDate(toDate)}
-  </Text>
+              <TouchableOpacity
+                style={styles.dateBox}
+                onPress={() => setOpenTo(true)}
+              >
+                <Text style={styles.dateText}>
+                  {formatDate(toDate)}
+                </Text>
 
-  <View style={styles.calendarBg}>
-    <Image source={CalendarIcon} style={styles.calIcon} />
-  </View>
-</TouchableOpacity>
+                <View style={styles.calendarBg}>
+                  <Image source={CalendarIcon} style={styles.calIcon} />
+                </View>
+              </TouchableOpacity>
 
-            {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
+              {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
               <Text style={styles.dateText}>{formatDate(toDate)}</Text>
               <Image source={CalendarIcon} style={styles.calIcon} />
             </TouchableOpacity> */}
-          </View>
+            </View>
 
 
 
 
-          <View style={styles.quickRow}>
-            <TouchableOpacity   style={[
-    styles.quickBtn,
-    selectedPeriod === "today" && styles.activeQuickBtn,
-  ]} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-              <Text style={styles.quickText}>Today</Text>
-            </TouchableOpacity>
+            <View style={styles.quickRow}>
+              <TouchableOpacity style={[
+                styles.quickBtn,
+                selectedPeriod === "today" && styles.activeQuickBtn,
+              ]} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+                <Text style={styles.quickText}>Today</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity   style={[
-    styles.quickBtn,
-    selectedPeriod === "week" && styles.activeQuickBtn,
-  ]} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-              <Text style={styles.quickText}>This Week</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={[
+                styles.quickBtn,
+                selectedPeriod === "week" && styles.activeQuickBtn,
+              ]} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
+                <Text style={styles.quickText}>This Week</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity   style={[
-    styles.quickBtn,
-    selectedPeriod === "month" && styles.activeQuickBtn,
-  ]} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-              <Text style={styles.quickText}>This Month</Text>
-            </TouchableOpacity>
-          </View>
-
-
+              <TouchableOpacity style={[
+                styles.quickBtn,
+                selectedPeriod === "month" && styles.activeQuickBtn,
+              ]} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
+                <Text style={styles.quickText}>This Month</Text>
+              </TouchableOpacity>
+            </View>
 
 
 
-          <MultiSelectDropdown
-            label="Period"
-            dropdownKey="period"
-            placeholder="Select Period"
-            activeDropdown={activeDropdown}
-            setActiveDropdown={setActiveDropdown}
-            options={periodOptions}
-            selected={selectedPeriod ? [selectedPeriod] : []}
-            onChange={(values) => {
-              setSelectedPeriod(values?.[0] || "");
-              setFilterError("");
-            }}
-          />
 
-          <MultiSelectDropdown
+
+            <MultiSelectDropdown
+              label="Period"
+              dropdownKey="period"
+              placeholder="Select Period"
+              activeDropdown={activeDropdown}
+              setActiveDropdown={setActiveDropdown}
+              options={periodOptions}
+              selected={selectedPeriod ? [selectedPeriod] : []}
+              onChange={(values) => {
+                setSelectedPeriod(values?.[0] || "");
+                setFilterError("");
+              }}
+            />
+
+            {/* <MultiSelectDropdown
             label="Amount Range"
             dropdownKey="amountRange"
             placeholder="Select Amount Range"
@@ -431,35 +431,35 @@ const ReceiptFilterSheet = ({
             options={amountRangeOptions}
             selected={amountRange}
             onChange={setAmountRange}
-          />
+          /> */}
 
 
-          <MultiSelectDropdown
-            label="Payment Method"
-            dropdownKey="paymentMode"
-            placeholder="Select Payment Method"
-            activeDropdown={activeDropdown}
-            setActiveDropdown={setActiveDropdown}
-            options={paymentModeOptions}
-            selected={paymentmode}
-            onChange={setPaymentMode}
-          />
+            <MultiSelectDropdown
+              label="Payment Method"
+              dropdownKey="paymentMode"
+              placeholder="Select Payment Method"
+              activeDropdown={activeDropdown}
+              setActiveDropdown={setActiveDropdown}
+              options={paymentModeOptions}
+              selected={paymentmode}
+              onChange={setPaymentMode}
+            />
 
 
 
 
-          <MultiSelectDropdown
-            label="Collected By"
-            dropdownKey="collectedBy"
-            placeholder="Select User"
-            activeDropdown={activeDropdown}
-            setActiveDropdown={setActiveDropdown}
-            options={collectedByOptions}
-            selected={collectedBy}
-            onChange={setCollectedBy}
-          />
+            <MultiSelectDropdown
+              label="Collected By"
+              dropdownKey="collectedBy"
+              placeholder="Select User"
+              activeDropdown={activeDropdown}
+              setActiveDropdown={setActiveDropdown}
+              options={collectedByOptions}
+              selected={collectedBy}
+              onChange={setCollectedBy}
+            />
 
-          <MultiSelectDropdown
+            {/* <MultiSelectDropdown
             label="Mode"
             dropdownKey="mode"
             placeholder="Select Mode"
@@ -468,38 +468,38 @@ const ReceiptFilterSheet = ({
             options={modeOptions}
             selected={mode}
             onChange={setMode}
-          />
+          /> */}
 
 
 
 
 
-          {filterError && (
-            <ErrorMessage message={filterError} type="error" />
-          )}
+            {filterError && (
+              <ErrorMessage message={filterError} type="error" />
+            )}
 
 
-          <View style={styles.bottomButtons}>
-            <TouchableOpacity style={styles.resetBtn}
-              // onPress={() => {
-              //   setFromDate(null)
-              //   setToDate(null)
-              //   setCollectedBy([])
-              //   setBillStatus([])
-              //   setType([])
-              //   setPaymentMode([])
-              //   setFilterError("")
-              // }}
-              onPress={handleResetFilters}
-            >
-              <Text style={styles.resetBtnText}>Reset All</Text>
-            </TouchableOpacity>
+            <View style={styles.bottomButtons}>
+              <TouchableOpacity style={styles.resetBtn}
+                // onPress={() => {
+                //   setFromDate(null)
+                //   setToDate(null)
+                //   setCollectedBy([])
+                //   setBillStatus([])
+                //   setType([])
+                //   setPaymentMode([])
+                //   setFilterError("")
+                // }}
+                onPress={handleResetFilters}
+              >
+                <Text style={styles.resetBtnText}>Reset All</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity style={styles.applyButton} onPress={handleApplyFilter}>
-              <Text style={styles.applyBtnText}>Apply</Text>
-            </TouchableOpacity>
-          </View>
-            </ScrollView>
+              <TouchableOpacity style={styles.applyButton} onPress={handleApplyFilter}>
+                <Text style={styles.applyBtnText}>Apply</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
 
         </Animated.View>
       </View>
@@ -591,15 +591,15 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 25,
   },
 
-transactionSheet: {
-  backgroundColor: "#fff",
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
-  height: "85%",
-  paddingHorizontal: 20,
-  paddingTop: 15,
-  paddingBottom: 20,
-},
+  transactionSheet: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    height: "85%",
+    paddingHorizontal: 20,
+    paddingTop: 15,
+    paddingBottom: 20,
+  },
   sheetHandle: {
     width: 60,
     height: 5,
@@ -647,18 +647,18 @@ transactionSheet: {
   resetTextSmall: { color: "#2D6CDF", fontFamily: "Gilroy-Semibold", marginLeft: 10 },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-dateBox: {
-  width: "48%",
-  height: 44,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 10,
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  paddingLeft: 16,
-  overflow: "hidden",
-},
+  dateBox: {
+    width: "48%",
+    height: 44,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingLeft: 16,
+    overflow: "hidden",
+  },
   // dateText: { color: "#111" },
   calIcon: { width: 20, height: 20 },
 
@@ -746,52 +746,52 @@ dateBox: {
     bottom: 0,
   },
 
-calendarBg: {
-  width: 64,
-  height: "100%",
-  backgroundColor: "#EEF2FF",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  calendarBg: {
+    width: 64,
+    height: "100%",
+    backgroundColor: "#EEF2FF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-calIcon: {
-  width: 24,
-  height: 24,
-  tintColor: "#374151",
-},
+  calIcon: {
+    width: 24,
+    height: 24,
+    tintColor: "#374151",
+  },
 
-dateText: {
-  fontSize: 16,
-  fontFamily: "Gilroy-Medium",
-  color: "#4B5563",
-},
-quickRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  marginTop: 16,
-},
+  dateText: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Medium",
+    color: "#4B5563",
+  },
+  quickRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 16,
+  },
 
-quickBtn: {
-  width: "31.5%",
-  height: 44,
-  borderRadius: 10,
-  backgroundColor: "#fff",
-  justifyContent: "center",
-  alignItems: "center",
-      borderWidth: 1,
+  quickBtn: {
+    width: "31.5%",
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
     borderColor: "#E0E0E0",
-},
-activeQuickBtn: {
-  backgroundColor: "#2D6CDF",
-},
+  },
+  activeQuickBtn: {
+    backgroundColor: "#2D6CDF",
+  },
 
-activeQuickText: {
-  color: "#FFFFFF",
-},
+  activeQuickText: {
+    color: "#FFFFFF",
+  },
 
-quickText: {
-  fontSize: 16,
-  fontFamily: "Gilroy-Medium",
-  color: "#374151",
-},
+  quickText: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Medium",
+    color: "#374151",
+  },
 })

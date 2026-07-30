@@ -52,6 +52,7 @@ export default function BillsProvider({ children }) {
       setLoading(true);
       setErrorMsg("");
       const axios = getAxios();
+      console.log("filters",filters);
       const res = await axios.get(`/v2/bills/${hostelId}`, {
         params: {
           startDate: filters.startDate,
@@ -62,6 +63,8 @@ export default function BillsProvider({ children }) {
           paymentStatus: filters.paymentStatus,
           search: filters.search,
         },
+        
+        
         paramsSerializer: (params) =>
           Object.keys(params)
             .map((key) => {

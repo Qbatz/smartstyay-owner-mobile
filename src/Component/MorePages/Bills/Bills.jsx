@@ -395,7 +395,7 @@ export default function BillsDesign({ route }) {
   //   }, [activeHostelId, canReadInvoice, activeTab])
   // );
 
-  console.log("activehost",activeHostelId)
+  console.log("activehost", activeHostelId)
 
 
   useEffect(() => {
@@ -406,7 +406,7 @@ export default function BillsDesign({ route }) {
     ) {
       GetAllBillDetails(activeHostelId);
     }
-  }, [activeTab,activeHostelId]);
+  }, [activeTab, activeHostelId]);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -1057,13 +1057,13 @@ export default function BillsDesign({ route }) {
 
   useLayoutEffect(() => {
 
-if(showFilter){
-   setShowTabBar(false);
-}else{
-   setShowTabBar(true);
-}
+    if (showFilter) {
+      setShowTabBar(false);
+    } else {
+      setShowTabBar(true);
+    }
 
-},[])
+  }, [])
 
   // useLayoutEffect(() => {
 
@@ -1617,7 +1617,7 @@ if(showFilter){
       type: appliedFilters?.type || [],
       modes: appliedFilters?.modes || [],
       createdBy: appliedFilters?.createdBy || [],
-      search: text || null,
+      search: text || "",
     };
 
     await GetAllBillDetails(activeHostelId, filters);
@@ -2365,29 +2365,29 @@ if(showFilter){
 
 
   const clearBillFilters = () => {
-  setFromDate(null);
-  setToDate(null);
-  setBillStatus([]);
-  setType([]);
-  setMode([]);
-  setCreatedBy([]);
-  setAppliedFilters(null);
-  setFilterError("");
-  setSearchText("");
-};
+    setFromDate(null);
+    setToDate(null);
+    setBillStatus([]);
+    setType([]);
+    setMode([]);
+    setCreatedBy([]);
+    setAppliedFilters(null);
+    setFilterError("");
+    setSearchText("");
+  };
 
-const handleTabChange = (tab) => {
-  if (activeTab === "Invoices" && tab !== "Invoices") {
-    clearBillFilters();
-  }
+  const handleTabChange = (tab) => {
+    if (activeTab === "Invoices" && tab !== "Invoices") {
+      clearBillFilters();
+    }
 
-setSearchText("");
-  setActiveTab(tab);
+    setSearchText("");
+    setActiveTab(tab);
 
-  if (tab === "Invoices") {
-    GetAllBillDetails(activeHostelId);
-  }
-};
+    if (tab === "Invoices") {
+      GetAllBillDetails(activeHostelId);
+    }
+  };
 
   // const handleTabChange = (tab) => {
   //   setActiveTab(tab);
@@ -2587,15 +2587,38 @@ setSearchText("");
                       ? "Search Receipt"
                       : "Search Invoice"
                   }
+                  // onChangeText={(text) => {
+                  //   if (activeTab === "Receipt") {
+                  //     setSearchText(text);
+                  //     handleReceiptSearch(text);
+                  //   } else {
+                  //     setSearchText(text);
+                  //     handleSearch(text);
+                  //   }
+                  // }}
                   onChangeText={(text) => {
+                    const filtered = text.replace(/[^a-zA-Z\s]/g, "");
+                    console.log("filtered", filtered);
+                    
+
+                    setSearchText(filtered);
+
                     if (activeTab === "Receipt") {
-                      setSearchText(text);
-                      handleReceiptSearch(text);
+                      if (filtered.trim() === "") {
+                        GetReceiptsList(activeHostelId)
+                      } else {
+                        handleReceiptSearch(filtered)
+                      }
                     } else {
-                      setSearchText(text);
-                      handleSearch(text);
+                      if (filtered.trim() === "") {
+                        GetAllBillDetails(activeHostelId);
+                        // GetAllBillDetails(activeHostelId)
+                      } else {
+                        handleSearch(filtered)
+                      }
                     }
                   }}
+
                   placeholderTextColor="#9CA3AF"
                   editable={canReadInvoice || canReadReceipt}
                 />
@@ -2894,27 +2917,27 @@ setSearchText("");
                       <Text style={styles.noFloorText}>No bills are there!</Text>
 
                       {appliedFilters ? (
-  <TouchableOpacity
-    style={{width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" , marginTop:10}}
-    onPress={handleResetFilters}
-  >
-    <Text style={styles.resetText}>
-      Reset Filters
-    </Text>
-  </TouchableOpacity>
-                      ): (
-  <TouchableOpacity
-                        style={[
-                          styles.addFloorBtn,
-                          !canWriteInvoice && { opacity: 0.4 }
-                        ]}
-                        disabled={!canWriteInvoice}
-                        onPress={handleCreateBill}>
-                        <Text style={styles.addFloorText}>+ Add Bill</Text>
-                      </TouchableOpacity>
+                        <TouchableOpacity
+                          style={{ width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center", marginTop: 10 }}
+                          onPress={handleResetFilters}
+                        >
+                          <Text style={styles.resetText}>
+                            Reset Filters
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={[
+                            styles.addFloorBtn,
+                            !canWriteInvoice && { opacity: 0.4 }
+                          ]}
+                          disabled={!canWriteInvoice}
+                          onPress={handleCreateBill}>
+                          <Text style={styles.addFloorText}>+ Add Bill</Text>
+                        </TouchableOpacity>
                       )}
 
-                    
+
                     </View>
                   )}
 
@@ -2955,7 +2978,7 @@ setSearchText("");
           )}
 
           {activeTab === "RecurringBills" && (
-            <RecurringBills onSelectRecurringBill={handleRecurringBill}  setShowTabBar={setShowTabBar}/>
+            <RecurringBills onSelectRecurringBill={handleRecurringBill} setShowTabBar={setShowTabBar} />
           )}
           {activeTab === "Receipt" && (
             <Receipt onSelectReceipt={handleOpenReceiptSheet}
