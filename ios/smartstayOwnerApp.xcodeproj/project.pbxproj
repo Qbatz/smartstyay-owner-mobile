@@ -226,9 +226,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -265,9 +269,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -301,7 +309,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = VL28674CUZ;
+				DEVELOPMENT_TEAM = 952KX8Q5Y5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = smartstayOwnerApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Smartstay ";
@@ -317,7 +325,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.smartstay.ownerapp;
+				PRODUCT_BUNDLE_IDENTIFIER = com.qbatz.smartstay;
 				PRODUCT_BUNDLE_IDENTIFIER1 = "";
 				"PRODUCT_BUNDLE_IDENTIFIER1[arch=*]" = com.smartstay.ownerapp;
 				PRODUCT_NAME = smartstayOwnerApp;
@@ -336,8 +344,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 952KX8Q5Y5;
 				INFOPLIST_FILE = smartstayOwnerApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Smartstay ";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
@@ -356,6 +366,7 @@
 				"PRODUCT_BUNDLE_IDENTIFIER1[arch=*]" = com.smartstay.ownerapp;
 				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.qbatz.smartstay;
 				PRODUCT_NAME = smartstayOwnerApp;
+				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "smartstayOwnerApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
