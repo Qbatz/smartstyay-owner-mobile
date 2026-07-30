@@ -1111,7 +1111,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
 
                         <ValidatedInput
-                            type="name"
+                            type="alphaNumeric"
                             inputType="text"
                             value={expenseTitle}
                             onChangeText={(text) => {
