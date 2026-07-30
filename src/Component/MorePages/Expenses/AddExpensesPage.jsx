@@ -11,7 +11,7 @@ import {
     Animated,
     PanResponder,
     Dimensions, BackHandler, Keyboard, NativeModules,
-    Alert , KeyboardAvoidingView, Platform 
+    Alert, KeyboardAvoidingView, Platform
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 import { useFocusEffect } from '@react-navigation/native';
@@ -163,7 +163,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const [discount, setDiscount] = useState("");
     const [discountType, setDiscountType] = useState("amount"); // amount | percentage
     const [discountError, setDiscountError] = useState("")
-    const vendorName=route?.params?.vendorData?.fullName
+    const vendorName = route?.params?.vendorData?.fullName
 
     const categoryList = IntializeexpensesList?.listExpenses || [];
 
@@ -197,14 +197,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         ]);
     }
 
-    
 
-    useEffect(()=>{
-        if(vendorName){
-           setSelectedVendor(route?.params?.vendorData)
-           setVendorId(route?.params?.vendorData?.id)
+
+    useEffect(() => {
+        if (vendorName) {
+            setSelectedVendor(route?.params?.vendorData)
+            setVendorId(route?.params?.vendorData?.id)
         }
-    },[])
+    }, [])
 
 
 
@@ -614,7 +614,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const [minDate, setMinDate] = useState(null); // add this
 
 
-    
+
 
     const pickImage = () => {
         ImagePicker.launchImageLibrary(
@@ -710,10 +710,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                     "Please Select Payment Status";
             }
 
-            if (!selectedMode) {
-                newErrors.paymentMethod =
-                    "Please Select Payment Method";
-            }
+            // if (!selectedMode) {
+            //     newErrors.paymentMethod =
+            //         "Please Select Payment Method";
+            // }
 
             if (paymentStatus === "Partially Paid") {
 
@@ -743,15 +743,16 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             }
         }
 
-        if (paymentStatus === "Credit / Pending") {
-            if (!creditType?.trim()) {
-                newErrors.creditType =
-                    "Please Enter Credit Type"
-            }
-        } else {
+        //       if (paymentStatus === "Credit / Pending") {
+        //     if (!creditType?.trim()) {
+        //         newErrors.creditType = "Please Enter Credit Period";
+        //     } else if (Number(creditType) <= 0) {
+        //         newErrors.creditType = "Credit Period should be greater than 0";
+        //     }
+        // }
+        if (paymentStatus !== "Credit / Pending") {
             if (!selectedMode) {
-                newErrors.paymentMethod =
-                    "Please Select Payment Method";
+                newErrors.paymentMethod = "Please Select Payment Method";
             }
         }
         const hasItems = items.some(
@@ -879,6 +880,28 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         }
     }, [amount, paidAmount, paymentStatus])
 
+
+  useEffect(() => {
+  const total = Number(amount || 0);
+
+  if (paymentStatus === "Fully Paid") {
+    setPaidAmount(String(total));
+    setBalanceAmount("0");
+
+    setErrors(prev => ({
+      ...prev,
+      paidAmount: "",
+    }));
+  } else if (paymentStatus === "Partially Paid") {
+    // Clear previous full amount
+    setPaidAmount("");
+    setBalanceAmount("");
+  } else {
+    setPaidAmount("");
+    setBalanceAmount("0");
+  }
+}, [paymentStatus, amount]);
+
     // const itemTotal = items.reduce(
     //     (sum, item) => sum + Number(item.amount || 0),
     //     0
@@ -903,7 +926,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
 
     const handleSubmit = async () => {
+        console.log("Submit Clicked");
         if (!validateExpenseForm()) return;
+
+        console.log("validateExpenseForm", validateExpenseForm);
+        console.log("Validation Passed");
 
         if (isApplyTriggeredRef.current) return
         isApplyTriggeredRef.current = true
@@ -933,7 +960,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                     purchaseDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
                     count: items.length,
                     totalAmount,
-                    creditPeriod: creditType || "",
+                    // creditPeriod: Number(creditType),
+                    // creditPeriod: creditType ? Number(creditType) : "",
+                    ...(creditType && {
+                        creditPeriod: Number(creditType),
+                    }),
                     bankId: selectedMode?.id || "",
 
                     description,
@@ -1009,7 +1040,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 }, 1500);
             }
         }
-        catch(error){
+        catch (error) {
             console.log(error)
             isApplyTriggeredRef.current = false
         }
@@ -1029,46 +1060,46 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 type={modalType} />
 
 
-                  <KeyboardAvoidingView
-    style={{ flex: 1 }}
-    behavior={Platform.OS === "ios" ? "padding" : "height"}
-  >
+            <KeyboardAvoidingView
+                style={{ flex: 1 }}
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+            >
 
-            <View style={styles.container}>
+                <View style={styles.container}>
 
-                {/* Header */}
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}
-                        style={styles.backBtn}
-                    >
-                        <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
-                    </TouchableOpacity>
+                    {/* Header */}
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={() => navigation.goBack()}
+                            style={styles.backBtn}
+                        >
+                            <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
+                        </TouchableOpacity>
 
-                    <Text style={styles.headerTitle}>
-                        Add Expenses
-                    </Text>
-                </View>
-
-
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.content}
-                >
-
-                    {/* Vendor Information */}
-
-
-                    <View style={styles.sectionHeader}>
-                        <View style={styles.blueBar} />
-                        <Text style={styles.sectionTitle}>
-                            Expenses Details
+                        <Text style={styles.headerTitle}>
+                            Add Expenses
                         </Text>
                     </View>
-                    <Text style={styles.label}>
-                        Expenses Title
-                    </Text>
 
-                    {/* <ValidatedInput
+
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        contentContainerStyle={styles.content}
+                    >
+
+                        {/* Vendor Information */}
+
+
+                        <View style={styles.sectionHeader}>
+                            <View style={styles.blueBar} />
+                            <Text style={styles.sectionTitle}>
+                                Expenses Details
+                            </Text>
+                        </View>
+                        <Text style={styles.label}>
+                            Expenses Title
+                        </Text>
+
+                        {/* <ValidatedInput
                     type="name"
                     inputType="text"
                     value={businessName}
@@ -1079,357 +1110,357 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                 /> */}
 
 
-                    <ValidatedInput
-                        type="name"
-                        inputType="text"
-                        value={expenseTitle}
-                        onChangeText={(text) => {
-                            setExpenseTitle(text);
-                            setErrors(prev => ({
-                                ...prev,
-                                expenseTitle: ""
-                            }));
-                        }}
-                        placeholder="Vegetables 70 KG"
-                        maxLength={50}
-                        placeholderTextColor="#9CA3AF"
-                        style={styles.input}
-                    />
+                        <ValidatedInput
+                            type="alphaNumeric"
+                            inputType="text"
+                            value={expenseTitle}
+                            onChangeText={(text) => {
+                                setExpenseTitle(text);
+                                setErrors(prev => ({
+                                    ...prev,
+                                    expenseTitle: ""
+                                }));
+                            }}
+                            placeholder="Vegetables 70 KG"
+                            maxLength={50}
+                            placeholderTextColor="#9CA3AF"
+                            style={styles.input}
+                        />
 
-                    <Text style={styles.note}>
-                        Note : Max 50 Characters
-                    </Text>
-                    {/* {errors.expenseTitle && (
+                        <Text style={styles.note}>
+                            Note : Max 50 Characters
+                        </Text>
+                        {/* {errors.expenseTitle && (
                         <ErrorMessage
                             message={errors.expenseTitle}
                             type="error"
                         />
                     )} */}
 
-                    <View style={{
-                        flexDirection: "row",
-                        gap: 10, marginTop: 10, marginBottom: 5
-                    }}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.label}>
-                                Category <Text style={{ color: "red" }}>*</Text>
-                            </Text>
-
-                            <TouchableOpacity
-                                style={styles.expensesDropdownBox}
-                                onPress={() => {
-                                    setCategoryOpen(!categoryOpen)
-                                    setSubCategoryOpen(false);
-                                    setModePaymentOpen(false);
-
-                                }}
-                            >
-                                <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
-                                    {selectedCategory?.categoryName || "Select Category"}
-                                </Text>
-                                <Image source={DownArrow} style={styles.expensesArrowIcon} />
-                            </TouchableOpacity>
-
-                            {categoryOpen && (
-                                <View style={styles.expensesDropdownMenu}>
-                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                        {categoryList?.length === 0 ? (
-                                            <Text style={styles.expensesNoDataText}>
-                                                No category found
-                                            </Text>
-                                        ) : (
-                                            categoryList?.map((item) => {
-                                                const isSelected =
-                                                    selectedCategory?.categoryId === item.categoryId;
-
-                                                return (
-                                                    <TouchableOpacity
-                                                        key={item.categoryId}
-                                                        style={[
-                                                            styles.expensesOption,
-                                                            isSelected && styles.expensesOptionSelected,
-                                                        ]}
-                                                        onPress={() => {
-                                                            setSelectedCategory(item);
-                                                            setSelectedSubCategory(null);
-                                                            setCategoryErr("");
-                                                            setNochangeErr("");
-                                                            setCategoryOpen(false);
-                                                            setErrors(prev => ({
-                                                                ...prev,
-                                                                category: ""
-                                                            }));
-                                                        }}
-
-                                                    >
-                                                        <Text
-                                                            style={[
-                                                                styles.expensesOptionText,
-                                                                isSelected && styles.expensesOptionTextSelected,
-                                                            ]}
-                                                        >
-                                                            {item.categoryName}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                )
-                                            })
-
-
-                                        )}
-                                    </ScrollView>
-                                </View>
-                            )}
-
-                            {errors.category && (
-                                <ErrorMessage
-                                    message={errors.category}
-                                    type="error"
-                                />
-                            )}
-
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.label}>
-                                Sub Category
-                                {selectedCategory?.subCategories?.length > 0 && (
-                                    <Text style={{ color: "red" }}> *</Text>
-                                )}
-                            </Text>
-
-                            <TouchableOpacity
-                                style={[
-                                    styles.expensesDropdownBox,
-                                    subCategoryList.length === 0 && { backgroundColor: "#F3F4F6" },
-                                ]}
-                                disabled={subCategoryList.length === 0}
-                                onPress={() => {
-                                    setSubCategoryOpen(!subCategoryOpen);
-                                    setCategoryOpen(false);
-                                    setModePaymentOpen(false);
-
-
-                                }}
-
-                            >
-                                <Text style={{ color: selectedSubCategory ? "#000" : "#9CA3AF" }}>
-                                    {selectedSubCategory?.subCategoryName || "Select Sub Category"}
-
-                                </Text>
-                                <Image source={DownArrow} style={styles.expensesArrowIcon} />
-                            </TouchableOpacity>
-
-                            {subCategoryOpen && (
-                                <View style={styles.expensesDropdownMenu}>
-                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                        {subCategoryList.length === 0 ? (
-                                            <Text style={styles.expensesNoDataText}>
-                                                No sub category found
-                                            </Text>
-                                        ) : (
-                                            subCategoryList.map((item) => {
-                                                const isSelected =
-                                                    selectedSubCategory?.subCategoryId === item.subCategoryId;
-
-                                                return (
-                                                    <TouchableOpacity
-                                                        key={item.subCategoryId}
-                                                        style={[
-                                                            styles.expensesOption,
-                                                            isSelected && styles.expensesOptionSelected,
-                                                        ]}
-                                                        onPress={() => {
-                                                            setSelectedSubCategory(item);
-                                                            setSubCategoryErr("");
-                                                            setNochangeErr("");
-                                                            setSubCategoryOpen(false);
-                                                            setErrors(prev => ({
-                                                                ...prev,
-                                                                subCategory: ""
-                                                            }))
-                                                        }}
-
-                                                    >
-                                                        <Text
-                                                            style={[
-                                                                styles.expensesOptionText,
-                                                                isSelected && styles.expensesOptionTextSelected,
-                                                            ]}
-                                                        >
-                                                            {item.subCategoryName}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                )
-                                            })
-
-
-                                        )}
-                                    </ScrollView>
-                                </View>
-                            )}
-                            {errors.subCategory && (
-                                <ErrorMessage
-                                    message={errors.subCategory}
-                                    type="error"
-                                />
-                            )}
-                        </View>
-                    </View>
-
-
-                    <Text style={styles.label}>
-                        Total Amount (INR)
-                        <Text style={{ color: "red" }}>*</Text>
-                    </Text>
-
-                    <ValidatedInput
-                        type="numberOnly"
-                        inputType="numeric"
-                        value={amount}
-                        onChangeText={(text) => {
-                            setAmount(text);
-                            setErrors(prev => ({
-                                ...prev,
-                                amount: ""
-                            }));
-                        }}
-                        placeholder="₹ 5,500"
-                        placeholderTextColor="#9CA3AF"
-                        style={styles.input}
-                    />
-                    {errors.amount && (
-                        <ErrorMessage
-                            message={errors.amount}
-                            type="error"
-                        />
-                    )}
-
-                    <Text style={styles.label}>
-                        Expense Date <Text style={{ color: "red" }}>*</Text>
-                    </Text>
-                    <TouchableOpacity
-                        activeOpacity={0.7}
-                        // disabled={isEditMode}
-                        onPress={() => {
-                            // if (!isEditMode)
-                            setOpenPurchaseDate(true);
-                            setNochangeErr("");
-                        }}
-                    >
-                        <View style={styles.dateInputWrapper}>
-                            <TextInput
-                                style={styles.dateInput}
-                                placeholder="DD-MM-YYYY"
-                                value={purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : ""}
-                                editable={false}
-                                pointerEvents="none"
-                            />
-
-                            <Image
-                                source={require("../../../Assets/Images/calendar.png")}
-                                style={styles.calendarIcon}
-                            />
-                        </View>
-                    </TouchableOpacity>
-
-
-
-                    {errors.expenseDate && (
-                        <ErrorMessage
-                            message={errors.expenseDate}
-                            type="error"
-                        />
-                    )}
-
-                    <View
-                        style={{
+                        <View style={{
                             flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            marginTop: 20,
-                            marginBottom: 10,
-                        }}
-                    >
-                        <Text
-                            style={{
-                                fontSize: 16,
-                                fontFamily: "Gilroy-Medium",
-                                color: "#1E1E1E",
-                                width: "45%",
-                                lineHeight: 24,
+                            gap: 10, marginTop: 10, marginBottom: 5
+                        }}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.label}>
+                                    Category <Text style={{ color: "red" }}>*</Text>
+                                </Text>
+
+                                <TouchableOpacity
+                                    style={styles.expensesDropdownBox}
+                                    onPress={() => {
+                                        setCategoryOpen(!categoryOpen)
+                                        setSubCategoryOpen(false);
+                                        setModePaymentOpen(false);
+
+                                    }}
+                                >
+                                    <Text style={{ color: selectedCategory ? "#000" : "#9CA3AF" }}>
+                                        {selectedCategory?.categoryName || "Select Category"}
+                                    </Text>
+                                    <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                                </TouchableOpacity>
+
+                                {categoryOpen && (
+                                    <View style={styles.expensesDropdownMenu}>
+                                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                            {categoryList?.length === 0 ? (
+                                                <Text style={styles.expensesNoDataText}>
+                                                    No category found
+                                                </Text>
+                                            ) : (
+                                                categoryList?.map((item) => {
+                                                    const isSelected =
+                                                        selectedCategory?.categoryId === item.categoryId;
+
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={item.categoryId}
+                                                            style={[
+                                                                styles.expensesOption,
+                                                                isSelected && styles.expensesOptionSelected,
+                                                            ]}
+                                                            onPress={() => {
+                                                                setSelectedCategory(item);
+                                                                setSelectedSubCategory(null);
+                                                                setCategoryErr("");
+                                                                setNochangeErr("");
+                                                                setCategoryOpen(false);
+                                                                setErrors(prev => ({
+                                                                    ...prev,
+                                                                    category: ""
+                                                                }));
+                                                            }}
+
+                                                        >
+                                                            <Text
+                                                                style={[
+                                                                    styles.expensesOptionText,
+                                                                    isSelected && styles.expensesOptionTextSelected,
+                                                                ]}
+                                                            >
+                                                                {item.categoryName}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    )
+                                                })
+
+
+                                            )}
+                                        </ScrollView>
+                                    </View>
+                                )}
+
+                                {errors.category && (
+                                    <ErrorMessage
+                                        message={errors.category}
+                                        type="error"
+                                    />
+                                )}
+
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.label}>
+                                    Sub Category
+                                    {selectedCategory?.subCategories?.length > 0 && (
+                                        <Text style={{ color: "red" }}> *</Text>
+                                    )}
+                                </Text>
+
+                                <TouchableOpacity
+                                    style={[
+                                        styles.expensesDropdownBox,
+                                        subCategoryList.length === 0 && { backgroundColor: "#F3F4F6" },
+                                    ]}
+                                    disabled={subCategoryList.length === 0}
+                                    onPress={() => {
+                                        setSubCategoryOpen(!subCategoryOpen);
+                                        setCategoryOpen(false);
+                                        setModePaymentOpen(false);
+
+
+                                    }}
+
+                                >
+                                    <Text style={{ color: selectedSubCategory ? "#000" : "#9CA3AF" }}>
+                                        {selectedSubCategory?.subCategoryName || "Select Sub Category"}
+
+                                    </Text>
+                                    <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                                </TouchableOpacity>
+
+                                {subCategoryOpen && (
+                                    <View style={styles.expensesDropdownMenu}>
+                                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                            {subCategoryList.length === 0 ? (
+                                                <Text style={styles.expensesNoDataText}>
+                                                    No sub category found
+                                                </Text>
+                                            ) : (
+                                                subCategoryList.map((item) => {
+                                                    const isSelected =
+                                                        selectedSubCategory?.subCategoryId === item.subCategoryId;
+
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={item.subCategoryId}
+                                                            style={[
+                                                                styles.expensesOption,
+                                                                isSelected && styles.expensesOptionSelected,
+                                                            ]}
+                                                            onPress={() => {
+                                                                setSelectedSubCategory(item);
+                                                                setSubCategoryErr("");
+                                                                setNochangeErr("");
+                                                                setSubCategoryOpen(false);
+                                                                setErrors(prev => ({
+                                                                    ...prev,
+                                                                    subCategory: ""
+                                                                }))
+                                                            }}
+
+                                                        >
+                                                            <Text
+                                                                style={[
+                                                                    styles.expensesOptionText,
+                                                                    isSelected && styles.expensesOptionTextSelected,
+                                                                ]}
+                                                            >
+                                                                {item.subCategoryName}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    )
+                                                })
+
+
+                                            )}
+                                        </ScrollView>
+                                    </View>
+                                )}
+                                {errors.subCategory && (
+                                    <ErrorMessage
+                                        message={errors.subCategory}
+                                        type="error"
+                                    />
+                                )}
+                            </View>
+                        </View>
+
+
+                        <Text style={styles.label}>
+                            Total Amount (INR)
+                            <Text style={{ color: "red" }}>*</Text>
+                        </Text>
+
+                        <ValidatedInput
+                            type="numberOnly"
+                            inputType="numeric"
+                            value={amount}
+                            onChangeText={(text) => {
+                                setAmount(text);
+                                setErrors(prev => ({
+                                    ...prev,
+                                    amount: ""
+                                }));
+                            }}
+                            placeholder="₹ 5,500"
+                            placeholderTextColor="#9CA3AF"
+                            style={styles.input}
+                        />
+                        {errors.amount && (
+                            <ErrorMessage
+                                message={errors.amount}
+                                type="error"
+                            />
+                        )}
+
+                        <Text style={styles.label}>
+                            Expense Date <Text style={{ color: "red" }}>*</Text>
+                        </Text>
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            // disabled={isEditMode}
+                            onPress={() => {
+                                // if (!isEditMode)
+                                setOpenPurchaseDate(true);
+                                setNochangeErr("");
                             }}
                         >
-                            Link this Expense to a Vendor?
-                        </Text>
+                            <View style={styles.dateInputWrapper}>
+                                <TextInput
+                                    style={styles.dateInput}
+                                    placeholder="DD-MM-YYYY"
+                                    value={purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : ""}
+                                    editable={false}
+                                    pointerEvents="none"
+                                />
+
+                                <Image
+                                    source={require("../../../Assets/Images/calendar.png")}
+                                    style={styles.calendarIcon}
+                                />
+                            </View>
+                        </TouchableOpacity>
+
+
+
+                        {errors.expenseDate && (
+                            <ErrorMessage
+                                message={errors.expenseDate}
+                                type="error"
+                            />
+                        )}
 
                         <View
                             style={{
-                                width: "30%",
-                                height: 42,
-                                backgroundColor: "#EEF2FF",
-                                borderRadius: 14,
-                                padding: 1,
                                 flexDirection: "row",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginTop: 20,
+                                marginBottom: 10,
                             }}
                         >
-                            <TouchableOpacity
-                                onPress={() => setLinkVendor(false)}
+                            <Text
                                 style={{
-                                    flex: 1,
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    borderRadius: 10,
-                                    backgroundColor: !linkVendor
-                                        ? "#2F54EB"
-                                        : "transparent",
+                                    fontSize: 16,
+                                    fontFamily: "Gilroy-Medium",
+                                    color: "#1E1E1E",
+                                    width: "45%",
+                                    lineHeight: 24,
                                 }}
                             >
-                                <Text
-                                    style={{
-                                        color: !linkVendor ? "#FFF" : "#1E1E1E",
-                                        fontSize: 13,
-                                        fontFamily: !linkVendor
-                                            ? "Gilroy-Bold"
-                                            : "Gilroy-Medium",
-                                    }}
-                                >
-                                    No
-                                </Text>
-                            </TouchableOpacity>
+                                Link this Expense to a Vendor?
+                            </Text>
 
-
-                            <TouchableOpacity
-                              onPress={() => setLinkVendor(true)}
-                                // disabled={environment === "PROD"}
-                                // onPress={() => {
-                                //     if (environment !== "PROD") {
-                                //         setLinkVendor(true);
-                                //     }
-                                // }}
+                            <View
                                 style={{
-                                    flex: 1,
-                                    justifyContent: "center",
-                                    alignItems: "center",
-                                    borderRadius: 10,
-                                    backgroundColor: linkVendor
-                                        ? "#2F54EB"
-                                        : "transparent",
-                                    opacity:  1,
+                                    width: "30%",
+                                    height: 42,
+                                    backgroundColor: "#EEF2FF",
+                                    borderRadius: 14,
+                                    padding: 1,
+                                    flexDirection: "row",
                                 }}
                             >
-                                <Text
+                                <TouchableOpacity
+                                    onPress={() => setLinkVendor(false)}
                                     style={{
-                                        color: linkVendor ? "#FFF" : "#1E1E1E",
-                                        fontSize: 13,
-                                        fontFamily: linkVendor
-                                            ? "Gilroy-Bold"
-                                            : "Gilroy-Medium",
+                                        flex: 1,
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        borderRadius: 10,
+                                        backgroundColor: !linkVendor
+                                            ? "#2F54EB"
+                                            : "transparent",
                                     }}
                                 >
-                                    Yes
-                                </Text>
-                            </TouchableOpacity>
+                                    <Text
+                                        style={{
+                                            color: !linkVendor ? "#FFF" : "#1E1E1E",
+                                            fontSize: 13,
+                                            fontFamily: !linkVendor
+                                                ? "Gilroy-Bold"
+                                                : "Gilroy-Medium",
+                                        }}
+                                    >
+                                        No
+                                    </Text>
+                                </TouchableOpacity>
 
-                            {/* <TouchableOpacity
+
+                                <TouchableOpacity
+                                    onPress={() => setLinkVendor(true)}
+                                    // disabled={environment === "PROD"}
+                                    // onPress={() => {
+                                    //     if (environment !== "PROD") {
+                                    //         setLinkVendor(true);
+                                    //     }
+                                    // }}
+                                    style={{
+                                        flex: 1,
+                                        justifyContent: "center",
+                                        alignItems: "center",
+                                        borderRadius: 10,
+                                        backgroundColor: linkVendor
+                                            ? "#2F54EB"
+                                            : "transparent",
+                                        opacity: 1,
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            color: linkVendor ? "#FFF" : "#1E1E1E",
+                                            fontSize: 13,
+                                            fontFamily: linkVendor
+                                                ? "Gilroy-Bold"
+                                                : "Gilroy-Medium",
+                                        }}
+                                    >
+                                        Yes
+                                    </Text>
+                                </TouchableOpacity>
+
+                                {/* <TouchableOpacity
                                 onPress={() => setLinkVendor(true)}
                                 style={{
                                     flex: 1,
@@ -1453,966 +1484,1017 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                     Yes
                                 </Text>
                             </TouchableOpacity> */}
+                            </View>
                         </View>
-                    </View>
 
 
-                    {!linkVendor && (
-                        <>
-                            <Text style={styles.label}>
-                                Payment method <Text style={{ color: "red" }}>*</Text>
-                            </Text>
-
-                            <TouchableOpacity
-                                // style={styles.expensesDropdownBox}
-
-                                style={[
-                                    styles.expensesDropdownBox,
-                                    isEditMode && { opacity: 0.4 }
-                                ]}
-                                disabled={isEditMode}
-                                onPress={() => {
-                                    setModePaymentOpen(!modePaymentOpen);
-                                    setCategoryOpen(false);
-                                    setSubCategoryOpen(false);
-                                }}
-                            >
-                                <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
-                                    {selectedMode?.name || "Select Mode"}
-                                </Text>
-                                <Image source={DownArrow} style={styles.expensesArrowIcon} />
-                            </TouchableOpacity>
-
-                            {modePaymentOpen && (
-                                <View style={styles.expensesDropdownMenu}>
-                                    <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                        {paymentOptions.length === 0 ? (
-                                            <Text style={styles.expensesNoDataText}>
-                                                No mode found
-                                            </Text>
-                                        ) : (
-                                            paymentOptions.map((item) => {
-                                                const isSelected =
-                                                    selectedMode?.id === item.id;
-
-                                                return (
-                                                    <TouchableOpacity
-                                                        key={item.id}
-                                                        style={[
-                                                            styles.expensesOption,
-                                                            isSelected && styles.expensesOptionSelected,
-                                                        ]}
-                                                        onPress={() => {
-                                                            setSelectedMode(item)
-                                                            setModeErr("")
-                                                            setNochangeErr("");
-                                                            setModePaymentOpen(false)
-                                                            setErrors(prev => ({
-                                                                ...prev,
-                                                                paymentMethod: ""
-                                                            }))
-                                                        }}
-                                                    >
-                                                        <Text
-                                                            style={[
-                                                                styles.expensesOptionText,
-                                                                isSelected &&
-                                                                styles.expensesOptionTextSelected,
-                                                            ]}
-                                                        >
-                                                            {item.name}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                );
-                                            })
-                                        )}
-                                    </ScrollView>
-                                </View>
-                            )}
-
-                            {errors.paymentMethod && (
-                                <ErrorMessage
-                                    message={errors.paymentMethod}
-                                    type="error"
-                                />
-                            )}
-
-                            <Text style={styles.label}>Transaction ID</Text>
-
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter Transaction ID"
-                                // keyboardType="numeric"
-                                value={transactionId}
-                                onChangeText={handleTransactionChange}
-
-                            />
-                        </>
-                    )}
-
-
-                    {linkVendor && (
-                        <>
-                            <Text style={styles.label}>
-                                Vendor <Text style={{ color: "red" }}>*</Text>
-                            </Text>
-
-
-
-
-                            <TouchableOpacity
-                                style={styles.expensesDropdownBox}
-                                disabled={vendorName ? true :false}
-                                onPress={() => {
-                                    setVendorOpen(!vendorOpen);
-                                    setSubCategoryOpen(false);
-                                    setModePaymentOpen(false);
-                                    setCategoryOpen(false);
-                                }}
-                            >
-                                <Text style={{ color: selectedVendor ? "#000" : "#9CA3AF" }}>
-                                    {selectedVendor?.fullName || "Select Vendor"}
+                        {!linkVendor && (
+                            <>
+                                <Text style={styles.label}>
+                                    Payment method <Text style={{ color: "red" }}>*</Text>
                                 </Text>
 
-                                <Image
-                                    source={DownArrow}
-                                    style={styles.expensesArrowIcon}
-                                />
-                            </TouchableOpacity>
+                                <TouchableOpacity
+                                    // style={styles.expensesDropdownBox}
 
+                                    style={[
+                                        styles.expensesDropdownBox,
+                                        isEditMode && { opacity: 0.4 }
+                                    ]}
+                                    disabled={isEditMode}
+                                    onPress={() => {
+                                        setModePaymentOpen(!modePaymentOpen);
+                                        setCategoryOpen(false);
+                                        setSubCategoryOpen(false);
+                                    }}
+                                >
+                                    <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
+                                        {selectedMode?.name || "Select Mode"}
+                                    </Text>
+                                    <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                                </TouchableOpacity>
 
-                            {vendorOpen && (
-                                <View style={styles.expensesDropdownMenu}>
-                                    <ScrollView
-                                        style={{ maxHeight: 150 }}
-                                        nestedScrollEnabled
-                                    >
-                                        {vendorList?.vendors?.length === 0 ? (
-                                            <Text style={styles.expensesNoDataText}>
-                                                No Vendors Found
-                                            </Text>
-                                        ) : (
-                                            vendorList?.vendors?.map((item) => {
-                                                const isSelected = vendorId === item?.id;
+                                {modePaymentOpen && (
+                                    <View style={styles.expensesDropdownMenu}>
+                                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                            {paymentOptions.length === 0 ? (
+                                                <Text style={styles.expensesNoDataText}>
+                                                    No mode found
+                                                </Text>
+                                            ) : (
+                                                paymentOptions.map((item) => {
+                                                    const isSelected =
+                                                        selectedMode?.id === item.id;
 
-                                                return (
-                                                    <TouchableOpacity
-                                                        key={item?.id}
-                                                        style={[
-                                                            styles.expensesOption,
-                                                            isSelected &&
-                                                            styles.expensesOptionSelected,
-                                                        ]}
-                                                        onPress={() => {
-                                                            setSelectedVendor(item); // full object
-                                                            setVendorId(item?.id);    // only id
-                                                            setVendorOpen(false);
-                                                            setErrors(prev => ({
-                                                                ...prev,
-                                                                vendor: ""
-                                                            }));
-                                                        }}
-                                                    >
-                                                        <Text
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={item.id}
                                                             style={[
-                                                                styles.expensesOptionText,
-                                                                isSelected &&
-                                                                styles.expensesOptionTextSelected,
+                                                                styles.expensesOption,
+                                                                isSelected && styles.expensesOptionSelected,
                                                             ]}
+                                                            onPress={() => {
+                                                                setSelectedMode(item)
+                                                                setModeErr("")
+                                                                setNochangeErr("");
+                                                                setModePaymentOpen(false)
+                                                                setErrors(prev => ({
+                                                                    ...prev,
+                                                                    paymentMethod: ""
+                                                                }))
+                                                            }}
                                                         >
-                                                            {item.fullName}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                );
-                                            })
-                                        )}
-                                    </ScrollView>
-                                </View>
-                            )}
-
-
-
-                            {errors.vendor && (
-                                <ErrorMessage
-                                    message={errors.vendor}
-                                    type="error"
-                                />
-                            )}
-
-                            <Text style={styles.label}>
-                                Payment Status <Text style={{ color: "red" }}>*</Text>
-                            </Text>
-
-                            <View style={{ marginTop: 10 }}>
-                                {[
-                                    "Fully Paid",
-                                    "Partially Paid",
-                                    "Credit / Pending",
-                                    // "Overdue",
-                                ].map((status) => (
-                                    <TouchableOpacity
-                                        key={status}
-                                        style={styles.radioRow}
-                                        onPress={() => setPaymentStatus(status)}
-                                    >
-                                        <View
-                                            style={[
-                                                styles.radioOuter,
-                                                paymentStatus === status &&
-                                                styles.radioOuterActive,
-                                            ]}
-                                        >
-                                            {paymentStatus === status && (
-                                                <View style={styles.radioInner} />
+                                                            <Text
+                                                                style={[
+                                                                    styles.expensesOptionText,
+                                                                    isSelected &&
+                                                                    styles.expensesOptionTextSelected,
+                                                                ]}
+                                                            >
+                                                                {item.name}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    );
+                                                })
                                             )}
+                                        </ScrollView>
+                                    </View>
+                                )}
+
+                                {errors.paymentMethod && (
+                                    <ErrorMessage
+                                        message={errors.paymentMethod}
+                                        type="error"
+                                    />
+                                )}
+
+                                <Text style={styles.label}>Transaction ID</Text>
+
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter Transaction ID"
+                                    // keyboardType="numeric"
+                                    value={transactionId}
+                                    onChangeText={handleTransactionChange}
+
+                                />
+                            </>
+                        )}
+
+
+                        {linkVendor && (
+                            <>
+                                <Text style={styles.label}>
+                                    Vendor <Text style={{ color: "red" }}>*</Text>
+                                </Text>
+
+
+
+
+                                <TouchableOpacity
+                                    style={styles.expensesDropdownBox}
+                                    disabled={vendorName ? true : false}
+                                    onPress={() => {
+                                        setVendorOpen(!vendorOpen);
+                                        setSubCategoryOpen(false);
+                                        setModePaymentOpen(false);
+                                        setCategoryOpen(false);
+                                    }}
+                                >
+                                    <Text style={{ color: selectedVendor ? "#000" : "#9CA3AF" }}>
+                                        {selectedVendor?.fullName || "Select Vendor"}
+                                    </Text>
+
+                                    <Image
+                                        source={DownArrow}
+                                        style={styles.expensesArrowIcon}
+                                    />
+                                </TouchableOpacity>
+
+
+                                {vendorOpen && (
+                                    <View style={styles.expensesDropdownMenu}>
+                                        <ScrollView
+                                            style={{ maxHeight: 150 }}
+                                            nestedScrollEnabled
+                                        >
+                                            {vendorList?.vendors?.length === 0 ? (
+                                                <Text style={styles.expensesNoDataText}>
+                                                    No Vendors Found
+                                                </Text>
+                                            ) : (
+                                                vendorList?.vendors?.map((item) => {
+                                                    const isSelected = vendorId === item?.id;
+
+                                                    return (
+                                                        <TouchableOpacity
+                                                            key={item?.id}
+                                                            style={[
+                                                                styles.expensesOption,
+                                                                isSelected &&
+                                                                styles.expensesOptionSelected,
+                                                            ]}
+                                                            onPress={() => {
+                                                                setSelectedVendor(item); // full object
+                                                                setVendorId(item?.id);    // only id
+                                                                setVendorOpen(false);
+                                                                setErrors(prev => ({
+                                                                    ...prev,
+                                                                    vendor: ""
+                                                                }));
+                                                            }}
+                                                        >
+                                                            <Text
+                                                                style={[
+                                                                    styles.expensesOptionText,
+                                                                    isSelected &&
+                                                                    styles.expensesOptionTextSelected,
+                                                                ]}
+                                                            >
+                                                                {item.fullName}
+                                                            </Text>
+                                                        </TouchableOpacity>
+                                                    );
+                                                })
+                                            )}
+                                        </ScrollView>
+                                    </View>
+                                )}
+
+
+
+                                {errors.vendor && (
+                                    <ErrorMessage
+                                        message={errors.vendor}
+                                        type="error"
+                                    />
+                                )}
+
+                                <Text style={styles.label}>
+                                    Payment Status <Text style={{ color: "red" }}>*</Text>
+                                </Text>
+
+                                <View style={{ marginTop: 10 }}>
+                                    {[
+                                        "Fully Paid",
+                                        "Partially Paid",
+                                        "Credit / Pending",
+                                        // "Overdue",
+                                    ].map((status) => (
+                                        <TouchableOpacity
+                                            key={status}
+                                            style={styles.radioRow}
+                                            // onPress={() => setPaymentStatus(status)}
+                                            onPress={() => {
+                                                setPaymentStatus(status);
+
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    paymentStatus: "",
+                                                }));
+                                            }}
+                                        >
+                                            <View
+                                                style={[
+                                                    styles.radioOuter,
+                                                    paymentStatus === status &&
+                                                    styles.radioOuterActive,
+                                                ]}
+                                            >
+                                                {paymentStatus === status && (
+                                                    <View style={styles.radioInner} />
+                                                )}
+                                            </View>
+
+                                            <Text style={styles.radioText}>
+                                                {status}
+                                            </Text>
+                                        </TouchableOpacity>
+                                    ))}
+                                </View>
+                                {errors.paymentStatus && (
+                                    <ErrorMessage
+                                        message={errors.paymentStatus}
+                                        type="error"
+                                    />
+                                )}
+
+                                {(paymentStatus === "Partially Paid" || paymentStatus === "Fully Paid") && (
+                                    <View
+                                        style={{
+                                            flexDirection: "row",
+                                            justifyContent: "space-between",
+                                            marginTop: 8,
+                                        }}
+                                    >
+                                        <View style={{ width: "48%" }}>
+                                            <Text
+                                                style={[
+
+                                                    {
+                                                        fontSize: 16,
+                                                        fontFamily: "Gilroy-Medium",
+                                                        color: "#1E1E1E",
+                                                        marginBottom: 8,
+                                                        height: 52,
+                                                        textAlignVertical: "top",
+                                                    },
+                                                ]}
+                                            >
+                                                Paid Amount (INR)
+                                                <Text style={{ color: "red" }}> *</Text>
+                                            </Text>
+
+                                            {/* <ValidatedInput
+                                                keyboardType="numeric"
+                                                type="numberOnly"
+                                                inputType="numeric"
+                                                value={paidAmount}
+                                                onChangeText={(text) => {
+                                                    setPaidAmount(text);
+                                                    setErrors(prev => ({
+                                                        ...prev,
+                                                        paidAmount: ""
+                                                    }));
+                                                }}
+                                                placeholder="₹ 2,500"
+                                                style={styles.input}
+                                            /> */}
+
+                                            <ValidatedInput
+                                                keyboardType="numeric"
+                                                type="numberOnly"
+                                                inputType="numeric"
+                                                value={paidAmount}
+                                                 editable={paymentStatus !== "Fully Paid"}
+                                                onChangeText={(text) => {
+                                                    const total = Number(amount || 0);
+                                                    const paid = Number(text || 0);
+
+                                                    setErrors(prev => ({
+                                                        ...prev,
+                                                        paidAmount: "",
+                                                    }));
+
+                                                    if (paymentStatus === "Partially Paid") {
+                                                        if (paid >= total && total > 0) {
+                                                            setErrors(prev => ({
+                                                                ...prev,
+                                                                paidAmount: "",
+                                                            }));
+                                                            return; 
+                                                        }
+                                                    }
+
+                                                    setPaidAmount(text);
+                                                    setBalanceAmount(String(total - paid));
+                                                }}
+                                                placeholder="Enter Paid Amount"
+                                                style={styles.input}
+                                            />
+                                            {errors.paidAmount && (
+                                                <ErrorMessage
+                                                    message={errors.paidAmount}
+                                                    type="error"
+                                                />
+                                            )}
+
+
+
                                         </View>
 
-                                        <Text style={styles.radioText}>
-                                            {status}
+
+                                        <View style={{ width: "48%" }}>
+                                            <Text
+                                                style={[
+
+                                                    {
+                                                        fontSize: 16,
+                                                        fontFamily: "Gilroy-Medium",
+                                                        color: "#1E1E1E",
+                                                        marginBottom: 8,
+                                                        height: 52,
+                                                        lineHeight: 24,
+                                                    },
+                                                ]}
+                                            >
+                                                Balance Amount{"\n"}(Outstanding)
+                                            </Text>
+
+                                            <ValidatedInput
+                                                editable={false}
+                                                value={balanceAmount}
+                                                placeholder="Enter Balance Amount"
+                                                style={styles.input}
+                                                keyboardType="numeric"
+                                                type="numberOnly"
+                                                inputType="numeric"
+                                            />
+                                        </View>
+                                    </View>
+                                )}
+
+                                {paymentStatus !== "Credit / Pending" && (
+                                    <>
+                                        <Text style={styles.label}>
+                                            Payment method <Text style={{ color: "red" }}>*</Text>
+                                        </Text>
+
+
+                                        <TouchableOpacity
+                                            // style={styles.expensesDropdownBox}
+
+                                            style={[
+                                                styles.expensesDropdownBox,
+                                                isEditMode && { opacity: 0.4 }
+                                            ]}
+                                            disabled={isEditMode}
+                                            onPress={() => {
+                                                setModePaymentOpen(!modePaymentOpen);
+                                                setCategoryOpen(false);
+                                                setSubCategoryOpen(false);
+                                            }}
+                                        >
+                                            <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
+                                                {selectedMode?.name || "Select Mode"}
+                                            </Text>
+                                            <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                                        </TouchableOpacity>
+
+                                        {modePaymentOpen && (
+                                            <View style={styles.expensesDropdownMenu}>
+                                                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                                    {paymentOptions.length === 0 ? (
+                                                        <Text style={styles.expensesNoDataText}>
+                                                            No mode found
+                                                        </Text>
+                                                    ) : (
+                                                        paymentOptions.map((item) => {
+                                                            const isSelected =
+                                                                selectedMode?.id === item.id;
+
+                                                            return (
+                                                                <TouchableOpacity
+                                                                    key={item.id}
+                                                                    style={[
+                                                                        styles.expensesOption,
+                                                                        isSelected && styles.expensesOptionSelected,
+                                                                    ]}
+                                                                    onPress={() => {
+                                                                        setSelectedMode(item)
+                                                                        setModeErr("")
+                                                                        setNochangeErr("");
+                                                                        setModePaymentOpen(false)
+                                                                        setErrors(prev => ({
+                                                                            ...prev,
+                                                                            paymentMethod: "",
+                                                                        }));
+                                                                    }}
+                                                                >
+                                                                    <Text
+                                                                        style={[
+                                                                            styles.expensesOptionText,
+                                                                            isSelected &&
+                                                                            styles.expensesOptionTextSelected,
+                                                                        ]}
+                                                                    >
+                                                                        {item.name}
+                                                                    </Text>
+                                                                </TouchableOpacity>
+                                                            );
+                                                        })
+                                                    )}
+                                                </ScrollView>
+                                            </View>
+                                        )}
+
+                                        {errors.paymentMethod && (
+                                            <ErrorMessage
+                                                message={errors.paymentMethod}
+                                                type="error"
+                                            />
+                                        )}
+                                    </>)}
+
+                                {paymentStatus === "Credit / Pending" && (
+                                    <>
+                                        <Text style={styles.label}>
+                                            Credit Period (for this expense only)
+                                        </Text>
+
+                                        <ValidatedInput
+                                            keyboardType="numeric"
+                                            type="numberOnly"
+                                            inputType="numeric"
+                                            value={creditType}
+                                            onChangeText={(text) => {
+                                                setCreditType(text);
+
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    creditType: "",
+                                                }));
+                                            }}
+                                            placeholder="Enter Credit Period"
+                                            style={styles.input}
+                                        />
+
+                                        {/* {errors.creditType && (
+                                            <ErrorMessage
+                                                message={errors.creditType}
+                                                type="error"
+                                            />
+                                        )} */}
+                                    </>
+                                )}
+
+                                <Text style={styles.label}>
+                                    Transaction ID
+                                </Text>
+
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Enter Transaction ID"
+                                    // keyboardType="numeric"
+                                    value={transactionId}
+                                    onChangeText={handleTransactionChange}
+
+                                />
+
+
+
+
+                                <Text style={styles.label}>
+                                    Attachments / Proofs
+                                </Text>
+
+                                {attachments.length === 0 ? (
+                                    <TouchableOpacity
+                                        style={styles.uploadBox}
+                                        onPress={pickImage}
+                                    >
+                                        <Text style={styles.uploadText}>
+                                            Choose Image to Upload
                                         </Text>
                                     </TouchableOpacity>
-                                ))}
-                            </View>
-                            {errors.paymentStatus && (
-                                <ErrorMessage
-                                    message={errors.paymentStatus}
-                                    type="error"
-                                />
-                            )}
+                                ) : (
+                                    <>
+                                        {/* Main Preview */}
 
-                            {(paymentStatus === "Partially Paid" || paymentStatus === "Fully Paid") && (
+                                        <View style={styles.previewCard}>
+                                            <Image
+                                                source={{ uri: selectedImage?.uri }}
+                                                style={styles.previewImage}
+                                            />
+
+                                            <View style={styles.fileInfoRow}>
+                                                <View>
+                                                    <Text style={styles.fileName}>
+                                                        {selectedImage?.fileName}
+                                                    </Text>
+
+                                                    <Text style={styles.fileSize}>
+                                                        {(
+                                                            (selectedImage?.fileSize || 0) /
+                                                            1024
+                                                        ).toFixed(0)}{" "}
+                                                        KB
+                                                    </Text>
+                                                </View>
+
+                                                <TouchableOpacity
+                                                    onPress={() => {
+                                                        const index =
+                                                            attachments.findIndex(
+                                                                (item) =>
+                                                                    item.uri ===
+                                                                    selectedImage.uri
+                                                            );
+
+                                                        removeImage(index);
+                                                    }}
+                                                    style={styles.deleteBtn}
+                                                >
+                                                    <Text
+                                                        style={{
+                                                            color: "#FF4D4F",
+                                                            fontSize: 20,
+                                                        }}
+                                                    >
+                                                        ✕
+                                                    </Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+
+                                        {/* Thumbnail List */}
+
+                                        <View style={styles.thumbnailRow}>
+                                            <ScrollView
+                                                horizontal
+                                                showsHorizontalScrollIndicator={
+                                                    false
+                                                }
+                                            >
+                                                {attachments.map(
+                                                    (item, index) => (
+                                                        <TouchableOpacity
+                                                            key={index}
+                                                            onPress={() =>
+                                                                setSelectedImage(item)
+                                                            }
+                                                        >
+                                                            <Image
+                                                                source={{
+                                                                    uri: item.uri,
+                                                                }}
+                                                                style={[
+                                                                    styles.thumbImage,
+                                                                    selectedImage?.uri ===
+                                                                    item.uri && {
+                                                                        borderColor:
+                                                                            "#2D5BFF",
+                                                                        borderWidth: 2,
+                                                                    },
+                                                                ]}
+                                                            />
+                                                        </TouchableOpacity>
+                                                    )
+                                                )}
+                                            </ScrollView>
+
+                                            <TouchableOpacity
+                                                onPress={pickImage}
+                                            >
+                                                <Text style={styles.addMore}>
+                                                    + Add more Files
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    </>
+                                )}
+                            </>
+                        )}
+
+
+
+
+                        <Text style={styles.label}>
+                            Description
+                        </Text>
+
+                        <TextInput
+                            multiline
+                            numberOfLines={4}
+                            style={styles.textArea}
+                            value={description}
+                            onChangeText={setDescription}
+                            placeholder="Ex : Wifi Bill Paid for May"
+                        />
+
+                        <View style={styles.sectionHeader}>
+                            <View style={styles.blueBar} />
+                            <View>
+                                <Text style={styles.sectionTitle}>
+                                    Expense Items
+                                </Text>
+
+                                <Text style={styles.sectionSubTitle}>
+                                    Select retainer Balance to adjust with Bills
+                                </Text>
+                            </View>
+                        </View>
+
+
+                        {items.map((item, index) => (
+                            <View key={index} style={styles.itemCard}>
+
                                 <View
                                     style={{
                                         flexDirection: "row",
                                         justifyContent: "space-between",
-                                        marginTop: 8,
+                                        alignItems: "center",
+                                        marginBottom: 12,
+                                    }}
+                                >
+                                    <Text
+                                        style={{
+                                            fontSize: 18,
+                                            fontFamily: "Gilroy-Bold",
+                                        }}
+                                    >
+                                        Item - {String(index + 1).padStart(2, "0")}
+                                    </Text>
+
+                                    <View style={styles.itemActionRow}>
+                                        <TouchableOpacity
+                                            style={[styles.iconBtn, styles.cloneBtn]}
+                                            onPress={() => handleCloneRow(index)}
+                                        >
+                                            <Image source={RepeatIcon} style={styles.cloneIcon} />
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity
+                                            style={[styles.iconBtn, styles.deleteBtn]}
+                                            onPress={() => handleDeleteRow(index)}
+                                        >
+                                            <Text style={styles.deleteIcon}>✕</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <Text style={styles.label}>
+                                    Item Detail
+                                </Text>
+
+                                <ValidatedInput
+                                    type="name"
+                                    inputType="text"
+                                    value={item.itemDetail}
+                                    onChangeText={(text) =>
+                                        updateItem(index, "itemDetail", text)
+                                    }
+                                    placeholder="LED Tube Light"
+                                    placeholderTextColor="#9CA3AF"
+                                    style={styles.input}
+                                />
+
+                                {errors[`itemDetail_${index}`] && (
+                                    <ErrorMessage
+                                        message={errors[`itemDetail_${index}`]}
+                                        type="error"
+                                    />
+                                )}
+
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        justifyContent: "space-between",
                                     }}
                                 >
                                     <View style={{ width: "48%" }}>
-                                        <Text
-                                            style={[
-
-                                                {
-                                                    fontSize: 16,
-                                                    fontFamily: "Gilroy-Medium",
-                                                    color: "#1E1E1E",
-                                                    marginBottom: 8,
-                                                    height: 52,
-                                                    textAlignVertical: "top",
-                                                },
-                                            ]}
-                                        >
-                                            Paid Amount (INR)
-                                            <Text style={{ color: "red" }}> *</Text>
+                                        <Text style={styles.label}>
+                                            Quantity
                                         </Text>
 
                                         <ValidatedInput
                                             keyboardType="numeric"
                                             type="numberOnly"
                                             inputType="numeric"
-                                            value={paidAmount}
-                                            onChangeText={(text) => {
-                                                setPaidAmount(text);
-                                                setErrors(prev => ({
-                                                    ...prev,
-                                                    paidAmount: ""
-                                                }));
-                                            }}
-                                            placeholder="₹ 2,500"
+                                            value={item.quantity}
+                                            onChangeText={(text) =>
+                                                updateItem(index, "quantity", text)
+                                            }
+                                            placeholder="0"
+                                            placeholderTextColor="#9CA3AF"
                                             style={styles.input}
                                         />
-                                        {errors.paidAmount && (
+                                        {errors[`quantity_${index}`] && (
                                             <ErrorMessage
-                                                message={errors.paidAmount}
+                                                message={errors[`quantity_${index}`]}
+                                                type="error"
+                                            />
+                                        )}
+                                    </View>
+
+                                    <View style={{ width: "48%" }}>
+                                        <Text style={styles.label}>
+                                            Unit
+                                        </Text>
+
+                                        <TouchableOpacity
+                                            style={styles.expensesDropdownBox}
+                                            onPress={() => {
+                                                setUnitsOpen(!unitsOpen)
+                                            }}
+                                        >
+                                            <Text style={{ color: selectedUnits ? "#000" : "#9CA3AF" }}>
+                                                {selectedUnits?.label || "Select Category"}
+
+                                            </Text>
+                                            <Image source={DownArrow} style={styles.expensesArrowIcon} />
+                                        </TouchableOpacity>
+
+
+                                        {errors.units && (
+                                            <ErrorMessage
+                                                message={errors.units}
                                                 type="error"
                                             />
                                         )}
 
+                                        {unitsOpen && (
+                                            <View style={styles.expensesDropdownMenu}>
+                                                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                                                    {unitsOptions?.length === 0 ? (
+                                                        <Text style={styles.expensesNoDataText}>
+                                                            No Units found
+                                                        </Text>
+                                                    ) : (
+                                                        unitsOptions?.map((item, index) => {
+                                                            const isSelected =
+                                                                selectedUnits?.value === item?.value;
+
+                                                            return (
+                                                                <TouchableOpacity
+                                                                    key={index}
+                                                                    style={[
+                                                                        styles.expensesOption,
+                                                                        isSelected && styles.expensesOptionSelected,
+                                                                    ]}
+                                                                    onPress={() => {
+                                                                        setSelectedUnits(item);
+                                                                        setCategoryErr("");
+                                                                        setNochangeErr("");
+                                                                        setUnitsOpen(false);
+
+                                                                    }}
+
+                                                                >
+                                                                    <Text
+                                                                        style={[
+                                                                            styles.expensesOptionText,
+                                                                            isSelected && styles.expensesOptionTextSelected,
+                                                                        ]}
+                                                                    >
+                                                                        {item?.label}
+                                                                    </Text>
+                                                                </TouchableOpacity>
+                                                            )
+                                                        })
 
 
-                                    </View>
+                                                    )}
+                                                </ScrollView>
+                                            </View>
+                                        )}
 
 
-                                    <View style={{ width: "48%" }}>
-                                        <Text
-                                            style={[
-
-                                                {
-                                                    fontSize: 16,
-                                                    fontFamily: "Gilroy-Medium",
-                                                    color: "#1E1E1E",
-                                                    marginBottom: 8,
-                                                    height: 52,
-                                                    lineHeight: 24,
-                                                },
-                                            ]}
-                                        >
-                                            Balance Amount{"\n"}(Outstanding)
-                                        </Text>
-
-                                        <ValidatedInput
-                                            editable={false}
-                                            value={balanceAmount}
-                                            placeholder="₹ 3,000"
-                                            style={styles.input}
-                                            keyboardType="numeric"
-                                            type="numberOnly"
-                                            inputType="numeric"
-                                        />
                                     </View>
                                 </View>
-                            )}
 
-                            {paymentStatus !== "Credit / Pending" && (
-                                <>
-                                    <Text style={styles.label}>
-                                        Payment method <Text style={{ color: "red" }}>*</Text>
-                                    </Text>
-
-
-                                    <TouchableOpacity
-                                        // style={styles.expensesDropdownBox}
-
-                                        style={[
-                                            styles.expensesDropdownBox,
-                                            isEditMode && { opacity: 0.4 }
-                                        ]}
-                                        disabled={isEditMode}
-                                        onPress={() => {
-                                            setModePaymentOpen(!modePaymentOpen);
-                                            setCategoryOpen(false);
-                                            setSubCategoryOpen(false);
-                                        }}
-                                    >
-                                        <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
-                                            {selectedMode?.name || "Select Mode"}
-                                        </Text>
-                                        <Image source={DownArrow} style={styles.expensesArrowIcon} />
-                                    </TouchableOpacity>
-
-                                    {modePaymentOpen && (
-                                        <View style={styles.expensesDropdownMenu}>
-                                            <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                                {paymentOptions.length === 0 ? (
-                                                    <Text style={styles.expensesNoDataText}>
-                                                        No mode found
-                                                    </Text>
-                                                ) : (
-                                                    paymentOptions.map((item) => {
-                                                        const isSelected =
-                                                            selectedMode?.id === item.id;
-
-                                                        return (
-                                                            <TouchableOpacity
-                                                                key={item.id}
-                                                                style={[
-                                                                    styles.expensesOption,
-                                                                    isSelected && styles.expensesOptionSelected,
-                                                                ]}
-                                                                onPress={() => {
-                                                                    setSelectedMode(item)
-                                                                    setModeErr("")
-                                                                    setNochangeErr("");
-                                                                    setModePaymentOpen(false)
-                                                                }}
-                                                            >
-                                                                <Text
-                                                                    style={[
-                                                                        styles.expensesOptionText,
-                                                                        isSelected &&
-                                                                        styles.expensesOptionTextSelected,
-                                                                    ]}
-                                                                >
-                                                                    {item.name}
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        );
-                                                    })
-                                                )}
-                                            </ScrollView>
-                                        </View>
-                                    )}
-
-                                    {errors.paymentMethod && (
-                                        <ErrorMessage
-                                            message={errors.paymentMethod}
-                                            type="error"
-                                        />
-                                    )}
-                                </>)}
-
-                            {paymentStatus === "Credit / Pending" && (
-                                <>
-                                    <Text style={styles.label}>
-                                        Credit Period (for this expense only) <Text style={{ color: "red" }}>*</Text>
-                                    </Text>
-
-                                    <ValidatedInput
-                                        keyboardType="numeric"
-                                        type="numberOnly"
-                                        inputType="numeric"
-                                        value={creditType}
-                                        onChangeText={setCreditType}
-                                        placeholder="Enter Credit Period"
-                                        style={styles.input}
-                                    />
-
-                                    {errors.creditType && (
-                                        <ErrorMessage
-                                            message={errors.creditType}
-                                            type="error"
-                                        />
-                                    )}
-                                </>
-                            )}
-
-                            <Text style={styles.label}>
-                                Transaction ID
-                            </Text>
-
-                            <TextInput
-                                style={styles.input}
-                                placeholder="Enter Transaction ID"
-                                // keyboardType="numeric"
-                                value={transactionId}
-                                onChangeText={handleTransactionChange}
-
-                            />
-
-
-
-
-                            <Text style={styles.label}>
-                                Attachments / Proofs
-                            </Text>
-
-                            {attachments.length === 0 ? (
-                                <TouchableOpacity
-                                    style={styles.uploadBox}
-                                    onPress={pickImage}
-                                >
-                                    <Text style={styles.uploadText}>
-                                        Choose Image to Upload
-                                    </Text>
-                                </TouchableOpacity>
-                            ) : (
-                                <>
-                                    {/* Main Preview */}
-
-                                    <View style={styles.previewCard}>
-                                        <Image
-                                            source={{ uri: selectedImage?.uri }}
-                                            style={styles.previewImage}
-                                        />
-
-                                        <View style={styles.fileInfoRow}>
-                                            <View>
-                                                <Text style={styles.fileName}>
-                                                    {selectedImage?.fileName}
-                                                </Text>
-
-                                                <Text style={styles.fileSize}>
-                                                    {(
-                                                        (selectedImage?.fileSize || 0) /
-                                                        1024
-                                                    ).toFixed(0)}{" "}
-                                                    KB
-                                                </Text>
-                                            </View>
-
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    const index =
-                                                        attachments.findIndex(
-                                                            (item) =>
-                                                                item.uri ===
-                                                                selectedImage.uri
-                                                        );
-
-                                                    removeImage(index);
-                                                }}
-                                                style={styles.deleteBtn}
-                                            >
-                                                <Text
-                                                    style={{
-                                                        color: "#FF4D4F",
-                                                        fontSize: 20,
-                                                    }}
-                                                >
-                                                    ✕
-                                                </Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    </View>
-
-                                    {/* Thumbnail List */}
-
-                                    <View style={styles.thumbnailRow}>
-                                        <ScrollView
-                                            horizontal
-                                            showsHorizontalScrollIndicator={
-                                                false
-                                            }
-                                        >
-                                            {attachments.map(
-                                                (item, index) => (
-                                                    <TouchableOpacity
-                                                        key={index}
-                                                        onPress={() =>
-                                                            setSelectedImage(item)
-                                                        }
-                                                    >
-                                                        <Image
-                                                            source={{
-                                                                uri: item.uri,
-                                                            }}
-                                                            style={[
-                                                                styles.thumbImage,
-                                                                selectedImage?.uri ===
-                                                                item.uri && {
-                                                                    borderColor:
-                                                                        "#2D5BFF",
-                                                                    borderWidth: 2,
-                                                                },
-                                                            ]}
-                                                        />
-                                                    </TouchableOpacity>
-                                                )
-                                            )}
-                                        </ScrollView>
-
-                                        <TouchableOpacity
-                                            onPress={pickImage}
-                                        >
-                                            <Text style={styles.addMore}>
-                                                + Add more Files
-                                            </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </>
-                            )}
-                        </>
-                    )}
-
-
-
-
-                    <Text style={styles.label}>
-                        Description
-                    </Text>
-
-                    <TextInput
-                        multiline
-                        numberOfLines={4}
-                        style={styles.textArea}
-                        value={description}
-                        onChangeText={setDescription}
-                        placeholder="Ex : Wifi Bill Paid for May"
-                    />
-
-                    <View style={styles.sectionHeader}>
-                        <View style={styles.blueBar} />
-                        <View>
-                            <Text style={styles.sectionTitle}>
-                                Expense Items
-                            </Text>
-
-                            <Text style={styles.sectionSubTitle}>
-                                Select retainer Balance to adjust with Bills
-                            </Text>
-                        </View>
-                    </View>
-
-
-                    {items.map((item, index) => (
-                        <View key={index} style={styles.itemCard}>
-
-                            <View
-                                style={{
-                                    flexDirection: "row",
-                                    justifyContent: "space-between",
-                                    alignItems: "center",
-                                    marginBottom: 12,
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        fontSize: 18,
-                                        fontFamily: "Gilroy-Bold",
-                                    }}
-                                >
-                                    Item - {String(index + 1).padStart(2, "0")}
+                                <Text style={styles.label}>
+                                    Per Unit price (INR)
                                 </Text>
 
-                                <View style={styles.itemActionRow}>
-                                    <TouchableOpacity
-                                        style={[styles.iconBtn, styles.cloneBtn]}
-                                        onPress={() => handleCloneRow(index)}
-                                    >
-                                        <Image source={RepeatIcon} style={styles.cloneIcon} />
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        style={[styles.iconBtn, styles.deleteBtn]}
-                                        onPress={() => handleDeleteRow(index)}
-                                    >
-                                        <Text style={styles.deleteIcon}>✕</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-
-                            <Text style={styles.label}>
-                                Item Detail
-                            </Text>
-
-                            <ValidatedInput
-                                type="name"
-                                inputType="text"
-                                value={item.itemDetail}
-                                onChangeText={(text) =>
-                                    updateItem(index, "itemDetail", text)
-                                }
-                                placeholder="LED Tube Light"
-                                placeholderTextColor="#9CA3AF"
-                                style={styles.input}
-                            />
-
-                            {errors[`itemDetail_${index}`] && (
-                                <ErrorMessage
-                                    message={errors[`itemDetail_${index}`]}
-                                    type="error"
+                                <ValidatedInput
+                                    keyboardType="numeric"
+                                    type="numberOnly"
+                                    inputType="numeric"
+                                    value={item.unitPrice}
+                                    onChangeText={(text) =>
+                                        updateItem(index, "unitPrice", text)
+                                    }
+                                    placeholder="₹ 150"
+                                    placeholderTextColor="#9CA3AF"
+                                    style={styles.input}
                                 />
-                            )}
 
-                            <View
+                                {errors[`unitPrice_${index}`] && (
+                                    <ErrorMessage
+                                        message={errors[`unitPrice_${index}`]}
+                                        type="error"
+                                    />
+                                )}
+
+                                <Text style={styles.label}>
+                                    Amount
+                                </Text>
+
+                                <ValidatedInput
+                                    editable={false}
+                                    value={String(
+                                        (Number(item.quantity) || 0) *
+                                        (Number(item.unitPrice) || 0)
+                                    )}
+                                    placeholderTextColor="#9CA3AF"
+                                    style={styles.input}
+                                    keyboardType="numeric"
+                                    type="numberOnly"
+                                    inputType="numeric"
+                                />
+                            </View>
+                        ))}
+
+                        {errors.expenseItems && (
+                            <ErrorMessage
+                                message={errors.expenseItems}
+                                type="error"
+                            />
+                        )}
+
+                        <TouchableOpacity
+                            style={styles.addRowBtn}
+                            onPress={handleAddRow}
+                        >
+                            <Text
                                 style={{
-                                    flexDirection: "row",
-                                    justifyContent: "space-between",
+                                    color: "#2952FF",
+                                    fontFamily: "Gilroy-Bold",
                                 }}
                             >
-                                <View style={{ width: "48%" }}>
-                                    <Text style={styles.label}>
-                                        Quantity
-                                    </Text>
-
-                                    <ValidatedInput
-                                        keyboardType="numeric"
-                                        type="numberOnly"
-                                        inputType="numeric"
-                                        value={item.quantity}
-                                        onChangeText={(text) =>
-                                            updateItem(index, "quantity", text)
-                                        }
-                                        placeholder="0"
-                                        placeholderTextColor="#9CA3AF"
-                                        style={styles.input}
-                                    />
-                                    {errors[`quantity_${index}`] && (
-                                        <ErrorMessage
-                                            message={errors[`quantity_${index}`]}
-                                            type="error"
-                                        />
-                                    )}
-                                </View>
-
-                                <View style={{ width: "48%" }}>
-                                    <Text style={styles.label}>
-                                        Unit
-                                    </Text>
-
-                                    <TouchableOpacity
-                                        style={styles.expensesDropdownBox}
-                                        onPress={() => {
-                                            setUnitsOpen(!unitsOpen)
-                                        }}
-                                    >
-                                        <Text style={{ color: selectedUnits ? "#000" : "#9CA3AF" }}>
-                                            {selectedUnits?.label || "Select Category"}
-
-                                        </Text>
-                                        <Image source={DownArrow} style={styles.expensesArrowIcon} />
-                                    </TouchableOpacity>
+                                + Add New Row
+                            </Text>
+                        </TouchableOpacity>
 
 
-                                    {errors.units && (
-                                        <ErrorMessage
-                                            message={errors.units}
-                                            type="error"
-                                        />
-                                    )}
-
-                                    {unitsOpen && (
-                                        <View style={styles.expensesDropdownMenu}>
-                                            <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                                {unitsOptions?.length === 0 ? (
-                                                    <Text style={styles.expensesNoDataText}>
-                                                        No Units found
-                                                    </Text>
-                                                ) : (
-                                                    unitsOptions?.map((item, index) => {
-                                                        const isSelected =
-                                                            selectedUnits?.value === item?.value;
-
-                                                        return (
-                                                            <TouchableOpacity
-                                                                key={index}
-                                                                style={[
-                                                                    styles.expensesOption,
-                                                                    isSelected && styles.expensesOptionSelected,
-                                                                ]}
-                                                                onPress={() => {
-                                                                    setSelectedUnits(item);
-                                                                    setCategoryErr("");
-                                                                    setNochangeErr("");
-                                                                    setUnitsOpen(false);
-
-                                                                }}
-
-                                                            >
-                                                                <Text
-                                                                    style={[
-                                                                        styles.expensesOptionText,
-                                                                        isSelected && styles.expensesOptionTextSelected,
-                                                                    ]}
-                                                                >
-                                                                    {item?.label}
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        )
-                                                    })
 
 
-                                                )}
-                                            </ScrollView>
-                                        </View>
-                                    )}
 
 
-                                </View>
+                        <View style={styles.summaryCard}>
+                            <View style={styles.summaryRow}>
+                                <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
+                                    Sub Total
+                                </Text>
+
+                                <Text style={{
+                                    fontSize: 16,
+                                    fontFamily: "Gilroy-Bold",
+                                    color: "#111827",
+                                }}>
+                                    ₹ {itemTotal.toFixed(2)}
+                                </Text>
                             </View>
 
-                            <Text style={styles.label}>
-                                Per Unit price (INR)
-                            </Text>
-
-                            <ValidatedInput
-                                keyboardType="numeric"
-                                type="numberOnly"
-                                inputType="numeric"
-                                value={item.unitPrice}
-                                onChangeText={(text) =>
-                                    updateItem(index, "unitPrice", text)
-                                }
-                                placeholder="₹ 150"
-                                placeholderTextColor="#9CA3AF"
-                                style={styles.input}
-                            />
-
-                            {errors[`unitPrice_${index}`] && (
-                                <ErrorMessage
-                                    message={errors[`unitPrice_${index}`]}
-                                    type="error"
-                                />
-                            )}
-
-                            <Text style={styles.label}>
-                                Amount
-                            </Text>
-
-                            <ValidatedInput
-                                editable={false}
-                                value={String(
-                                    (Number(item.quantity) || 0) *
-                                    (Number(item.unitPrice) || 0)
-                                )}
-                                placeholderTextColor="#9CA3AF"
-                                style={styles.input}
-                                keyboardType="numeric"
-                                type="numberOnly"
-                                inputType="numeric"
-                            />
-                        </View>
-                    ))}
-
-                    {errors.expenseItems && (
-                        <ErrorMessage
-                            message={errors.expenseItems}
-                            type="error"
-                        />
-                    )}
-
-                    <TouchableOpacity
-                        style={styles.addRowBtn}
-                        onPress={handleAddRow}
-                    >
-                        <Text
-                            style={{
-                                color: "#2952FF",
-                                fontFamily: "Gilroy-Bold",
-                            }}
-                        >
-                            + Add New Row
-                        </Text>
-                    </TouchableOpacity>
+                            <View style={styles.summaryInputRow}>
 
 
-
-
-
-
-                    <View style={styles.summaryCard}>
-                        <View style={styles.summaryRow}>
-                            <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
-                                Sub Total
-                            </Text>
-
-                            <Text style={{
-                                fontSize: 16,
-                                fontFamily: "Gilroy-Bold",
-                                color: "#111827",
-                            }}>
-                                ₹ {itemTotal.toFixed(2)}
-                            </Text>
-                        </View>
-
-                        <View style={styles.summaryInputRow}>
-
-
-                            <View style={styles.rightInputWrapper}>
-                                <View>
-                                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
-                                        Tax Optional
-                                    </Text>
-                                </View>
-                                <View style={{ alignItems: "flex-end", }}>
-                                    {/* <ValidatedInput
+                                <View style={styles.rightInputWrapper}>
+                                    <View>
+                                        <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
+                                            Tax Optional
+                                        </Text>
+                                    </View>
+                                    <View style={{ alignItems: "flex-end", }}>
+                                        {/* <ValidatedInput
                                         type="amount"
                                         placeholder="₹ 0.00"
                                         style={styles.taxInput}
                                     /> */}
-                                    <ValidatedInput
-                                        type="numberOnly"
-                                        inputType="numeric"
-                                        value={tax}
-                                        onChangeText={setTax}
-                                        placeholder="₹ 0.00"
-                                        style={styles.taxInput}
-                                    />
-                                </View>
+                                        <ValidatedInput
+                                            type="numberOnly"
+                                            inputType="numeric"
+                                            value={tax}
+                                            onChangeText={setTax}
+                                            placeholder="₹ 0.00"
+                                            style={styles.taxInput}
+                                        />
+                                    </View>
 
+                                </View>
                             </View>
-                        </View>
 
-                        <View style={styles.summaryInputRow}>
+                            <View style={styles.summaryInputRow}>
 
 
-                            <View style={styles.discountRow}>
+                                <View style={styles.discountRow}>
 
-                                <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
-                                    Discount
-                                </Text>
-                                <View style={styles.discountToggle}>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.discountBtn,
-                                            discountType === "amount" &&
-                                            styles.discountBtnActive,
-                                        ]}
-                                        onPress={() => {
-                                            setDiscountType("amount")
-                                            setDiscountError("")
-                                        }}
-                                    >
-                                        <Text style={{ color: discountType === "amount" ? "#fff" : "#00000" }}>₹</Text>
-                                    </TouchableOpacity>
+                                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
+                                        Discount
+                                    </Text>
+                                    <View style={styles.discountToggle}>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.discountBtn,
+                                                discountType === "amount" &&
+                                                styles.discountBtnActive,
+                                            ]}
+                                            onPress={() => {
+                                                setDiscountType("amount")
+                                                setDiscountError("")
+                                            }}
+                                        >
+                                            <Text style={{ color: discountType === "amount" ? "#fff" : "#00000" }}>₹</Text>
+                                        </TouchableOpacity>
 
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.discountBtn,
-                                            discountType === "percentage" &&
-                                            styles.discountBtnActive,
-                                        ]}
-                                        onPress={() => {
-                                            setDiscountType("percentage")
-                                            setDiscountError("")
-                                        }}
-                                    >
-                                        <Text style={{ color: discountType === "percentage" ? "#fff" : "#00000" }}>%</Text>
-                                    </TouchableOpacity>
-                                </View>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.discountBtn,
+                                                discountType === "percentage" &&
+                                                styles.discountBtnActive,
+                                            ]}
+                                            onPress={() => {
+                                                setDiscountType("percentage")
+                                                setDiscountError("")
+                                            }}
+                                        >
+                                            <Text style={{ color: discountType === "percentage" ? "#fff" : "#00000" }}>%</Text>
+                                        </TouchableOpacity>
+                                    </View>
 
-                                {/* <ValidatedInput
+                                    {/* <ValidatedInput
                                     type="amount"
                                     placeholder="₹ 0.00"
                                     style={styles.discountInput}
                                 /> */}
-                                <ValidatedInput
-                                    type="numberOnly"
-                                    inputType="numeric"
-                                    value={discount}
-                                    onChangeText={(text) => {
+                                    <ValidatedInput
+                                        type="numberOnly"
+                                        inputType="numeric"
+                                        value={discount}
+                                        onChangeText={(text) => {
 
-                                        if (discountType === "percentage" && Number(text) > 100) {
-                                            setDiscountError("Discount percentage cannot exceed 100%")
-                                            return;
-                                        } else if (discountType === "amount" && Number(text) > amount) {
-                                            setDiscountError("Discount amount cannot exceed total amount")
-                                            return;
-                                        }
-                                        setDiscount(text)
-                                        setDiscountError("")
-                                    }}
-                                    placeholder="₹ 0.00"
-                                    style={styles.discountInput}
-                                />
+                                            if (discountType === "percentage" && Number(text) > 100) {
+                                                setDiscountError("Discount percentage cannot exceed 100%")
+                                                return;
+                                            } else if (discountType === "amount" && Number(text) > amount) {
+                                                setDiscountError("Discount amount cannot exceed total amount")
+                                                return;
+                                            }
+                                            setDiscount(text)
+                                            setDiscountError("")
+                                        }}
+                                        placeholder="₹ 0.00"
+                                        style={styles.discountInput}
+                                    />
+                                </View>
+                                {discountError && <ErrorMessage message={discountError} type="error" />}
                             </View>
-                            {discountError && <ErrorMessage message={discountError} type="error" />}
+
+                            <View style={styles.totalContainer}>
+                                <Text style={styles.totalLabel}>
+                                    TOTAL AMOUNT
+                                </Text>
+                                <Text style={styles.totalValue}>
+                                    ₹ {(grandTotal())}
+                                </Text>
+                            </View>
                         </View>
 
-                        <View style={styles.totalContainer}>
-                            <Text style={styles.totalLabel}>
-                                TOTAL AMOUNT
-                            </Text>
-                            <Text style={styles.totalValue}>
-                                ₹ {(grandTotal())}
-                            </Text>
+                        <View style={styles.footerRow}>
+                            <TouchableOpacity
+                                style={styles.cancelBtn}
+                                onPress={() => navigation.goBack()}
+                            >
+                                <Text
+                                    style={{
+                                        fontSize: 18,
+                                        fontFamily: "Gilroy-Medium",
+                                        color: "#1E1E1E",
+                                    }}
+                                >
+                                    Cancel
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                                disabled={isApplyTriggeredRef.current}
+                                onPress={handleSubmit}
+                            >
+                                <Text
+                                    style={{
+                                        fontSize: 18,
+                                        fontFamily: "Gilroy-Semibold",
+                                        color: "#FFF",
+                                    }}
+                                >
+                                    Save & Allocate
+                                </Text>
+                            </TouchableOpacity>
                         </View>
-                    </View>
 
-                    <View style={styles.footerRow}>
-                        <TouchableOpacity
-                            style={styles.cancelBtn}
-                            onPress={() => navigation.goBack()}
-                        >
-                            <Text
-                                style={{
-                                    fontSize: 18,
-                                    fontFamily: "Gilroy-Medium",
-                                    color: "#1E1E1E",
-                                }}
-                            >
-                                Cancel
-                            </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
-                            disabled={isApplyTriggeredRef.current}
-                            onPress={handleSubmit}
-                        >
-                            <Text
-                                style={{
-                                    fontSize: 18,
-                                    fontFamily: "Gilroy-Semibold",
-                                    color: "#FFF",
-                                }}
-                            >
-                                Save & Allocate
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* <View style={styles.footerRow}>
+                        {/* <View style={styles.footerRow}>
                     <TouchableOpacity onPress={() => navigation.goBack()}
                         style={styles.cancelBtn}
                     >
@@ -2433,9 +2515,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                     </TouchableOpacity>
                 </View> */}
 
-                </ScrollView>
+                    </ScrollView>
 
-            </View>
+                </View>
             </KeyboardAvoidingView>
 
             {openPurchaseDate && (

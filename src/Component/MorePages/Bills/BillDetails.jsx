@@ -390,7 +390,7 @@ const BillDetailsSheet = ({
     setShowMenu(false);
      const res = await GetInitializeRecordPaymentDetails({
       hostelId: activeHostelId,
-      invoiceId: BillPdfdetails?.invoiceId || selectedBill?.invoiceId,
+      invoiceId: BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId || selectedBill?.invoiceId,
     })
     console.log(res)
      navigation.navigate("NewRecordPayment",

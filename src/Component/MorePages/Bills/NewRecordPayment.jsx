@@ -28,6 +28,7 @@ const NewRecordPayment = ({ route }) => {
     const [tenantName, setTenantName] = useState("");
     const [paidAmount, setPaidAmount] = useState("");
     const [transactionId, setTransactionId] = useState("");
+    const [description,setDescription]=useState("")
     const [error, setError] = useState("");
     const [showPaymentMode, setShowPaymentMode] = useState(false);
     const [selectedMode, setSelectedMode] = useState("");
@@ -355,9 +356,9 @@ const NewRecordPayment = ({ route }) => {
                             <Image source={EditConfigure} style={{ width: 15, height: 15, marginLeft: 5 }} />
                         </View>
 
-                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 12 }}>
+                        {/* <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 12 }}>
                             Plot No
-                        </Text>
+                        </Text> */}
 
                         <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#5E6470', marginTop: 5, lineHeight: 20 }}>
                             {BillPdfdetails?.customerInfo?.fullAddress || "N/A"}
@@ -375,7 +376,7 @@ const NewRecordPayment = ({ route }) => {
 
                     <TextInput
                         style={styles.txtInputBox}
-                        placeholder="₹ 1700"
+                        placeholder="Enter Paid Amount"
                         value={paidAmount}
                         keyboardType="number-pad"
                         // onChangeText={(text) => {
@@ -555,13 +556,27 @@ const NewRecordPayment = ({ route }) => {
 
                     <TextInput
                         style={styles.txtInputBox}
-                        placeholder="Enter Transaction ID" />
+                        value={transactionId}
+                        placeholder="Enter Transaction ID"
+                        onChangeText={(text) => {
+                            const filteredText = text.replace(
+                                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+                                , ""
+                            );
+
+                            setTransactionId(filteredText);
+                        }} />
 
                     <Text style={styles.txtinputhead}>Notes/Description</Text>
 
                     <TextInput
                         style={styles.descTxtBox}
-                        placeholder="Enter Description" />
+                        value={description}
+                        placeholder="Enter Description" 
+                        onChangeText={(text)=>{
+                            const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
+                            setDescription(onlyLetters)
+                        }}/>
 
                     <View style={styles.sumryBox}>
                         <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Bold', color: '#FFFFFF99' }}>SUMMARY</Text>
@@ -652,7 +667,7 @@ const styles = StyleSheet.create({
     txtInputBox: {
         borderWidth: 1, borderColor: '#D9D9D9',
         borderRadius: 12, height: 50, paddingHorizontal: 12,
-        marginTop: 10
+        marginTop: 10, fontSize: 14, fontFamily: 'Gilroy-Regular'
     },
     tntName: {
         fontSize: 18, fontFamily: 'Gilroy-Semibold',
@@ -691,7 +706,7 @@ const styles = StyleSheet.create({
     descTxtBox: {
         borderWidth: 1, borderColor: '#D9D9D9',
         borderRadius: 12, height: 80, paddingHorizontal: 12,
-        marginTop: 10, textAlignVertical: 'top'
+        marginTop: 10, textAlignVertical: 'top',fontSize:14,fontFamily:'Gilroy-Regular'
     },
     sumryBox: {
         backgroundColor: '#2633A0', borderRadius: 10, padding: 14,

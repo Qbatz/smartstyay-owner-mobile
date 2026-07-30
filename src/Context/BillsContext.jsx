@@ -1,5 +1,6 @@
 import React, { createContext, useState } from "react";
 import { getAxios } from "../Config/AxiosConfig";
+import { retriveData } from "../Utils/Storage";
 
 export const BillContext = createContext();
 
@@ -51,6 +52,7 @@ export default function BillsProvider({ children }) {
       setLoading(true);
       setErrorMsg("");
       const axios = getAxios();
+      console.log("filters",filters);
       const res = await axios.get(`/v2/bills/${hostelId}`, {
         params: {
           startDate: filters.startDate,
@@ -61,6 +63,8 @@ export default function BillsProvider({ children }) {
           paymentStatus: filters.paymentStatus,
           search: filters.search,
         },
+        
+        
         paramsSerializer: (params) =>
           Object.keys(params)
             .map((key) => {
@@ -1246,6 +1250,7 @@ export default function BillsProvider({ children }) {
 
 
   const GetInitializeRecordPaymentDetails = async ({ hostelId, invoiceId }) => {
+    console.log("sonna",hostelId,invoiceId)
   if (!hostelId || !invoiceId) {
     return { success: false, message: "Invalid data" };
   }
@@ -1328,6 +1333,38 @@ const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
   }
 }
 
+ const createRetainderInvoice=async(hostelId,customerId,payload)=>{
+
+  setLoading(true)
+  try{
+    const token= await retriveData("token")
+    const axios= getAxios()
+
+    const res= await axios.post(`/v2/retainer/${hostelId}/${customerId}`, payload)
+
+    console.log(res)
+
+     if (res?.status === 201 || 200) {
+      return {
+        success: true,
+        data: res?.data,
+        statusCode: res?.status,
+      };
+    }
+  }catch(error){
+    console.log(error)
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  }finally{
+    setLoading(false)
+  }
+ }
+
 
   return (
     <BillContext.Provider
@@ -1375,7 +1412,7 @@ const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
         ApplyAdvanceToInvoices,
         GetAdvanceCreditDetails,
         ReceiptFilter,
-        GetInitializeRecordPaymentDetails , GetInitializeDiscountDetails
+        GetInitializeRecordPaymentDetails , GetInitializeDiscountDetails,createRetainderInvoice
       }}
     >
       {children}

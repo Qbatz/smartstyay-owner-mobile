@@ -1635,7 +1635,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     <ErrorMessage message={rentalError} type="error" />
                                 )}
 
-                                {isCurrentMonth && (
+                              
                                     <View style={styles.fullRentRow}>
                                         <TouchableOpacity
                                             style={[
@@ -1663,7 +1663,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                             Do you want to collect Full Rent for current month?
                                         </Text>
                                     </View>
-                                )}
+                               
 
                                 {collectFullRent && (
                                     <>

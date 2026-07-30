@@ -96,7 +96,12 @@ const removeChip = (value) => {
       {/* DROPDOWN */}
       {isOpen && (
         <View style={styles.dropdown}>
-          <ScrollView>
+          <ScrollView 
+           nestedScrollEnabled
+  keyboardShouldPersistTaps="handled"
+  showsVerticalScrollIndicator={false}
+  style={{ maxHeight: 220 }}
+          >
    {options.map((item) => {
   const checked = selected.includes(item.value);
   return (

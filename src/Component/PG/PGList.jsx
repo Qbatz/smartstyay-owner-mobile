@@ -875,7 +875,7 @@ useFocusEffect(
     setShowReservedSheet(false)
     // navigation.navigate("ReserveToCheckin")
     // selectedBed:selectedBed
-    navigation.navigate("ReserveToCheckin", {
+    navigation.navigate("BookingCheckIn", {
       selectedBed: selectedBed,
       onBedAdded: handleBedAdded
     });

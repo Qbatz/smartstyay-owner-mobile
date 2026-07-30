@@ -133,31 +133,31 @@ export default function JobDetailsSheet({
 
 
 
-const convertTimeToDate = (time) => {
-    if (!time) return null;
+    const convertTimeToDate = (time) => {
+        if (!time) return null;
 
-    const match = time
-        .trim()
-        .match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        const match = time
+            .trim()
+            .match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
 
-    if (!match) return null;
+        if (!match) return null;
 
-    let [, hh, mm, meridian] = match;
+        let [, hh, mm, meridian] = match;
 
-    let hours = parseInt(hh, 10);
-    const minutes = parseInt(mm, 10);
+        let hours = parseInt(hh, 10);
+        const minutes = parseInt(mm, 10);
 
-    meridian = meridian.toUpperCase();
+        meridian = meridian.toUpperCase();
 
-    if (meridian === "PM" && hours !== 12) hours += 12;
-    if (meridian === "AM" && hours === 12) hours = 0;
+        if (meridian === "PM" && hours !== 12) hours += 12;
+        if (meridian === "AM" && hours === 12) hours = 0;
 
-    const date = new Date();
+        const date = new Date();
 
-    date.setHours(hours, minutes, 0, 0);
+        date.setHours(hours, minutes, 0, 0);
 
-    return date;
-};
+        return date;
+    };
 
 
     const shiftTypeOptions = [
@@ -199,30 +199,30 @@ const convertTimeToDate = (time) => {
         { value: "Other", label: "Other" },
     ];
 
- const splitShiftTiming = (timing) => {
-    if (!timing) {
+    const splitShiftTiming = (timing) => {
+        if (!timing) {
+            return {
+                start: null,
+                end: null,
+            };
+        }
+
+        const match = timing.match(
+            /(\d{1,2}:\d{2}\s*[APap][Mm]).*?(\d{1,2}:\d{2}\s*[APap][Mm])/
+        );
+
+        if (!match) {
+            return {
+                start: null,
+                end: null,
+            };
+        }
+
         return {
-            start: null,
-            end: null,
+            start: convertTimeToDate(match[1]),
+            end: convertTimeToDate(match[2]),
         };
-    }
-
-    const match = timing.match(
-        /(\d{1,2}:\d{2}\s*[APap][Mm]).*?(\d{1,2}:\d{2}\s*[APap][Mm])/
-    );
-
-    if (!match) {
-        return {
-            start: null,
-            end: null,
-        };
-    }
-
-    return {
-        start: convertTimeToDate(match[1]),
-        end: convertTimeToDate(match[2]),
     };
-};
 
     const resetForm = () => {
         // Values
@@ -307,7 +307,7 @@ const convertTimeToDate = (time) => {
             );
             const { start, end } = splitShiftTiming(job?.shiftTiming);
 
-            
+
 
             setStartTime(start);
             setEndTime(end);
@@ -315,8 +315,8 @@ const convertTimeToDate = (time) => {
             console.log("shiftTiming =>", job?.shiftTiming);
 
 
-console.log("start =>", start);
-console.log("end =>", end);
+            console.log("start =>", start);
+            console.log("end =>", end);
         }
     }, [visible, customerDetails]);
 
@@ -398,6 +398,14 @@ console.log("end =>", end);
     if (!visible) return null;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+    const hasJobDetails = Boolean(
+        customerDetails?.jobDetails?.organizationName ||
+        customerDetails?.jobDetails?.employmentStatus ||
+        customerDetails?.jobDetails?.role ||
+        customerDetails?.jobDetails?.workLocation ||
+        customerDetails?.jobDetails?.shiftType ||
+        customerDetails?.jobDetails?.shiftTiming
+    );
 
 
 
@@ -463,88 +471,143 @@ console.log("end =>", end);
         return valid;
     };
 
+    // const handleUpdate = async () => {
+
+       
+
+    //     const currentPayload = {
+    //         employmentStatus: employmentStatus?.value || "",
+    //         organizationName: companyName.trim(),
+    //         role: jobRole?.value || "",
+    //         workLocation: worklocation.trim(),
+    //         shiftType: shiftType?.value || "",
+    //         shiftStartsFrom: startTime ? formatTime(startTime) : "",
+    //         shiftEndsAt: endTime ? formatTime(endTime) : "",
+    //     };
+
+    //     const oldPayload = {
+    //         employmentStatus: customerDetails?.jobDetails?.employmentStatus || "",
+    //         organizationName: customerDetails?.jobDetails?.organizationName || "",
+    //         role: customerDetails?.jobDetails?.role || "",
+    //         workLocation: customerDetails?.jobDetails?.workLocation || "",
+    //         shiftType: customerDetails?.jobDetails?.shiftType || "",
+    //         shiftStartsFrom: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start
+    //             ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start)
+    //             : "",
+    //         shiftEndsAt: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end
+    //             ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end)
+    //             : "",
+    //     };
+
+    //     if (JSON.stringify(currentPayload) === JSON.stringify(oldPayload)) {
+    //         setMessage("No changes detected");
+    //         setModalType("warning"); 
+    //         setShowSuccess(true);
+
+    //         setTimeout(() => {
+    //             setShowSuccess(false);
+    //         }, 1200);
+
+    //         return;
+    //     }
+
+
+       
+
+    //     const res = await UpdateJobDetails(
+    //         activeHostelId,
+    //         customerDetails.customerId,
+    //         currentPayload
+    //     );
+
+    //     if (res?.success) {
+    //         setMessage("Saved Successfully");
+    //         setModalType("success");
+    //         setShowSuccess(true);
+
+    //         setTimeout(() => {
+    //             setShowSuccess(false);
+    //             onSuccess?.();
+    //             closeSheet();
+    //         }, 1500);
+
+    //     }
+    //     else {
+    //         setMessage(res?.message || "job Details update Failed");
+    //         setModalType("error");
+    //         setShowSuccess(true);
+
+    //         setTimeout(() => {
+    //             setShowSuccess(false);
+    //         }, 1200);
+    //     }
+    // };
+
+
     const handleUpdate = async () => {
 
-        // if (!validateJobDetails()) {
-        //     return;
-        // }
-
-        const currentPayload = {
-    employmentStatus: employmentStatus?.value || "",
-    organizationName: companyName.trim(),
-    role: jobRole?.value || "",
-    workLocation: worklocation.trim(),
-    shiftType: shiftType?.value || "",
-    shiftStartsFrom: startTime ? formatTime(startTime) : "",
-    shiftEndsAt: endTime ? formatTime(endTime) : "",
-};
-
-const oldPayload = {
-    employmentStatus: customerDetails?.jobDetails?.employmentStatus || "",
-    organizationName: customerDetails?.jobDetails?.organizationName || "",
-    role: customerDetails?.jobDetails?.role || "",
-    workLocation: customerDetails?.jobDetails?.workLocation || "",
-    shiftType: customerDetails?.jobDetails?.shiftType || "",
-    shiftStartsFrom: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start
-        ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start)
-        : "",
-    shiftEndsAt: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end
-        ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end)
-        : "",
-};
-
-if (JSON.stringify(currentPayload) === JSON.stringify(oldPayload)) {
-    setMessage("No changes detected");
-    setModalType("warning"); // or "error" if info type illa
-    setShowSuccess(true);
-
-    setTimeout(() => {
-        setShowSuccess(false);
-    }, 1200);
-
-    return;
-}
-
-
-        // const payload = {
-        //     employmentStatus: employmentStatus?.value || "",
-        //     organizationName: companyName || "",
-        //     role: jobRole?.value || "",
-        //     workLocation: worklocation || "",
-        //     shiftType: shiftType?.value || "",
-        //     shiftStartsFrom: startTime ? formatTime(startTime) : "",
-        //     shiftEndsAt: endTime ? formatTime(endTime) : "",
-        // };
-
-        const res = await UpdateJobDetails(
-            activeHostelId,
-            customerDetails.customerId,
-            currentPayload
-        );
-
-        if (res?.success) {
-            setMessage("Saved Successfully");
-            setModalType("success");
-            setShowSuccess(true);
-
-            setTimeout(() => {
-                setShowSuccess(false);
-                onSuccess?.();
-                closeSheet();
-            }, 1500);
-
-        }
-        else {
-            setMessage(res?.message || "job Details update Failed");
-            setModalType("error");
-            setShowSuccess(true);
-
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 1200);
-        }
+    const currentPayload = {
+        employmentStatus: employmentStatus?.value || "",
+        organizationName: companyName.trim(),
+        role: jobRole?.value || "",
+        workLocation: worklocation.trim(),
+        shiftType: shiftType?.value || "",
+        shiftStartsFrom: startTime ? formatTime(startTime) : "",
+        shiftEndsAt: endTime ? formatTime(endTime) : "",
     };
 
+    // ✅ only compare in Edit mode
+    if (hasJobDetails) {
+        const oldPayload = {
+            employmentStatus: customerDetails?.jobDetails?.employmentStatus || "",
+            organizationName: customerDetails?.jobDetails?.organizationName || "",
+            role: customerDetails?.jobDetails?.role || "",
+            workLocation: customerDetails?.jobDetails?.workLocation || "",
+            shiftType: customerDetails?.jobDetails?.shiftType || "",
+            shiftStartsFrom: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start
+                ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start)
+                : "",
+            shiftEndsAt: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end
+                ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end)
+                : "",
+        };
+
+        if (JSON.stringify(currentPayload) === JSON.stringify(oldPayload)) {
+            setMessage("No changes detected");
+            setModalType("warning");
+            setShowSuccess(true);
+            setTimeout(() => setShowSuccess(false), 1200);
+            return;
+        }
+    }
+
+    const res = await UpdateJobDetails(
+        activeHostelId,
+        customerDetails.customerId,
+        currentPayload
+    );
+
+    if (res?.success) {
+        setMessage(hasJobDetails ? "Updated Successfully" : "Saved Successfully");
+        setModalType("success");
+        setShowSuccess(true);
+
+        setTimeout(() => {
+            setShowSuccess(false);
+            onSuccess?.();
+            closeSheet();
+        }, 1500);
+
+    } else {
+        setMessage(res?.message || "Job Details update Failed");
+        setModalType("error");
+        setShowSuccess(true);
+
+        setTimeout(() => {
+            setShowSuccess(false);
+        }, 1200);
+    }
+};
 
 
 
@@ -588,7 +651,9 @@ if (JSON.stringify(currentPayload) === JSON.stringify(oldPayload)) {
                             contentContainerStyle={{ paddingBottom: 30 }}
                         >
                             <View style={styles.handle} />
-                            <Text style={styles.title}>Edit Job  Details</Text>
+                            <Text style={styles.title}>
+                                {hasJobDetails ? "Edit Job Details" : "Add Job Details"}
+                            </Text>
 
                             <Text style={styles.label}>Company / College Name </Text>
                             <TextInput
@@ -836,7 +901,7 @@ if (JSON.stringify(currentPayload) === JSON.stringify(oldPayload)) {
                                 </TouchableOpacity>
 
                                 <TouchableOpacity style={styles.updateBtn} onPress={handleUpdate}>
-                                    <Text style={styles.updateText}>Update</Text>
+                                    <Text style={styles.updateText}> {hasJobDetails ? "Update" : "Save"}</Text>
                                 </TouchableOpacity>
                             </View>
                         </ScrollView>

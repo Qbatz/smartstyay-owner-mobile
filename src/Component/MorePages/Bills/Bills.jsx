@@ -395,6 +395,8 @@ export default function BillsDesign({ route }) {
   //   }, [activeHostelId, canReadInvoice, activeTab])
   // );
 
+  console.log("activehost", activeHostelId)
+
 
   useEffect(() => {
     if (
@@ -404,7 +406,7 @@ export default function BillsDesign({ route }) {
     ) {
       GetAllBillDetails(activeHostelId);
     }
-  }, [activeTab]);
+  }, [activeTab, activeHostelId]);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -1055,13 +1057,13 @@ export default function BillsDesign({ route }) {
 
   useLayoutEffect(() => {
 
-if(showFilter){
-   setShowTabBar(false);
-}else{
-   setShowTabBar(true);
-}
+    if (showFilter) {
+      setShowTabBar(false);
+    } else {
+      setShowTabBar(true);
+    }
 
-},[])
+  }, [])
 
   // useLayoutEffect(() => {
 
@@ -1255,7 +1257,7 @@ if(showFilter){
 
     const res = await GetInitializeRecordPaymentDetails({
       hostelId: activeHostelId,
-      invoiceId: BillPdfdetails?.invoiceId,
+      invoiceId: BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId || selectedBill?.invoiceId,
     })
 
     console.log("recordpaymentinitializeresponse", res);
@@ -1615,7 +1617,7 @@ if(showFilter){
       type: appliedFilters?.type || [],
       modes: appliedFilters?.modes || [],
       createdBy: appliedFilters?.createdBy || [],
-      search: text || null,
+      search: text || "",
     };
 
     await GetAllBillDetails(activeHostelId, filters);
@@ -2362,16 +2364,40 @@ if(showFilter){
   }, [activeTab])
 
 
+  const clearBillFilters = () => {
+    setFromDate(null);
+    setToDate(null);
+    setBillStatus([]);
+    setType([]);
+    setMode([]);
+    setCreatedBy([]);
+    setAppliedFilters(null);
+    setFilterError("");
+    setSearchText("");
+  };
 
   const handleTabChange = (tab) => {
-    setActiveTab(tab);
+    if (activeTab === "Invoices" && tab !== "Invoices") {
+      clearBillFilters();
+    }
 
     setSearchText("");
+    setActiveTab(tab);
 
     if (tab === "Invoices") {
       GetAllBillDetails(activeHostelId);
     }
-  }
+  };
+
+  // const handleTabChange = (tab) => {
+  //   setActiveTab(tab);
+
+  //   setSearchText("");
+
+  //   if (tab === "Invoices") {
+  //     GetAllBillDetails(activeHostelId);
+  //   }
+  // }
 
   const getPaymentIcon = (status) => {
     switch (status) {
@@ -2403,7 +2429,8 @@ if(showFilter){
   const isPending = selectedBill?.paymentStatus === "Pending";
   const cancelled = selectedBill?.paymentStatus === "Cancelled";
   const pendingRefund = selectedBill?.paymentStatus === "Pending Refund";
-  const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded"
+  const partiallyRefund = selectedBill?.paymentStatus === "Partially Refunded" || BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND"
+
   const FullyRefund = selectedBill?.paymentStatus === "Refunded"
 
   const isPendingRefund =
@@ -2560,15 +2587,38 @@ if(showFilter){
                       ? "Search Receipt"
                       : "Search Invoice"
                   }
+                  // onChangeText={(text) => {
+                  //   if (activeTab === "Receipt") {
+                  //     setSearchText(text);
+                  //     handleReceiptSearch(text);
+                  //   } else {
+                  //     setSearchText(text);
+                  //     handleSearch(text);
+                  //   }
+                  // }}
                   onChangeText={(text) => {
+                    const filtered = text.replace(/[^a-zA-Z\s]/g, "");
+                    console.log("filtered", filtered);
+                    
+
+                    setSearchText(filtered);
+
                     if (activeTab === "Receipt") {
-                      setSearchText(text);
-                      handleReceiptSearch(text);
+                      if (filtered.trim() === "") {
+                        GetReceiptsList(activeHostelId)
+                      } else {
+                        handleReceiptSearch(filtered)
+                      }
                     } else {
-                      setSearchText(text);
-                      handleSearch(text);
+                      if (filtered.trim() === "") {
+                        GetAllBillDetails(activeHostelId);
+                        // GetAllBillDetails(activeHostelId)
+                      } else {
+                        handleSearch(filtered)
+                      }
                     }
                   }}
+
                   placeholderTextColor="#9CA3AF"
                   editable={canReadInvoice || canReadReceipt}
                 />
@@ -2866,15 +2916,28 @@ if(showFilter){
                       <Image source={EmptyFloor} style={styles.image} />
                       <Text style={styles.noFloorText}>No bills are there!</Text>
 
-                      <TouchableOpacity
-                        style={[
-                          styles.addFloorBtn,
-                          !canWriteInvoice && { opacity: 0.4 }
-                        ]}
-                        disabled={!canWriteInvoice}
-                        onPress={handleCreateBill}>
-                        <Text style={styles.addFloorText}>+ Add Bill</Text>
-                      </TouchableOpacity>
+                      {appliedFilters ? (
+                        <TouchableOpacity
+                          style={{ width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center", marginTop: 10 }}
+                          onPress={handleResetFilters}
+                        >
+                          <Text style={styles.resetText}>
+                            Reset Filters
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <TouchableOpacity
+                          style={[
+                            styles.addFloorBtn,
+                            !canWriteInvoice && { opacity: 0.4 }
+                          ]}
+                          disabled={!canWriteInvoice}
+                          onPress={handleCreateBill}>
+                          <Text style={styles.addFloorText}>+ Add Bill</Text>
+                        </TouchableOpacity>
+                      )}
+
+
                     </View>
                   )}
 
@@ -2915,7 +2978,7 @@ if(showFilter){
           )}
 
           {activeTab === "RecurringBills" && (
-            <RecurringBills onSelectRecurringBill={handleRecurringBill}  setShowTabBar={setShowTabBar}/>
+            <RecurringBills onSelectRecurringBill={handleRecurringBill} setShowTabBar={setShowTabBar} />
           )}
           {activeTab === "Receipt" && (
             <Receipt onSelectReceipt={handleOpenReceiptSheet}
@@ -3066,7 +3129,7 @@ if(showFilter){
 
                     <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                       <View>
-                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Total Amount</Text>
+                        <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>{["PARTIAL_REFUND", "REFUNDED"].includes(BillPdfdetails?.invoiceInfo?.status) ? "Refundable Amount" : "Total Amount"}</Text>
                       </View>
                       <View>
                         <View style={{ display: 'flex', flexDirection: 'column' }}>
@@ -3153,7 +3216,7 @@ if(showFilter){
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
                             <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>
-                              {BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND" ? "Refundable Rent" : "Payable Ren"}t</Text>
+                              {BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND" ? "Refundable Rent" : "Payable Rent"}</Text>
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
@@ -3284,6 +3347,25 @@ if(showFilter){
                         )}
 
                       </>
+                    )}
+
+                    {(partiallyRefund) && (
+                      <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <View>
+                          <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
+                        </View>
+                        <View>
+                          <Text
+                            style={[
+                              styles.amountValue,
+                              { color: "#FF0000" },
+                            ]}
+                          >
+                            ₹ {Math.round(BillPdfdetails?.invoiceInfo?.totalPayable ?? 0)}
+                          </Text>
+                        </View>
+                      </View>
+
                     )}
 
                     <View style={{ marginTop: 20, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -3417,16 +3499,19 @@ if(showFilter){
                             {BillPdfdetails?.refundHistory?.map((pay, index) => (
                               <View key={index} style={styles.paymentCard}>
 
-                                <TouchableOpacity style={styles.paymentTopRow}>
-                                  <Text >
-                                    #{BillPdfdetails?.invoiceNumber}
-                                    <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14 }} />
-                                  </Text>
+                                <View style={styles.paymentTopRow}>
+                                  <TouchableOpacity onPress={() => handleOpenReceiptFromBill(pay)}
+                                    style={{ display: 'flex', flexDirection: 'row' }}>
+                                    <Text style={{ color: "#1E45E1", fontFamily: "Gilroy-Semibold" }}>
+                                      #{pay?.referenceNumber}
+                                    </Text>
+                                    <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginLeft: 7 }} />
+                                  </TouchableOpacity>
 
                                   <Text style={styles.paymentAmount}>
                                     ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"}
                                   </Text>
-                                </TouchableOpacity>
+                                </View>
 
                                 <View style={styles.divider} />
 
@@ -3771,32 +3856,46 @@ if(showFilter){
 
                               {/* <Text style={styles.sectionLabel}>Pending Invoices</Text> */}
 
-                              {BillPdfdetails?.currentMonthEbInfo?.ebItemsList.map((item, index) => (
-                                <View key={index} style={styles.ebRowWeb}>
+                              {BillPdfdetails?.currentMonthEbInfo?.ebItemsList.length > 0 ? (
+                                BillPdfdetails?.currentMonthEbInfo?.ebItemsList.map((item, index) => (
+                                  <View key={index} style={styles.ebRowWeb}>
 
-                                  <View style={{ flex: 1 }}>
-                                    <Text style={styles.ebText}>
-                                      {item?.floorName || "Floor"} | {item?.roomName || "Room"} - {item?.bedName || "Bed"}
-                                    </Text>
+                                    <View style={{ flex: 1 }}>
+                                      <Text style={styles.ebText}>
+                                        {item?.floorName || "Floor"} | {item?.roomName || "Room"} - {item?.bedName || "Bed"}
+                                      </Text>
 
-                                    <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
-                                      <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
-                                        {formatEBDate(item?.fromDate)} - {formatEBDate(item?.toDate)}
+                                      <View style={[styles.dateChip, { backgroundColor: "#E0F2FE" }]}>
+                                        <Text style={[styles.dateChipText, { color: "#1D4ED8" }]}>
+                                          {formatEBDate(item?.fromDate)} - {formatEBDate(item?.toDate)}
+                                        </Text>
+                                      </View>
+                                    </View>
+
+                                    <View style={styles.ebRightBox}>
+                                      <Text style={styles.unitText}>
+                                        ({item.consumption} Units)
+                                      </Text>
+                                      <Text style={styles.amountText}>
+                                        ₹ {item?.totalAmount}
                                       </Text>
                                     </View>
+
                                   </View>
 
-                                  <View style={styles.ebRightBox}>
-                                    <Text style={styles.unitText}>
-                                      ({item.consumption} Units)
-                                    </Text>
-                                    <Text style={styles.amountText}>
-                                      ₹ {item?.totalAmount}
-                                    </Text>
+                                ))
+                              ) : (
+                                <View style={styles.emptyWallet}>
+                                  <View style={styles.emptyState}>
+                                    <Text style={styles.emptyWalletText}>No EB invoices</Text>
                                   </View>
-
                                 </View>
-                              ))}
+                              )
+
+
+                              }
+
+
 
 
 

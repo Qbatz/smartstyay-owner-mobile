@@ -122,9 +122,14 @@ const BillBookings = ({setShowTabBar , onBookingDetailsShow, showRetainerFilters
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
   const [amountDropdownVisible, setAmountDropdownVisible] = useState(false)
 
+
+
   const Advancebookingbills = bookingBills?.advanceInvoiceList
 
+  console.log("bookingList",bookingBills)
+
   dayjs.extend(customParseFormat);
+  console.log("BillDetails",BillDetails)
 
   const formatApiDate = (date) =>
     date
@@ -554,7 +559,8 @@ const BillBookings = ({setShowTabBar , onBookingDetailsShow, showRetainerFilters
           />
 
         )}
-        {/* {!loading && BillDetails?.listInvoices?.length > 0 && (
+
+         {!loading && Advancebookingbills?.length > 0 && (
                   <>
                   
   
@@ -573,7 +579,8 @@ const BillBookings = ({setShowTabBar , onBookingDetailsShow, showRetainerFilters
                     </TouchableOpacity>
                   </>
                 )
-                } */}
+                }
+        {/*
 
 
 

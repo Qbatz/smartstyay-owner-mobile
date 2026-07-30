@@ -73,6 +73,7 @@ export default function AddTenantNewform({ navigation, route }) {
     console.log(customer);
 
 
+    const currentScrollY = useRef(0);
     // const tabBarHeight = useBottomTabBarHeight();
 
     const [currentStep, setCurrentStep] = useState(1);
@@ -1028,25 +1029,52 @@ export default function AddTenantNewform({ navigation, route }) {
     //     }, 150);
     // };
 
-    const scrollInputIntoView = (refOrNode) => {
-        const input =
-            refOrNode?.current ? refOrNode.current : refOrNode;
+    // const scrollInputIntoView = (refOrNode) => {
+    //     const input =
+    //         refOrNode?.current ? refOrNode.current : refOrNode;
 
-        if (!input) return;
+    //     if (!input) return;
+
+    //     setTimeout(() => {
+    //         if (!scrollRef.current) return;
+
+    //         input.focus?.();
+
+    //         scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard?.(
+    //             input,
+    //             200,
+    //             true
+    //         );
+    //     }, 150);
+    // };
+
+    const scrollInputIntoView = (refOrEvent) => {
+        // Support both ref.current and direct event.target
+        const input = refOrEvent?.current
+            ? refOrEvent.current
+            : refOrEvent?.target
+                ? refOrEvent.target
+                : refOrEvent;
+
+        if (!input || !scrollRef.current) return;
 
         setTimeout(() => {
-            if (!scrollRef.current) return;
+            input.measureInWindow?.((x, y, width, height) => {
+                const kbHeight = keyboardHeight || 300;
+                const footerHeight = 90;
+                const visibleBottom = SCREEN_HEIGHT - kbHeight - footerHeight;
 
-            input.focus?.();
+                if (y + height <= visibleBottom && y >= 0) return;
 
-            scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard?.(
-                input,
-                200,
-                true
-            );
-        }, 150);
+                const offset = (y + height) - visibleBottom + 20;
+
+                scrollRef.current.scrollTo({
+                    y: currentScrollY.current + offset,
+                    animated: true,
+                });
+            });
+        }, Platform.OS === "ios" ? 250 : 350);
     };
-
 
 
     const inputRefs = useRef({});
@@ -1780,7 +1808,8 @@ export default function AddTenantNewform({ navigation, route }) {
                         setCurrentStep(2)
                     }
                     if (currentStep === 2) {
-                        setCurrentStep(3)
+                        // setCurrentStep(3)
+                        navigation.goBack();
                     }
 
                     if (currentStep === 3) {
@@ -2533,7 +2562,7 @@ export default function AddTenantNewform({ navigation, route }) {
     }, 0);
 
     console.log('bedSelected', floorSelected);
-    
+
 
     const handleNextThird = async () => {
 
@@ -3102,7 +3131,17 @@ export default function AddTenantNewform({ navigation, route }) {
         setAdvanceError("");
         setCheckJoinDateError("");
         setStayTypeError("");
+        setFloorError("");
+        setRoomError("");
+        setBedError("");
     };
+
+    useEffect(() => {
+        if (currentStep === 2) {
+            clearAllErrors();
+        }
+    }, [currentStep]);
+
     const resetBookingState = () => {
         setPurchaseDate(null);
         setJoiningDate(null);
@@ -3208,6 +3247,10 @@ export default function AddTenantNewform({ navigation, route }) {
 
                     <ScrollView
                         ref={scrollRef}
+                        onScroll={(e) => {
+                            currentScrollY.current = e.nativeEvent.contentOffset.y;
+                        }}
+                        scrollEventThrottle={16}
                         keyboardShouldPersistTaps="handled"
                         keyboardDismissMode="on-drag"
                         showsVerticalScrollIndicator={false}
@@ -3393,6 +3436,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                         placeholder="Enter First Name"
                                         placeholderTextColor="#A1A1A1"
                                         value={basicDetails.firstName}
+                                        onFocus={(e) => scrollInputIntoView(e)}
                                         onChangeText={(t) => {
                                             const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                             setBasicDetails({ ...basicDetails, firstName: onlyLetters });
@@ -3410,6 +3454,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                             const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                             setBasicDetails({ ...basicDetails, lastName: onlyLetters });
                                         }}
+                                        onFocus={(e) => scrollInputIntoView(e)}
                                     />
 
                                     <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
@@ -3432,7 +3477,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                         <TextInput
                                             style={styles.mobileInput}
                                             keyboardType="number-pad"
-                                           placeholder="Enter Mobile Number"
+                                            placeholder="Enter Mobile Number"
                                             placeholderTextColor="#A1A1A1"
                                             maxLength={10}
                                             value={basicDetails.mobile}
@@ -3443,6 +3488,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 });
                                                 setMobileError("");
                                             }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
 
                                         />
 
@@ -3471,6 +3517,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 setEmailError("");
                                             }
                                         }}
+                                        onFocus={(e) => scrollInputIntoView(e)}
                                     />
 
                                     {emailError && <ErrorMessage message={emailError} type="error" />}
@@ -3555,6 +3602,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                             const sanitized = t.replace(/[^a-zA-Z0-9\s]/g, "");
                                             setIdProofNumber(sanitized)
                                         }}
+                                        onFocus={(e) => scrollInputIntoView(e)}
                                     />
 
 
@@ -3608,6 +3656,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 const sanitized = t.replace(/[^a-zA-Z0-9\s\-&/]/g, "");
                                                 setAddressDetails({ ...addressDetails, flat: sanitized });
                                             }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
                                         />
                                         <Text style={styles.label}>Area , Street , Sector , Village</Text>
                                         <TextInput
@@ -3619,6 +3668,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 const sanitized = t.replace(/[^a-zA-Z0-9\s\-/]/g, "");
                                                 setAddressDetails({ ...addressDetails, area: sanitized })
                                             }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
                                         />
 
 
@@ -3632,6 +3682,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 const sanitized = t.replace(/[^a-zA-Z0-9\s]/g, "");
                                                 setAddressDetails({ ...addressDetails, landmark: sanitized })
                                             }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
                                         />
 
                                         <Text style={styles.label}>Pincode</Text>
@@ -3642,6 +3693,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                             keyboardType="number-pad"
                                             maxLength={6}
                                             value={addressDetails.pincode}
+                                            onFocus={(e) => scrollInputIntoView(e)}
                                             onChangeText={(t) => {
                                                 const value = t.replace(/[^0-9]/g, "");
                                                 setAddressDetails({
@@ -3692,6 +3744,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 const sanitized = t.replace(/[^a-zA-Z\s]/g, "");
                                                 setAddressDetails({ ...addressDetails, city: sanitized })
                                             }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
                                         />
 
 
@@ -3704,7 +3757,8 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 placeholderTextColor="#9CA3AF"
                                                 value={stateOpen ? stateQuery : selectedState}
 
-                                                onFocus={() => {
+                                                onFocus={(e) => {
+                                                    scrollInputIntoView(e)
                                                     setStateOpen(true);
                                                     setStateQuery("");   // 🔥 cursor focus panna fresh search
                                                 }}
@@ -3713,6 +3767,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     setStateQuery(sanitized);    // 🔥 typing always search
                                                     setStateOpen(true);
                                                 }}
+
                                             />
 
 
@@ -3945,6 +4000,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     setBookingAmount(onlyNum);
                                                     setBookingAmountError("");
                                                 }}
+                                                onFocus={(e) => scrollInputIntoView(e)}
                                             />
                                             {bookingAmountError && (
                                                 <ErrorMessage message={bookingAmountError} type="error" />
@@ -4256,13 +4312,14 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     style={styles.inputBox}
                                                     placeholder="Enter Transaction Id"
                                                     value={referenceNumber}
-                                                    onFocus={() => scrollInputIntoView(transactionRef)}
+                                                    // onFocus={() => scrollInputIntoView(transactionRef)}
 
                                                     onChangeText={(text) => {
 
                                                         const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
                                                         setReferenceNumber(noEmojis);
                                                     }}
+                                                    onFocus={(e) => scrollInputIntoView(e)}
                                                 />
 
 
@@ -4559,6 +4616,8 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         if (value) {
                                                             setAdvanceAmount("");
                                                             setAdvanceError("");
+                                                            setExtraCharges([]);
+                                                            setOpenDropdownId(null)
                                                         }
                                                     }}
                                                 />
@@ -4581,6 +4640,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     setAdvanceAmount(onlyNum);
                                                     setAdvanceError("");
                                                 }}
+                                                onFocus={(e) => scrollInputIntoView(e)}
                                             />
                                             {/* <TextInput
                                                 style={styles.input}
@@ -4650,10 +4710,12 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                     placeholder="Enter reason"
 
                                                                     value={item.title}
-                                                                    onFocus={() => {
+                                                                    onFocus={(e) => {
                                                                         setOpenDropdownId(null);
-                                                                        scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                                                                        // scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                                                                        scrollInputIntoView(e)
                                                                     }}
+
 
                                                                     // onChangeText={(t) => updateTitle(item.id, t)}
                                                                     onChangeText={(t) => {
@@ -4681,9 +4743,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                     placeholder="Enter amount"
                                                                     keyboardType="numeric"
                                                                     value={item.amount}
-                                                                    onFocus={() => {
+                                                                    onFocus={(e) => {
                                                                         setOpenDropdownId(null);
-                                                                        scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+                                                                        scrollInputIntoView(e)
+                                                                        // scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
                                                                     }}
 
                                                                     onChangeText={(t) => {
@@ -4801,6 +4864,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     setCheckinRentalAmount(onlyNum);
                                                     setRentalError("");
                                                 }}
+                                                onFocus={(e) => scrollInputIntoView(e)}
 
                                             />
                                             {rentalError && (
@@ -4891,6 +4955,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                                 );
                                                                                 setCustomRentError("");
                                                                             }}
+                                                                            onFocus={(e) => scrollInputIntoView(e)}
                                                                         />
 
                                                                         <TouchableOpacity
@@ -5594,6 +5659,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                             text.replace(/[^A-Za-z\s]/g, "")
                                                         );
                                                     }}
+                                                    onFocus={(e) => scrollInputIntoView(e)}
 
                                                 />
 
@@ -5632,7 +5698,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                             onChangeText={(text) => {
                                                                 updateGuardian(index, "relationship", text);
                                                             }}
-
+                                                            onFocus={(e) => scrollInputIntoView(e)}
                                                             style={{ flex: 1 }}
                                                         />
                                                         <Image
@@ -5709,6 +5775,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                 setOccupationErr("");
                                                                 setFormErr("");
                                                             }}
+                                                            onFocus={(e) => scrollInputIntoView(e)}
                                                             style={{ flex: 1 }}
                                                         />
 
@@ -5792,6 +5859,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                 text.replace(/[^0-9]/g, "")
                                                             )
                                                         }
+                                                        onFocus={(e) => scrollInputIntoView(e)}
                                                         style={{ flex: 1 }}
                                                     />
                                                 </View>
@@ -5858,10 +5926,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                             onChangeText={(t) => {
 
                                                 const cleaned = t.replace(/[^A-Za-z\s]/g, "");
-
                                                 setCompanyName(cleaned);
-
+                                                setCompanyError("");
                                             }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
 
                                         />
 
@@ -5912,6 +5980,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                 onPress={() => {
                                                                     setEmploymentStatus(item);
                                                                     setEmploymentOpen(false);
+                                                                    setEmploymentError("");
                                                                 }}>
                                                                 <Text style={styles.optionText}>{item.label}</Text>
                                                             </TouchableOpacity>
@@ -5960,6 +6029,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                 onPress={() => {
                                                                     setJobRole(item);
                                                                     setJobRoleOpen(false);
+                                                                    setJobRoleError("");
                                                                 }}>
                                                                 <Text style={styles.optionText}>{item.label}</Text>
                                                             </TouchableOpacity>
@@ -5979,7 +6049,9 @@ export default function AddTenantNewform({ navigation, route }) {
                                             onChangeText={(t) => {
                                                 const cleaned = t.replace(/[^A-Za-z\s]/g, "");
                                                 setWorkLocations(cleaned);
+                                                setWorkLocationError("");
                                             }}
+                                                 onFocus={(e) => scrollInputIntoView(e)} 
 
                                         />
                                         {workLocationError ? <ErrorMessage message={workLocationError} /> : null}
@@ -6021,6 +6093,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                 onPress={() => {
                                                                     setShiftType(item);
                                                                     setShiftOpen(false);
+                                                                    setShiftTypeError("");
                                                                 }}>
                                                                 <Text style={styles.optionText}>{item.label}</Text>
                                                             </TouchableOpacity>
@@ -6045,10 +6118,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         setStartTime(formatTimeInput(text))
                                                         setStartTimeError("")
                                                     }
-
                                                     }
                                                     keyboardType="number-pad"
                                                     placeholder="00:00 AM"
+                                                         onFocus={(e) => scrollInputIntoView(e)} 
                                                 />
 
                                                 <Image
@@ -6072,6 +6145,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     }
                                                     keyboardType="number-pad"
                                                     placeholder="00:00 PM"
+                                                         onFocus={(e) => scrollInputIntoView(e)} 
                                                 />
 
                                                 <Image

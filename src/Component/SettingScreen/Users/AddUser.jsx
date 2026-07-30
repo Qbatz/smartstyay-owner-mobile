@@ -48,6 +48,9 @@ const [selectedCountry, setSelectedCountry] = useState({
   label: "India",
 });
 
+ const isSubmittingRef = useRef(false);
+
+
 
 const countryList = [
   { label: "India", code: "+91" },
@@ -193,6 +196,11 @@ const countryList = [
 
     }
 
+     if (isSubmittingRef.current) return;
+        isSubmittingRef.current = true;
+
+        try {
+
 
     if (!editData) {
       const payload = {
@@ -255,6 +263,12 @@ const countryList = [
       setEmailError(res.data?.emailStatus);
       setMobileError(res.data?.mobileStatus);
     }
+
+  }
+   finally {
+            isSubmittingRef.current = false;
+        }
+
   };
 
 
@@ -572,7 +586,14 @@ const countryList = [
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.addBtn} onPress={handleAddUser}>
+              <TouchableOpacity
+               style={[
+                            styles.addBtn,
+                            isSubmittingRef.current && {
+                                opacity: 0.5,
+                            },
+                        ]}
+              onPress={handleAddUser}>
                 <Text style={styles.addText}>{editData ? "Update" : "Add"}</Text>
               </TouchableOpacity>
             </View>
