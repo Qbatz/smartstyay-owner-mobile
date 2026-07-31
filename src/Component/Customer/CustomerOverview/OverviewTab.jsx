@@ -85,6 +85,10 @@ export default function OverviewTab({ customerDetails,
   } = useHasPermission("Customers");
   console.log(canWriteTenant)
 
+  const {
+    canWriteModule: canWriteAmenities,
+  } = useHasPermission("Amenities");
+
   console.log("amenitiesAllData", amenitiesAllData)
 
   const [docTab, setDocTab] = useState("KYC");
@@ -264,8 +268,8 @@ export default function OverviewTab({ customerDetails,
 
   const DraftTenant = status === "DRAFT"
 
-  const disableFinancialEdit = 
-  
+  const disableFinancialEdit =
+
     status === "BOOKED" ||
     status === "VACATED" ||
     status === "NOTICE" ||
@@ -288,6 +292,13 @@ export default function OverviewTab({ customerDetails,
     customerDetails?.jobDetails?.workLocation ||
     customerDetails?.jobDetails?.shiftType ||
     customerDetails?.jobDetails?.shiftTiming;
+
+    const { shiftStartTime, shiftEndTime } = customerDetails?.jobDetails || {};
+
+const shiftTiming =
+  shiftStartTime && shiftEndTime
+    ? `${shiftStartTime} - ${shiftEndTime}`
+    : "N/A";
 
 
   return (
@@ -327,8 +338,13 @@ export default function OverviewTab({ customerDetails,
                 </View>
               </View>
 
-              <TouchableOpacity style={[styles.pendingBtn, customerDetails?.customerCurrentStatus == "BOOKED" && { opacity: 0.4 }]}
-                disabled={customerDetails?.customerCurrentStatus == "BOOKED" ? true : false}
+              <TouchableOpacity 
+              style={[styles.pendingBtn, (customerDetails?.customerCurrentStatus == "BOOKED" || !canWriteTenant) && { opacity: 0.4 }]}
+                // disabled={customerDetails?.customerCurrentStatus == "BOOKED" ? true : false}
+                disabled={
+                  customerDetails?.customerCurrentStatus == "BOOKED" ||
+                  !canWriteTenant
+                }
                 onPress={handleshowkycsheet}>
                 <Text style={styles.pendingBtnText}>
                   See Pending Actions
@@ -346,8 +362,8 @@ export default function OverviewTab({ customerDetails,
               {
                 (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
                   <TouchableOpacity
-                    disabled={!canUpdateTenant}
-                    style={!canUpdateTenant && { opacity: 0.4 }}
+                    disabled={!canUpdateTenant || !isSubscriptionAllow}
+                    style={(!canUpdateTenant || !isSubscriptionAllow) && { opacity: 0.4 }}
                     onPress={handleEdit}>
                     <Image source={EditIcon} style={styles.editIcon} />
                   </TouchableOpacity>
@@ -389,6 +405,26 @@ export default function OverviewTab({ customerDetails,
                 <Image source={Phone} style={styles.detailIcon} />
                 <Text style={styles.detailValue}>
                   +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"}
+                </Text>
+              </View>
+            </View>
+
+             <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>ID Proof</Text>
+              <View style={styles.valueWithIcon}>
+                {/* <Image source={Mail} style={styles.detailIcon} /> */}
+                <Text style={styles.detailValue}>
+                 {customerDetails?.idProofType || "N/A"}
+                </Text>
+              </View>
+            </View>
+
+             <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Document No</Text>
+              <View style={styles.valueWithIcon}>
+                {/* <Image source={Mail} style={styles.detailIcon} /> */}
+                <Text style={styles.detailValue}>
+                 {customerDetails?.idProofNo || "N/A"}
                 </Text>
               </View>
             </View>
@@ -467,8 +503,9 @@ export default function OverviewTab({ customerDetails,
 
                 (customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
                   <TouchableOpacity
-                    disabled={!canUpdateTenant}
-                    style={!canUpdateTenant && { opacity: 0.4 }}
+                    // disabled={!canUpdateTenant}
+                    disabled={!canUpdateTenant || !isSubscriptionAllow}
+                    style={(!canUpdateTenant || !isSubscriptionAllow) && { opacity: 0.4 }}
                     onPress={handleAdressEdit}>
                     <Image source={EditIcon} style={styles.editIcon} />
                   </TouchableOpacity>
@@ -982,7 +1019,11 @@ export default function OverviewTab({ customerDetails,
                               />
                             </TouchableOpacity>
                             <TouchableOpacity
-                              disabled={!isSubscriptionAllow || !doc?.canDelete}
+                              // disabled={!isSubscriptionAllow || !doc?.canDelete}
+                              disabled={
+                                !canDeleteTenant || !doc?.canDelete ||
+                                !isSubscriptionAllow
+                              }
                               onPress={() => {
                                 setDeleteDocumentId(doc.documentId);
                                 setDeletePopup(true);
@@ -991,7 +1032,9 @@ export default function OverviewTab({ customerDetails,
                                 source={require("../../../Assets/Images/trash.png")}
                                 style={[
                                   styles.actionIcon,
-                                  (!isSubscriptionAllow || !doc?.canDelete) && { opacity: 0.4 }
+                                  (!canDeleteTenant ||
+                                    !isSubscriptionAllow ||
+                                    !doc?.canDelete) && { opacity: 0.4 }
                                 ]}
                               />
                             </TouchableOpacity>
@@ -1074,7 +1117,11 @@ export default function OverviewTab({ customerDetails,
                               </TouchableOpacity>
 
                               <TouchableOpacity
-                                disabled={!isSubscriptionAllow}
+                                // disabled={!isSubscriptionAllow}
+                                disabled={
+                                  !canDeleteTenant ||
+                                  !isSubscriptionAllow
+                                }
                                 onPress={() => {
                                   setDeleteDocumentId(doc.documentId);
                                   setDeletePopup(true);
@@ -1083,7 +1130,7 @@ export default function OverviewTab({ customerDetails,
                                   source={require("../../../Assets/Images/trash.png")}
                                   style={[
                                     styles.actionIcon,
-                                    (!isSubscriptionAllow) && { opacity: 0.4 }
+                                    (!canDeleteTenant || !isSubscriptionAllow) && { opacity: 0.4 }
                                   ]}
                                 />
                               </TouchableOpacity>
@@ -1116,7 +1163,12 @@ export default function OverviewTab({ customerDetails,
                   styles.uploadFabInside,
                   (!isSubscriptionAllow || disabledocEdit) && { opacity: 0.4 }
                 ]}
-                disabled={disableAssignBtn}
+                // disabled={disableAssignBtn}
+                disabled={
+                  disableAssignBtn ||
+                  !canWriteTenant ||
+                  !isSubscriptionAllow
+                }
                 onPress={HandleAddKycDocument}
 
               >
@@ -1133,7 +1185,12 @@ export default function OverviewTab({ customerDetails,
                   styles.uploadFabInside,
                   (!isSubscriptionAllow || disabledocEdit) && { opacity: 0.4 }
                 ]}
-                disabled={disableAssignBtn}
+                // disabled={disableAssignBtn}
+                disabled={
+                  disableAssignBtn ||
+                  !canWriteTenant ||
+                  !isSubscriptionAllow
+                }
                 onPress={pickFiles}
 
               >
@@ -1191,16 +1248,25 @@ export default function OverviewTab({ customerDetails,
             <View style={styles.sectionHeaderRowgur}>
               <Text style={styles.sectionTitle}>Parent / Guardian Details</Text>
               {hasContacts && contacts.length === 1 && (
-                <TouchableOpacity onPress={() => handleshowAdditionalContact(contacts?.[0])} disabled>
+                <TouchableOpacity onPress={() => handleshowAdditionalContact(contacts?.[0])} disabled
+                //  disabled={
+                //   disableAssignBtn ||  disabledocEdit  || 
+                //   !canUpdateTenant || !isSubscriptionAllow
+                // }
+                >
                   <Image source={EditIcon} style={styles.editSmallIcon} />
                 </TouchableOpacity>)}
               {hasContacts && contacts.length > 0 && (
                 <TouchableOpacity
                   style={[
                     styles.addSmallBtn,
-                    (!isSubscriptionAllow || disabledocEdit) && { opacity: 0.4 }
+                    (!isSubscriptionAllow || disabledocEdit || !canWriteTenant || disableAssignBtn) && { opacity: 0.4 }
                   ]}
-                  disabled={disableAssignBtn}
+                  // disabled={disableAssignBtn}
+                  disabled={
+                    disableAssignBtn || disabledocEdit ||
+                    !canWriteTenant || !isSubscriptionAllow
+                  }
                   // style={styles.addSmallBtn}
                   onPress={handleshowAdditionalContact}>
                   <Image source={AddIcon} style={{ height: 13, width: 13 }} />
@@ -1219,9 +1285,17 @@ export default function OverviewTab({ customerDetails,
                 <TouchableOpacity
                   style={[
                     styles.addSmallBtn,
-                    (!isSubscriptionAllow || disabledocEdit) && { opacity: 0.4 }
+                    (!isSubscriptionAllow || disabledocEdit || !canWriteTenant || disableAssignBtn) && { opacity: 0.4 }
                   ]}
-                  disabled={disableAssignBtn}
+                  // disabled={
+                  //   disableAssignBtn ||
+                  //   !canWriteTenant
+                  // }
+                  disabled={
+                    disableAssignBtn || disabledocEdit ||
+                    !canWriteTenant || !isSubscriptionAllow
+                  }
+                  // disabled={disableAssignBtn}
                   //  style={styles.addSmallBtn} 
                   onPress={handleshowAdditionalContact}>
                   <Image source={AddIcon} style={{ height: 13, width: 13 }} />
@@ -1334,6 +1408,7 @@ export default function OverviewTab({ customerDetails,
               {hasJobDetails && (
                 <TouchableOpacity
                   disabled={!canUpdateTenant || disableAssignBtn}
+
                   style={(!canUpdateTenant || disableAssignBtn) && { opacity: 0.4 }}
                   onPress={handleshowJobDetails}
                 >
@@ -1358,9 +1433,13 @@ export default function OverviewTab({ customerDetails,
 
 
                   <TouchableOpacity
-                    style={[styles.addNowBtn, disableAssignBtn && { opacity: 0.4 }]}
+                    style={[styles.addNowBtn, (disableAssignBtn || !canWriteTenant) && { opacity: 0.4 }]}
                     onPress={handleshowJobDetails}
-                    disabled={disableAssignBtn}
+                    // disabled={disableAssignBtn}
+                    disabled={
+                      disableAssignBtn ||
+                      !canWriteTenant
+                    }
                   >
                     <Text style={styles.addNowText}>
                       Add Now
@@ -1428,10 +1507,7 @@ export default function OverviewTab({ customerDetails,
                   <View style={styles.valueWithIcon}>
                     {/* <Image source={Phone} style={styles.detailIcon} /> */}
                     <Text style={styles.detailValue}>
-                      {customerDetails?.jobDetails?.shiftTiming &&
-                        customerDetails?.jobDetails?.shiftTiming !== "null:null"
-                        ? customerDetails.jobDetails.shiftTiming
-                        : "N/A"}
+                      {shiftTiming}
                     </Text>
                   </View>
                 </View>
@@ -1451,11 +1527,11 @@ export default function OverviewTab({ customerDetails,
               <TouchableOpacity
                 style={[
                   styles.assignBtn,
-                  (disableAssignBtn || !canWriteTenant || !isSubscriptionAllow) && { opacity: 0.4 }
+                  (disableAssignBtn || !canWriteAmenities || !isSubscriptionAllow) && { opacity: 0.4 }
                 ]}
                 disabled={
                   disableAssignBtn ||
-                  !canWriteTenant ||
+                  !canWriteAmenities ||
                   !isSubscriptionAllow
                 }
                 onPress={handleShowAmenities}

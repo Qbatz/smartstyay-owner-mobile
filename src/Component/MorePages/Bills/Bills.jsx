@@ -4730,16 +4730,14 @@ export default function BillsDesign({ route }) {
                         <Text style={styles.popupText}>Download</Text>
                       </TouchableOpacity> */}
 
-                      <TouchableOpacity
-                        // style={[styles.popupRow, !canUpdateReceipt && { opacity: 0.4 }]}
-                        // disabled={!canUpdateReceipt}
+                      {/* <TouchableOpacity
                         style={[styles.popupRow, { opacity: 0.4 }]}
                         disabled
                         onPress={handleEditReceipt}>
                         <Image source={EditIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Edit</Text>
                       </TouchableOpacity>
-                      <View style={styles.menuDivider} />
+                      <View style={styles.menuDivider} /> */}
 
 
                       <TouchableOpacity
