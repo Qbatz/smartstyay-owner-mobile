@@ -6,6 +6,7 @@ import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
+import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 export default function BillTab({ customerDetails, ShowBillsDetails }) {
   const invoiceList = customerDetails?.invoiceResponseList || [];
@@ -89,10 +90,13 @@ export default function BillTab({ customerDetails, ShowBillsDetails }) {
     <>
 
 
-      <View style={{ flex: 1 }}>
-        <ScrollView showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }} >
-          {invoiceList.map((item, index) => (
+<View style={{ flex: 1 }}>
+  {invoiceList.length > 0 ? (
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 120 }}
+    >
+     {invoiceList.map((item, index) => (
             <TouchableOpacity key={index} style={styles.row}
               onPress={() => handleOpenBillDetails(item)}
             >
@@ -142,9 +146,73 @@ export default function BillTab({ customerDetails, ShowBillsDetails }) {
 
             </TouchableOpacity>
           ))}
+    </ScrollView>
+  ) : (
+     <View style={styles.emptyContainer}>
+      <Image source={EmptyState} style={styles.emptyImage} />
+      <Text style={styles.emptySubTitle}>
+        No bills have been generated yet.
+      </Text>
+    </View>
+  )}
+</View>
+
+      {/* <View style={{ flex: 1 }}>
+        <ScrollView showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }} >
+          {invoiceList.map((item, index) => (
+            <TouchableOpacity key={index} style={styles.row}
+              onPress={() => handleOpenBillDetails(item)}
+            >
+              <View>
+                <Text style={styles.billId}>{item.invoiceNumber}</Text>
+
+                <View style={styles.subRow}>
+                  <Text style={styles.billType}>{item.invoiceType}</Text>
+
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      item.paymentStatus === "Paid"
+                        ? styles.paidBadge
+                        : styles.overdueBadge,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statusText,
+                        item.paymentStatus === "Paid"
+                          ? styles.paidText
+                          : styles.overdueText,
+                      ]}
+                    >
+                      {item.paymentStatus}
+                    </Text>
+                  </View>
+
+                </View>
+                {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                  <Text style={styles.dueLabel}>Outstanding</Text>
+                )}
+              </View>
+
+              <View style={styles.rightBox}>
+                <Text style={styles.amount}>₹{item.totalAmount}</Text>
+                <Text style={styles.date}>on {item.dueDate}</Text>
+                {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                  <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
+                )}
+              </View>
+
+
+
+            </TouchableOpacity>
+          ))}
         </ScrollView>
 
-      </View>
+      </View> */}
+
+
       {/* <BillDetailsSheet
   visible={BillDetailshow}
   onClose={() => setBillDetailsShow(false)}
@@ -287,4 +355,32 @@ const styles = StyleSheet.create({
     marginTop: 4,
     fontFamily: "Gilroy-Semibold",
   },
+emptyContainer: {
+  flex: 1,
+  height: "100%",
+  justifyContent: "center",
+  alignItems: "center",
+  paddingHorizontal: 20,
+},
+
+emptyImage: {
+  width: 180,
+  height: 180,
+  resizeMode: "contain",
+},
+
+emptyTitle: {
+  marginTop: 16,
+  fontSize: 18,
+  fontFamily: "Gilroy-Semibold",
+  color: "#111827",
+},
+
+emptySubTitle: {
+  marginTop: 6,
+  fontSize: 14,
+  fontFamily: "Gilroy-Medium",
+  color: "#6B7280",
+  textAlign: "center",
+},
 });
