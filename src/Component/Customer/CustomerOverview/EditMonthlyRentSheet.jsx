@@ -168,6 +168,8 @@ export default function EditRentalAmountSheet({
     setError("");
     setRentError("")
     setDateError("")
+    setEffectiveMonth(null); 
+    setShowMonthPicker(false); 
     onClose();
   };
 
@@ -579,6 +581,7 @@ export default function EditRentalAmountSheet({
                           .startOf("month");
 
                         setEffectiveMonth(date.toDate());
+                        setDateError("")
                         setShowMonthPicker(false);
                       }}
                     >

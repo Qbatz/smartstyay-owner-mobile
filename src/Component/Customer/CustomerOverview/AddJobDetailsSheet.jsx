@@ -30,6 +30,8 @@ export default function JobDetailsSheet({
     const { UpdateJobDetails } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
 
+    const scrollRef = useRef(null);
+
     const [firstName, setFirstName] = useState("")
     const [lastName, setLastName] = useState("")
     const [mobile, setMobile] = useState("")
@@ -473,7 +475,7 @@ export default function JobDetailsSheet({
 
     // const handleUpdate = async () => {
 
-       
+
 
     //     const currentPayload = {
     //         employmentStatus: employmentStatus?.value || "",
@@ -512,7 +514,7 @@ export default function JobDetailsSheet({
     //     }
 
 
-       
+
 
     //     const res = await UpdateJobDetails(
     //         activeHostelId,
@@ -546,68 +548,68 @@ export default function JobDetailsSheet({
 
     const handleUpdate = async () => {
 
-    const currentPayload = {
-        employmentStatus: employmentStatus?.value || "",
-        organizationName: companyName.trim(),
-        role: jobRole?.value || "",
-        workLocation: worklocation.trim(),
-        shiftType: shiftType?.value || "",
-        shiftStartsFrom: startTime ? formatTime(startTime) : "",
-        shiftEndsAt: endTime ? formatTime(endTime) : "",
-    };
-
-    // ✅ only compare in Edit mode
-    if (hasJobDetails) {
-        const oldPayload = {
-            employmentStatus: customerDetails?.jobDetails?.employmentStatus || "",
-            organizationName: customerDetails?.jobDetails?.organizationName || "",
-            role: customerDetails?.jobDetails?.role || "",
-            workLocation: customerDetails?.jobDetails?.workLocation || "",
-            shiftType: customerDetails?.jobDetails?.shiftType || "",
-            shiftStartsFrom: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start
-                ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start)
-                : "",
-            shiftEndsAt: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end
-                ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end)
-                : "",
+        const currentPayload = {
+            employmentStatus: employmentStatus?.value || "",
+            organizationName: companyName.trim(),
+            role: jobRole?.value || "",
+            workLocation: worklocation.trim(),
+            shiftType: shiftType?.value || "",
+            shiftStartsFrom: startTime ? formatTime(startTime) : "",
+            shiftEndsAt: endTime ? formatTime(endTime) : "",
         };
 
-        if (JSON.stringify(currentPayload) === JSON.stringify(oldPayload)) {
-            setMessage("No changes detected");
-            setModalType("warning");
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 1200);
-            return;
+        // ✅ only compare in Edit mode
+        if (hasJobDetails) {
+            const oldPayload = {
+                employmentStatus: customerDetails?.jobDetails?.employmentStatus || "",
+                organizationName: customerDetails?.jobDetails?.organizationName || "",
+                role: customerDetails?.jobDetails?.role || "",
+                workLocation: customerDetails?.jobDetails?.workLocation || "",
+                shiftType: customerDetails?.jobDetails?.shiftType || "",
+                shiftStartsFrom: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start
+                    ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start)
+                    : "",
+                shiftEndsAt: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end
+                    ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end)
+                    : "",
+            };
+
+            if (JSON.stringify(currentPayload) === JSON.stringify(oldPayload)) {
+                setMessage("No changes detected");
+                setModalType("warning");
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 1200);
+                return;
+            }
         }
-    }
 
-    const res = await UpdateJobDetails(
-        activeHostelId,
-        customerDetails.customerId,
-        currentPayload
-    );
+        const res = await UpdateJobDetails(
+            activeHostelId,
+            customerDetails.customerId,
+            currentPayload
+        );
 
-    if (res?.success) {
-        setMessage(hasJobDetails ? "Updated Successfully" : "Saved Successfully");
-        setModalType("success");
-        setShowSuccess(true);
+        if (res?.success) {
+            setMessage(hasJobDetails ? "Updated Successfully" : "Saved Successfully");
+            setModalType("success");
+            setShowSuccess(true);
 
-        setTimeout(() => {
-            setShowSuccess(false);
-            onSuccess?.();
-            closeSheet();
-        }, 1500);
+            setTimeout(() => {
+                setShowSuccess(false);
+                onSuccess?.();
+                closeSheet();
+            }, 2000);
 
-    } else {
-        setMessage(res?.message || "Job Details update Failed");
-        setModalType("error");
-        setShowSuccess(true);
+        } else {
+            setMessage(res?.message || "Job Details update Failed");
+            setModalType("error");
+            setShowSuccess(true);
 
-        setTimeout(() => {
-            setShowSuccess(false);
-        }, 1200);
-    }
-};
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 1200);
+        }
+    };
 
 
 
@@ -649,6 +651,7 @@ export default function JobDetailsSheet({
                             keyboardShouldPersistTaps="handled"
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{ paddingBottom: 30 }}
+                            ref={scrollRef}
                         >
                             <View style={styles.handle} />
                             <Text style={styles.title}>
@@ -805,6 +808,14 @@ export default function JobDetailsSheet({
                                         setWorkLocationError("");
                                     }
                                 }}
+                                onFocus={() => {
+                                    setTimeout(() => {
+                                        scrollRef.current?.scrollTo({
+                                            y: 250,
+                                            animated: true,
+                                        });
+                                    }, 150);
+                                }}
 
                             />
                             {workLocationError ? <ErrorMessage message={workLocationError} /> : null}
@@ -875,6 +886,7 @@ export default function JobDetailsSheet({
 
                                     <Image source={ClockIcon} style={styles.clockIcon} />
                                 </TouchableOpacity>
+
 
                                 <TouchableOpacity
                                     style={styles.shiftInput}

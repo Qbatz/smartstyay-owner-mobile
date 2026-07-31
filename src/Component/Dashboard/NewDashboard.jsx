@@ -578,6 +578,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
       navigation.navigate("BookingCheckIn", {
         customerId: item?.tenantId,
         customer: res?.data,
+        isDashboardCheckIn: true,
       });
     }
 
