@@ -100,6 +100,7 @@ import FilterBottomSheet from "../Reports/FilterBottomSheet";
 import RetainerFiltersheet from "./RetainerFilterSheet"
 import { useHideTabbarOnScroll }
   from "../../../Utils/useHideTabbarOnScroll";
+import { useCustomer } from "../../../Context/CustomerContext";
 
 
 
@@ -126,6 +127,7 @@ export default function BillsDesign({ route }) {
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const {customersList}=useCustomer()
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -406,7 +408,7 @@ export default function BillsDesign({ route }) {
     ) {
       GetAllBillDetails(activeHostelId);
     }
-  }, [activeTab, activeHostelId]);
+  }, [activeTab, activeHostelId,customersList]);
 
   useEffect(() => {
     if (activeHostelId) {

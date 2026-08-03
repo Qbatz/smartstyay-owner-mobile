@@ -24,7 +24,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
     const navigation = useNavigation();
     const { retainerCustomerList } = useContext(CustomerContext)
     const { activeHostelId } = useContext(CommonContexts);
-    const {createRetainderInvoice, loading} =useContext(BillContext)
+    const {createRetainderInvoice, loading,GetAdvanceBookingBills} =useContext(BillContext)
 
     const [paidDate, setPaidDate] = useState("")
     const [openPaidDate, setOpenPaidDate] = useState(false);
@@ -248,6 +248,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
             setModalType("success")
             setTimeout(() => {
                 setShowSuccessModal(false)
+                GetAdvanceBookingBills(activeHostelId);
                 navigation.goBack();
                 setTimeout(() => {
                     setIsSubmitClicked(false)

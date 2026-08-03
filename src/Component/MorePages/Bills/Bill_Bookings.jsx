@@ -560,7 +560,7 @@ const BillBookings = ({setShowTabBar , onBookingDetailsShow, showRetainerFilters
 
         )}
 
-         {!loading && Advancebookingbills?.length > 0 && (
+         {!loading &&  (
                   <>
                   
   
