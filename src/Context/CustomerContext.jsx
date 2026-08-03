@@ -17,6 +17,7 @@ export const CustomerProvider = ({ children }) => {
   const loginContext = useContext(LoginContexts)
   const [retainerList, setReatinerList] = useState([])
   const [retainerBankList, setRetainerBankList]=useState([])
+  const [customersList,setCustomersList]=useState([])
 
 
   const [ParticularcustomerDetails, setParticularCustomerDetails] = useState(null);
@@ -51,6 +52,7 @@ export const CustomerProvider = ({ children }) => {
       );
 
       setLoading(false);
+      setCustomersList(response?.data)
       console.log("res", response?.data);
 
 
@@ -2222,7 +2224,7 @@ const UpdateJobDetails = async (hostelId, customerId, payload) => {
         getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,
         handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn , UpdateAdditionalDraftDetails, UpdateJobDetails,retainerCustomerList,
-        retainerList,retainerBankList
+        retainerList,retainerBankList,customersList
       }}
     >
       {children}
