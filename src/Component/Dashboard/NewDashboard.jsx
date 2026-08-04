@@ -87,13 +87,14 @@ import {
   XAxis, StackedBarChart
 } from "react-native-svg-charts";
 import { getHostels } from "../../Action/HostelAction";
-import { retriveData } from "../../Utils/Storage";
+import { retriveData, storeData } from "../../Utils/Storage";
 import SuccessModal from "../../ToastFile/ToastPage";
 import SubscriptionFullScreenAlert from "./SubscriptionBannerAlert";
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 import SubscriptionExpiredCard from "./SubscriptionBannerAlert";
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 import { BillContext } from "../../Context/BillsContext";
+import { PROFILEDETAILS } from "../../Utils/Constant";
 
 
 
@@ -358,6 +359,10 @@ export default function DashboardNewDesign({ initialParams, route }) {
   useEffect(() => {
     if (profileDetails?.roleId) {
       GetRoleBasedPermission(profileDetails?.roleId);
+
+      if(profileDetails){
+        storeData(PROFILEDETAILS, JSON.stringify(profileDetails))
+      }
     }
   }, [profileDetails?.roleId]);
 

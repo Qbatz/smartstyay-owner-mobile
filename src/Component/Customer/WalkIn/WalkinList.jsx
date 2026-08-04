@@ -9,7 +9,11 @@ import {
   Modal,
   TextInput,
   BackHandler,
-  TouchableWithoutFeedback
+  TouchableWithoutFeedback,
+  Pressable,
+  Animated,
+  PanResponder,
+  NativeModules
 } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import PhoneIcon from "../../../Assets/Images/call.png";
@@ -24,6 +28,16 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 import Checkin from "../../../Assets/Images/add-circle.png";
 import Loader from "../../Loader/Loader";
+import WhatsAppIcon from "../../../Assets/Images/whatsapp.png";
+import BookingIcon from "../../../Assets/Images/bill.png";
+import CheckIcon from "../../../Assets/Images/TenantPayment.png";
+import EmailIcon from "../../../Assets/Images/sms.png";
+import EnquiredIcon from "../../../Assets/Images/home-link.png";
+
+
+
+
+
 
 
 import DatePicker from "react-native-ui-datepicker";
@@ -31,7 +45,7 @@ import dayjs from "dayjs";
 import { useLayoutEffect } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 
-export default function WalkinScreen({  handleWalkinFilter, navigation, searchText }) {
+export default function WalkinScreen({ handleWalkinFilter, navigation, searchText }) {
   const { getCustomersByHostel, deleteCustomer, loading } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
 
@@ -48,6 +62,8 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
     canUpdateModule: canUpdateTenant,
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
+
+  const {CommonModule}=NativeModules;
 
   const [walkinCustomers, setWalkinCustomers] = useState([]);
   const [showFilter, setShowFilter] = useState(false);
@@ -66,10 +82,61 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
-  const [isDeleteClicked,setIsDeleteClicked]=useState(false);
+  const [isDeleteClicked, setIsDeleteClicked] = useState(false);
+  const [showCustomerModal, setShowCustomerModal] = useState(false)
+  const [selectedCustomer, setSelectedCustomer] = useState(false)
+  const [bottomSheetMenu, setBottomSheetMenu] = useState(false)
+
+  const translateY = useRef(new Animated.Value(500)).current;
+
+  useEffect(() => {
+    if (showCustomerModal) {
+      Animated.timing(translateY, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showCustomerModal]);
+
+  const closeModalWithAnimation = () => {
+    Animated.timing(translateY, {
+      toValue: 500,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowCustomerModal(false);
+      setBottomSheetMenu(false)
+    });
+  };
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => {
+        return Math.abs(gesture.dy) > 5;
+      },
+      onPanResponderMove: (_, gesture) => {
+        if (gesture.dy > 0) {
+          translateY.setValue(gesture.dy);
+        }
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dy > 120) {
+          closeModalWithAnimation();
+        } else {
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
+        }
+      },
+    })
+  ).current;
+
   const DeleteMenu = () => {
     setDeleteTenants(true)
     setMenuVisible(false)
+    setBottomSheetMenu(false)
   }
   const CloseDelete = () => {
     setDeleteTenants(false)
@@ -77,36 +144,36 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
   const handleDeleteCustomer = async () => {
     if (!deleteUserId) return;
 
-    if(isDeleteClicked) return;
+    if (isDeleteClicked) return;
 
-    try{
+    try {
       setIsDeleteClicked(true)
 
-    const res = await deleteCustomer(activeHostelId, deleteUserId);
-    console.log("tenantDelete",res)
+      const res = await deleteCustomer(activeHostelId, deleteUserId);
+      console.log("tenantDelete", res)
 
-    if (res.success) {
-      setModalType("success");
-      setMessage("Deleted Successful");
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-        setDeleteTenants(false);
-        setMenuVisible(false);
-        setIsDeleteClicked(false)
-      }, 800);
+      if (res.success) {
+        setModalType("success");
+        setMessage("Deleted Successful");
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          setDeleteTenants(false);
+          setMenuVisible(false);
+          setIsDeleteClicked(false)
+        }, 800);
 
-      fetchWalkinCustomers(); // refresh
-    } else {
-      setModalType("error");
-      setMessage(res?.message);
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-        setIsDeleteClicked(false);
-      }, 1500);
-    }
-    }catch(error){
+        fetchWalkinCustomers(); // refresh
+      } else {
+        setModalType("error");
+        setMessage(res?.message);
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          setIsDeleteClicked(false);
+        }, 1500);
+      }
+    } catch (error) {
       console.log(error)
       setIsDeleteClicked(false)
     }
@@ -156,23 +223,27 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
     setMenuVisible(false)
   }
 
-   const handleShowNewTenantCheckin = () => {
+  const handleShowNewTenantCheckin = () => {
     // navigation.navigate("TenantCheckin")
+   setShowCustomerModal(false)
     navigation.navigate("NewTenantCheckIn", {
-      customerId: selectedItem.customerId,
-      customer: selectedItem, // full details (optional)
+      customerId: selectedItem?.customerId || selectedCustomer?.customerId,
+      customer: selectedItem || selectedCustomer, 
     });
 
     setMenuVisible(false)
+    setBottomSheetMenu(false)
   }
 
   const handleShowAddBooking = () => {
     // navigation.navigate("AddBooking")
+     setShowCustomerModal(false)
     navigation.navigate("AddBooking", {
-      selectedItem: selectedItem,
+      selectedItem: selectedItem || selectedCustomer,
     });
 
     setMenuVisible(false)
+    setBottomSheetMenu(false)
   }
 
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
@@ -240,6 +311,39 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
     });
   };
 
+   const handleCallPhone = (mobile) => {
+    console.log("mobile", mobile)
+    if (mobile) {
+      CommonModule.makeCall(mobile)
+    }
+
+  }
+
+  const handleOpenCustomerSheet = (customerDetails) => {
+    setShowCustomerModal(true)
+    setSelectedCustomer(customerDetails)
+
+  }
+
+  const openBottomSheetMenu = (event, item) => {
+    const { pageX, pageY } = event.nativeEvent;
+
+    // SAME ITEM → toggle
+    // if (bottomSheetMenu && selectedItem?.customerId === item.customerId) {
+    //   setMenuVisible(false);
+    //   return;
+    // }
+    setDeleteUserId(selectedCustomer.customerId)
+    // DIFFERENT ITEM → move menu
+    setMenuPosition({
+      x: pageX - 200,
+      y: pageY - 350,
+    });
+
+    // setSelectedItem(item);
+    setBottomSheetMenu(!bottomSheetMenu);
+  };
+
 
   if (!canReadWalkin && !loading) {
     return (
@@ -299,36 +403,39 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
               {/* <View style={styles.avatarBox}>
                 <Image source={UserIcon} style={styles.avatar} />
               </View> */}
-              <View style={styles.avatarBox}>
-                {item?.profilePic ? (
-                  <Image
-                    source={{ uri: item.profilePic }}
-                    style={styles.avatarImage}
-                  />
-                ) : (
-                  <View style={styles.initialCircle}>
-                    <Text style={styles.initialText}>
-                      {item?.initials || item?.fullName?.charAt(0)}
-                    </Text>
-                  </View>
-                )}
-              </View>
-
-
-              <View style={{ flex: 1 }}>
-                <Text
-                  style={[styles.name, { flexShrink: 1 }]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {item?.fullName}
-                </Text>
-
-                <View style={styles.phoneRow}>
-                  <Image source={PhoneIcon} style={styles.phoneIcon} />
-                  <Text style={styles.phoneText}>+ {item.countryCode} {item.mobile}</Text>
+              <TouchableOpacity onPress={() => handleOpenCustomerSheet(item)}
+                style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                <View style={styles.avatarBox}>
+                  {item?.profilePic ? (
+                    <Image
+                      source={{ uri: item.profilePic }}
+                      style={styles.avatarImage}
+                    />
+                  ) : (
+                    <View style={styles.initialCircle}>
+                      <Text style={styles.initialText}>
+                        {item?.initials || item?.fullName?.charAt(0)}
+                      </Text>
+                    </View>
+                  )}
                 </View>
-              </View>
+
+
+                <View style={{ flex: 1 }}>
+                  <Text
+                    style={[styles.name, { flexShrink: 1 }]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {item?.fullName}
+                  </Text>
+
+                  <View style={styles.phoneRow}>
+                    <Image source={PhoneIcon} style={styles.phoneIcon} />
+                    <Text style={styles.phoneText}>+ {item.countryCode} {item.mobile}</Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
 
               <View style={styles.right}>
                 <TouchableOpacity onPress={(e) => openMenu(e, item)}>
@@ -366,7 +473,7 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
                 <Text style={styles.menuText}>Check-In</Text>
               </TouchableOpacity> */}
 
-               <TouchableOpacity
+              <TouchableOpacity
                 style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
                 disabled={!canWriteWalkin}
                 onPress={handleShowNewTenantCheckin}>
@@ -621,7 +728,7 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  style={[styles.deleteBtn , isDeleteClicked && {opacity:0.4}]}
+                  style={[styles.deleteBtn, isDeleteClicked && { opacity: 0.4 }]}
                   disabled={isDeleteClicked}
                   onPress={handleDeleteCustomer}
                 >
@@ -630,6 +737,228 @@ export default function WalkinScreen({  handleWalkinFilter, navigation, searchTe
               </View>
 
             </View>
+          </View>
+        </Modal>
+
+
+        <Modal visible={showCustomerModal} transparent animationType="fade">
+          <View style={styles.overlay}>
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={closeModalWithAnimation}
+            />
+
+            <Animated.View
+              // onStartShouldSetResponder={() => true}
+              style={[styles.sheet, { transform: [{ translateY }] }]}
+              {...panResponder.panHandlers}
+            >
+              <View style={styles.handle} />
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <Text style={styles.title}>Tenant Details</Text>
+
+                <TouchableOpacity onPress={(e) => openBottomSheetMenu(e, selectedCustomer)}>
+                  <Image source={MenuDots} style={{ width: 34, height: 34 }} />
+                </TouchableOpacity>
+
+                {bottomSheetMenu && (
+                  <TouchableOpacity
+                    activeOpacity={1}
+                    style={styles.btmSheetMenuOverlay}
+                    onPressOut={() =>{ setBottomSheetMenu(false)}}
+                  >
+                    <View
+                      style={[
+                        styles.menuBox,
+                        {
+                          top: menuPosition.y,
+                          left: menuPosition.x,
+                        },
+                      ]}
+                    >
+
+                      <TouchableOpacity
+                        style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
+                        disabled={!canWriteWalkin}
+                        onPress={handleShowNewTenantCheckin}>
+                        <Image source={Checkin} style={[styles.menuIcon, { tintColor: "#1E45E1", }]} />
+                        <Text style={styles.menuText}>Check-In</Text>
+                      </TouchableOpacity>
+
+
+
+                      <TouchableOpacity
+                        style={[styles.menuRow, !canWriteWalkin && { opacity: 0.4 }]}
+                        disabled={!canWriteWalkin}
+                        onPress={handleShowAddBooking}>
+                        <Image source={require("../../../Assets/Images/ReAssign.png")} style={styles.menuIcon} />
+                        <Text style={styles.menuText}>Add booking</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={[styles.menuRow, !canDeleteWalkin && { opacity: 0.4 }]}
+                        disabled={!canDeleteWalkin}
+                        onPress={DeleteMenu}>
+                        <Image source={require("../../../Assets/Images/trash.png")} style={styles.menuIcon} />
+                        <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              </View>
+
+
+
+
+              <View style={{ borderWidth: 0.6, marginTop: 18, borderColor: '#EEEEEE' }} />
+
+
+              {/* <View style={{flexDirection:'row',alignItems:'center'}}>
+                        {selectedCustomer?.profilePi ? <Image source={{uri:selectedCustomer?.profilePic}} style={{width:20,height:20}}/>
+                        :<View>
+                          <Text>{selectedCustomer?.initials}</Text>
+                        </View>}
+
+                        <View>
+                          <Text>{selectedCustomer?.fullName}</Text>
+
+                            <View style={{flexDirection:'row',alignItems:'center',marginTop:18}}>
+                              <View style={{flex:1}}>
+                                <View>
+                                  <Image source={CalendarIcon} style={{width:29,height:29}}/>
+                                  </View>
+                                  <Text>Call</Text>
+                              </View>
+
+                               <View style={{flex:1}}>
+                                <View>
+                                  <Image source={CalendarIcon} style={{width:29,height:29}}/>
+                                  </View>
+                                  <Text>Call</Text>
+                              </View>
+
+                               <View style={{flex:1}}>
+                                <View>
+                                  <Image source={CalendarIcon} style={{width:29,height:29}}/>
+                                  </View>
+                                  <Text>Call</Text>
+                              </View>
+
+                               <View style={{flex:1}}>
+                                <View>
+                                  <Image source={CalendarIcon} style={{width:29,height:29}}/>
+                                  </View>
+                                  <Text>Call</Text>
+                              </View>
+                          
+                          </View>
+
+                        </View>
+
+                      </View> */}
+
+              <View style={styles.profileRow}>
+
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                  {selectedCustomer?.profilePi ? <Image source={{ uri: selectedCustomer.profilePic }} style={styles.profileImg} /> :
+                    <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: '#eef1ff', justifyContent: 'center', alignItems: 'center' }}>
+                      <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>{selectedCustomer?.initials}</Text>
+                    </View>}
+
+                  <TouchableOpacity onPress={() => handleOverViewScrren(selectedCustomer)}
+                    style={{ marginLeft: 14 }}>
+                    <Text style={styles.profileName}>
+                      {selectedCustomer?.fullName}
+                    </Text>
+                  </TouchableOpacity>
+
+                </View>
+
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 18 }}>
+                  <View style={{ flex: 1, alignItems: 'center' }}>
+                    <TouchableOpacity onPress={()=>handleCallPhone(selectedCustomer?.mobile)}
+                    style={{
+                      width: 48, height: 48, borderRadius: 24, backgroundColor: '#F6F6F6',
+                      alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Image source={PhoneIcon} style={{ width: 29, height: 29, tintColor: '#4B4B4B' }} />
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 5 }}>Call</Text>
+                  </View>
+
+                  <View style={{ flex: 1, alignItems: 'center' }}>
+                    <TouchableOpacity style={{
+                      width: 48, height: 48, borderRadius: 24, backgroundColor: '#29FB611C',
+                      alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Image source={WhatsAppIcon} style={{ width: 29, height: 29 }} />
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 5 }}>Whatsapp</Text>
+                  </View>
+
+                  <View style={{ flex: 1, alignItems: 'center' }}>
+                    <TouchableOpacity onPress={handleShowAddBooking}
+                    style={{
+                      width: 48, height: 48, borderRadius: 24, backgroundColor: '#EFF2FF',
+                      alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Image source={BookingIcon} style={{ width: 29, height: 29, tintColor: '#1E45E1' }} />
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 5 }}>Booking</Text>
+                  </View>
+
+                  <View style={{ flex: 1, alignItems: 'center' }}>
+                    <TouchableOpacity onPress={handleShowNewTenantCheckin}
+                    style={{
+                      width: 48, height: 48, borderRadius: 24, backgroundColor: '#EFF2FF',
+                      alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Image source={CheckIcon} style={{ width: 29, height: 29 }} />
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 5 }}>Check-in</Text>
+                  </View>
+
+                </View>
+              </View>
+
+              <View style={{ borderWidth: 0.8, marginTop: 22, borderColor: '#EEEEEE' }} />
+
+              <Text style={styles.btmSheetlabel}>Email ID</Text>
+              <View style={styles.infoRow}>
+                <Image source={EmailIcon} style={styles.infoIcon} />
+                <Text style={{ fontFamily: "Gilroy-Medium", fontSize: 14 }}>{selectedCustomer?.emailId || "N/A"}</Text>
+              </View>
+
+              <Text style={styles.btmSheetlabel}>Contact Number</Text>
+              <View style={styles.infoRow}>
+                <Image source={PhoneIcon} style={styles.infoIcon} />
+                <Text style={{ fontFamily: "Gilroy-Medium", fontSize: 14 }}>{selectedCustomer?.mobileNo || "N/A"}</Text>
+              </View>
+
+              <Text style={styles.btmSheetlabel}>Enquired on</Text>
+              <View style={styles.infoRow}>
+                <Image source={EnquiredIcon} style={styles.infoIcon} />
+                <Text style={{ fontFamily: "Gilroy-Medium", fontSize: 14 }}>{selectedCustomer?.bookedAt || "N/A"}</Text>
+              </View>
+
+
+              <View style={{
+                borderWidth: 1, borderRadius: 20, paddingVertical: 10, alignItems: 'center',
+                justifyContent: 'center', marginTop: 20
+              }}>
+                <Text style={{ fontFamily: "Gilroy-Medium", fontSize: 15, color: '#4B4B4B' }}>Enquired</Text>
+              </View>
+
+
+            </Animated.View>
+
+            {/* ✅ outside click close (this should be behind sheet) */}
+            {/* <Pressable
+                      style={StyleSheet.absoluteFill}
+                      onPress={closeModalWithAnimation}
+                    /> */}
           </View>
         </Modal>
 
@@ -730,7 +1059,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: 12, flex: 1, width: "100%"
   },
 
   avatarBox: {
@@ -796,10 +1125,10 @@ const styles = StyleSheet.create({
 
   plus: { fontSize: 30, color: "#fff", marginTop: -3 },
 
-  overlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.3)",
-  },
+  // overlay: {
+  //   flex: 1,
+  //   backgroundColor: "rgba(0,0,0,0.3)",
+  // },
 
   filterCard: {
     position: "absolute",
@@ -841,6 +1170,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#444",
   },
+
 
   dropdownBox: {
     borderWidth: 1,
@@ -917,6 +1247,14 @@ const styles = StyleSheet.create({
 
 
   menuOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9999,
+  },
+  btmSheetMenuOverlay: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -1095,6 +1433,45 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontFamily: "Gilroy-Bold"
+  },
+  title: { fontSize: 20, fontFamily: "Gilroy-Semibold" },
+
+  profileRow: {
+    // flexDirection: "row",
+    marginTop: 20,
+    // flex: 1
+  },
+
+  profileImg: { width: 55, height: 55, borderRadius: 30 },
+  profileName: { fontSize: 20, fontFamily: "Gilroy-Medium", },
+  divider: {
+    height: 0.4,
+    backgroundColor: "#E5E7EB",
+    marginBottom: 4,
+    marginTop: 18
+  },
+  infoRow: { flexDirection: "row", alignItems: "center", marginTop: 4, },
+  infoIcon: { width: 16, height: 16, marginRight: 8 },
+  overlay: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingBottom: 0,   // ✅ extra gap avoid
+  },
+
+  sheet: {
+    backgroundColor: "#fff",
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 20,   // ✅ big padding remove
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+  },
+  btmSheetlabel: {
+    marginTop: 18,
+    marginBottom: 6,
+    fontSize: 12.6, fontFamily: 'Gilroy-Medium',
+    color: "#4B4B4B",
   },
 
 
