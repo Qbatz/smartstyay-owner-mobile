@@ -95,7 +95,7 @@ import CommonContext, { CommonContexts } from './src/Context/CommonContext'
 import PGContext from './src/Context/PGContext';
 import ComplaintProvider from "./src/Context/ComplaintContext";
 import { SettingProvider } from "./src/Context/SettingContext";
-import ExpensesProvider from "./src/Context/ExpensesContext"
+import ExpensesProvider, { ExpensesContext } from "./src/Context/ExpensesContext"
 import AmenityProvider from './src/Context/AmenityContext';
 import { CustomerProvider } from "./src/Context/CustomerContext";
 import VendorProvider from './src/Context/VendorContext';
@@ -109,7 +109,7 @@ import CreateMpin from "./src/Component/CreateAccount/CreatePin"
 import EnterMPin from "./src/Component/CreateAccount/EnterPin"
 import ConfirmMPin from "./src/Component/CreateAccount/ConfirmPin"
 import { retriveData } from './src/Utils/Storage';
-import { LOGGEDIN, USER_ID } from './src/Utils/Constant';
+import { LOGGEDIN, PROFILEDETAILS, USER_ID } from './src/Utils/Constant';
 import SuccessFlow from './src/SuccessFlow'
 import { initBaseUrl } from './src/Utils/Constant';
 import { Text, TextInput } from "react-native";
@@ -203,6 +203,7 @@ TextInput.defaultProps.allowFontScaling = false;
 function AppContent(props) {
   const loginContext = useContext(LoginContexts);
   const commonContext=useContext(CommonContexts);
+  const {setProfileDetails}=useContext(ExpensesContext);
 
   const Navigation = createStackNavigator();
   const [isLoggedIn,setIsLoggedIn]=useState()
@@ -269,6 +270,12 @@ function AppContent(props) {
     retriveData(USER_ID).then(result => {
       console.log(result)
       loginContext?.updateUserId(result)
+    })
+
+    retriveData(PROFILEDETAILS).then(r=>{
+      const profileDetails= r ? JSON.parse(r) : null;
+      console.log("profileDet",profileDetails)
+      setProfileDetails(profileDetails)
     })
       
 

@@ -49,7 +49,7 @@ import LogoutIcon from "../../../Assets/Images/Logout.png"
 import EmailLinkIcon from "../../../Assets/Images/maximize.png"
 import { removeData, storeData } from "../../../Utils/Storage";
 import { LoginContexts } from "../../../Context/LoginContext";
-import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../../Utils/Constant";
+import { ACCESS_TOKEN, LOGGEDIN, PROFILEDETAILS, USER_ID } from "../../../Utils/Constant";
 import YellowCrownIcon from "../../../Assets/Images/YellowCrownAdmin.png"
 import CrownIcon from "../../../Assets/Images/crown.png"
 import AdminResetPasswordSheet from "./AdminResetPasswordSheet"
@@ -675,7 +675,8 @@ export default function GeneralDetailsScreen({ navigation }) {
       await Promise.all([
         removeData(ACCESS_TOKEN),
         storeData(LOGGEDIN, "false"),
-        removeData(USER_ID)
+        removeData(USER_ID),
+        removeData(PROFILEDETAILS)
       ])
 
       
