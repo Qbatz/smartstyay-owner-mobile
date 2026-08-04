@@ -1,29 +1,37 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  ScrollView,
+  ScrollView, Image
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
-
-
+import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
+import DownArrow from "../../../Assets/Images/direction-down.png";
 
 export default function AddBankAccount() {
 
   const { activeHostelId } = useContext(CommonContexts);
-  const { bankList, addBanking, editBanking, errorMsg, getBankListByHostel } = useContext(BankingContext);
+  const { createBankAccount, responsiblePersonList, NewgetBankList ,
+    getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel } = useContext(BankingContext);
 
 
   const [accountType, setAccountType] = useState("bank")
 
   const navigation = useNavigation()
+
+  const [showAccountType, setShowAccountType] = useState(false);
+  const [showResponsibleperson, setShowResponsiblePerson] = useState(false);
+  const [cashaccountType, setCashAccountType] = useState(null)
+  const [responsibleperson, setResponsiblePerson] = useState(null)
+
+  const isApplyTriggeredRef = useRef(false);
 
 
   const [form, setForm] = useState({
@@ -45,6 +53,22 @@ export default function AddBankAccount() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
+
+  useEffect(() => {
+    if (activeHostelId) {
+      getResponsiblePersonList(activeHostelId);
+    }
+  }, [activeHostelId]);
+
+  const cashTypeOptions = [
+    { label: "Petty Cash", value: "PETTY_CASH" },
+    { label: "Office Cash", value: "OFFICE_CASH" },
+  ];
+
+  //   const responsibleOptions = users?.map(item => ({
+  //   label: `${item?.firstName ?? ""} ${item?.lastName ?? ""}`.trim(),
+  //   value: item?.userId,
+  // }));
 
 
   const bankNameRegex = /^[a-zA-Z.&\s]{3,50}$/;
@@ -106,6 +130,20 @@ export default function AddBankAccount() {
 
       if (!form.branch.trim())
         err.branch = "Please Enter Branch Name";
+
+      if (!form.branch.trim()) {
+        err.branch = "Please Enter Branch Name";
+      }
+
+      if (!form.ifsc.trim()) {
+        err.ifsc = "Please Enter IFSC Code";
+      } else if (form.ifsc.length !== 11) {
+        err.ifsc = "Please Enter Valid IFSC Code";
+      }
+
+      if (!form.accountCategory.trim()) {
+        err.accountCategory = "Please Enter Account Type";
+      }
     }
 
     if (accountType === "cash") {
@@ -135,36 +173,127 @@ export default function AddBankAccount() {
     setApiErr("");
   };
 
+  const resetBankFields = () => {
+    setForm((prev) => ({
+      ...prev,
+      bankName: "",
+      accountHolder: "",
+      accountNumber: "",
+      branch: "",
+      ifsc: "",
+      accountCategory: "",
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      bankName: "",
+      accountHolder: "",
+      accountNumber: "",
+      branch: "",
+      ifsc: "",
+      accountCategory: "",
+    }));
+  };
+
+  const resetCashFields = () => {
+    setForm((prev) => ({
+      ...prev,
+      cashType: "",
+      responsiblePerson: "",
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      cashType: "",
+      responsiblePerson: "",
+    }));
+  };
+
+  const resetCommonFields = () => {
+    setForm((prev) => ({
+      ...prev,
+      displayName: "",
+      openingBalance: "",
+      description: "",
+    }));
+
+    setErrors((prev) => ({
+      ...prev,
+      displayName: "",
+      openingBalance: "",
+    }));
+  };
+
   const handleCreate = async () => {
     if (!validate()) return;
 
-    const payload = {
-      accountType: accountType === "bank" ? "BANK" : "CASH",
-      accountName: form.displayName,
-      bankName: form.bankName,
-      accountHolderName: form.accountHolder,
-      accountNumber: form.accountNumber,
-      branchName: form.branch,
-      ifscCode: form.ifsc,
-      openingBalance: Number(form.openingBalance),
-      description: form.description,
-      cashAccountType: form.cashType,
-      responsiblePerson: form.responsiblePerson,
-    };
+    if (isApplyTriggeredRef.current) return
+    isApplyTriggeredRef.current = true
 
-    const res = await addBanking(activeHostelId, payload);
 
-    if (res?.success) {
-      setModalType("success");
-      setModalMessage("Account Created Successfully");
-      setShowSuccessModal(true);
+    try {
 
-      setTimeout(() => {
-        setShowSuccessModal(false);
-        navigation.goBack();
-      }, 1200);
-    } else {
-      setApiErr(res?.message);
+      const payload =
+        accountType === "bank"
+          ? {
+            holderName: form.accountHolder,
+            bankName: form.bankName,
+            displayName: form.displayName,
+            branchName: form.branch,
+            accountNo: form.accountNumber,
+            ifscCode: form.ifsc,
+            description: form.description,
+            isDefault: true,
+            accountType: "BANK",
+            bankAccountType: form.accountCategory,
+            openingBalance: Number(form.openingBalance),
+            cashAccountType: "",
+            responsiblePerson: "",
+          }
+          : {
+            holderName: "",
+            bankName: "",
+            displayName: form.displayName,
+            branchName: "",
+            accountNo: "",
+            ifscCode: "",
+            description: form.description,
+            isDefault: true,
+            accountType: "CASH",
+            bankAccountType: "",
+            openingBalance: Number(form.openingBalance),
+            cashAccountType: form.cashType,
+            responsiblePerson: form.responsiblePerson,
+          };
+
+      console.log("Payload =>", payload);
+
+      const res = await createBankAccount(activeHostelId, payload);
+
+      if (res.success) {
+        setModalType("success");
+        setModalMessage("Account Created Successfully");
+        setShowSuccessModal(true);
+        await NewgetBankList(activeHostelId);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          navigation.goBack();
+        }, 1200);
+      } else {
+        setModalType("error");
+        setModalMessage(res.message);
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1200);
+      }
+    }
+    catch (error) {
+      console.log(error);
+    } finally {
+      isApplyTriggeredRef.current = false;
     }
   };
 
@@ -181,8 +310,11 @@ export default function AddBankAccount() {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          {/* <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={{ fontSize: 22 }}>←</Text>
+          </TouchableOpacity> */}
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={ArrowLeft} style={styles.backIcon} />
           </TouchableOpacity>
 
           <Text style={styles.title}>Add New Account</Text>
@@ -201,32 +333,46 @@ export default function AddBankAccount() {
             Select Type <Text style={{ color: "red" }}>*</Text>
           </Text>
 
-          <View style={styles.radioRow}>
+          <View style={styles.accountTypeRow}>
+
             <TouchableOpacity
-              style={styles.radioItem}
-              onPress={() => setAccountType("bank")}
+              style={styles.accountTypeItem}
+              onPress={() => {
+                setAccountType("bank");
+                resetCashFields();
+                resetCommonFields();
+              }}
             >
-              <View
-                style={[
-                  styles.radio,
-                  accountType === "bank" && styles.radioActive,
-                ]}
-              />
-              <Text style={styles.radioText}>Bank Account</Text>
+              <View style={styles.radioOuter}>
+                {accountType === "bank" && (
+                  <View style={styles.radioInner} />
+                )}
+              </View>
+
+              <Text style={styles.accountTypeText}>
+                Bank Account
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.radioItem}
-              onPress={() => setAccountType("cash")}
+              style={styles.accountTypeItem}
+              onPress={() => {
+                setAccountType("cash");
+                resetBankFields();
+                resetCommonFields();
+              }}
             >
-              <View
-                style={[
-                  styles.radio,
-                  accountType === "cash" && styles.radioActive,
-                ]}
-              />
-              <Text style={styles.radioText}>Cash Account</Text>
+              <View style={styles.radioOuter}>
+                {accountType === "cash" && (
+                  <View style={styles.radioInner} />
+                )}
+              </View>
+
+              <Text style={styles.accountTypeText}>
+                Cash Account
+              </Text>
             </TouchableOpacity>
+
           </View>
 
           <Text style={styles.label}>Account Name / Display Name <Text style={{ color: "red" }}>*</Text></Text>
@@ -234,7 +380,14 @@ export default function AddBankAccount() {
             value={form.displayName}
             placeholder="Enter Account Name"
             style={styles.input}
-            onChangeText={(v) => handleChange("displayName", v)}
+
+
+            onChangeText={(v) =>
+              handleChange(
+                "displayName",
+                v.replace(/[^a-zA-Z.&\s]/g, "")
+              )
+            }
           />
 
           {errors.displayName && (
@@ -311,60 +464,232 @@ export default function AddBankAccount() {
 
               <Text style={styles.label}>Bank Branch <Text style={{ color: "red" }}>*</Text></Text>
               <TextInput
+                value={form.branch}
                 placeholder="Enter Branch"
                 style={styles.input}
+                onChangeText={(v) => handleChange("branch", v)}
               />
+
+              {errors.branch && (
+                <ErrorMessage message={errors.branch} />
+              )}
 
               <View style={styles.row}>
                 <View style={styles.half}>
-                  <Text style={styles.label}>IFSC Code</Text>
+                  <Text style={styles.label}>IFSC Code <Text style={{ color: "red" }}>*</Text></Text>
                   <TextInput
                     value={form.ifsc}
-                    placeholder="SBIN000000"
+                    placeholder="Enter Ifsc Code"
                     autoCapitalize="characters"
                     maxLength={11}
                     style={styles.input}
                     onChangeText={handleIfscChange}
                   />
+
+                  {errors.ifsc && (
+                    <ErrorMessage message={errors.ifsc} />
+                  )}
                 </View>
 
                 <View style={styles.half}>
-                  <Text style={styles.label}>Account Type</Text>
+                  <Text style={styles.label}>Account Type <Text style={{ color: "red" }}>*</Text></Text>
                   <TextInput
-                    placeholder="Current"
+                    value={form.accountCategory}
+                    placeholder="Enter Account Type"
                     style={styles.input}
+                    onChangeText={(v) =>
+                      handleChange(
+                        "accountCategory",
+                        v.replace(/[^a-zA-Z.&\s]/g, "")
+                      )
+                    }
+                  // onChangeText={(v) => handleChange("accountCategory", v)}
                   />
+
+                  {errors.accountCategory && (
+                    <ErrorMessage message={errors.accountCategory} />
+                  )}
                 </View>
               </View>
             </>
           ) : (
             <>
-              <Text style={styles.label}>Cash Account Type <Text style={{ color: "red" }}>*</Text></Text>
-              <TextInput
-                placeholder="Petty Cash"
-                style={styles.input}
-              />
 
-              <Text style={styles.label}>Responsible Person <Text style={{ color: "red" }}>*</Text></Text>
-              <TextInput
-                placeholder="Select User"
-                style={styles.input}
-              />
+
+              <View style={{ position: "relative" }}>
+                <Text style={styles.label}>
+                  Cash Account Type <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                </Text>
+
+                {/* INPUT */}
+                <TouchableOpacity
+                  style={styles.inputBox}
+                  onPress={() => {
+                    // setModeError("");
+                    setShowAccountType(v => !v);
+                  }}
+                >
+                  {/* <Text style={{ fontSize: 15 }}>
+                    {cashaccountType
+                      ? transactionOptions.find(o => o.value === cashaccountType)?.label
+                      : "Select Account Type "}
+                  </Text> */}
+                  <Text style={{ fontSize: 15 }}>
+                    {cashaccountType
+                      ? cashTypeOptions.find(x => x.value === cashaccountType)?.label
+                      : "Select Cash Type"}
+                  </Text>
+
+                  <Image
+                    source={DownArrow}
+                    style={{ width: 18, height: 18, tintColor: "#555" }}
+                  />
+                </TouchableOpacity>
+
+                {/* DROPDOWN */}
+                {showAccountType && (
+                  <View style={styles.transactiondropdown}>
+                    <ScrollView
+                      nestedScrollEnabled
+                      scrollEnabled={cashTypeOptions.length > 3}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {cashTypeOptions.map(opt => {
+                        const isSelected = cashaccountType === opt.value;
+
+                        return (
+                          <TouchableOpacity
+                            key={opt.value}
+                            style={[
+                              styles.dropdownRow,
+                              isSelected && styles.dropdownRowSelected,
+                            ]}
+                            onPress={() => {
+                              handleChange("cashType", opt.value);
+                              setCashAccountType(opt.value);
+                              setShowAccountType(false);
+                            }}
+                          >
+                            <Text
+                              style={
+                                isSelected
+                                  ? styles.dropdownTextSelected
+                                  : styles.dropdownText
+                              }
+                            >
+                              {opt.label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                )}
+
+                {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
+              </View>
+
+              <View style={{ position: "relative" }}>
+                <Text style={styles.label}>
+                  Responsible Person  <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                </Text>
+
+                {/* INPUT */}
+                <TouchableOpacity
+                  style={styles.inputBox}
+                  onPress={() => {
+                    // setModeError("");
+                    setShowResponsiblePerson(v => !v);
+                  }}
+                >
+
+                  <Text style={{ fontSize: 15 }}>
+                    {responsibleperson
+                      ? responsiblePersonList
+                        .find(x => x.userId === responsibleperson)
+                        ?.firstName +
+                      " " +
+                      (responsiblePersonList.find(
+                        x => x.userId === responsibleperson
+                      )?.lastName || "")
+                      : "Select Responsible Person"}
+                  </Text>
+
+                  <Image
+                    source={DownArrow}
+                    style={{ width: 18, height: 18, tintColor: "#555" }}
+                  />
+                </TouchableOpacity>
+
+                {/* DROPDOWN */}
+                {showResponsibleperson && (
+                  <View style={styles.transactiondropdown}>
+                    <ScrollView
+                      nestedScrollEnabled
+                      scrollEnabled={responsiblePersonList.length > 3}
+                      showsVerticalScrollIndicator={false}
+                    >
+                      {responsiblePersonList.map((item) => {
+                        const label = `${item.firstName ?? ""} ${item.lastName ?? ""}`.trim();
+                        const isSelected = responsibleperson === item.userId;
+
+                        return (
+                          <TouchableOpacity
+                            key={item.userId}
+                            style={[
+                              styles.dropdownRow,
+                              isSelected && styles.dropdownRowSelected,
+                            ]}
+                            onPress={() => {
+                              setResponsiblePerson(item.userId);
+
+                              handleChange("responsiblePerson", item.userId);
+
+                              setShowResponsiblePerson(false);
+                            }}
+                          >
+                            <Text
+                              style={
+                                isSelected
+                                  ? styles.dropdownTextSelected
+                                  : styles.dropdownText
+                              }
+                            >
+                              {label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                )}
+
+                {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
+              </View>
             </>
           )}
 
           <Text style={styles.label}>Current Opening Balance <Text style={{ color: "red" }}>*</Text></Text>
           <TextInput
             value={form.openingBalance}
-            placeholder="₹"
+            placeholder="Enter Amount"
             keyboardType="numeric"
             style={styles.input}
-            onChangeText={(v) =>
-              handleChange(
-                "openingBalance",
-                v.replace(/[^0-9.]/g, "")
-              )
-            }
+            // onChangeText={(v) =>
+            //   handleChange(
+            //     "openingBalance",
+            //     v.replace(/[^0-9.]/g, "")
+            //   )
+            // }
+            onChangeText={(v) => {
+              const value = v.replace(/[^0-9]/g, "");
+
+              if (value.length > 1 && value.startsWith("0")) {
+                return;
+              }
+
+              handleChange("openingBalance", value);
+            }}
           />
 
           {errors.openingBalance && (
@@ -383,7 +708,7 @@ export default function AddBankAccount() {
           <TextInput
             multiline
             numberOfLines={5}
-            placeholder="Describe the notes..."
+            placeholder="Enter the description"
             style={styles.textArea}
           />
 
@@ -392,7 +717,10 @@ export default function AddBankAccount() {
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.submitBtn} onPress={handleCreate}>
+            <TouchableOpacity
+              style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+              disabled={isApplyTriggeredRef.current}
+              onPress={handleCreate}>
               <Text style={styles.submitText}>
                 Create Account
               </Text>
@@ -533,4 +861,95 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Gilroy-Semibold"
   },
+  backIcon: { width: 20, height: 20, marginRight: 10 },
+  accountTypeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  accountTypeItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 35,
+  },
+
+  accountTypeText: {
+    marginLeft: 12,
+    fontSize: 16,
+    fontFamily: "Gilroy-Medium",
+    color: "#222",
+  },
+
+  radioOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    borderColor: "#2F5BFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  radioInner: {
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: "#2F5BFF",
+  },
+  inputBox: {
+    height: 50,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E2E2",
+    paddingHorizontal: 14,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    // marginBottom: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  dropdown: {
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    marginTop: 6,
+    maxHeight: 160,
+  },
+  transactiondropdown: {
+    position: "absolute",
+    top: 97,          // 👈 input height
+    left: 0,
+    right: 0,
+
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    zIndex: 9999,
+    elevation: 20,
+
+    maxHeight: 160,
+  },
+
+  dropdownRow: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F3F4F6",
+  },
+
+  dropdownRowSelected: {
+    backgroundColor: "#2563EB",
+  },
+
+  dropdownText: {
+    color: "#111",
+  },
+
+  dropdownTextSelected: {
+    color: "#fff",
+    fontWeight: "700",
+  },
+
 });

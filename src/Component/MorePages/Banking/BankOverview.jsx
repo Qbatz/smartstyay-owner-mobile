@@ -17,10 +17,12 @@ import LocationIcon from "../../../Assets/Images/LocationIcon.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import MobileIcon from "../../../Assets/Images/mobile.png";
 
+import { BankingContext } from "../../../Context/BankingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+
 import { Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { UseSetting } from "../../../Context/SettingContext";
-import { CommonContexts } from "../../../Context/CommonContext";
 import Loader from "../../../Component/Loader/Loader"
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -57,6 +59,18 @@ export default function BankOverview({ expense }) {
     const [currentPage, setCurrentPage] = useState(0);
 
     const horizontalRef = useRef(null);
+
+      const {  getBankOverview,
+      bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+            useContext(BankingContext);
+        const { activeHostelId } = useContext(CommonContexts);
+    
+
+//         useEffect(() => {
+//   if (activeHostelId && bankId) {
+//     getBankOverview(activeHostelId, bankId);
+//   }
+// }, [activeHostelId, bankId]);
 
 
     const handleSwipe = () => {
@@ -114,6 +128,7 @@ export default function BankOverview({ expense }) {
   value={"1.24"}
   suffix=" %"
 />
+
 
         </ScrollView>
     
