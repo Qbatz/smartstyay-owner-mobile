@@ -65,7 +65,8 @@ export default function BankDetails({  }) {
     const [activeTab, setActiveTab] = useState("Overview")
 
  
-    const { bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+    const {  getBankOverview,
+  bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
         useContext(BankingContext);
     const { activeHostelId } = useContext(CommonContexts);
 
