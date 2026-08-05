@@ -94,7 +94,7 @@ import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 import SubscriptionExpiredCard from "./SubscriptionBannerAlert";
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 import { BillContext } from "../../Context/BillsContext";
-import { PROFILEDETAILS } from "../../Utils/Constant";
+import { ACTIVEHOSTELID, PROFILEDETAILS } from "../../Utils/Constant";
 
 
 
@@ -360,7 +360,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
     if (profileDetails?.roleId) {
       GetRoleBasedPermission(profileDetails?.roleId);
 
-      if(profileDetails){
+      if (profileDetails) {
         storeData(PROFILEDETAILS, JSON.stringify(profileDetails))
       }
     }
@@ -930,14 +930,14 @@ export default function DashboardNewDesign({ initialParams, route }) {
   //   (h.hostelId ?? h.id) === activeHostelId
   // ) || hostelList[0];
 
-  const activeHostel =
-    hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
-    hostelList?.[0] ??
-    {};
+  const activeHostel = hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+    hostelList?.[0] ?? {};
   if (!activeHostel) {
     return null;
   }
+  console.log(hostelList)
   console.log(activeHostel)
+  console.log("sonbam", activeHostelId)
 
 
   const navigation = useNavigation();
@@ -952,12 +952,25 @@ export default function DashboardNewDesign({ initialParams, route }) {
   //   });
   // }, [login.getToken]);
 
+  const reorderHostels = (list, activeId) => {
+    const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
+    const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
+
+    return selected ? [selected, ...others] : list;
+  };
+
   useEffect(() => {
     getHostels().then((res) => {
-      console.log("res", res);
+      console.log("resactivehostel", res);
 
       if (res?.data) {
-        updateHostelList(res.data);
+        if (activeHostelId) {
+          const reordered = reorderHostels(res.data, activeHostelId);
+          updateHostelList(reordered);
+        } else {
+          updateHostelList(res.data);
+        }
+
       }
     });
   }, []);
@@ -966,6 +979,9 @@ export default function DashboardNewDesign({ initialParams, route }) {
   useEffect(() => {
     if (activeHostel) {
       setActiveHostelId(activeHostel?.hostelId)
+    }
+    if (activeHostel?.hostelId) {
+      storeData(ACTIVEHOSTELID, activeHostel.hostelId);
     }
   }, [activeHostel])
 
@@ -1138,12 +1154,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
   };
 
 
-  const reorderHostels = (list, activeId) => {
-    const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
-    const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
 
-    return selected ? [selected, ...others] : list;
-  };
 
   useEffect(() => {
     if (!activeHostelId) return;

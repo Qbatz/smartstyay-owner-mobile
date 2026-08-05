@@ -41,6 +41,7 @@ import Loader from "../Loader/Loader";
 import { useHasPermission } from "../../Utils/useHasPermission";
 import {useHideTabbarOnScroll} from "../../Utils/useHideTabbarOnScroll"
 import { UIContext } from "../Tabs/UIContext";
+import OtherHostelSwitchSheet from "../../Component/PG/OtherHostelSwitchSheet";
 
 
 
@@ -102,6 +103,7 @@ export default function PGPageFull({ route }) {
   const [bedUserDetails, setBedUserDetails] = useState("")
   const [showCheckout, setShowCheckout] = useState(false);
   const [inactiveTenant, setInactiveTenant] = useState(null);
+  const [showOtherHostelsSheet, setShowOtherHostelsSheet]=useState(false)
   // const [matchedBed, setMatchedBed] = useState(null);
 
   // const[showFloorBar,setShowFloorBar]=useState(true)
@@ -1121,7 +1123,9 @@ const handleFloorScroll = (event) => {
   {!!activeHostelId && (
     <>
       <View style={styles.leftSection}>
-        <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
+        <TouchableOpacity onPress={()=>setShowOtherHostelsSheet(true)}
+        // onPress={() => navigation.navigate("SettingsPG")}
+        >
           {activeHostelName?.mainImage ? (
             <Image
               source={{ uri: activeHostelName?.mainImage }}
@@ -1903,9 +1907,12 @@ const handleFloorScroll = (event) => {
         selectedBed={selectedBed}
         bookedItems={inactiveTenant}
         onBedAdded={handleBedAdded}
-
-
       />
+
+      <OtherHostelSwitchSheet
+      visible={showOtherHostelsSheet}
+      onClose={()=>setShowOtherHostelsSheet(false)}/>
+      
       <Modal
         transparent
         animationType="fade"

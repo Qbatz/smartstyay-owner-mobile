@@ -9,7 +9,7 @@ import { ExpensesContext } from "../../Context/ExpensesContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { removeData, storeData } from "../../Utils/Storage";
-import { ACCESS_TOKEN, LOGGEDIN, PROFILEDETAILS, USER_ID } from "../../Utils/Constant";
+import { ACCESS_TOKEN, ACTIVEHOSTELID, LOGGEDIN, PROFILEDETAILS, USER_ID } from "../../Utils/Constant";
 import Setting from '../../Assets/Images/setting.png';
 import Remove from '../../Assets/Images/remove.png';
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
@@ -125,7 +125,8 @@ export default function ProfileDrawer({ visible, onClose, setShowTabBar }) {
         removeData(ACCESS_TOKEN),
         storeData(LOGGEDIN, "false"),
         removeData(USER_ID),
-        removeData(PROFILEDETAILS)
+        removeData(PROFILEDETAILS),
+        removeData(ACTIVEHOSTELID)
       ])
 
 

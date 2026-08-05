@@ -29,6 +29,8 @@ import DeleteIcon from "../../../Assets/Images/trash.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 import Loader from "../../Loader/Loader";
+import { storeData } from "../../../Utils/Storage";
+import { ACTIVEHOSTELID } from "../../../Utils/Constant";
 
 export default function AddPG({ navigation, route }) {
 
@@ -440,6 +442,7 @@ export default function AddPG({ navigation, route }) {
         if (!hostelList || hostelList.length === 0) {
           const newHostelId = data[0].hostelId
           setActiveHostelId(newHostelId)
+          storeData(ACTIVEHOSTELID, newHostelId)
           updateHostelList(data)
         }
 
