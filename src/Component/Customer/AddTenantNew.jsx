@@ -3922,6 +3922,9 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 clearAllErrors();
                                                 resetCheckInState();
                                                 clearAllErrors();
+                                                setFloorSelected(null)
+                                                setRoomSelected(null)
+                                                setBedSelected(null)
 
                                             }}
 
@@ -3946,6 +3949,9 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 clearAllErrors();
                                                 resetBookingState();
                                                 clearAllErrors();
+                                                setFloorSelected(null)
+                                                setRoomSelected(null)
+                                                setBedSelected(null)
                                             }}
 
                                         >
@@ -6443,6 +6449,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                 <BedDetailsSheet
                     visible={showBedSheet}
+                    type={activeTab === "Booking" ? "booking" : "checkIn"}
                     joiningDate={joiningDate || checkJoiningDate}
                     onClose={() => setShowBedSheet(false)}
                     onSelect={(data) => {
