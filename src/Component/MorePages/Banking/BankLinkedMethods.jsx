@@ -11,9 +11,25 @@ import {
     ScrollView, Platform, FlatList
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { BankingContext } from "../../../Context/BankingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useRoute } from "@react-navigation/native";
+
 
 
 export default function BankLinkedMethods() {
+
+    const route = useRoute();
+    const { bankDetails, bankId } = route.params || {};
+
+    const { getBankMethod, bankMethod, } = useContext(BankingContext);
+    const { activeHostelId } = useContext(CommonContexts);
+
+    useEffect(() => {
+      if (activeHostelId && bankId) {
+        getBankMethod(activeHostelId, bankId);
+      }
+    }, [activeHostelId, bankId])
 
     const navigation = useNavigation()
 
@@ -130,7 +146,13 @@ export default function BankLinkedMethods() {
                     Linked Payment methods
                 </Text>
 
-                <TouchableOpacity style={styles.addBtn} onPress={()=> navigation.navigate("AddPaymentMethod")}>
+                <TouchableOpacity style={styles.addBtn} 
+               onPress={() =>
+  navigation.navigate("AddPaymentMethod", {
+    bankDetails,
+    bankId,
+  })
+}>
                     <Text style={styles.addBtnText}>
                         ＋ Add Method
                     </Text>
