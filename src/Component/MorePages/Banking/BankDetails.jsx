@@ -41,6 +41,9 @@ export default function BankDetails({  }) {
 
   const { bankDetails, bankId } = route.params || {};
 
+  console.log("bankDetails", bankDetails);
+  
+
     //   const {
     //     canWriteModule: canWriteExpense,
     //     canReadModule: canReadExpense,
@@ -193,21 +196,25 @@ export default function BankDetails({  }) {
 
     <View style={{ flex: 1, marginLeft: 18 }}>
       <Text style={styles.bankName}>
-        {/* {bankDetails?.bankName} */}
-        Canara Bank
+        {bankDetails?.bankName || bankDetails?.cashAccountType}
+        {/* Canara Bank */}
       </Text>
 
       <View style={styles.locationRow}>
-        <Text style={styles.accountType}>Bank Account</Text>
-
+        <Text style={styles.accountType}>{bankDetails?.accountType} Account</Text>
+       {bankDetails?.accountType === "BANK" && (
+        <>
         <Image
           source={Location}
           style={styles.smallLocation}
         />
 
         <Text style={styles.locationText}>
-          Navalur
+         {bankDetails?.branchName || "N/A"}
         </Text>
+        </>
+       ) }
+       
       </View>
     </View>
   </View>

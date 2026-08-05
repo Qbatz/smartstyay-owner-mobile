@@ -10,7 +10,9 @@ import {
     Image,
     ScrollView, Platform, FlatList
 } from "react-native";
-
+import { BankingContext } from "../../../Context/BankingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+import { useRoute } from "@react-navigation/native";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import AddBankIcon from "../../../Assets/Images/plusIcon.png";
@@ -38,6 +40,24 @@ import BackIcon from "../../../Assets/Images/Arrow_left.png";
 const BankLedger = () => {
 
      const [showFilter, setShowFilter] = useState(false);
+
+        const route = useRoute();
+       const { bankDetails, bankId } = route.params || {};
+
+     const {
+  getBankTransactionHistory,
+  bankTransactionHistory,
+} = useContext(BankingContext);
+ const { activeHostelId } = useContext(CommonContexts);
+
+useEffect(() => {
+  if (activeHostelId && bankId) {
+    getBankTransactionHistory(activeHostelId, bankId);
+  }
+}, [activeHostelId, bankId]);
+
+console.log("bankTransactionHistory", bankTransactionHistory);
+
 
     const transactions = [
         {
@@ -79,6 +99,24 @@ const BankLedger = () => {
         },
     ];
 
+    const formatDate = (date) => {
+  if (!date) return "-";
+
+  const d = new Date(date.replace(" ", "T"));
+
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const formatAmount = (amount) => {
+  return `₹ ${Number(amount || 0).toLocaleString("en-IN")}`;
+};
+
     return (
         <>
             <View style={styles.filterRow}>
@@ -102,9 +140,9 @@ const BankLedger = () => {
 
 
             <View style={{ paddingHorizontal: 20 }}>
-                <Text style={styles.todayText}>Today</Text>
+                {/* <Text style={styles.todayText}>Today</Text> */}
 
-                {transactions?.map((item) => (
+                {/* {transactions?.map((item) => (
                     <TouchableOpacity
                         key={item?.id}
                         style={styles.transactionCard}
@@ -162,7 +200,94 @@ const BankLedger = () => {
                         </View>
 
                     </TouchableOpacity>
-                ))}
+                ))} */}
+
+                {bankTransactionHistory?.length > 0 ? (
+  bankTransactionHistory.map((item) => {
+    const isCredit = item.type === "CREDIT";
+
+    return (
+      <TouchableOpacity
+        key={item.transactionId}
+        style={styles.transactionCard}
+      >
+        <View style={styles.leftSection}>
+          <View
+            style={[
+              styles.iconContainer,
+              {
+                backgroundColor: isCredit
+                  ? "#05964B"
+                  : "#EB2D2D",
+              },
+            ]}
+          >
+            <Image
+              source={isCredit ? ArrowUp : ArrowDown}
+              style={styles.transactionIcon}
+            />
+          </View>
+
+          <View style={{ marginLeft: 18 }}>
+            <Text style={styles.transactionTitle}>
+              {item.source || "Transaction"}
+            </Text>
+
+            <Text style={styles.transactionDate}>
+              {formatDate(item.createdAt)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.rightSection}>
+          <Text style={styles.transactionAmount}>
+            {formatAmount(item.transactionAmount)}
+          </Text>
+
+          <Image
+            source={
+              item.bankAccountType
+                ? BankIcon
+                : item.cashAccountType
+                ? CashIcon
+                : CardIcon
+            }
+            style={styles.smallIcon}
+          />
+        </View>
+      </TouchableOpacity>
+    );
+  })
+) : (
+  <View
+    style={{
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: 80,
+    }}
+    
+  >
+    <Image
+      source={require("../../../Assets/Images/Empty_state.png")}
+      style={{
+        width: 130,
+        height: 130,
+        resizeMode: "contain",
+      }}
+    />
+
+    <Text
+      style={{
+        marginTop: 15,
+        fontSize: 16,
+        color: "#6B7280",
+        fontFamily: "Gilroy-Medium",
+      }}
+    >
+      No Transactions Found
+    </Text>
+  </View>
+)}
             </View>
         </>
     )

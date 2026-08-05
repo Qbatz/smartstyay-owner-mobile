@@ -77,7 +77,7 @@ export default function AddTenantNewform({ navigation, route }) {
     // const tabBarHeight = useBottomTabBarHeight();
 
     const [currentStep, setCurrentStep] = useState(1);
-    const [activeTab, setActiveTab] = useState("Booking");
+    const [activeTab, setActiveTab] = useState("CheckIn");
     const [openDatePicker, setOpenDatePicker] = useState(false);
     const [purchaseDate, setPurchaseDate] = useState(null);
     dayjs.extend(customParseFormat);
@@ -714,7 +714,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                 setReferenceNumber("");
                 setCurrentStep(1);
-                setActiveTab("Booking");
+                setActiveTab("CheckIn");
             }
         }, [route?.params?.mode, route?.params?.customerId])
     );
@@ -1468,7 +1468,7 @@ export default function AddTenantNewform({ navigation, route }) {
         setOneTimePaymentCharges([]);
 
         setCurrentStep(1);
-        setActiveTab("Booking");
+        setActiveTab("CheckIn");
     };
 
     useEffect(() => {

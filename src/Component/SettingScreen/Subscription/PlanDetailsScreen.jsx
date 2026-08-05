@@ -187,15 +187,14 @@ export default function PlanDetailsScreen({ route, navigation }) {
                   </Text>
                 </TouchableOpacity>
 
-                {/* <TouchableOpacity
+                <TouchableOpacity
                   style={styles.primaryBtn}
-                  onPress={() => {
-                  }}
+                  onPress={() => handleDownloadInvoice(currentPlan?.subscriptionId)}
                 >
                   <Text style={styles.primaryBtnText}>
                     Get Invoice
                   </Text>
-                </TouchableOpacity> */}
+                </TouchableOpacity>
 
               </View>
 
@@ -415,7 +414,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
                   </Text>
 
                   <Text style={styles.billValue}>
-                    {item.paymentMethod}
+                    {item?.paymentMethod || "N/A"}
                   </Text>
                 </View>
 
