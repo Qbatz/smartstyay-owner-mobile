@@ -61,7 +61,7 @@ export default function NewBankingList() {
   dayjs.extend(customParseFormat)
 
   const { activeHostelId } = useContext(CommonContexts);
-  const { NewgetBankList, bankList, getAllTransactions , transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+  const {getBankOverview ,  NewgetBankList, bankList, getAllTransactions , transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
     useContext(BankingContext);
 
   console.log("bankinglist", bankList,);
@@ -998,11 +998,16 @@ export default function NewBankingList() {
 
                       <TouchableOpacity
                         key={item.id}
-                        onPress={() =>
+                        onPress={() => {
                           navigation.navigate("BankingDetails", {
                             bankDetails: item?.raw,
                             bankId: item?.id,
                           })
+                          console.log("item" , item?.raw,);
+                          
+                            getBankOverview(activeHostelId, item?.id);
+                        }
+
                         }
                         style={[
                           styles.bankCard,
@@ -1234,8 +1239,8 @@ export default function NewBankingList() {
 
   {mappedTransactions.map((item) => (
     <TouchableOpacity
-      // key={item.id}
-      key={item?.transactionId}
+      key={item?.id}
+      // key={item?.transactionId}
       style={styles.transactionCard}
       onPress={() => handleshowTransaction(item)}
     >
@@ -2800,7 +2805,7 @@ const styles = StyleSheet.create({
   },
 
   transactionTitle: {
-    fontSize: 18,
+    fontSize: 15,
     color: "#222",
     fontFamily: "Gilroy-SemiBold",
   },

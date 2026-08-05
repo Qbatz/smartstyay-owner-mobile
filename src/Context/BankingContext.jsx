@@ -8,6 +8,9 @@ export default function BankingProvider({ children }) {
   const [transactionList, setTransactionList] = useState([]);
   const [responsiblePersonList, setResponsiblePersonList] = useState([]);
   const [bankOverview, setBankOverview] = useState(null);
+  const [bankTransactionHistory, setBankTransactionHistory] = useState([]);
+  const [upiAppList, setUpiAppList] = useState([]);
+  const [bankMethod, setBankMethod] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -355,7 +358,219 @@ export default function BankingProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+
+  const getBankTransactionHistory = async (
+  hostelId,
+  bankId,
+  page = 1,
+  size = 20,
+  filters = {}
+) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const params = {
+      page,
+      size,
+      ...(filters.dateFilter && { dateFilter: filters.dateFilter }),
+      ...(filters.source && { source: filters.source }),
+      ...(filters.fromDate && { fromDate: filters.fromDate }),
+      ...(filters.toDate && { toDate: filters.toDate }),
+    };
+
+    const res = await axios.get(
+      `/v3/bank/allBankTransactions/${hostelId}/${bankId}`,
+      { params }
+    );
+
+    if (res.status === 200) {
+      console.log("Bank Transaction History =>", res.data);
+
+      const transactions =
+        res.data?.transactions ||
+        res.data?.list ||
+        res.data?.data ||
+        res.data ||
+        [];
+
+      setBankTransactionHistory(transactions);
+
+      return {
+        success: true,
+        data: transactions,
+        response: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch bank transactions",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const getQrCardTypeList = async (type = "UPI") => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get("/v3/bank/qrCardType", {
+      params: {
+        type,
+      },
+    });
+
+    if (res.status === 200) {
+      const list = Array.isArray(res.data) ? res.data : [];
+
+      setUpiAppList(list);
+
+      return {
+        success: true,
+        data: list,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch QR/Card Type list",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+}
+
+const createPaymentMethod = async (
+  hostelId,
+  bankId,
+  payload,
+  qrImage = null
+) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const formData = new FormData();
+
+    const params = {};
+
+    Object.keys(payload).forEach((key) => {
+      if (
+        payload[key] !== undefined &&
+        payload[key] !== null &&
+        payload[key] !== ""
+      ) {
+        params[key] = payload[key];
+      }
+    });
+
+    if (qrImage) {
+      formData.append("qrImage", {
+        uri: qrImage.uri,
+        type: qrImage.type || "image/jpeg",
+        name: qrImage.fileName || "qr.jpg",
+      });
+    }
+
+    const res = await axios.post(
+      `/v3/bank/bankMethod/${hostelId}/${bankId}`,
+      formData,
+      {
+        params,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to create payment method",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const getBankMethod = async (hostelId, bankId) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v3/bank/bankMethod/${hostelId}/${bankId}`
+    );
+
+    if (res.status === 200) {
+      const method = res.data || {};
+
+      setBankMethod(method);
+
+      return {
+        success: true,
+        data: method,
+      };
+    }
+    return {
+      success: false,
+      message: "Failed to fetch bank method",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -365,14 +580,20 @@ export default function BankingProvider({ children }) {
         transactionList,
         responsiblePersonList,
         bankOverview , 
+        bankTransactionHistory ,
+        upiAppList ,
+        bankMethod ,
         loading,
         errorMsg,
         getBankListByHostel,
         addBanking,
         editBanking,
         AddBankAmount,
-        createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions , getBankOverview
+        createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions , 
+        getBankOverview , getBankTransactionHistory , getQrCardTypeList , createPaymentMethod ,
+        getBankMethod
       }}
+
     >
       {children}
     </BankingContext.Provider>
