@@ -6449,7 +6449,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                 <BedDetailsSheet
                     visible={showBedSheet}
-                    type={activeTab === "Booking" ? "booking" : "checkIn"}
+                    type={activeTab === "CheckIn" ? "checkIn" : "booking"}
                     joiningDate={joiningDate || checkJoiningDate}
                     onClose={() => setShowBedSheet(false)}
                     onSelect={(data) => {
