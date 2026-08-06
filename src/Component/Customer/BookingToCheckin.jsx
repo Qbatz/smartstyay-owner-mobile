@@ -938,10 +938,10 @@ export default function BookingCheckIn({ navigation, route }) {
                                         // ]}
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn && styles.disabledSelect,
+                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
                                         ]}
                                         onPress={() => setFloorOpen(!floorOpen)}
-                                        disabled={isDashboardCheckIn}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
                                     // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
@@ -1004,9 +1004,9 @@ export default function BookingCheckIn({ navigation, route }) {
                                         // ]}
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn && styles.disabledSelect,
+                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
                                         ]}
-                                        disabled={isDashboardCheckIn}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
                                         onPress={() => {
                                             if (selectedFloor) {
                                                 setRoomOpen(!roomOpen);
@@ -1049,9 +1049,9 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <TouchableOpacity
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn && styles.disabledSelect,
+                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
                                         ]}
-                                        disabled={isDashboardCheckIn}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
                                         onPress={() => {
                                             if (selectedRoom) {
                                                 setBedOpen(!bedOpen);

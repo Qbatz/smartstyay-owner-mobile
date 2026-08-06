@@ -427,7 +427,7 @@ export default function CreateBill({ navigation }) {
 
 
 const filteredCustomers = customers.filter(
-  (item) => item.currentStatus !== "Booked"
+  (item) => !["Booked","Draft"].includes(item.currentStatus)
 );
 
   console.log("customers", customers);

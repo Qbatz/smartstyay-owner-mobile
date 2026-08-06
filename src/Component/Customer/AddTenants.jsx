@@ -11,11 +11,14 @@ import { CommonContexts } from "../../Context/CommonContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
+import dayjs from "dayjs";
+import { Calendar } from "react-native-calendars";
+import Loader from "../Loader/Loader";
 
 
 
 export default function AddTenant() {
-    const { addCustomer } = useCustomer();
+    const { addCustomer,loading } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
     const navigation = useNavigation();
     const [step, setStep] = useState(1);
@@ -32,7 +35,9 @@ export default function AddTenant() {
     const stateInputRef = useRef(null);
     const [countryOpen, setCountryOpen] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India", });
-    const [isSubmitClicked,setIsSubmitClicked]=useState(false)
+    const [isSubmitClicked, setIsSubmitClicked] = useState(false)
+    const [walkinDate, setWalkinDate] = useState(null)
+    const [showCalendar, setShowCalendar] = useState(false)
 
     const countryList = [
         { label: "India", code: "+91" },
@@ -202,6 +207,67 @@ export default function AddTenant() {
         { label: "Uttarakhand", value: "Uttarakhand" },
         { label: "West Bengal", value: "West Bengal" },
     ];
+
+    // const isDateDisabled = (dateString) => {
+    //     const current = dayjs(dateString, "YYYY-MM-DD");
+
+    //     if (!selectedCustomer) return true;
+
+    //     if (current.isAfter(dayjs(), "day")) return true;
+
+    //     if (selectedCustomer.actualJoining) {
+    //         const joining = dayjs(
+    //             selectedCustomer.actualJoining,
+    //             "DD/MM/YYYY"
+    //         );
+    //         if (current.isBefore(joining, "day")) return true;
+    //     }
+
+    //     return false;
+    // };
+    const isDateDisabled = (dateString) => {
+        const current = dayjs(dateString, "YYYY-MM-DD");
+
+        // Disable future dates only
+        if (current.isAfter(dayjs(), "day")) {
+            return true;
+        }
+
+        return false;
+    };
+
+    const handleDateChange = (dateString) => {
+        setWalkinDate(dateString);
+        // setDateErrmsg("");
+
+        // if (totalErrmsg) setTotalErrmsg("");
+    };
+
+
+    const markedDates = {};
+
+    for (let i = -365; i <= 365; i++) {
+        const d = dayjs().add(i, "day");
+        const key = d.format("YYYY-MM-DD");
+
+        if (isDateDisabled(key)) {
+            markedDates[key] = {
+                disabled: true,
+                disableTouchEvent: true,
+                customStyles: {
+                    container: {
+                        backgroundColor: "#F3F4F6",
+                        opacity: 0.4,
+                        borderRadius: 8,
+                    },
+                    text: {
+                        color: "#9CA3AF",
+                    },
+                },
+            };
+        }
+    }
+
     const filteredStateList = stateList
         .filter((s) =>
             s.label.toLowerCase().includes(stateQuery.toLowerCase())
@@ -271,7 +337,7 @@ export default function AddTenant() {
 
         }
 
-        if(isSubmitClicked) return;
+        if (isSubmitClicked) return;
 
         const payloads = {
 
@@ -300,38 +366,38 @@ export default function AddTenant() {
 
 
         console.log("FINAL PAYLOAD 👉", payloads);
-        try{
+        try {
             setIsSubmitClicked(true)
 
-        const res = await addCustomer(activeHostelId, payloads, selectedImage);
-        console.log(res)
+            const res = await addCustomer(activeHostelId, payloads, selectedImage);
+            console.log(res)
 
-        if (res?.data) {
-            setModalType("success");
-            setMessage(res.data?.message);
-            setShowSuccess(true);
-           
-            setTimeout(() => {
-                 navigation.goBack();
-                setShowSuccess(false);
-                setIsSubmitClicked(false)
-            }, 800);
-        }
+            if (res?.data) {
+                setModalType("success");
+                setMessage(res.data?.message);
+                setShowSuccess(true);
 
-        else {
-            const mobileMsg = res?.message?.mobileStatus || "";
-            const emailMsg = res?.message?.emailStatus || "";
-
-            setMobileError(mobileMsg);
-            setEmailError(emailMsg);
-            setIsSubmitClicked(false)
-
-            // 🔥 IMPORTANT: Go back to step 1 if basic error
-            if (mobileMsg || emailMsg) {
-                setStep(1);
+                setTimeout(() => {
+                    navigation.goBack();
+                    setShowSuccess(false);
+                    setIsSubmitClicked(false)
+                }, 800);
             }
-        }
-        }catch(error){
+
+            else {
+                const mobileMsg = res?.message?.mobileStatus || "";
+                const emailMsg = res?.message?.emailStatus || "";
+
+                setMobileError(mobileMsg);
+                setEmailError(emailMsg);
+                setIsSubmitClicked(false)
+
+                // 🔥 IMPORTANT: Go back to step 1 if basic error
+                if (mobileMsg || emailMsg) {
+                    setStep(1);
+                }
+            }
+        } catch (error) {
             console.log(error)
             setIsSubmitClicked(false)
         }
@@ -342,17 +408,18 @@ export default function AddTenant() {
 
     return (
         <>
+        {loading && <Loader/>}
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Image source={ArrowLeft} style={styles.backIcon} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Add New Tenant</Text>
+                    <Text style={styles.headerTitle}>Add Walkin</Text>
                 </View>
 
 
-                <View style={styles.stepContainer}>
+                {/* <View style={styles.stepContainer}>
 
                     <View style={styles.stepItem}>
                         <View
@@ -381,10 +448,10 @@ export default function AddTenant() {
                     </View>
 
                     {/* LINE IN CENTER */}
-                    <View style={styles.stepLine} />
+                {/* <View style={styles.stepLine} /> */}
 
-                    {/* STEP 2 */}
-                    <View style={styles.stepItem}>
+                {/* STEP 2 */}
+                {/* <View style={styles.stepItem}>
                         <View
                             style={[
                                 styles.stepCircle,
@@ -408,8 +475,8 @@ export default function AddTenant() {
                         >
                             Address Details
                         </Text>
-                    </View>
-                </View>
+                    </View> */}
+                {/* </View> */}
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
                     behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -426,11 +493,11 @@ export default function AddTenant() {
 
 
 
-                        {step === 1 && (
-                            <>
+                        {/* {step === 1 && (
+                            <> */}
 
 
-                                <View style={styles.profileSection}>
+                        {/* <View style={styles.profileSection}>
 
 
                                     <View style={styles.profileWrapper}>
@@ -439,13 +506,6 @@ export default function AddTenant() {
                                             style={styles.profileImage}
                                         />
 
-
-                                        {/* <TouchableOpacity style={styles.editIconWrapper}>
-                                    <Image
-                                        source={require("../../Assets/Images/edit.png")}
-                                        style={styles.editIcon}
-                                    />
-                                </TouchableOpacity> */}
                                         <TouchableOpacity style={styles.editIconWrapper} onPress={() => setShowProfileSheet(true)}>
                                             <Image
                                                 source={require("../../Assets/Images/edit.png")}
@@ -455,7 +515,6 @@ export default function AddTenant() {
 
                                     </View>
 
-                                    {/* RIGHT SIDE - TEXT */}
                                     <View style={styles.profileTextBox}>
                                         <Text style={styles.profileTitle}>Profile Photo</Text>
                                         <Text style={styles.profileSub}>
@@ -464,54 +523,54 @@ export default function AddTenant() {
                                         </Text>
                                     </View>
 
-                                </View>
+                                </View> */}
 
 
 
-                                <View style={styles.form}>
-                                    <Text style={styles.label}>First Name <Text style={{ color: "red" }}>*</Text></Text>
-                                    <TextInput
-                                        style={{
-                                            borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 8, paddingHorizontal: 12,
-                                            height: 50, fontSize: 14, backgroundColor: "#fff", marginBottom: 1,
-                                        }}
-                                        placeholder="Enter First Name"
-                                        placeholderTextColor="#A1A1A1"
-                                        value={basicDetails.firstName}
-                                        onChangeText={(t) => {
-                                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                                            setBasicDetails({ ...basicDetails, firstName: onlyLetters });
-                                            setNameError("")
-                                        }}
-                                    />
-                                    {nameError && <ErrorMessage message={nameError} type="error" />}
-                                    <Text style={[styles.label, { marginTop: 12 }]}>Last Name</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter Last Name"
-                                        placeholderTextColor="#A1A1A1"
-                                        value={basicDetails.lastName}
-                                        onChangeText={(t) => {
-                                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                                            setBasicDetails({ ...basicDetails, lastName: onlyLetters });
-                                        }}
-                                    />
+                        <View style={[styles.form,{marginTop:20}]}>
+                            <Text style={styles.label}>First Name <Text style={{ color: "red" }}>*</Text></Text>
+                            <TextInput
+                                style={{
+                                    borderWidth: 1, borderColor: "#D9D9D9", borderRadius: 8, paddingHorizontal: 12,
+                                    height: 50, fontSize: 14, backgroundColor: "#fff", marginBottom: 1,
+                                }}
+                                placeholder="Enter First Name"
+                                placeholderTextColor="#A1A1A1"
+                                value={basicDetails.firstName}
+                                onChangeText={(t) => {
+                                    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                    setBasicDetails({ ...basicDetails, firstName: onlyLetters });
+                                    setNameError("")
+                                }}
+                            />
+                            {nameError && <ErrorMessage message={nameError} type="error" />}
+                            <Text style={[styles.label, { marginTop: 12 }]}>Last Name</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter Last Name"
+                                placeholderTextColor="#A1A1A1"
+                                value={basicDetails.lastName}
+                                onChangeText={(t) => {
+                                    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                    setBasicDetails({ ...basicDetails, lastName: onlyLetters });
+                                }}
+                            />
 
-                                    <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
-                                    <View style={styles.mobileWrapper}>
-                                        <View style={{ position: "relative" }}>
-                                            <TouchableOpacity
-                                                style={styles.countryDropdown}
-                                                onPress={() => setCountryOpen(!countryOpen)}
-                                                activeOpacity={0.7}
-                                            >
-                                                <Text style={styles.countryCodeText}>
-                                                    {selectedCountry.code}
-                                                </Text>
-                                                <Image source={DownArrow} style={styles.countryArrow} />
-                                            </TouchableOpacity>
+                            <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
+                            <View style={styles.mobileWrapper}>
+                                <View style={{ position: "relative" }}>
+                                    <TouchableOpacity
+                                        style={styles.countryDropdown}
+                                        onPress={() => setCountryOpen(!countryOpen)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Text style={styles.countryCodeText}>
+                                            {selectedCountry.code}
+                                        </Text>
+                                        <Image source={DownArrow} style={styles.countryArrow} />
+                                    </TouchableOpacity>
 
-                                            {/* {countryOpen && (
+                                    {/* {countryOpen && (
     <>
       <TouchableWithoutFeedback onPress={() => setCountryOpen(false)}>
         <View style={styles.dropdownOverlay} />
@@ -537,103 +596,131 @@ export default function AddTenant() {
       </View>
     </>
   )} */}
-                                        </View>
-
-                                        <TextInput
-                                            style={styles.mobileInput}
-                                            keyboardType="number-pad"
-                                            placeholder="9876543210"
-                                            placeholderTextColor="#A1A1A1"
-                                            maxLength={10}
-                                            value={basicDetails.mobile}
-                                            onChangeText={(t) => {
-                                                setBasicDetails({
-                                                    ...basicDetails,
-                                                    mobile: t.replace(/[^0-9]/g, ""),
-                                                });
-                                                setMobileError("");
-                                            }}
-
-                                        />
-
-                                    </View>
-                                    {mobileError && <ErrorMessage message={mobileError} type="error" />}
-
-
-                                    <Text style={[styles.label, { marginTop: 12 }]}>Email ID</Text>
-                                    <TextInput
-                                        style={styles.input}
-                                        placeholder="Enter Email ID"
-                                        placeholderTextColor="#A1A1A1"
-                                        value={basicDetails.email}
-                                        keyboardType="email-address"
-                                        autoCapitalize="none"
-                                        onChangeText={(text) => {
-                                            const sanitized = text
-                                                .toLowerCase()
-                                                .replace(/[^a-z0-9@._+-]/g, "").replace(/\.{2,}/g,".");
-
-                                            setBasicDetails(prev => ({ ...prev, email: sanitized }));
-
-                                            if (!sanitized) {
-                                                setEmailError("");
-                                            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(sanitized)) {
-                                                setEmailError("Enter a valid email address");
-                                            } else {
-                                                setEmailError("");
-                                            }
-                                        }}
-                                    />
-
-                                    {emailError && <ErrorMessage message={emailError} type="error" />}
                                 </View>
 
+                                <TextInput
+                                    style={styles.mobileInput}
+                                    keyboardType="number-pad"
+                                    placeholder="9876543210"
+                                    placeholderTextColor="#A1A1A1"
+                                    maxLength={10}
+                                    value={basicDetails.mobile}
+                                    onChangeText={(t) => {
+                                        setBasicDetails({
+                                            ...basicDetails,
+                                            mobile: t.replace(/[^0-9]/g, ""),
+                                        });
+                                        setMobileError("");
+                                    }}
 
-                                <View style={styles.btnRow}>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.secondaryBtn,
+                                />
 
-                                        ]}
-
-                                        onPress={handleCreateTenant}
-                                        disabled={isSubmitClicked}  >
-                                        <Text
-                                            style={[
-                                                styles.secondaryText
-
-                                            ]}
-                                        >
-                                            Save Info
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.primaryBtn,
-                                            !isBasicValid && styles.primaryBtnDisabled
-                                        ]}
-                                        disabled={!isBasicValid}
-                                        onPress={() => setStep(2)}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.primaryText,
-                                                !isBasicValid && styles.primaryTextDisabled
-                                            ]}
-                                        >
-                                            Next
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
+                            </View>
+                            {mobileError && <ErrorMessage message={mobileError} type="error" />}
 
 
-                            </>
-                        )}
+                            <Text style={[styles.label, { marginTop: 12 }]}>Email ID</Text>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Enter Email ID"
+                                placeholderTextColor="#A1A1A1"
+                                value={basicDetails.email}
+                                keyboardType="email-address"
+                                autoCapitalize="none"
+                                onChangeText={(text) => {
+                                    const sanitized = text
+                                        .toLowerCase()
+                                        .replace(/[^a-z0-9@._+-]/g, "").replace(/\.{2,}/g, ".");
+
+                                    setBasicDetails(prev => ({ ...prev, email: sanitized }));
+
+                                    if (!sanitized) {
+                                        setEmailError("");
+                                    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(sanitized)) {
+                                        setEmailError("Enter a valid email address");
+                                    } else {
+                                        setEmailError("");
+                                    }
+                                }}
+                            />
+
+                            {emailError && <ErrorMessage message={emailError} type="error" />}
+
+
+                            <Text style={[styles.label, { marginTop: 10 }]}>Walkin Date</Text>
+                            <TouchableOpacity
+                                style={styles.dateBox}
+                                onPress={() => {
+                                    Keyboard.dismiss();   // 🔥 keyboard close
+                                    // setOpenDropdownId(null);
+                                    // setCheckinTenantsopen(false);
+                                    setShowCalendar(true);
+
+                                    // setTimeout(() => {
+                                    //     bookingDateRef.current.measureInWindow((x, y, w, h) => {
+                                    //         setDatePickerTop(getSafeCalendarTop(y, h));
+                                    //         setActiveDateField("booking");
+
+                                    //     });
+                                    // }, 150); 
+                                }}
+
+                            >
+                                <Text style={styles.placeholder}>
+                                    {walkinDate ? dayjs(walkinDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                                </Text>
+                                <Image source={require("../../Assets/Images/calendar.png")} style={{width:18,height:18}} />
+                            </TouchableOpacity>
+                        </View>
+
+
+                        <View style={styles.btnRow}>
+                           
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.primaryBtn,
+                                    !isBasicValid && styles.primaryBtnDisabled
+                                ]}
+                                // disabled={!isBasicValid}
+                                onPress={() => navigation.goBack()}
+                            >
+                                <Text
+                                    style={[
+                                        styles.primaryText,
+                                        !isBasicValid && styles.primaryTextDisabled
+                                    ]}
+                                >
+                                    Cancel
+                                </Text>                       
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                style={[
+                                    styles.secondaryBtn,
+
+                                ]}
+
+                                onPress={handleCreateTenant}
+                                disabled={isSubmitClicked}  >
+                                <Text
+                                    style={[
+                                        styles.secondaryText
+
+                                    ]}
+                                >
+                                    Add
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+
+
+                        {/* </>
+                        )} */}
 
 
                         {/* STEP 2 */}
-                        {step === 2 && (
+                        {/* {step === 2 && (
                             <>
                                 <SafeAreaView style={styles.container1}>
                                     <ScrollView showsVerticalScrollIndicator={false} nestedScrollEnabled={true}>
@@ -791,7 +878,7 @@ export default function AddTenant() {
                                                                     <Text style={styles.noResult}>No state found</Text>
                                                                 )}
 
-                                                                {/* 🔴 CLEAR OPTION */}
+                                                                
                                                                 {selectedState && (
                                                                     <TouchableOpacity
                                                                         style={{ padding: 12, alignItems: "center" }}
@@ -850,7 +937,7 @@ export default function AddTenant() {
                                     </ScrollView>
                                 </SafeAreaView>
                             </>
-                        )}
+                        )} */}
                     </ScrollView>
                 </KeyboardAvoidingView>
 
@@ -879,6 +966,48 @@ export default function AddTenant() {
                         },
                     ]}
                 />
+
+                {showCalendar && (
+                    <View style={styles.sheetOverlay}>
+                        <TouchableWithoutFeedback onPress={() => setShowCalendar(false)}>
+                            <View style={{ flex: 1 }} />
+                        </TouchableWithoutFeedback>
+
+                        <View style={[styles.datePickerBox]}>
+                            <Calendar
+                                renderArrow={(direction) => (
+                                    <Text style={{ fontSize: 22, color: "#111827", fontWeight: "bold" }}>
+                                        {direction === "left" ? "‹" : "›"}
+                                    </Text>
+                                )}
+                                markingType="custom"
+                                markedDates={markedDates}
+                                current={
+                                    walkinDate
+                                        ? dayjs(walkinDate).format("YYYY-MM-DD")
+                                        : dayjs().format("YYYY-MM-DD")
+                                }
+                                maxDate={dayjs().format("YYYY-MM-DD")}
+                                disableMonthChange={false}
+                                hideExtraDays={false}
+
+                                onDayPress={(day) => {
+                                    if (isDateDisabled(day.dateString)) return;
+                                    handleDateChange(day.dateString);
+                                    setShowCalendar(false);
+                                }}
+                                theme={{
+                                    todayTextColor: "#2563EB",
+                                    selectedDayBackgroundColor: "#2563EB",
+                                    selectedDayTextColor: "#FFFFFF",
+                                    textDisabledColor: "#9CA3AF",
+                                    arrowColor: "#111827",
+                                }}
+                            />
+
+                        </View>
+                    </View>
+                )}
             </SafeAreaView>
         </>
     );
@@ -899,10 +1028,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#fff",
         paddingTop: 50,
-        
+
     },
     container1: {
-      flex: 1,
+        flex: 1,
         backgroundColor: "#fff",
         paddingTop: 50,
     },
@@ -911,7 +1040,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginTop: 10,
         marginBottom: 15,
-         paddingHorizontal: 16,
+        paddingHorizontal: 16,
     },
     backIcon: {
         width: 20,
@@ -1048,7 +1177,7 @@ const styles = StyleSheet.create({
 
     input: {
         borderWidth: 1,
-        borderColor: "#E5E7EB",
+        borderColor: "#D9D9D9",
         borderRadius: 8,
         paddingHorizontal: 12,
         height: 50,
@@ -1062,7 +1191,7 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         borderWidth: 1,
-        borderColor: "#E5E7EB",
+        borderColor: "#D9D9D9",
         borderRadius: 8,
         height: 50,
         marginBottom: 2,
@@ -1139,11 +1268,12 @@ const styles = StyleSheet.create({
 
     primaryBtn: {
         borderWidth: 1,
-        borderColor: "#2D6CDF",
+        borderColor: "#1E45E1",
         paddingVertical: 12,
         paddingHorizontal: 28,
         borderRadius: 8,
         backgroundColor: "#fff",
+        marginRight:10
     },
 
     primaryText: {
@@ -1153,11 +1283,11 @@ const styles = StyleSheet.create({
     },
 
     secondaryBtn: {
-        backgroundColor: "#2D6CDF",
+        backgroundColor: "#1E45E1",
         paddingVertical: 12,
         paddingHorizontal: 28,
         borderRadius: 8,
-        marginRight: 12,
+        marginLeft: 12,
     },
 
     secondaryText: {
@@ -1182,6 +1312,17 @@ const styles = StyleSheet.create({
     primaryTextDisabled: {
         color: "#A5B4FC",
     },
+    dateBox: {
+        height: 48,
+        borderWidth: 1,
+        borderColor: "#D9D9D9",
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    placeholder: { color: "#555" },
 
 
 
@@ -1353,6 +1494,34 @@ const styles = StyleSheet.create({
         bottom: -1000,
         backgroundColor: "transparent",
         zIndex: 999,
+    },
+    datePickerBox: {
+        position: "absolute",
+        top: "30%",
+        left: "10%",
+        width: "80%",
+        backgroundColor: "#fff",
+        borderRadius: 20,
+        padding: 10,
+        elevation: 10,
+        alignSelf: "center",
+        // position: "absolute",
+        // alignSelf: "center",
+        // top: "30%",
+        // backgroundColor: "#fff",
+        // elevation: 5,
+        //  width: "80%",
+        // borderRadius: 20,
+
+
+    },
+    sheetOverlay: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.2)",
     },
 
 
