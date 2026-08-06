@@ -738,7 +738,7 @@ export default function SettingsPG({ navigation }) {
 
             {mainHostel?.images?.length > 0 && (
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {mainHostel.images.map((i, index) => (
+                {mainHostel.images?.slice(0, 4).map((i, index) => (
                   <Image
                     key={`${i?.uri}-${index}`}
                     source={{ uri: i?.uri?.image }}

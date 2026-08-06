@@ -273,6 +273,7 @@ function AppContent(props) {
     })
 
     retriveData(PROFILEDETAILS).then(r => {
+      console.log("seetha",r)
       const profileDetails = r ? JSON.parse(r) : null;
       console.log("profileDet", profileDetails)
       setProfileDetails(profileDetails)

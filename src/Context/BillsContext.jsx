@@ -1059,7 +1059,10 @@ export default function BillsProvider({ children }) {
     }
   }
 
-  const GetAdvanceBookingBills = async (hostelId, page = 1, size = 10) => {
+
+
+  const GetAdvanceBookingBills = async (hostelId,filters,page=1,size=10) => {
+    console.log("filteredRetainer",filters)
     if (!hostelId) {
       return { success: false, message: "Invalid hostelId" };
     }
@@ -1070,15 +1073,36 @@ export default function BillsProvider({ children }) {
 
       const axios = getAxios();
 
-      const res = await axios.get(
-        `/v2/bills/advances/${hostelId}`,
-        {
+      const res = await axios.get( `/v2/bills/advances/${hostelId}`,{
           params: {
             page,
             size,
+            // name: filters?.name
+            name: filters?.name
           },
+          //  paramsSerializer: (params) =>
+          // Object.keys(params)
+          //   .map((key) => {
+          //     const value = params[key];
+          //     if (Array.isArray(value)) {
+          //       return value.map((v) => `${key}=${v}`).join("&");
+          //     }
+          //     if (value !== undefined && value !== null && value !== "") {
+          //       return `${key}=${value}`;
+          //     }
+          //     return null;
+          //   })
+          //   .filter(Boolean)
+          //   .join("&"),
+      
+          
         }
       );
+      console.log("Request URL:", res.request?.responseURL);
+
+      console.log("AfterFilter",res)
+
+     
 
       if (res.status === 200) {
         setBookingBills(res?.data || []);

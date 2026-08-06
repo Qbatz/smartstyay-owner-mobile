@@ -122,12 +122,12 @@ export default function BillsDesign({ route }) {
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
     GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter,
-    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails } = useContext(BillContext)
+    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails,GetAdvanceBookingBills } = useContext(BillContext)
 
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-  const {customersList}=useCustomer()
+  const { customersList } = useCustomer()
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -149,6 +149,10 @@ export default function BillsDesign({ route }) {
     canUpdateModule: canUpdateReceipt,
     canDeleteModule: canDeleteReceipt,
   } = useHasPermission("Receipt")
+
+  const {
+    canReadModule: canReadBooking,
+  } = useHasPermission("Booking");
 
 
 
@@ -408,7 +412,7 @@ export default function BillsDesign({ route }) {
     ) {
       GetAllBillDetails(activeHostelId);
     }
-  }, [activeTab, activeHostelId,customersList]);
+  }, [activeTab, activeHostelId, customersList]);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -1643,6 +1647,21 @@ export default function BillsDesign({ route }) {
     });
   };
 
+  const handleRetainerSearch = async (text) => {
+    
+    if(!canReadBooking) return;
+
+    const filters = {
+      name: text || "",
+    };
+
+
+    await GetAdvanceBookingBills(activeHostelId, filters);
+
+
+
+  }
+
 
 
 
@@ -2601,7 +2620,7 @@ export default function BillsDesign({ route }) {
                   onChangeText={(text) => {
                     const filtered = text.replace(/[^a-zA-Z\s]/g, "");
                     console.log("filtered", filtered);
-                    
+
 
                     setSearchText(filtered);
 
@@ -2611,7 +2630,14 @@ export default function BillsDesign({ route }) {
                       } else {
                         handleReceiptSearch(filtered)
                       }
-                    } else {
+                    } else if (activeTab === "Retainer") {
+                      if (filtered.trim() === "") {
+                           GetAdvanceBookingBills(activeHostelId);
+                      }else{
+                        handleRetainerSearch(filtered)
+                      }
+                    }
+                    else {
                       if (filtered.trim() === "") {
                         GetAllBillDetails(activeHostelId);
                         // GetAllBillDetails(activeHostelId)

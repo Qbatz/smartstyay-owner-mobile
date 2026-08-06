@@ -344,6 +344,15 @@ export default function WalkinScreen({ handleWalkinFilter, navigation, searchTex
     setBottomSheetMenu(!bottomSheetMenu);
   };
 
+  const handleOverViewScrren = (item) => {
+    // setOverviewScreen(true)
+    navigation.navigate("CustomerOverviewScreen", {
+      customer: item,
+    });
+    setShowCustomerModal(false)
+  }
+
+
 
   if (!canReadWalkin && !loading) {
     return (
@@ -934,7 +943,7 @@ export default function WalkinScreen({ handleWalkinFilter, navigation, searchTex
               <Text style={styles.btmSheetlabel}>Contact Number</Text>
               <View style={styles.infoRow}>
                 <Image source={PhoneIcon} style={styles.infoIcon} />
-                <Text style={{ fontFamily: "Gilroy-Medium", fontSize: 14 }}>{selectedCustomer?.mobileNo || "N/A"}</Text>
+                <Text style={{ fontFamily: "Gilroy-Medium", fontSize: 14 }}>{selectedCustomer?.mobile || "N/A"}</Text>
               </View>
 
               <Text style={styles.btmSheetlabel}>Enquired on</Text>

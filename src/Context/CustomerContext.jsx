@@ -119,6 +119,7 @@ export const CustomerProvider = ({ children }) => {
 
 
   const addCustomer = async (hostelId, payloads, image) => {
+    setLoading(true)
     try {
       const token = await retriveData("token");
 
@@ -147,6 +148,7 @@ export const CustomerProvider = ({ children }) => {
           },
         }
       );
+      setLoading(false)
 
       return { success: true, data: res.data };
 
@@ -154,6 +156,7 @@ export const CustomerProvider = ({ children }) => {
       if (error?.response?.status === 401) {
         await AutoLogout(loginContext)
       }
+      setLoading(false)
       return {
         success: false,
         message:
