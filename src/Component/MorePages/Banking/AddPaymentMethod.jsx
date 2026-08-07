@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { CustomerContext } from "../../../Context/CustomerContext";
 import { useRoute } from "@react-navigation/native";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -17,24 +18,37 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
+import * as ImagePicker from "react-native-image-picker";
+import UploadIcon from "../../../Assets/Images/upload.png";
 
 export default function AddPaymentMethod() {
 
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, addBanking, editBanking,
     errorMsg, getBankListByHostel, upiAppList,
-    getQrCardTypeList, createPaymentMethod } =
+    getQrCardTypeList, getBankMethod } =
     useContext(BankingContext);
 
-    const route = useRoute();
+  const { createPaymentMethod } = useContext(CustomerContext)
 
-const { bankDetails, bankId } = route.params || {}
+  const isApplyTriggeredRef = useRef(false);
 
-console.log("bankDetails", bankDetails);
+  const route = useRoute();
 
+  const { bankDetails, bankId } = route.params || {}
 
-  const [openPurchaseDate, setOpenPurchaseDate] = useState(false);
-  const [purchaseDate, setPurchaseDate] = useState(null);
+  console.log("bankDetails", bankDetails);
+  console.log("upiAppList", upiAppList);
+
+  // const [openPurchaseDate, setOpenPurchaseDate] = useState(false);
+  // const [purchaseDate, setPurchaseDate] = useState(null);
+
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
+
+  const [qrAttachments, setQrAttachments] = useState([]);
+  const [qrImage, setQrImage] = useState(null);
 
   const [type, setType] = useState("upi");
   const navigation = useNavigation()
@@ -60,8 +74,10 @@ console.log("bankDetails", bankDetails);
   const [selectedupi, setSelectedUpi] = useState(null)
 
   useEffect(() => {
-    getQrCardTypeList("UPI");
-  }, []);
+    getQrCardTypeList("UPI")
+  }, [])
+
+
 
   const handleTypeChange = async (value) => {
     setType(value);
@@ -70,6 +86,34 @@ console.log("bankDetails", bankDetails);
     const apiType = value === "upi" ? "UPI" : "CARD";
 
     await getQrCardTypeList(apiType);
+  };
+
+  const pickQrImage = () => {
+    ImagePicker.launchImageLibrary(
+      {
+        mediaType: "photo",
+        selectionLimit: 1,
+      },
+      (response) => {
+        if (response.didCancel) return;
+
+        if (response.assets?.length) {
+          const file = response.assets[0];
+
+          setQrAttachments([file]);
+          setQrImage(file);
+
+          handleChange("qrImage", file);
+        }
+      }
+    );
+  };
+
+  const removeQrImage = () => {
+    setQrAttachments([]);
+    setQrImage(null);
+
+    handleChange("qrImage", null);
   };
 
 
@@ -86,53 +130,13 @@ console.log("bankDetails", bankDetails);
         {label}
       </Text>
     </TouchableOpacity>
-  );
+  )
   const selectedUpiData = upiAppList.find(
     x => x.id === selectedupi
-  );
-
-  const [minDate, setMinDate] = useState(null)
-
-
-  const today = dayjs();
-
-  const isDisabledDate = (d) => {
-    if (!d) return false;
-
-    if (d.isAfter(today, "day")) return true;
-
-    if (minDate && d.isBefore(minDate, "day")) return true;
-
-    return false;
-  }
+  )
 
 
 
-
-
-  const markedDates = {};
-
-  for (let i = -365; i <= 365; i++) {
-    const d = dayjs().add(i, "day");
-    const key = d.format("YYYY-MM-DD");
-
-    if (isDisabledDate(d)) {
-      markedDates[key] = {
-        disabled: true,
-        disableTouchEvent: true,
-        customStyles: {
-          container: {
-            backgroundColor: "#F3F4F6",
-            opacity: 0.4,
-            borderRadius: 8,
-          },
-          text: {
-            color: "#9CA3AF",
-          },
-        },
-      };
-    }
-  }
 
 
   const handleChange = (key, value) => {
@@ -150,8 +154,8 @@ console.log("bankDetails", bankDetails);
   const validate = () => {
     let err = {};
 
-    if (!form.bankId)
-      err.bankId = "Please Select Linked Bank";
+    // if (!form.bankId)
+    //   err.bankId = "Please Select Linked Bank";
 
 
     if (type === "upi") {
@@ -195,14 +199,14 @@ console.log("bankDetails", bankDetails);
 
       /////////
 
-      if (type === "credit") {
+      // if (type === "credit") {
 
-        if (!form.creditLimit)
-          err.creditLimit = "Please Enter Credit Limit";
+      //   if (!form.creditLimit)
+      //     err.creditLimit = "Please Enter Credit Limit";
 
-        if (!purchaseDate)
-          err.billingCycle = "Please Select Billing Cycle";
-      }
+      //   if (!purchaseDate)
+      //     err.billingCycle = "Please Select Billing Cycle";
+      // }
     }
 
     setErrors(err);
@@ -211,66 +215,103 @@ console.log("bankDetails", bankDetails);
   }
 
 
-
   const handleCreate = async () => {
+    if (!validate()) return;
 
-    if (!validate()) return
+    if (isApplyTriggeredRef.current) return
+    isApplyTriggeredRef.current = true
 
 
-    const payload = {
-      paymentMethod:
-        type === "upi"
-          ? "UPI"
-          : type === "credit"
-            ? "CREDIT_CARD"
-            : "DEBIT_CARD",
+    try {
 
-      upiId: form.upiId,
+      const payload = {
+        paymentMethod:
+          type === "upi"
+            ? "UPI"
+            : type === "credit"
+              ? "Credit Card"
+              : "Debit Card",
 
-      upiApp: selectedupi,
+        // UPI
+        upiId: type === "upi" ? form.upiId.trim() : "",
+        upiApp: type === "upi" ? selectedupi : "",
+        linkedUpiId: "",
 
-      displayName: form.displayName,
+        // Common
+        displayName: form.displayName.trim(),
+        description: form.description.trim(),
 
-      description: form.description,
+        // Card
+        cardNumber: type !== "upi" ? Number(form.cardNumber) : "",
+        cardNetwork: type !== "upi" ? selectedupi : 0,
+        cardHolderName: type !== "upi" ? form.cardHolderName.trim() : "",
 
-      cardNumber: form.cardNumber,
+        // Credit only
+        creditLimit:
+          type === "credit"
+            ? (Number(form.creditLimit) || "")
+            : "",
 
-      cardNetwork: selectedupi,
+        billingCycle:
+          type === "credit"
+            ? ("06/08/2026" || "")
+            // ? (form.billingCycle || "")
+            : "",
+      };
 
-      cardHolderName: form.cardHolderName,
+      console.log("HOSTEL ID =>", activeHostelId);
+      console.log("BANK ID =>", bankId);
+      console.log("PAYLOAD =>", payload);
+      console.log("QR IMAGE =>", qrImage);
 
-      creditLimit:
-        type === "credit"
-          ? Number(form.creditLimit)
-          : undefined,
+      const res = await createPaymentMethod(
+        activeHostelId,
+        bankId,
+        payload,
+        type === "upi" ? qrImage : null
+      );
 
-      billingCycle:
-        type === "credit"
-          ? purchaseDate
-          : undefined,
+      if (res.success) {
+        await getBankMethod(activeHostelId, bankId);
 
-      linkedUpiId:
-        type === "debit"
-          ? form.upiId
-          : undefined,
+        setModalType("success");
+        setModalMessage(res?.message || "Payment Method Added Successfully");
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          navigation.goBack();
+        }, 1500);
+      } else {
+        setModalType("error");
+        setModalMessage(
+          res?.message || "Failed to add payment method"
+        );
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1500);
+      }
+    }
+    catch (error) {
+      console.log(error);
+    } finally {
+      isApplyTriggeredRef.current = false;
     }
 
-    const res = await createPaymentMethod(
-      activeHostelId,
-      form.bankId,
-      payload,
-      form.qrImage
-    );
-
-    if (res?.success) {
-      navigation.goBack();
-    }
-  };
+  }
 
 
 
   return (
     <>
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
       <View style={styles.container}>
         {/* <Text style={styles.title}>Add Payment Method</Text> */}
 
@@ -302,6 +343,8 @@ console.log("bankDetails", bankDetails);
               <TextInput
                 placeholder="Select Bank"
                 style={styles.input}
+                value={bankDetails?.bankName || "N/A"}
+                editable={false}
               />
               {errors.bankId && (
                 <ErrorMessage message={errors.bankId} />
@@ -437,15 +480,70 @@ console.log("bankDetails", bankDetails);
               )}
 
               <Text style={styles.label}>Add QR Image <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              <TouchableOpacity
-                style={styles.upload}
-              >
-                <Text>Choose  Image to upload</Text>
-              </TouchableOpacity>
+              {qrAttachments.length === 0 ? (
+                <TouchableOpacity
+                  style={styles.uploadCard}
+                  activeOpacity={0.8}
+                  onPress={pickQrImage}
+                >
+                  <View style={styles.uploadIconBox}>
+                    <Image
+                      source={UploadIcon}
+                      style={styles.uploadIcon}
+                    />
+                  </View>
+
+                  <Text style={styles.uploadTitle}>
+                    Choose Image to Upload
+                  </Text>
+
+                  <Text style={styles.uploadSubTitle}>
+                    JPG, PNG UP TO 3MB
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <View style={styles.previewCard}>
+                  <Image
+                    source={{ uri: qrImage?.uri }}
+                    style={styles.previewImage}
+                  />
+
+                  <View style={styles.fileInfoRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text
+                        style={styles.fileName}
+                        numberOfLines={1}
+                      >
+                        {qrImage?.fileName}
+                      </Text>
+
+                      <Text style={styles.fileSize}>
+                        {((qrImage?.fileSize || 0) / 1024).toFixed(0)} KB
+                      </Text>
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={removeQrImage}
+                      style={styles.deleteBtn}
+                    >
+                      <Text
+                        style={{
+                          color: "#FF4D4F",
+                          fontSize: 20,
+                        }}
+                      >
+                        ✕
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
 
               {errors.qrImage && (
                 <ErrorMessage message={errors.qrImage} />
               )}
+
+
 
             </>
           )}
@@ -458,6 +556,8 @@ console.log("bankDetails", bankDetails);
               <TextInput
                 placeholder="Select Bank"
                 style={styles.input}
+                value={bankDetails?.bankName || "N/A"}
+                editable={false}
               />
 
               {errors.bankId && (
@@ -640,34 +740,27 @@ console.log("bankDetails", bankDetails);
               )}
 
               <Text style={styles.label}>
-                Billing Cycle
+                Billing Cycle (Days)
+                {/* <Text style={{ color: "red", fontSize: 19 }}>*</Text> */}
               </Text>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                // disabled={isEditMode}
-                onPress={() => {
-                  // if (!isEditMode)
-                  setOpenPurchaseDate(true);
-                }}
-              >
-                <View style={styles.dateInputWrapper}>
-                  <TextInput
-                    style={styles.dateInput}
-                    placeholder="DD-MM-YYYY"
-                    value={purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : ""}
-                    editable={false}
-                    pointerEvents="none"
-                  />
 
-                  <Image
-                    source={require("../../../Assets/Images/calendar.png")}
-                    style={styles.calendarIcon}
-                  />
-                </View>
-              </TouchableOpacity>
-              {errors.billingCycle && (
+              <TextInput
+                placeholder="Enter Billing Cycle in Days"
+                style={styles.input}
+                keyboardType="number-pad"
+                value={form.billingCycle}
+                onChangeText={(text) =>
+                  handleChange(
+                    "billingCycle",
+                    text.replace(/[^0-9]/g, "")
+                  )
+                }
+              />
+
+              {/* {errors.billingCycle && (
                 <ErrorMessage message={errors.billingCycle} />
-              )}
+              )} */}
+
             </>
           )}
 
@@ -679,6 +772,8 @@ console.log("bankDetails", bankDetails);
               <TextInput
                 placeholder="Select Bank"
                 style={styles.input}
+                value={bankDetails?.bankName || "N/A"}
+                editable={false}
               />
 
               {errors.bankId && (
@@ -782,8 +877,8 @@ console.log("bankDetails", bankDetails);
                     </ScrollView>
                   </View>
                 )}
-                {errors.upiApp && (
-                  <ErrorMessage message={errors.upiApp} />
+                {errors.cardNetwork && (
+                  <ErrorMessage message={errors.cardNetwork} />
                 )}
                 {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
               </View>
@@ -860,14 +955,19 @@ console.log("bankDetails", bankDetails);
           />
 
           <View style={styles.footer}>
-            <TouchableOpacity
+            <TouchableOpacity onPress={() => navigation.goBack()}
               style={styles.cancelBtn}
             >
               <Text>Cancel</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.saveBtn} onPress={handleCreate}
+              style={[
+                styles.saveBtn,
+                isApplyTriggeredRef.current && { opacity: 0.6 },
+              ]}
+              disabled={isApplyTriggeredRef.current}
+              onPress={handleCreate}
             >
               <Text style={{ color: "#fff" }}>
                 Create Method
@@ -877,52 +977,7 @@ console.log("bankDetails", bankDetails);
         </ScrollView>
       </View>
 
-      {openPurchaseDate && (
-        <View style={styles.dateOverlay}>
-          <TouchableWithoutFeedback onPress={() => setOpenPurchaseDate(false)}>
-            <View style={styles.overlayBg} />
-          </TouchableWithoutFeedback>
 
-          <View style={styles.calendarContainer}>
-            <Calendar
-              markingType="custom"
-              markedDates={{
-                ...markedDates,
-                ...(purchaseDate && {
-                  [purchaseDate]: {
-                    selected: true,
-                    selectedColor: "#2563EB",
-                    customStyles: {
-                      container: {
-                        backgroundColor: "#2563EB",
-                        borderRadius: 8,
-                      },
-                      text: {
-                        color: "#FFFFFF",
-                      },
-                    },
-                  },
-                }),
-              }}
-              current={purchaseDate || dayjs().format("YYYY-MM-DD")}
-              onDayPress={(day) => {
-                // 🚫 STOP FUTURE DATE CLICK
-                if (markedDates[day.dateString]?.disabled) return;
-
-                setPurchaseDate(day.dateString);
-                setOpenPurchaseDate(false);
-                // setDateErr("");
-                // setErrors(prev => ({ ...prev, expenseDate: "" }))
-              }}
-              theme={{
-                todayTextColor: "#2563EB",
-                arrowColor: "#111827",
-                textDisabledColor: "#9CA3AF",
-              }}
-            />
-          </View>
-        </View>
-      )}
     </>
   );
 }
@@ -1184,5 +1239,80 @@ const styles = StyleSheet.create({
     padding: 10,
     width: "85%",
     elevation: 10,
+  },
+  uploadCard: {
+    height: 120,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+  },
+
+  uploadIconBox: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    backgroundColor: "#EEF4FF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  uploadIcon: {
+    width: 22,
+    height: 22,
+    resizeMode: "contain",
+  },
+
+  uploadTitle: {
+    marginTop: 10,
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#111827",
+  },
+
+  uploadSubTitle: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#6B7280",
+  },
+
+  previewCard: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    padding: 12,
+  },
+
+  previewImage: {
+    width: "100%",
+    height: 180,
+    borderRadius: 10,
+    resizeMode: "cover",
+  },
+
+  fileInfoRow: {
+    marginTop: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  fileName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#111827",
+  },
+
+  fileSize: {
+    marginTop: 2,
+    fontSize: 12,
+    color: "#6B7280",
+  },
+
+  deleteBtn: {
+    padding: 6,
   },
 });

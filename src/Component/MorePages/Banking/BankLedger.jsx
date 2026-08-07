@@ -119,7 +119,7 @@ const formatAmount = (amount) => {
 
     return (
         <>
-            <View style={styles.filterRow}>
+            {/* <View style={styles.filterRow}>
                 <View style={{ display: 'flex', flexDirection: 'row' }}>
                     <TouchableOpacity style={styles.filterChipActive}>
                         <Text style={styles.filterChipTextActive}>All</Text>
@@ -136,7 +136,7 @@ const formatAmount = (amount) => {
                 >
                     <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
                 </TouchableOpacity>
-            </View>
+            </View> */}
 
 
             <View style={{ paddingHorizontal: 20 }}>

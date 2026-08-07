@@ -31,7 +31,52 @@ export default function BankLinkedMethods() {
       }
     }, [activeHostelId, bankId])
 
+    console.log("bankMethod",bankMethod)
+    
+
     const navigation = useNavigation()
+
+    const getPaymentIcon = (method) => {
+  switch (method) {
+    case "UPI":
+      return require("../../../Assets/Images/GpayIcon.png");
+
+    case "Debit Card":
+      return require("../../../Assets/Images/Cardblue.png");
+
+    case "Credit Card":
+      return require("../../../Assets/Images/Cardorange.png");
+
+    default:
+      return require("../../../Assets/Images/Cardblue.png");
+  }
+};
+
+const getBadgeStyle = (method) => {
+  switch (method) {
+    case "UPI":
+      return styles.upi;
+    case "Debit Card":
+      return styles.debit;
+    case "Credit Card":
+      return styles.credit;
+    default:
+      return styles.debit;
+  }
+};
+
+const getBadgeTextColor = (method) => {
+  switch (method) {
+    case "UPI":
+      return "#1D4ED8";
+    case "Debit Card":
+      return "#8B5CF6";
+    case "Credit Card":
+      return "#F97316";
+    default:
+      return "#111827";
+  }
+};
 
     const paymentMethods = [
         {
@@ -65,77 +110,141 @@ export default function BankLinkedMethods() {
         },
     ];
 
-    const PaymentItem = ({ item }) => (
-        <View style={styles.card}>
+    // const PaymentItem = ({ item }) => (
+    //     <View style={styles.card}>
 
-            <View style={styles.iconContainer}>
-                <Image source={item.icon} style={styles.icon} />
-            </View>
+    //         <View style={styles.iconContainer}>
+    //             <Image source={item.icon} style={styles.icon} />
+    //         </View>
 
-            <View style={styles.content}>
+    //         <View style={styles.content}>
 
-                <Text style={styles.title}>
-                    {item.title}
-                </Text>
+    //             <Text style={styles.title}>
+    //                 {item.title}
+    //             </Text>
 
-                <Text style={styles.subtitle}>
-                    {item.value}
-                </Text>
+    //             <Text style={styles.subtitle}>
+    //                 {item.value}
+    //             </Text>
 
-            </View>
+    //         </View>
 
-            <View style={styles.rightSection}>
+    //         <View style={styles.rightSection}>
 
-                <View
-                    style={[
-                        styles.badge,
-                        item.type === "UPI"
-                            ? styles.upi
-                            : item.type === "Debit Card"
-                                ? styles.debit
-                                : styles.credit
-                    ]}
-                >
+    //             <View
+    //                 style={[
+    //                     styles.badge,
+    //                     item.type === "UPI"
+    //                         ? styles.upi
+    //                         : item.type === "Debit Card"
+    //                             ? styles.debit
+    //                             : styles.credit
+    //                 ]}
+    //             >
 
-                    <Text
-                        style={[
-                            styles.badgeText,
-                            item.type === "UPI"
-                                ? { color: "#1D4ED8" }
-                                : item.type === "Debit Card"
-                                    ? { color: "#8B5CF6" }
-                                    : { color: "#F97316" }
-                        ]}
-                    >
-                        {item.type}
-                    </Text>
+    //                 <Text
+    //                     style={[
+    //                         styles.badgeText,
+    //                         item.type === "UPI"
+    //                             ? { color: "#1D4ED8" }
+    //                             : item.type === "Debit Card"
+    //                                 ? { color: "#8B5CF6" }
+    //                                 : { color: "#F97316" }
+    //                     ]}
+    //                 >
+    //                     {item.type}
+    //                 </Text>
 
-                </View>
+    //             </View>
 
-                {item.payable && (
+    //             {item.payable && (
 
-                    <Text style={styles.payable}>
-                        Payable{" "}
-                        <Text style={styles.amount}>
-                            {item.payable}
-                        </Text>
-                    </Text>
+    //                 <Text style={styles.payable}>
+    //                     Payable{" "}
+    //                     <Text style={styles.amount}>
+    //                         {item.payable}
+    //                     </Text>
+    //                 </Text>
 
-                )}
+    //             )}
 
-            </View>
+    //         </View>
 
-            <TouchableOpacity>
+    //         <TouchableOpacity>
 
-                <Image
-                    source={require("../../../Assets/Images/3dots.png")}
-                    style={styles.menu}
-                />
+    //             <Image
+    //                 source={require("../../../Assets/Images/3dots.png")}
+    //                 style={styles.menu}
+    //             />
 
-            </TouchableOpacity>
+    //         </TouchableOpacity>
 
+    //     </View>
+    // );
+
+    const PaymentItem = ({ item }) => {
+  const isCard =
+    item.paymentMethod === "Credit Card" ||
+    item.paymentMethod === "Debit Card";
+
+  return (
+    <View style={styles.card}>
+      <View style={styles.iconContainer}>
+        <Image
+          source={getPaymentIcon(item.paymentMethod)}
+          style={styles.icon}
+        />
+      </View>
+
+      <View style={styles.content}>
+        <Text style={styles.title}>
+          {item.displayName}
+        </Text>
+
+        <Text style={styles.subtitle}>
+          {isCard
+            ? `**** **** **** ${item.cardNumber}`
+            : item.upiId || "-"}
+        </Text>
+      </View>
+
+      <View style={styles.rightSection}>
+        <View
+          style={[
+            styles.badge,
+            getBadgeStyle(item.paymentMethod),
+          ]}
+        >
+          <Text
+            style={[
+              styles.badgeText,
+              { color: getBadgeTextColor(item.paymentMethod) },
+            ]}
+          >
+            {item.paymentMethod}
+          </Text>
         </View>
-    );
+
+        {item.paymentMethod === "Credit Card" &&
+          item.creditLimit != null && (
+            <Text style={styles.payable}>
+              Limit{" "}
+              <Text style={styles.amount}>
+                ₹{Number(item.creditLimit).toLocaleString("en-IN")}
+              </Text>
+            </Text>
+          )}
+      </View>
+
+      <TouchableOpacity>
+        <Image
+          source={require("../../../Assets/Images/3dots.png")}
+          style={styles.menu}
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
 
     return (
         <View style={styles.container}>
@@ -160,13 +269,34 @@ export default function BankLinkedMethods() {
 
             </View>
 
-            <FlatList
+            {/* <FlatList
                 data={paymentMethods}
                 keyExtractor={(item) => item?.id.toString()}
                 renderItem={({ item }) => <PaymentItem item={item} />}
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 30 }}
-            />
+            /> */}
+
+            <FlatList
+  data={bankMethod || []}
+  keyExtractor={(item) => item.paymentMethodId}
+  renderItem={({ item }) => <PaymentItem item={item} />}
+  showsVerticalScrollIndicator={false}
+  contentContainerStyle={{ paddingBottom: 30 }}
+  ListEmptyComponent={
+    <View style={{ alignItems: "center", marginTop: 80 }}>
+      <Text
+        style={{
+          fontFamily: "Gilroy-Medium",
+          color: "#718096",
+          fontSize: 15,
+        }}
+      >
+        No linked payment methods found
+      </Text>
+    </View>
+  }
+/>
 
         </View>
     )
