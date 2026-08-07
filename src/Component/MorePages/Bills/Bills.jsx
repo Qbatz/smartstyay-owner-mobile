@@ -5014,7 +5014,7 @@ export default function BillsDesign({ route }) {
                 )}
 
 
-                {BillPdfdetails?.invoiceInfo?.canRedeem && (
+                {selectedBill?.canApplyFromAdvance && (
                   <>
                     <TouchableOpacity
                       style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
