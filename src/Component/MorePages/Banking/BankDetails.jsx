@@ -18,6 +18,7 @@ import TransferIcon from "../../../Assets/Images/arrow-transfer.png"
 import BankOverview from "./BankOverview";
 import BankLinkedMethods from "./BankLinkedMethods"
 import BankLedger from "./BankLedger"
+import Loader from "../../../Component/Loader/Loader"
 // import ExpensesItems from "./ExpensesItems";
 // import ExpensesComments from "./ExpensesComments";
 
@@ -68,7 +69,7 @@ export default function BankDetails({  }) {
     const [activeTab, setActiveTab] = useState("Overview")
 
  
-    const {  getBankOverview,
+    const {  getBankOverview, getTransferInitialize , transferInitialize,
   bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
         useContext(BankingContext);
     const { activeHostelId } = useContext(CommonContexts);
@@ -81,7 +82,7 @@ export default function BankDetails({  }) {
     const [deletePopup, setDeletePopup] = useState(false)
 
 
-
+  
 
 
 
@@ -128,6 +129,17 @@ export default function BankDetails({  }) {
     //     }
     //   };
 
+
+    const handleTransfer = async() => {
+
+          const res = await getTransferInitialize(
+    activeHostelId,
+    bankId , 
+  );
+        navigation.navigate("BankTransfer")
+
+    }
+
     const getStatusColor = (status) => {
         switch (status?.toLowerCase()) {
             case "full":
@@ -144,11 +156,22 @@ export default function BankDetails({  }) {
         }
     };
 
-    const tabs = [
-        "Overview",
-        "Linked Methods",
-        "Ledger",
-    ];
+  const tabs = [
+  "Overview",
+  ...(bankDetails?.accountType === "BANK"
+    ? ["Linked Methods"]
+    : []),
+  "Ledger",
+];
+
+useEffect(() => {
+  if (
+    bankDetails?.accountType !== "BANK" &&
+    activeTab === "Linked Methods"
+  ) {
+    setActiveTab("Overview");
+  }
+}, [bankDetails?.accountType]);
 
     const renderContent = () => {
         switch (activeTab) {
@@ -173,7 +196,7 @@ export default function BankDetails({  }) {
 
     return (
         <>
-
+ {loading && <Loader />}
             <SuccessModal
                 visible={showSuccessModal}
                 onClose={() => setShowSuccessModal(false)}
@@ -234,7 +257,7 @@ export default function BankDetails({  }) {
                             </Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.transferBtn} onPress={()=> navigation.navigate("BankTransfer")}>
+                        <TouchableOpacity style={styles.transferBtn} onPress={handleTransfer}>
                             <Image source={TransferIcon} style={{height:18, width:18, marginRight:10}} />
                             <Text style={styles.transferText}>
                                  Transfer
@@ -287,6 +310,8 @@ export default function BankDetails({  }) {
   visible={showTransactionSheet}
   onClose={() => setShowTransactionSheet(false)}
    navigation={navigation}
+   bankId={bankId}
+   bankDetails={bankDetails}
 />
 
             </View>

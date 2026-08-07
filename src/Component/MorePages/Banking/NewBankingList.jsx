@@ -1215,7 +1215,7 @@ export default function NewBankingList() {
                 <Text style={styles.sectionTitle}>All Transactions</Text>
               </View> */}
 
-              <View style={styles.filterRow}>
+              {/* <View style={styles.filterRow}>
                 <View style={{ display: 'flex', flexDirection: 'row' }}>
                   <TouchableOpacity style={styles.filterChipActive}>
                     <Text style={styles.filterChipTextActive}>All</Text>
@@ -1232,7 +1232,7 @@ export default function NewBankingList() {
                 >
                   <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
                 </TouchableOpacity>
-              </View>
+              </View> */}
 
 <View style={{ paddingHorizontal: 20 }}>
   {/* <Text style={styles.todayText}>Today</Text> */}

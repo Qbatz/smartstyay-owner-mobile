@@ -811,20 +811,20 @@ export default function NewTenantCheckIn({ navigation, route }) {
     // }, [checkJoiningDate])
 
     useEffect(() => {
-    if (!checkJoiningDate) return;
+        if (!checkJoiningDate) return;
 
-    const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+        const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
 
-    if (!currentMonth) {
-        setCollectFullRent(false);
+        if (!currentMonth) {
+            setCollectFullRent(false);
 
-        setShowCustomRentEditor(false);
-        setCustomRentAmount("");
-        setSavedCustomRent("");
-        setIsCustomRentSaved(false);
-        setCustomRentError("");
-    }
-}, [checkJoiningDate]);
+            setShowCustomRentEditor(false);
+            setCustomRentAmount("");
+            setSavedCustomRent("");
+            setIsCustomRentSaved(false);
+            setCustomRentError("");
+        }
+    }, [checkJoiningDate]);
 
     const summaryAdvanceAmount = Number(advanceAmount || 0);
 
@@ -894,12 +894,12 @@ export default function NewTenantCheckIn({ navigation, route }) {
         }
 
         // Advance
-     if (!refuseAdvanceAmount) {
-    if (advanceAmount === "" || advanceAmount === null || advanceAmount === undefined) {
-        setAdvanceError("Please Enter Advance Amount");
-        hasError = true;
-    }
-}
+        if (!refuseAdvanceAmount) {
+            if (advanceAmount === "" || advanceAmount === null || advanceAmount === undefined) {
+                setAdvanceError("Please Enter Advance Amount");
+                hasError = true;
+            }
+        }
 
         if (hasError) return;
 
@@ -1635,35 +1635,35 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     <ErrorMessage message={rentalError} type="error" />
                                 )}
 
-                              
-                                    <View style={styles.fullRentRow}>
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.checkbox,
-                                                collectFullRent && styles.checkboxSelected,
-                                            ]}
-                                            onPress={() => {
-                                                const value = !collectFullRent;
 
-                                                setCollectFullRent(value);
+                                <View style={styles.fullRentRow}>
+                                    <TouchableOpacity
+                                        style={[
+                                            styles.checkbox,
+                                            collectFullRent && styles.checkboxSelected,
+                                        ]}
+                                        onPress={() => {
+                                            const value = !collectFullRent;
 
-                                                if (!value) {
-                                                    setShowCustomRentEditor(false);
-                                                    setCustomRentAmount("");
-                                                    setSavedCustomRent("");
-                                                    setIsCustomRentSaved(false);
-                                                    setCustomRentError("");
-                                                }
-                                            }}
-                                        >
-                                            {collectFullRent && <Text style={styles.tick}>✓</Text>}
-                                        </TouchableOpacity>
+                                            setCollectFullRent(value);
 
-                                        <Text style={styles.fullRentText}>
-                                            Do you want to collect Full Rent for current month?
-                                        </Text>
-                                    </View>
-                               
+                                            if (!value) {
+                                                setShowCustomRentEditor(false);
+                                                setCustomRentAmount("");
+                                                setSavedCustomRent("");
+                                                setIsCustomRentSaved(false);
+                                                setCustomRentError("");
+                                            }
+                                        }}
+                                    >
+                                        {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                                    </TouchableOpacity>
+
+                                    <Text style={styles.fullRentText}>
+                                        Do you want to collect Full Rent for current month?
+                                    </Text>
+                                </View>
+
 
                                 {collectFullRent && (
                                     <>
@@ -2149,6 +2149,11 @@ export default function NewTenantCheckIn({ navigation, route }) {
                             bedName: data.bedName,
                             rentAmount: data.rentAmount,
                         });
+
+                        setFloorError("");
+                        setRoomError("");
+                        setBedError("");
+                        setRentalError("");
 
                         // Rent auto fill
                         setCheckinRentalAmount(String(data?.rentAmount));
