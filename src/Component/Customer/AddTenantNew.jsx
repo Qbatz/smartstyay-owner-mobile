@@ -3297,6 +3297,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 handleSearchCustomer(value);
                                             }}
                                             maxLength={10}
+                                             style={{
+                                            paddingHorizontal: 12,
+                                            height: 50, fontSize: 14,  marginBottom: 1,
+                                        }}
                                         />
 
                                     </View>
@@ -3475,7 +3479,11 @@ export default function AddTenantNewform({ navigation, route }) {
                                         </View>
 
                                         <TextInput
-                                            style={styles.mobileInput}
+                                            // style={styles.mobileInput}
+                                                style={{
+                                            paddingHorizontal: 12,
+                                            height: 50, fontSize: 14,  marginBottom: 1,
+                                        }}
                                             keyboardType="number-pad"
                                             placeholder="Enter Mobile Number"
                                             placeholderTextColor="#A1A1A1"
@@ -6489,7 +6497,8 @@ export default function AddTenantNewform({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 60 },
+    container: { flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 60 ,  borderRadius: 10,
+  overflow: "visible",},
 
     backArrow: {
         fontSize: 18,

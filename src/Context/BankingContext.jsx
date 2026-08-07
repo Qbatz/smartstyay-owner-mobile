@@ -1,5 +1,6 @@
 import React, { createContext, useState } from "react";
 import { getAxios } from "../Config/AxiosConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const BankingContext = createContext();
 
@@ -11,6 +12,7 @@ export default function BankingProvider({ children }) {
   const [bankTransactionHistory, setBankTransactionHistory] = useState([]);
   const [upiAppList, setUpiAppList] = useState([]);
   const [bankMethod, setBankMethod] = useState(null);
+  const [transferInitialize, setTransferInitialize] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -464,75 +466,7 @@ const getQrCardTypeList = async (type = "UPI") => {
     setLoading(false);
   }
 }
-
-const createPaymentMethod = async (
-  hostelId,
-  bankId,
-  payload,
-  qrImage = null
-) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const formData = new FormData();
-
-    const params = {};
-
-    Object.keys(payload).forEach((key) => {
-      if (
-        payload[key] !== undefined &&
-        payload[key] !== null &&
-        payload[key] !== ""
-      ) {
-        params[key] = payload[key];
-      }
-    });
-
-    if (qrImage) {
-      formData.append("qrImage", {
-        uri: qrImage.uri,
-        type: qrImage.type || "image/jpeg",
-        name: qrImage.fileName || "qr.jpg",
-      });
-    }
-
-    const res = await axios.post(
-      `/v3/bank/bankMethod/${hostelId}/${bankId}`,
-      formData,
-      {
-        params,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    if (res.status === 200 || res.status === 201) {
-      return {
-        success: true,
-        data: res.data,
-      };
-    }
-
-    return {
-      success: false,
-      message: "Failed to create payment method",
-    };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+;
 
 const getBankMethod = async (hostelId, bankId) => {
   try {
@@ -570,8 +504,165 @@ const getBankMethod = async (hostelId, bankId) => {
   } finally {
     setLoading(false);
   }
+}
+
+const addMoneyInvestment = async (hostelId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v3/bank/addMoney/${hostelId}`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to add investment",
+    };
+  } catch (error) {
+    console.log("ADD MONEY ERROR =>", error?.response?.status);
+    console.log("ADD MONEY DATA =>", error?.response?.data);
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
 };
 
+
+const getTransferInitialize = async (
+  hostelId,
+  bankId,
+  paymentMethodId = ""
+) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const params = {};
+
+    if (paymentMethodId) {
+      params.paymentMethodId = paymentMethodId;
+    }
+
+    const res = await axios.get(
+      `/v3/bank/transfer/initialize/${hostelId}/${bankId}`,
+      {
+        params,
+      }
+    );
+
+    if (res.status === 200) {
+      const data = res.data || {};
+
+      console.log("Transfer Initialize =>", data);
+
+      setTransferInitialize(data);
+
+      return {
+        success: true,
+        data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch transfer initialize",
+    };
+
+  } catch (error) {
+    console.log(
+      "TRANSFER INITIALIZE ERROR =>",
+      error?.response?.status
+    );
+    console.log(
+      "TRANSFER INITIALIZE DATA =>",
+      error?.response?.data
+    );
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const moneyTransfer = async (hostelId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v3/bank/moneyTransfer/${hostelId}`,
+      {
+        fromBankId: payload.fromBankId,
+        toBankId: payload.toBankId,
+        amount: Number(payload.amount),
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200 || res.status === 201) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to transfer money",
+    };
+  } catch (error) {
+    console.log("MONEY TRANSFER STATUS =>", error?.response?.status);
+    console.log("MONEY TRANSFER DATA =>", error?.response?.data);
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <BankingContext.Provider
@@ -583,6 +674,7 @@ const getBankMethod = async (hostelId, bankId) => {
         bankTransactionHistory ,
         upiAppList ,
         bankMethod ,
+        transferInitialize,
         loading,
         errorMsg,
         getBankListByHostel,
@@ -590,8 +682,8 @@ const getBankMethod = async (hostelId, bankId) => {
         editBanking,
         AddBankAmount,
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions , 
-        getBankOverview , getBankTransactionHistory , getQrCardTypeList , createPaymentMethod ,
-        getBankMethod
+        getBankOverview , getBankTransactionHistory , getQrCardTypeList  ,
+        getBankMethod , addMoneyInvestment , getTransferInitialize , moneyTransfer
       }}
 
     >
