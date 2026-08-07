@@ -16,6 +16,8 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { BillContext } from "../../../Context/BillsContext";
 import Loader from "../../Loader/Loader";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { useRoute } from "@react-navigation/native";
+import ValidatedInput from "../ValidatedInput"
 
 
 
@@ -24,7 +26,12 @@ const NewRetainerInvoiceSheet = ({ }) => {
     const navigation = useNavigation();
     const { retainerCustomerList } = useContext(CustomerContext)
     const { activeHostelId } = useContext(CommonContexts);
-    const {createRetainderInvoice, loading,GetAdvanceBookingBills} =useContext(BillContext)
+    const { createRetainderInvoice, loading, GetAdvanceBookingBills } = useContext(BillContext)
+
+    const route = useRoute();
+    const { customerDetails: passedCustomer } = route.params || {};
+
+    const [isTenantLocked, setIsTenantLocked] = useState(false);
 
     const [paidDate, setPaidDate] = useState("")
     const [openPaidDate, setOpenPaidDate] = useState(false);
@@ -35,10 +42,11 @@ const NewRetainerInvoiceSheet = ({ }) => {
         retainerType: "",
         amount: "",
     }
+    const [description , setDescription] = useState("")
     const [items, setItems] = useState([emptyItem]);
     const [showTenantName, setShowTenantName] = useState(false);
     const [selectedName, setSelectedName] = useState("")
-    const [selectedTenant, setSelectedTenant]=useState("")
+    const [selectedTenant, setSelectedTenant] = useState("")
     const [receivedFrom, setReceivedFrom] = useState("")
     const tenantNamelist = [{ id: 0, name: "Karthi" }, { id: 1, name: "Mooly" }, { id: 2, name: "Siinu" }, { id: 3, name: "Nona" }, { id: 4, name: "Sila" }]
     console.log(items)
@@ -46,37 +54,37 @@ const NewRetainerInvoiceSheet = ({ }) => {
     const [stateQuery, setStateQuery] = useState("");
     const [showPaymentMode, setShowPaymentMode] = useState(false);
     const [selectedMode, setSelectedMode] = useState("");
-    const [selectedBankId,setSelectedBankId]=useState("")
-    const [transactionId,setTransactionId]=useState("")
+    const [selectedBankId, setSelectedBankId] = useState("")
+    const [transactionId, setTransactionId] = useState("")
     const [errors, setErrors] = useState("")
     const [retainerList, setReatinerList] = useState([])
     const [retainerBankList, setRetainerBankList] = useState([])
-    const [guardianOpen,setGuardianOpen]=useState(false)
-    const [selectedGuardian,setSelectedGuardian]=useState("")
-    const [retainerType,setRetainerTypeList]=useState()
-    const [openRetainerType,setOpenRetainerType]=useState(false)
-    const [showSuccessModal,setShowSuccessModal]=useState(false)
-    const [modalMessage,setModalMessage]=useState("")
-    const [modalType,setModalType]=useState("")
-    const [isSubmitClicked,setIsSubmitClicked]=useState(false)
+    const [guardianOpen, setGuardianOpen] = useState(false)
+    const [selectedGuardian, setSelectedGuardian] = useState("")
+    const [retainerType, setRetainerTypeList] = useState()
+    const [openRetainerType, setOpenRetainerType] = useState(false)
+    const [showSuccessModal, setShowSuccessModal] = useState(false)
+    const [modalMessage, setModalMessage] = useState("")
+    const [modalType, setModalType] = useState("")
+    const [isSubmitClicked, setIsSubmitClicked] = useState(false)
 
-    const retainerTypeList=[{id:1,retainerType:"AMOUNT_HOLDING"},{id:2,retainerType:"EB_HOLDING"}]
+    const retainerTypeList = [{ id: 1, retainerType: "AMOUNT_HOLDING" }, { id: 2, retainerType: "EB_HOLDING" }]
 
-    console.log("selectedTenant",selectedTenant)
-    console.log("paidDate",dayjs(paidDate).format("DD/MM/YYYY"))
+    console.log("selectedTenant", selectedTenant)
+    console.log("paidDate", dayjs(paidDate).format("DD/MM/YYYY"))
 
     const paymentModeTypes = [{ id: 0, lable: "Gpayf" }, { id: 1, lable: "phonepay" }, { id: 2, lable: "Cash" }]
 
-    useEffect(() => {
-        const fetchCustomerRetainerList = async () => {
-            const res = await retainerCustomerList(activeHostelId)
-            console.log("retainerList", res)
-            setReatinerList(res?.data?.customersLists)
-            setRetainerBankList(res?.data?.listBanks)
-        }
+    // useEffect(() => {
+    //     const fetchCustomerRetainerList = async () => {
+    //         const res = await retainerCustomerList(activeHostelId)
+    //         console.log("retainerList", res)
+    //         setReatinerList(res?.data?.customersLists)
+    //         setRetainerBankList(res?.data?.listBanks)
+    //     }
 
-        fetchCustomerRetainerList();
-    }, [])
+    //     fetchCustomerRetainerList();
+    // }, [])
 
     console.log("retainlist", retainerList)
 
@@ -97,6 +105,16 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
 
     }
+
+    const handleDescriptionChange = (text) => {
+    const filteredText = text.replace(
+        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/g,
+        ""
+    );
+
+    setDescription(filteredText);
+};
+
 
     const handleAddRow = () => {
         setItems(prev => [...prev, { ...emptyItem }])
@@ -129,6 +147,30 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
     // }
 
+    useEffect(() => {
+        const fetchCustomerRetainerList = async () => {
+            const res = await retainerCustomerList(activeHostelId)
+            console.log("retainerList", res)
+
+            const list = res?.data?.customersLists || [];
+            setReatinerList(list)
+            setRetainerBankList(res?.data?.listBanks)
+
+            if (passedCustomer?.customerId) {
+                const matched = list.find(
+                    (c) => c.customerId === passedCustomer.customerId
+                );
+
+                if (matched) {
+                    setSelectedName(matched.fullName);
+                    setSelectedTenant(matched);
+                    setIsTenantLocked(true);
+                }
+            }
+        }
+
+        fetchCustomerRetainerList();
+    }, [])
 
 
     const totalRetainerAmount = items.reduce((sum, item) => {
@@ -144,7 +186,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
         return bStart - aStart;
     }
     )
-    console.log("filterlist",filterList)
+    console.log("filterlist", filterList)
 
     const today = dayjs();
 
@@ -192,7 +234,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
     console.log(errors)
 
 
-    const savegenerate =async() => {
+    const savegenerate = async () => {
 
 
         let newErrors = {};
@@ -206,8 +248,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
         if (!selectedMode) {
             newErrors.payMode = "Please Select Mode"
         }
-        if(!totalRetainerAmount){
-            newErrors.retainerAmount= "Please Enter Amount"
+        if (!totalRetainerAmount) {
+            newErrors.retainerAmount = "Please Enter Amount"
         }
 
         setErrors(newErrors)
@@ -216,12 +258,12 @@ const NewRetainerInvoiceSheet = ({ }) => {
             return;
         }
 
-        if(isSubmitClicked) return;
+        if (isSubmitClicked) return;
 
-        console.log("itemsList",items[0]?.retainerType)
+        console.log("itemsList", items[0]?.retainerType)
         console.log(totalRetainerAmount)
         const invoiceCreatedDate = dayjs(paidDate).format("DD/MM/YYYY")
-        const payload={
+        const payload = {
             paymentDate: invoiceCreatedDate,
             mobile: selectedTenant?.mobile,
             relationName: selectedGuardian?.guardianName || receivedFrom,
@@ -231,39 +273,39 @@ const NewRetainerInvoiceSheet = ({ }) => {
             referenceNumber: transactionId,
         }
 
-          if(selectedGuardian?.guardianId){
-           payload.relationId= selectedGuardian?.guardianId;
+        if (selectedGuardian?.guardianId) {
+            payload.relationId = selectedGuardian?.guardianId;
         }
 
-        console.log("payload",payload)
+        console.log("payload", payload)
 
-        try{
+        try {
             setIsSubmitClicked(true);
 
-        const res= await createRetainderInvoice(activeHostelId, selectedTenant?.customerId,payload)
-        console.log("retainerInovice",res)
-        if(res.success){
-            setShowSuccessModal(true)
-            setModalMessage(res?.data)
-            setModalType("success")
-            setTimeout(() => {
-                setShowSuccessModal(false)
-                GetAdvanceBookingBills(activeHostelId);
-                navigation.goBack();
+            const res = await createRetainderInvoice(activeHostelId, selectedTenant?.customerId, payload)
+            console.log("retainerInovice", res)
+            if (res.success) {
+                setShowSuccessModal(true)
+                setModalMessage(res?.data)
+                setModalType("success")
                 setTimeout(() => {
+                    setShowSuccessModal(false)
+                    GetAdvanceBookingBills(activeHostelId);
+                    navigation.goBack();
+                    setTimeout(() => {
+                        setIsSubmitClicked(false)
+                    }, 300);
+                }, 1000);
+            } else {
+                setShowSuccessModal(true)
+                setModalMessage(res?.message)
+                setModalType("error")
+                setTimeout(() => {
+                    setShowSuccessModal(false)
                     setIsSubmitClicked(false)
-                }, 300);
-            }, 1000);
-        }else{
-            setShowSuccessModal(true)
-            setModalMessage(res?.message)
-            setModalType("error")
-            setTimeout(() => {
-                setShowSuccessModal(false)
-                setIsSubmitClicked(false)
-            }, 1000);
-        }
-        }catch(error){
+                }, 1000);
+            }
+        } catch (error) {
             console.log(error)
             setIsSubmitClicked(false)
         }
@@ -275,11 +317,11 @@ const NewRetainerInvoiceSheet = ({ }) => {
         <>
 
             <View style={styles.mainSheet}>
-                {loading && <Loader/>}
+                {loading && <Loader />}
                 <SuccessModal
                     visible={showSuccessModal}
                     message={modalMessage}
-                    type={modalType}/>
+                    type={modalType} />
 
                 <View style={{ marginTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity style={{ marginRight: 5 }}
@@ -294,17 +336,20 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     <Text style={styles.tntNameTxt}>
                         Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                    <View style={styles.container}>
+                    <View style={[styles.container, isTenantLocked && { backgroundColor: "#F3F4F6" }]}>
                         <TextInput
                             placeholder="Add or Search Tenant"
                             style={styles.input}
                             value={showTenantName ? stateQuery || selectedName : selectedName}
                             placeholderTextColor="#B5B5B5"
+                            editable={!isTenantLocked}
                             onPressIn={() => {
+                                if (isTenantLocked) return;
                                 setShowTenantName(!showTenantName)
                                 setErrors(prev => ({ ...prev, name: "" }))
                             }}
                             onChangeText={(text) => {
+                                if (isTenantLocked) return;
                                 const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
                                 setStateQuery(onlyLetters)
                                 setErrors(prev => ({ ...prev, name: "" }))
@@ -314,10 +359,13 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         />
 
                         <TouchableOpacity onPress={() => {
-                                setShowTenantName(!showTenantName)
-                                setErrors(prev => ({ ...prev, name: "" }))
-                            }}
-                        style={styles.arrowContainer}>
+                            if (isTenantLocked) return;
+                            setShowTenantName(!showTenantName)
+                            setErrors(prev => ({ ...prev, name: "" }))
+                        }}
+                            style={styles.arrowContainer}
+                            disabled={isTenantLocked}
+                        >
                             <Image
                                 source={DownArrow}
                                 style={styles.arrow}
@@ -349,7 +397,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 <ScrollView keyboardShouldPersistTaps="always"
                                     nestedScrollEnabled={true}
                                     showsVerticalScrollIndicator={true}>
-                                    {filterList.map((i,index)=> (
+                                    {filterList.map((i, index) => (
                                         <TouchableOpacity key={index}
                                             style={{ paddingVertical: 8, paddingHorizontal: 14 }}
                                             onPress={() => {
@@ -378,13 +426,13 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     <Text style={styles.headerTxt}>Received from</Text>
 
 
-                    <TouchableOpacity onPress={()=>setGuardianOpen(!guardianOpen)}
-                    style={[styles.inputBox, { marginTop: 10 }]}>
+                    <TouchableOpacity onPress={() => setGuardianOpen(!guardianOpen)}
+                        style={[styles.inputBox, { marginTop: 10 }]}>
                         <TextInput
 
                             placeholder="Enter/Select the Respective Person"
                             value={guardianOpen ? receivedFrom || selectedGuardian?.guardianName : selectedGuardian?.guardianName}
-                            onPressIn={()=>setGuardianOpen(!guardianOpen)}
+                            onPressIn={() => setGuardianOpen(!guardianOpen)}
                             onChangeText={(text) => {
                                 const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
                                 setReceivedFrom(onlyLetters)
@@ -398,38 +446,38 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     </TouchableOpacity>
 
                     {guardianOpen && (
-                        selectedTenant?.guardiansList?.length>0 ? (
-                             <>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setGuardianOpen(false)
-                                // setStateQuery("")
-                            }}>
-                                <View style={styles.dropdownOverlay} />
-                            </TouchableWithoutFeedback>
-                            <View style={styles.dropdownMenu}>
-                                <ScrollView keyboardShouldPersistTaps="always"
-                                    nestedScrollEnabled={true}
-                                    showsVerticalScrollIndicator={true}>
-                                    {selectedTenant?.guardiansList.map((i,index)=> (
-                                        <TouchableOpacity key={index}
-                                            style={{ paddingVertical: 8, paddingHorizontal: 14 }}
-                                            onPress={() => {
-                                                // setSelectedName(i.guardianName)
-                                                setSelectedGuardian(i)
-                                                // setStateQuery("");
-                                                setGuardianOpen(false)
-                                            }}>
-                                            <Text>{i.guardianName}</Text>
-                                        </TouchableOpacity>
+                        selectedTenant?.guardiansList?.length > 0 ? (
+                            <>
+                                <TouchableWithoutFeedback onPress={() => {
+                                    setGuardianOpen(false)
+                                    // setStateQuery("")
+                                }}>
+                                    <View style={styles.dropdownOverlay} />
+                                </TouchableWithoutFeedback>
+                                <View style={styles.dropdownMenu}>
+                                    <ScrollView keyboardShouldPersistTaps="always"
+                                        nestedScrollEnabled={true}
+                                        showsVerticalScrollIndicator={true}>
+                                        {selectedTenant?.guardiansList.map((i, index) => (
+                                            <TouchableOpacity key={index}
+                                                style={{ paddingVertical: 8, paddingHorizontal: 14 }}
+                                                onPress={() => {
+                                                    // setSelectedName(i.guardianName)
+                                                    setSelectedGuardian(i)
+                                                    // setStateQuery("");
+                                                    setGuardianOpen(false)
+                                                }}>
+                                                <Text>{i.guardianName}</Text>
+                                            </TouchableOpacity>
 
-                                    ))}
-                                </ScrollView>
-                            </View>
-                        </>
-                            
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            </>
+
                         ) : (
-                            <View style={[styles.dropdownMenu,{minHeight:50,justifyContent:'center',alignItems:'center'}]}>
-                                <Text style={{fontSize:13,fontFamily:'Gilroy-Regular'}}>
+                            <View style={[styles.dropdownMenu, { minHeight: 50, justifyContent: 'center', alignItems: 'center' }]}>
+                                <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular' }}>
                                     No guardian Details Available
                                 </Text>
                             </View>
@@ -456,7 +504,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
                     {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error" />}
 
-                    <Text style={styles.headerTxt}>Reference No</Text>
+                    {/* <Text style={styles.headerTxt}>Reference No</Text>
 
                     <TouchableOpacity style={[styles.inputBox, { marginTop: 10 }]}>
                         <TextInput
@@ -466,7 +514,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             source={DownArrow}
                             style={{ width: 18, height: 18, tintColor: "#555" }}
                         />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
                     <View style={{ marginTop: 15 }}>
                         <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>
@@ -474,9 +522,9 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     </View>
 
 
-                    {items.map((item, index) => {
+                    {items?.map((item, index) => {
                         return (
-                            <View style={[styles.itemBox,{position:'relative'}]} key={index}>
+                            <View style={[styles.itemBox, { position: 'relative' }]} key={index}>
                                 <View style={styles.itemHealine}>
                                     <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>Item</Text>
 
@@ -506,9 +554,9 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
                                 <Text style={styles.itemdetailTxt}>Retainer Type</Text>
 
-                                <TouchableOpacity onPress={()=>setOpenRetainerType(!openRetainerType)}
-                                 style={styles.retainTypeBox}>
-                                    <Text>{item.retainerType ? item?.retainerType : "Enter Type"}</Text>
+                                <TouchableOpacity onPress={() => setOpenRetainerType(!openRetainerType)}
+                                    style={styles.retainTypeBox}>
+                                    <Text>{item.retainerType ? item?.retainerType : "Select Type"}</Text>
 
                                     <Image
                                         source={DownArrow}
@@ -517,29 +565,36 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 </TouchableOpacity>
 
                                 {openRetainerType && (
-                                    <View style={[styles.dropdownMenu,{position:'absolute',maxHeight:150,top:200,
-                                                 width:'100%',left:14,right:20}]}>
-                                        {retainerTypeList.map((i)=>(
-                                            <TouchableOpacity onPress={()=>{handleChange(index, "retainerType", i.retainerType)
-                                                                            setOpenRetainerType(false)  }}
-                                            style={{paddingVertical:8,paddingHorizontal:14}}
-                                            key={i.id}>
+                                    <View style={[styles.dropdownMenu, {
+                                        position: 'absolute', maxHeight: 150, top: 200,
+                                        width: '100%', left: 14, right: 20
+                                    }]}>
+                                        {retainerTypeList.map((i) => (
+                                            <TouchableOpacity onPress={() => {
+                                                handleChange(index, "retainerType", i.retainerType)
+                                                setOpenRetainerType(false)
+                                            }}
+                                                style={{ paddingVertical: 8, paddingHorizontal: 14 }}
+                                                key={i.id}>
                                                 <Text>{i?.retainerType}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
                                 )}
 
-                                <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular',color:'#3C3C4399', marginTop: 12 }}>
+                                <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular', color: '#3C3C4399', marginTop: 12 }}>
                                     Amount</Text>
 
-                                <TextInput
+                                <ValidatedInput
+                                    keyboardType="numeric"
+                                    type="numberOnly"
+                                    inputType="numeric"
                                     style={styles.itemAmountBox}
-                                    placeholder="₹ 1700"
+                                    placeholder="Enter Amount"
                                     value={item.amount}
                                     onChangeText={(text) => {
                                         handleChange(index, "amount", text)
-                                        setErrors(prev=>({...prev, retainerAmount: ""}))
+                                        setErrors(prev => ({ ...prev, retainerAmount: "" }))
                                     }} />
 
                             </View>)
@@ -566,7 +621,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     }}
                         style={[styles.inputBox, { marginTop: 10 }]}>
                         <Text style={styles.pymentMthdTxt}>
-                            {selectedMode ? selectedMode : "Enter Payment Method"}
+                            {selectedMode ? selectedMode : "Select Payment Method"}
                         </Text>
 
                         <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} />
@@ -582,12 +637,13 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 <ScrollView keyboardShouldPersistTaps="always"
                                     nestedScrollEnabled={true}
                                     showsVerticalScrollIndicator={true}>
-                                    {retainerBankList.map((i,index) => (
+                                    {retainerBankList.map((i, index) => (
                                         <TouchableOpacity key={index}
                                             style={{ paddingVertical: 12, paddingHorizontal: 14 }}
-                                            onPress={() => {setSelectedMode(i?.bankName)
-                                                            setSelectedBankId(i?.bankId)
-                                                            setShowPaymentMode(false)
+                                            onPress={() => {
+                                                setSelectedMode(i?.bankName)
+                                                setSelectedBankId(i?.bankId)
+                                                setShowPaymentMode(false)
                                             }}>
                                             <Text>{i.bankName}</Text>
                                         </TouchableOpacity>
@@ -604,22 +660,26 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         Transaction ID
                     </Text>
 
-                    <TouchableOpacity style={[styles.inputBox, { marginTop: 10 }]}>
-                        <TextInput
-                            // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
-                            placeholder="Enter Transaction ID" 
-                            onChangeText={(text)=>
-                                setTransactionId(text)
-                            }/>
+                    {/* <TouchableOpacity style={[styles.inputBox, { marginTop: 10 }]}> */}
+                    <TextInput
+                        style={[styles.inputBox, { marginTop: 10 }]}
+                        // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
+                        placeholder="Enter Transaction ID"
+                        onChangeText={(text) =>
+                            setTransactionId(text)
+                        } />
 
-                        <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} />
-                    </TouchableOpacity>
+                    {/* <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} /> */}
+                    {/* </TouchableOpacity> */}
 
                     <Text style={styles.dscptTxt}>Description</Text>
 
                     <TextInput
                         style={styles.dscpBox}
-                        placeholder="Enter Description" />
+                        placeholder="Enter Description" 
+                        value={description}
+                         onChangeText={handleDescriptionChange} 
+                        />
 
                     <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', marginTop: 22 }}>
                         <TouchableOpacity style={{ marginRight: 8 }}>
@@ -628,7 +688,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         </TouchableOpacity>
 
                         <TouchableOpacity onPress={savegenerate}
-                            style={[{ backgroundColor: '#1E45E1', padding: 10, borderRadius: 8, marginLeft: 8}, isSubmitClicked &&{opacity:0.4}]}>
+                            style={[{ backgroundColor: '#1E45E1', padding: 10, borderRadius: 8, marginLeft: 8 }, isSubmitClicked && { opacity: 0.4 }]}>
                             <Text style={{ color: '#ffffff', fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
                                 Save & Generate</Text>
                         </TouchableOpacity>
@@ -676,14 +736,15 @@ const styles = StyleSheet.create({
     mainSheet: {
         backgroundColor: '#ffffff',
         flex: 1,
-        padding: 20
+        padding: 20,
+        paddingTop: 50
     },
     pageHead: {
         fontSize: 20,
         fontFamily: 'Gilroy-Semibold'
     },
     tntNameTxt: {
-        fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 24,
+        fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 14,
     },
     dropdownMenu: {
         backgroundColor: "#fff",

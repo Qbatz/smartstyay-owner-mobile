@@ -23,6 +23,7 @@ import EditAdvanceAmountSheet from "./EditAdvanceSheet"
 import OverviewTab from "./OverviewTab";
 import EBReadingTab from "./EBReadingTab";
 import BillTab from "./BillTab";
+import RetainerTab from "./RetainerTab"
 import ComplaintsTab from "./ComplaintsTab";
 import AssignAmenitiesSheet from "./AssignAmenitiesSheet"
 import ProfileImg from "../../../Assets/Images/profile.png";
@@ -57,6 +58,7 @@ import CheckoutIcon from "../../../Assets/Images/checkout_red.png"
 import Generate from "../../../Assets/Images/fsi.png"
 import AdditionalContactBottomSheet from "./AdditionalContactBottomSheet"
 import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
+import RetainerDetailsSheet from "../../MorePages/Bills/OverviewRetainerDetails"
 import ImagePickerSheet from "./ImagePickerSheet"
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import FloorIcon from "../../../Assets/Images/Room_bed.png"
@@ -114,6 +116,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const [showContactSheet, setShowContactSheet] = useState(false);
   const [BillDetailshow, setBillDetailsShow] = useState(false)
+   const [RetainerDetailshow, setRetainerDetailsShow] = useState(false)
   const [transactionDetailShow, setTransactionDetailsShow] = useState(false);
   const [transactionDetail, setTransactionDetail] = useState("")
   const [showPendingAction, setShowPendingAction] = useState(false)
@@ -749,6 +752,14 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         return <CustomerTransaction customerDetails={customerDetails}
           showTransactionDetails={() => setTransactionDetailsShow(true)} selectedTransaction={setTransactionDetail} />;
 
+      case "Retainer":
+        return <RetainerTab customerDetails={customerDetails}
+          ShowBillsDetails={(bill) => {
+            setSelectedBill(bill);
+            setRetainerDetailsShow(true);
+          }}
+        />;
+
       default:
         return (
           <OverviewTab
@@ -769,6 +780,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const handleCreateBill = () => {
     if (!canWriteInvoice) return;
     navigation.navigate("CreateBills", { mode: "addBill", customerDetails })
+  }
+
+   const handleCreateRetainer = () => {
+    if (!canWriteInvoice) return;
+    navigation.navigate("NewRetainerInvoiceSheet", { mode: "addRetainer", customerDetails })
   }
 
   const tabs = ["Overview", "EB Reading", "Bill", "Complaints", "Amenities"];
@@ -1118,7 +1134,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                 zIndex: 5, paddingTop: showHeader ? 70 : 0
               }}>
                 <View style={styles.tabRow}>
-                  {["Overview", "EB Reading", "Bill", "Transactions"].map((tab) => {
+                  {["Overview", "EB Reading", "Bill", "Transactions", "Retainer"].map((tab) => {
                     const isActive = activeTab === tab;
                     return (
                       <TouchableOpacity
@@ -1154,6 +1170,20 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               //  disabled={!canWriteInvoice}
               disabled={disableFinancialEdit || !canWriteInvoice}
               onPress={handleCreateBill}>
+              <Image source={AddIcon} style={{ width: 25, height: 25 }} />
+            </TouchableOpacity>
+          )}
+
+          {activeTab == "Retainer" && (
+            <TouchableOpacity
+              //  style={[ styles.addBtn, !canWriteInvoice && { opacity: 0.4 }]}
+              style={[
+                styles.addBtn,
+                (!canWriteInvoice || disableFinancialEdit) && { opacity: 0.4 }
+              ]}
+              //  disabled={!canWriteInvoice}
+              disabled={disableFinancialEdit || !canWriteInvoice}
+              onPress={handleCreateRetainer}>
               <Image source={AddIcon} style={{ width: 25, height: 25 }} />
             </TouchableOpacity>
           )}
@@ -1475,6 +1505,15 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           }}
           selectedBill={selectedBill}
         // bill={selectedBill}
+        />
+
+        <RetainerDetailsSheet
+          visible={RetainerDetailshow}
+          onClose={() => {
+            fetchCustomerDetails();
+            setRetainerDetailsShow(false)
+          }}
+          selectedBill={selectedBill}
         />
 
         <TransactionDetailSheet
