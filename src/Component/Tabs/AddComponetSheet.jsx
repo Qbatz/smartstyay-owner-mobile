@@ -122,6 +122,10 @@ const DATA = [
     icon: require("../../Assets/Images/InvestmentBlue.png"),
     screen: "AddComplaint",
   },
+  {
+    title: "Add Booking",
+    screen:'AddBookingNewForm',
+  },
 //    {
 //     title: "Amenity",
 //     icon: require("../../Assets/Images/Amenitie.png"),
