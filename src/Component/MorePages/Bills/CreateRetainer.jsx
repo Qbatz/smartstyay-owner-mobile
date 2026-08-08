@@ -42,7 +42,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
         retainerType: "",
         amount: "",
     }
-    const [description , setDescription] = useState("")
+    const [description, setDescription] = useState("")
     const [items, setItems] = useState([emptyItem]);
     const [showTenantName, setShowTenantName] = useState(false);
     const [selectedName, setSelectedName] = useState("")
@@ -107,13 +107,13 @@ const NewRetainerInvoiceSheet = ({ }) => {
     }
 
     const handleDescriptionChange = (text) => {
-    const filteredText = text.replace(
-        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/g,
-        ""
-    );
+        const filteredText = text.replace(
+            /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/g,
+            ""
+        );
 
-    setDescription(filteredText);
-};
+        setDescription(filteredText);
+    };
 
 
     const handleAddRow = () => {
@@ -357,6 +357,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 setErrors(prev => ({ ...prev, name: "" }))
                                 setReceivedFrom("")
                                 setSelectedGuardian("")
+                                setSelectedName("")
                             }}
                         />
 
@@ -438,6 +439,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             onChangeText={(text) => {
                                 const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
                                 setReceivedFrom(onlyLetters)
+                                setSelectedGuardian("")
                             }}
                         />
 
@@ -466,7 +468,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                                 onPress={() => {
                                                     // setSelectedName(i.guardianName)
                                                     setSelectedGuardian(i)
-                                                    // setStateQuery("");
+                                                    setStateQuery("");
                                                     setGuardianOpen(false)
                                                 }}>
                                                 <Text>{i.guardianName}</Text>
@@ -528,7 +530,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         return (
                             <View style={[styles.itemBox, { position: 'relative' }]} key={index}>
                                 <View style={styles.itemHealine}>
-                                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>Item</Text>
+                                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>Item  </Text>
 
                                     {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <TouchableOpacity onPress={() => { handleRepeatRow(index) }}>
@@ -542,7 +544,9 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     </View> */}
                                 </View>
 
-                                <Text style={styles.itemdetailTxt}>Item Detail</Text>
+                                <Text style={styles.itemdetailTxt}>Item Detail
+                                    {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                                </Text>
 
                                 <TextInput
                                     style={styles.itemTxtInpt}
@@ -554,7 +558,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     }} />
 
 
-                                <Text style={styles.itemdetailTxt}>Retainer Type</Text>
+                                <Text style={styles.itemdetailTxt}>Retainer Type {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
                                 <TouchableOpacity onPress={() => setOpenRetainerType(!openRetainerType)}
                                     style={styles.retainTypeBox}>
@@ -585,7 +589,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 )}
 
                                 <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular', color: '#3C3C4399', marginTop: 12 }}>
-                                    Amount</Text>
+                                    Amount {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
                                 <ValidatedInput
                                     keyboardType="numeric"
@@ -678,10 +682,10 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
                     <TextInput
                         style={styles.dscpBox}
-                        placeholder="Enter Description" 
+                        placeholder="Enter Description"
                         value={description}
-                         onChangeText={handleDescriptionChange} 
-                        />
+                        onChangeText={handleDescriptionChange}
+                    />
 
                     <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', marginTop: 22 }}>
                         <TouchableOpacity style={{ marginRight: 8 }}>
@@ -698,6 +702,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                 </ScrollView>
             </View>
 
+            {console.log("slected", selectedTenant)}
+
             {openPaidDate && (
                 <View style={styles.dateOverlay}>
                     <TouchableWithoutFeedback onPress={() => setOpenPaidDate(false)}>
@@ -708,6 +714,11 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         <Calendar
                             markingType="custom"
                             markedDates={paidMarkedDates}
+                            minDate={
+                                selectedTenant?.joiningDate ? dayjs(
+                                        selectedTenant.joiningDate,"DD/MM/YYYY"
+                                    ).format("YYYY-MM-DD"): undefined
+                            }
                             current={
                                 paidDate
                                     ? dayjs(paidDate).format("YYYY-MM-DD")

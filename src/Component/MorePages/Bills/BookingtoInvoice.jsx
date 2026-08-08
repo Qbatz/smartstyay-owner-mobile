@@ -472,34 +472,40 @@ export default function BookingToInvoice() {
 
                             {/* BOOKING AMOUNT */}
                             <View style={styles.bookingRowInside}>
-                                <Text style={styles.bookingLabel}>
-                                    {source === "bill"
-                                        ? "Balance advance Amount"
-                                        : "Retainer Amount of"}
-                                </Text>
-                                <View style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <Text style={styles.bookingAmount}>
-                                        {/* ₹ {advanceInfo?.advanceBalanceAmount || 0} */}
-                                        ₹ {
-                                            advanceInfo?.availableBalance ||
-                                            advanceInfo?.advanceBalanceAmount ||
-                                            0
-                                        }
+                                <View style={{ display: 'flex', flexDirection: 'column',marginTop:8 }}>
+                                    <Text style={styles.bookingLabel}>
+                                        {source === "bill"
+                                            ? "Balance advance Amount"
+                                            : "Retainer Amount of"}
                                     </Text>
-                                    {source === "bill" &&
-                                        (
-                                            <View style={{ display: 'flex', flexDirection: 'row', marginTop: 3 }}>
 
-                                                <Text style={styles.smallText}>
-                                                    {advanceInfo?.advanceInvoiceNumber}
-                                                </Text>
-                                                <Image
-                                                    source={InvoiceLinkIcon}
-                                                    style={{ height: 14, width: 14, marginLeft: 3 }}
-                                                />
-                                            </View>
-                                        )}
+                                    {/* {source === "bill" && */}
+                                    {/* ( */}
+                                    <View style={{ display: 'flex', flexDirection: 'row', marginTop: 3 }}>
+
+                                        <Text style={{ fontSize: 12,color: "#1E45E1",marginBottom: 8,
+                                                      fontFamily: "Gilroy-Semibold",textDecorationLine:'underline'}}
+                    >
+                                            {advanceInfo?.advanceInvoiceNumber}
+                                        </Text>
+                                        <Image
+                                            source={InvoiceLinkIcon}
+                                            style={{ height: 14, width: 14, marginLeft: 3 }}
+                                        />
+                                    </View>
+                                    {/* )} */}
                                 </View>
+
+
+                                <Text style={styles.bookingAmount}>
+                                    {/* ₹ {advanceInfo?.advanceBalanceAmount || 0} */}
+                                    ₹ {
+                                        advanceInfo?.availableBalance ||
+                                        advanceInfo?.advanceBalanceAmount ||
+                                        0
+                                    }
+                                </Text>
+
                             </View>
 
                         </View>
@@ -519,7 +525,7 @@ export default function BookingToInvoice() {
                                             </Text>
 
                                             <Text style={styles.amount}>
-                                                ₹ {item?.invoiceAmount || 0}
+                                                ₹ {item?.pendingAmount || 0}
                                             </Text>
                                         </View>
 
@@ -550,10 +556,10 @@ export default function BookingToInvoice() {
                                             </Text>
                                         </View>
 
-                                        <View style={styles.rowBetween}>
+                                        {/* <View style={styles.rowBetween}>
                                             <Text style={styles.label}>Due</Text>
                                             <Text style={styles.valueText}>{item?.pendingAmount ? item?.pendingAmount : "N/A"}</Text>
-                                        </View>
+                                        </View> */}
 
                                         <Text style={styles.inputLabel}>
                                             Amount to apply
