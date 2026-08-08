@@ -56,6 +56,7 @@ import CrownIcon from "../../../Assets/Images/crown.png"
 import AdminResetPasswordSheet from "./AdminResetPasswordSheet"
 import { PGContext } from "../../../Context/PGContext";
 import LinearGradient from "react-native-linear-gradient";
+import AddCircleIcon from "../../../Assets/Images/blue_circle.png"
 
 
 
@@ -600,6 +601,20 @@ export default function GeneralDetailsScreen({ navigation }) {
               showsVerticalScrollIndicator={false}
 
             />
+
+             <TouchableOpacity
+                style={[
+                  styles.masterButton,
+                  !canWriteProfile && { opacity: 0.4 },
+                ]}
+                disabled={!canWriteProfile}
+                onPress={() =>
+                  navigation.navigate("AddGeneralScreen")
+                }
+              >
+                <Image source={AddCircleIcon} style={{width:20,height:20,marginRight:3}}/>
+                <Text style={styles.masterText}> Master</Text>
+              </TouchableOpacity>
           </View>
         );
 
@@ -779,7 +794,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                       DotsTopRef.current.measureInWindow(
                         (x, y, width, height) => {
                           setPopupPo({
-                            top: y + height - 100,
+                            top: y + height + 20,
                             right: SCREEN_WIDTH - (x + width),
                           });
                         }
@@ -1367,13 +1382,20 @@ const styles = StyleSheet.create({
   },
 
   masterButton: {
-    backgroundColor: "#4466F2",
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    position:'absolute',
+    borderWidth:1,
+    backgroundColor: "#F2F5FA",
+    borderColor:'#1E45E1',
+    paddingVertical: 10,
+    paddingHorizontal: 26,
     borderRadius: 8,
+    justifyContent:'flex-end',
+    bottom:60,
+    right:18,
+    flexDirection:'row',alignItems:'center'
   },
 
-  masterText: { color: "#FFF",fontFamily: "Gilroy-Semibold" },
+  masterText: { color: "#1E45E1",fontFamily: "Gilroy-Semibold",fontSize:16 },
 
   card: {
     backgroundColor: "#FFF",

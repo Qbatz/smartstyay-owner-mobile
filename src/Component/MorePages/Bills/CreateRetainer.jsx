@@ -267,6 +267,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
             paymentDate: invoiceCreatedDate,
             mobile: selectedTenant?.mobile,
             relationName: selectedGuardian?.guardianName || receivedFrom,
+            description: items[0]?.itemDetail,
+            detailedDescription: description,
             invoiceType: items[0]?.retainerType,
             amount: totalRetainerAmount,
             bankId: selectedBankId,
