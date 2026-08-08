@@ -3917,6 +3917,31 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                     <View style={styles.tabRow}>
 
+                                          <TouchableOpacity
+                                            style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
+                                            onPress={() => {
+                                                setActiveTab("CheckIn");
+                                                setCheckinTenantSelected(null);
+                                                setCheckinTenantsopen(false);
+                                                setJoiningDate(null)
+                                                setRentalAmount("")
+                                                setCheckinRentalAmount("")
+                                                setAdvanceAmount("");
+                                                setTenantsError("")
+                                                clearAllErrors();
+                                                resetBookingState();
+                                                clearAllErrors();
+                                                setFloorSelected(null)
+                                                setRoomSelected(null)
+                                                setBedSelected(null)
+                                            }}
+
+                                        >
+                                            <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
+                                                Check-In
+                                            </Text>
+                                        </TouchableOpacity>
+
                                         <TouchableOpacity
                                             style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
                                             onPress={() => {
@@ -3943,36 +3968,11 @@ export default function AddTenantNewform({ navigation, route }) {
                                         </TouchableOpacity>
 
 
-                                        <TouchableOpacity
-                                            style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
-                                            onPress={() => {
-                                                setActiveTab("CheckIn");
-                                                setCheckinTenantSelected(null);
-                                                setCheckinTenantsopen(false);
-                                                setJoiningDate(null)
-                                                setRentalAmount("")
-                                                setCheckinRentalAmount("")
-                                                setAdvanceAmount("");
-                                                setTenantsError("")
-                                                clearAllErrors();
-                                                resetBookingState();
-                                                clearAllErrors();
-                                                setFloorSelected(null)
-                                                setRoomSelected(null)
-                                                setBedSelected(null)
-                                            }}
-
-                                        >
-                                            <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
-                                                Check-In
-                                            </Text>
-                                        </TouchableOpacity>
+                                      
 
                                     </View>
                                     {activeTab === "Booking" && (
                                         <>
-
-
                                             <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
                                             <View ref={bookingDateRef} collapsable={false}>
                                                 <TouchableOpacity

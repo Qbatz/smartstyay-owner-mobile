@@ -116,7 +116,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showInactiveSheet, setShowInactiveSheet] = useState(false)
   const [showContactSheet, setShowContactSheet] = useState(false);
   const [BillDetailshow, setBillDetailsShow] = useState(false)
-   const [RetainerDetailshow, setRetainerDetailsShow] = useState(false)
+  const [RetainerDetailshow, setRetainerDetailsShow] = useState(false)
   const [transactionDetailShow, setTransactionDetailsShow] = useState(false);
   const [transactionDetail, setTransactionDetail] = useState("")
   const [showPendingAction, setShowPendingAction] = useState(false)
@@ -782,7 +782,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     navigation.navigate("CreateBills", { mode: "addBill", customerDetails })
   }
 
-   const handleCreateRetainer = () => {
+  const handleCreateRetainer = () => {
     if (!canWriteInvoice) return;
     navigation.navigate("NewRetainerInvoiceSheet", { mode: "addRetainer", customerDetails })
   }
@@ -1129,7 +1129,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             {/* TABS */}
             <View>
 
-              <View style={{
+              {/* <View style={{
                 backgroundColor: "#fff",
                 zIndex: 5, paddingTop: showHeader ? 70 : 0
               }}>
@@ -1150,6 +1150,44 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                     );
                   })}
                 </View>
+              </View> */}
+           
+
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  zIndex: 5,
+                  paddingTop: showHeader ? 70 : 0,
+                }}
+              >
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.tabRow}
+                >
+                  {["Overview", "EB Reading", "Bill", "Transactions", "Retainer"].map((tab) => {
+                    const isActive = activeTab === tab;
+
+                    return (
+                      <TouchableOpacity
+                        key={tab}
+                        onPress={() => setActiveTab(tab)}
+                        style={styles.tabBtn}
+                      >
+                        <Text
+                          style={[
+                            styles.tabText,
+                            isActive && styles.activeTabText,
+                          ]}
+                        >
+                          {tab}
+                        </Text>
+
+                        {isActive && <View style={styles.activeLine} />}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
               </View>
             </View>
 
@@ -1530,11 +1568,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         customerDetails={customerDetails}
       />
 
-      <AddJobDetails 
-             visible={showJobdetails}
-          onClose={() => setShowJobDetails(false)}
-          customerDetails={customerDetails}
-          onSuccess={fetchCustomerDetails}
+      <AddJobDetails
+        visible={showJobdetails}
+        onClose={() => setShowJobDetails(false)}
+        customerDetails={customerDetails}
+        onSuccess={fetchCustomerDetails}
       />
     </>
   );
@@ -1637,11 +1675,11 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: "#E5E7EB",
     marginBottom: 10,
-    gap: 10
+    gap: 5
   },
 
   tabBtn: {
-    marginRight: 20,
+    marginRight: 14,
     paddingBottom: 8,
   },
 

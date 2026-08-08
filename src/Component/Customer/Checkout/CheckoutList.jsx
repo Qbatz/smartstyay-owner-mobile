@@ -232,6 +232,10 @@ const isTabBarVisible = useRef(true);
     const isMenuVisible = menuVisibleId === item.customerId;
     console.log("checkout", item)
 
+     const isValidImageUrl = (url) => {
+    return typeof url === "string" && /^https?:\/\//i.test(url.trim());
+  };
+
     return (
       <>
         <SuccessModal
@@ -243,11 +247,26 @@ const isTabBarVisible = useRef(true);
 
         <TouchableOpacity style={styles.card} onPress={() => openCustomerDetails(item)}>
           <View style={styles.leftRow}>
-            <View>
-              {item?.profilePic ? <Image source={{ uri: item.profilePic }} style={{ width: 55, height: 55, borderRadius: 25 }} /> :
+            <View  style={{ position: "relative" }}>
+              {/* {item?.profilePic ? <Image source={{ uri: item.profilePic }} style={{ width: 55, height: 55, borderRadius: 25 }} /> :
                 <View style={{ width: 55, height: 55, borderRadius: 25, backgroundColor: '#eef1ff', justifyContent: 'center', alignItems: 'center' }}>
                   <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>{item?.initials}</Text>
-                </View>}
+                </View>} */}
+
+                   {isValidImageUrl(item?.profilePic) ? (
+                                                <Image
+                                                  source={{ uri: item?.profilePic }}
+                                                  style={styles.profileImg}
+                                                />
+                                              ) : (
+                                                <View style={{ width: 55, height: 55, borderRadius: 25, backgroundColor: '#eef1ff', justifyContent: 'center', alignItems: 'center' }}>
+                                                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>
+                                                    {item?.initials ||
+                                                      item?.fullName?.slice(0, 2)?.toUpperCase() ||
+                                                      "--"}
+                                                  </Text>
+                                                </View>
+                                              )}
             </View>
 
             <View style={[styles.info,{flex:1}]}>
