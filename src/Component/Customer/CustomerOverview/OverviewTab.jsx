@@ -4,7 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image, ScrollView, Modal, TouchableWithoutFeedback, Linking
+  Image, ScrollView, Modal, TouchableWithoutFeedback, Linking, NativeModules
 } from "react-native";
 import Mail from "../../../Assets/Images/sms.png";
 import Phone from "../../../Assets/Images/call.png";
@@ -50,7 +50,7 @@ export default function OverviewTab({ customerDetails,
   const { activeHostelId } = useContext(CommonContexts);
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { AddManualDocument, ParticularcustomerDetails, AddAdditionalContacts,
-    GetParticularCustomerDetails, deleteManualDocument, loading } = useCustomer();
+    GetParticularCustomerDetails, deleteManualDocument, loading, cancelUpcomingRent, getCustomerDetails } = useCustomer();
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
 
@@ -60,6 +60,18 @@ export default function OverviewTab({ customerDetails,
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+
+  const [environment, setEnvironment] = useState("")
+
+  const { CommonModule } = NativeModules;
+
+  useEffect(() => {
+    CommonModule.fetchEnvironment().then(r => {
+      setEnvironment(r)
+    })
+  }, [])
+
+  const isProd = environment?.toUpperCase() === "PROD";
 
   // const [showkycPendingSheet, setShowKYCPendingSheet] = useState(false);
 
@@ -191,6 +203,37 @@ export default function OverviewTab({ customerDetails,
   };
 
 
+  const handleDeleteNewRent = async () => {
+    const res = await cancelUpcomingRent(
+      activeHostelId,
+      customerDetails?.customerId
+    );
+
+    if (res?.success) {
+      await GetParticularCustomerDetails(customerDetails?.customerId)
+      await getCustomerDetails(customerDetails?.customerId);
+      // await GetParticularCustomerDetails(customerDetails?.customerId)
+
+      setModalType("success");
+      setMessage("Upcoming monthly rent cancelled successfully");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800)
+    } else {
+      setModalType("error");
+      setMessage(res?.message);
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 800)
+
+    }
+  };
+
+
 
   const handleDeleteDocument = async () => {
     if (!deleteDocumentId) return;
@@ -255,6 +298,8 @@ export default function OverviewTab({ customerDetails,
   ].includes(customerDetails?.hostelInfo?.currentStatus) || customerDetails?.customerCurrentStatus == "DRAFT";
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
 
+
+  
   const isNewRentApplied = customerDetails?.isNewRentApplied;
   const newRent = customerDetails?.newRentAmount;
   const oldRent = customerDetails?.hostelInfo?.monthlyRent;
@@ -293,12 +338,12 @@ export default function OverviewTab({ customerDetails,
     customerDetails?.jobDetails?.shiftType ||
     customerDetails?.jobDetails?.shiftTiming;
 
-    const { shiftStartTime, shiftEndTime } = customerDetails?.jobDetails || {};
+  const { shiftStartTime, shiftEndTime } = customerDetails?.jobDetails || {};
 
-const shiftTiming =
-  shiftStartTime && shiftEndTime
-    ? `${shiftStartTime} - ${shiftEndTime}`
-    : "N/A";
+  const shiftTiming =
+    shiftStartTime && shiftEndTime
+      ? `${shiftStartTime} - ${shiftEndTime}`
+      : "N/A";
 
 
   return (
@@ -338,8 +383,8 @@ const shiftTiming =
                 </View>
               </View>
 
-              <TouchableOpacity 
-              style={[styles.pendingBtn, (customerDetails?.customerCurrentStatus == "BOOKED" || !canWriteTenant) && { opacity: 0.4 }]}
+              <TouchableOpacity
+                style={[styles.pendingBtn, (customerDetails?.customerCurrentStatus == "BOOKED" || !canWriteTenant) && { opacity: 0.4 }]}
                 // disabled={customerDetails?.customerCurrentStatus == "BOOKED" ? true : false}
                 disabled={
                   customerDetails?.customerCurrentStatus == "BOOKED" ||
@@ -409,22 +454,22 @@ const shiftTiming =
               </View>
             </View>
 
-             <View style={styles.detailRow}>
+            <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>ID Proof</Text>
               <View style={styles.valueWithIcon}>
                 {/* <Image source={Mail} style={styles.detailIcon} /> */}
                 <Text style={styles.detailValue}>
-                 {customerDetails?.idProofType || "N/A"}
+                  {customerDetails?.idProofType || "N/A"}
                 </Text>
               </View>
             </View>
 
-             <View style={styles.detailRow}>
+            <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Document No</Text>
               <View style={styles.valueWithIcon}>
                 {/* <Image source={Mail} style={styles.detailIcon} /> */}
                 <Text style={styles.detailValue}>
-                 {customerDetails?.idProofNo || "N/A"}
+                  {customerDetails?.idProofNo || "N/A"}
                 </Text>
               </View>
             </View>
@@ -837,9 +882,46 @@ const shiftTiming =
             {isNewRentApplied && (
               <>
                 <View style={styles.amountBox}>
-                  <Text style={styles.amountValue}>Monthly New Rent</Text>
+
+                  <View style={styles.amountValueRow}>
+                    <Text style={styles.amountValue}>Monthly New Rent</Text>
+                    {
+                      !disableFinancialEdit &&
+                      isSubscriptionAllow &&
+                      !isProd &&
+                      !["VACATED", "NOTICE"].includes(status) && (
+                        <TouchableOpacity
+                          disabled={
+                            disableFinancialEdit ||
+                            !canDeleteTenant ||
+                            !isJoiningDateEditable
+                          }
+                          style={
+                            (disableFinancialEdit ||
+                              !canDeleteTenant ||
+                              !isJoiningDateEditable) && {
+                              opacity: 0.4,
+                            }
+                          }
+                          onPress={handleDeleteNewRent}
+                        >
+                          <Image
+                            source={require("../../../Assets/Images/trash.png")}
+                            style={{
+                              width: 14,
+                              height: 14,
+                              marginLeft: 6,
+                            }}
+                          />
+                        </TouchableOpacity>
+                      )
+                    }
+                  </View>
+
                   <Text style={styles.amountLabel}>₹ {newRent || 0}</Text>
                 </View>
+
+
 
                 <View style={styles.newRentBox}>
                   <Text style={styles.newRentText}>

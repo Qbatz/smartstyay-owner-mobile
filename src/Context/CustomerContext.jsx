@@ -2315,6 +2315,55 @@ export const CustomerProvider = ({ children }) => {
   } finally {
     setLoading(false);
   }
+}
+
+
+const cancelUpcomingRent = async (hostelId, customerId) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/bookings/rent/${hostelId}/${customerId}/cancel-upcoming-rent`,
+      {}, 
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res.status === 200) {
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Unable to cancel upcoming rent",
+    };
+  } catch (error) {
+    console.log("CANCEL UPCOMING RENT ERROR ", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Unable to cancel upcoming rent",
+    };
+  } finally {
+    setLoading(false);
+  }
 };
 
   return (
@@ -2340,7 +2389,7 @@ export const CustomerProvider = ({ children }) => {
         addVendor, updateVendor, vendorList,
         getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,
-        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn, UpdateAdditionalDraftDetails, UpdateJobDetails, retainerCustomerList, createPaymentMethod,
+        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn, UpdateAdditionalDraftDetails, UpdateJobDetails, retainerCustomerList, createPaymentMethod, cancelUpcomingRent ,
         retainerList, retainerBankList, customersList
       }}
     >
