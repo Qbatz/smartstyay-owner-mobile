@@ -753,7 +753,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           showTransactionDetails={() => setTransactionDetailsShow(true)} selectedTransaction={setTransactionDetail} />;
 
       case "Retainer":
-        return <RetainerTab customerDetails={customerDetails}
+        return <RetainerTab customerDetails={customerDetails?.retainerInfo?.retainerList}
           ShowBillsDetails={(bill) => {
             setSelectedBill(bill);
             setRetainerDetailsShow(true);

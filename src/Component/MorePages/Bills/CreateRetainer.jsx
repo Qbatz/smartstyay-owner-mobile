@@ -426,7 +426,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     >Search existing tenants in the property flow ecosystem to auto-fill details</Text>
 
 
-                    <Text style={styles.headerTxt}>Received from</Text>
+                    <Text style={styles.headerTxt}>Received from <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
 
                     <TouchableOpacity onPress={() => setGuardianOpen(!guardianOpen)}
@@ -554,7 +554,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     placeholder="Enter Item"
                                     onChangeText={(text) => {
                                         // setItems(items.itemDetail(text))
-                                        handleChange(index, "itemDetail", text)
+                                        const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
+                                        handleChange(index, "itemDetail", onlyLetters)
                                     }} />
 
 

@@ -9,7 +9,7 @@ import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
-  const invoiceList = customerDetails?.retainerInfo?.retainerList || [];
+  const invoiceList = customerDetails || [];
   const navigation = useNavigation();
   console.log("customerDetailsBillTab", invoiceList);
   const { BillDetails, loading, GetAllBillDetails,
@@ -94,75 +94,58 @@ export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
 
 <View style={{ flex: 1 }}>
   {invoiceList?.length > 0 ? (
+  
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 120 }}
     >
-    {invoiceList?.map((item, index) => {
-  const isAvailable = item?.status === "Available";
-
-  return (
-    <TouchableOpacity
-      key={item?.invoiceId || index}
-      style={styles.row}
-    //   onPress={() => handleOpenBillDetails(item)}
-    >
-      <View style={{ flex: 1 }}>
-        <View style={styles.subRow}>
-          <Text style={styles.billType}>
-            {item?.invoiceType?.replace("_", " ")}
-          </Text>
-
-          <View
-            style={[
-              styles.statusBadge,
-              isAvailable
-                ? styles.paidBadge
-                : styles.overdueBadge,
-            ]}
-          >
-            <Text
-              style={[
-                styles.statusText,
-                isAvailable
-                  ? styles.paidText
-                  : styles.overdueText,
-              ]}
+     {invoiceList?.map((item, index) => (
+            <TouchableOpacity key={index} style={styles.row}
+              onPress={() => handleOpenBillDetails(item)}
             >
-              {item?.status || "Used"}
-            </Text>
-          </View>
-        </View>
+              <View>
+                <View style={styles.subRow}>
+                  <Text style={styles.billType}>{item.invoiceType}</Text>
 
-        <Text style={styles.billId}>
-          {item?.invoiceNo}
-        </Text>
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      item.paymentStatus === "Paid"
+                        ? styles.paidBadge
+                        : styles.overdueBadge,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statusText,
+                        item.paymentStatus === "Paid"
+                          ? styles.paidText
+                          : styles.overdueText,
+                      ]}
+                    >
+                      {item?.paymentStatus}
+                    </Text>
+                  </View>
 
-        {/* <Text style={styles.date}>
-          Payment Mode : {item?.paymentMode}
-        </Text> */}
+                </View>
+                <Text style={styles.billId}>{item?.invoiceNumber}</Text>
 
-       
-      </View>
+                
+                {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                  <Text style={styles.dueLabel}>Outstanding</Text>
+                )}
+              </View>
 
-      <View style={styles.rightBox}>
-        <Text style={styles.amount}>
-          ₹{item?.amount}
-        </Text>
+              <View style={styles.rightBox}>
+                <Text style={styles.amount}>₹{item.totalAmount}</Text>
+                <Text style={styles.date}> {item?.dueDate}</Text>
+                {["Partially Paid", "Partial Payment"].includes(item?.paymentStatus) && (
+                  <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
+                )}
+              </View>
 
-        <Text style={styles.date}>
-          {item?.date}
-        </Text>
-         {item?.availableBalance > 0 && (
-          <Text style={styles.dueAmount}>
-            Available : ₹{item?.availableBalance}
-          </Text>
-        )}
-      </View>
-      
-    </TouchableOpacity>
-  );
-})}
+            </TouchableOpacity>
+          ))}
     </ScrollView>
   ) : (
      <View style={styles.emptyContainer}>
@@ -171,7 +154,7 @@ export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
         No Retainer have been generated yet.
       </Text>
     </View>
-   )} 
+   )}
 </View>
 
      
@@ -189,10 +172,11 @@ const styles = StyleSheet.create({
   },
 
   billId: {
-    fontSize: 14,
-    fontFamily: "Gilroy-Semibold",
-    color: "#111827",
-    marginBottom: 6,
+    fontSize: 12.5,
+    fontFamily: "Gilroy-Medium",
+    color: "#4B4B4B",
+    marginRight:6
+    // marginBottom: 6,
   },
 
   subRow: {
@@ -201,8 +185,8 @@ const styles = StyleSheet.create({
   },
 
   billType: {
-    fontSize: 12,
-    color: "#6B7280",
+    fontSize: 16,
+    // color: "#6B7280",
     marginRight: 8,
     fontFamily: "Gilroy-Medium"
   },
@@ -220,6 +204,7 @@ const styles = StyleSheet.create({
   paidBadge: {
     backgroundColor: "#DCFCE7",
   },
+  adjustedBadge:{backgroundColor:'#FFE9E3'},
 
   statusText: {
     fontSize: 11,
@@ -246,6 +231,9 @@ const styles = StyleSheet.create({
   paidText: {
     color: "#15803D",
   },
+  adjustedText: {
+    color:'#E02D2D'
+  },
 
   rightBox: {
     alignItems: "flex-end",
@@ -253,7 +241,7 @@ const styles = StyleSheet.create({
   },
 
   amount: {
-    fontSize: 15,
+    fontSize: 16,
     fontFamily: "Gilroy-Semibold",
     color: "#111827",
   },
