@@ -11,6 +11,7 @@ import {
   Image, TouchableWithoutFeedback , BackHandler
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import BookingPencilIcon from "../../Assets/Images/pencil-book.png"
 
 const { height } = Dimensions.get("window");
 const SHEET_HEIGHT = height * 0.44;
@@ -98,6 +99,11 @@ const DATA = [
     screen: "AddTenantNew",
   },
   {
+    title: "Booking",
+    icon: BookingPencilIcon,
+    screen:'AddBookingNewForm',
+  },
+  {
     title: "Expense",
     icon: require("../../Assets/Images/money-minus.png"),
     screen: "AddExpensesPage",
@@ -122,10 +128,7 @@ const DATA = [
     icon: require("../../Assets/Images/InvestmentBlue.png"),
     screen: "AddComplaint",
   },
-  {
-    title: "Add Booking",
-    screen:'AddBookingNewForm',
-  },
+  
 //    {
 //     title: "Amenity",
 //     icon: require("../../Assets/Images/Amenitie.png"),
