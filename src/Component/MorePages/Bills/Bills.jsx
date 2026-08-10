@@ -2397,6 +2397,18 @@ export default function BillsDesign({ route }) {
     setSearchText("");
   };
 
+  useFocusEffect(
+  useCallback(() => {
+
+
+    return () => {
+      clearBillFilters();      
+      setActiveTab("Invoices"); 
+       GetAllBillDetails(activeHostelId);
+    };
+  }, [])
+);
+
   const handleTabChange = (tab) => {
     if (activeTab === "Invoices" && tab !== "Invoices") {
       clearBillFilters();

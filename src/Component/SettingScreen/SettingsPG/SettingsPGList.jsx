@@ -404,8 +404,15 @@ export default function SettingsPG({ navigation }) {
 
       <>
         <View style={{
-          paddingHorizontal: 16, paddingTop: 40, paddingBottom: 12, flexDirection: "row",
-          alignItems: "center", backgroundColor: '#fff'
+              paddingHorizontal: 16,
+    paddingTop: Platform.OS === "android"
+  ? StatusBar.currentHeight + 20
+  : 70 ,
+    paddingBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",backgroundColor: '#fff'
+          // paddingHorizontal: 16, paddingTop: 40, paddingBottom: 12, flexDirection: "row",
+          // alignItems: "center", backgroundColor: '#fff'
         }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={ArrowLeft} style={styles.backArrow} />
