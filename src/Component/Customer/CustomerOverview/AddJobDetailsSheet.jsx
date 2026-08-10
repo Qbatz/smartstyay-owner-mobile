@@ -632,19 +632,27 @@ export default function JobDetailsSheet({
                         {
                             transform: [
                                 {
-                                    translateY: Animated.subtract(
-                                        translateY,
-                                        new Animated.Value(safeKeyboardHeight)
-                                    ),
+                                    translateY,
                                 },
                             ],
                         },
+                        // {
+                        //     transform: [
+                        //         {
+                        //             translateY: Animated.subtract(
+                        //                 translateY,
+                        //                 new Animated.Value(safeKeyboardHeight)
+                        //             ),
+                        //         },
+                        //     ],
+                        // },
                     ]}
                 >
 
 
                     <KeyboardAvoidingView
-                        behavior={Platform.OS === "ios" ? "padding" : undefined}
+                        // behavior={Platform.OS === "ios" ? "padding" : undefined}
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
                         style={{ flex: 1 }}
                     >
                         <ScrollView

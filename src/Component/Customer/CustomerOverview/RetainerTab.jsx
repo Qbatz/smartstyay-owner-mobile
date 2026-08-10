@@ -61,6 +61,8 @@ export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
 
   const status = customerDetails?.customerCurrentStatus;
 
+  
+
   const disableFinancialEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
@@ -92,6 +94,7 @@ export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
 
 <View style={{ flex: 1 }}>
   {invoiceList?.length > 0 ? (
+  
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 120 }}
@@ -102,48 +105,43 @@ export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
             >
               <View>
                 <View style={styles.subRow}>
-                  <Text style={styles.billType}>{item.invoiceNo}</Text>
+                  <Text style={styles.billType}>{item.invoiceType}</Text>
 
-                
-
-                </View>
-
-                <View style={{flexDirection:'row',alignItems:'center',marginTop:6}}>
-                   <Text style={styles.billId}>{item?.invoiceType}</Text>
                   <View
                     style={[
                       styles.statusBadge,
-                      item.status === "Available"
-                        ? styles.paidBadge : item.status === "Fully Adjusted" ? styles.adjustedBadge 
+                      item.paymentStatus === "Paid"
+                        ? styles.paidBadge
                         : styles.overdueBadge,
                     ]}
                   >
                     <Text
                       style={[
                         styles.statusText,
-                        item.status === "Available"
-                          ? styles.paidText : item.status === "Fully Adjusted" ? styles.adjustedText 
+                        item.paymentStatus === "Paid"
+                          ? styles.paidText
                           : styles.overdueText,
                       ]}
                     >
-                      {item?.status}
+                      {item?.paymentStatus}
                     </Text>
                   </View>
-               
+
                 </View>
+                <Text style={styles.billId}>{item?.invoiceNumber}</Text>
 
                 
-                {/* {["Partially Adjusted", "Partial Payment"].includes(item.status) && (
+                {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
                   <Text style={styles.dueLabel}>Outstanding</Text>
-                )} */}
+                )}
               </View>
 
               <View style={styles.rightBox}>
-                <Text style={styles.amount}>₹{item.availableBalance}</Text>
-                <Text style={styles.date}> {item?.date}</Text>
-                {/* {["Partially Adjusted", "Partial Payment"].includes(item?.status) && (
-                  <Text style={styles.dueAmount}>   ₹ {item?.availableBalance || 0}</Text>
-                )} */}
+                <Text style={styles.amount}>₹{item.totalAmount}</Text>
+                <Text style={styles.date}> {item?.dueDate}</Text>
+                {["Partially Paid", "Partial Payment"].includes(item?.paymentStatus) && (
+                  <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
+                )}
               </View>
 
             </TouchableOpacity>
