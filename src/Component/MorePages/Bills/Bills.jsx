@@ -1437,6 +1437,10 @@ export default function BillsDesign({ route }) {
     setShowBillDetails(false)
 
   }
+  const handleShowBookingtoInvoice = () => {
+    navigation.navigate("BookingtoDiscount")
+    setShowBillDetails(false)
+  }
 
 
   const handleApplyInvoice = async () => {

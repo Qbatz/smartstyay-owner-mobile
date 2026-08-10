@@ -3801,6 +3801,35 @@ const AddBookingNew = ({ navigation, route }) => {
                                         <ErrorMessage message={bookingAmountError} type="error" />
                                     )}
 
+                                    <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
+                                    <View ref={joiningDateRef} collapsable={false}>
+                                        <TouchableOpacity
+                                            style={styles.dateBox}
+                                            onPress={() => {
+                                                Keyboard.dismiss();        // 🔥 keyboard close
+                                                setOpenDropdownId(null);
+                                                setCheckinTenantsopen(false);
+
+                                                setTimeout(() => {
+                                                    joiningDateRef.current.measureInWindow((x, y, w, h) => {
+                                                        setDatePickerTop(getSafeCalendarTop(y, h));
+                                                        setActiveDateField("joining");
+                                                        setShowCalendar(true);
+                                                    });
+                                                }, 150);                  // 🔥 wait for keyboard animation
+                                            }}
+                                        >
+                                            <Text style={styles.placeholder}>
+                                                {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
+                                            </Text>
+                                            <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
+                                        </TouchableOpacity>
+                                    </View>
+
+                                    {joiningDateError && (
+                                        <ErrorMessage message={joiningDateError} type="error" />
+                                    )}
+
 
 
                                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
@@ -4035,36 +4064,7 @@ const AddBookingNew = ({ navigation, route }) => {
                                             {rentalError && (
                                                 <ErrorMessage message={rentalError} type="error" />
                                             )} */}
-
-
-                                    <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-                                    <View ref={joiningDateRef} collapsable={false}>
-                                        <TouchableOpacity
-                                            style={styles.dateBox}
-                                            onPress={() => {
-                                                Keyboard.dismiss();        // 🔥 keyboard close
-                                                setOpenDropdownId(null);
-                                                setCheckinTenantsopen(false);
-
-                                                setTimeout(() => {
-                                                    joiningDateRef.current.measureInWindow((x, y, w, h) => {
-                                                        setDatePickerTop(getSafeCalendarTop(y, h));
-                                                        setActiveDateField("joining");
-                                                        setShowCalendar(true);
-                                                    });
-                                                }, 150);                  // 🔥 wait for keyboard animation
-                                            }}
-                                        >
-                                            <Text style={styles.placeholder}>
-                                                {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                                            </Text>
-                                            <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-                                        </TouchableOpacity>
-                                    </View>
-
-                                    {joiningDateError && (
-                                        <ErrorMessage message={joiningDateError} type="error" />
-                                    )}
+                                   
 
 
 

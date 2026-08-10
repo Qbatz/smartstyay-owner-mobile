@@ -7,7 +7,10 @@ import {
     TextInput,
     Image,
     SafeAreaView, ScrollView,
-    KeyboardAvoidingView, Platform, StatusBar
+    KeyboardAvoidingView, Platform, StatusBar,
+    TouchableWithoutFeedback,
+    Animated,
+    PanResponder
 } from "react-native";
 import { BackHandler } from "react-native";
 import { useEffect } from "react";
@@ -23,6 +26,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import Loader from "../../Loader/Loader";
 import ValidatedInput from "../ValidatedInput"
+import MessageQuestion from "../../../Assets/Images/MessageQuestion.png"
+import TickGreenIcon from "../../../Assets/Images/tickgreen.png"
 
 export default function BillsApplyInvoices() {
 
@@ -33,12 +38,13 @@ export default function BillsApplyInvoices() {
     const onSuccess = route?.params?.onSuccess;
 
     const { BillDetails, loading, GetAllBillDetails, GetAdvanceBookingBills, RecordPayment, GetInitializeRefundDetails,
-        refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails,getReceiptPdfDetails,
-        downloadReceipt,downloadBill,GetReceiptsList, receiptsList, MarkBillAsUnpaid,UpdateBillDiscount, ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices,
-        advanceCreditDetails, getRetainerInvoiceDetail, retainerInvoiceDetail,ApplyRetainerToInvoices } = useContext(BillContext);
+        refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails,
+        downloadReceipt, downloadBill, GetReceiptsList, receiptsList, MarkBillAsUnpaid, UpdateBillDiscount, ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices,
+        advanceCreditDetails, getRetainerInvoiceDetail, retainerInvoiceDetail, ApplyRetainerToInvoices } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
 
     const isApplyTriggeredRef = useRef(false);
+     const instructionSheetRef = useRef(new Animated.Value(0)).current;
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -90,6 +96,7 @@ export default function BillsApplyInvoices() {
     const [appliedAmounts, setAppliedAmounts] = useState({});
 
     const [showAmountField, setShowAmountField] = useState({})
+    const [instructionSheet,setInstructionSheet]=useState(false)
 
 
     console.log("tempSinValue", tempValue)
@@ -111,6 +118,33 @@ export default function BillsApplyInvoices() {
     useEffect(() => {
         fetchRetainerDetail();
     }, [])
+
+
+    const instructionSheetPan = useRef(
+            PanResponder.create({
+                onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+                onPanResponderMove: (_, g) => {
+                    if (g.dy > 0) instructionSheetRef.setValue(g.dy);
+                },
+                onPanResponderRelease: (_, g) => {
+                    if (g.dy > 120) {
+                        Animated.timing(instructionSheetRef, {
+                            toValue: 700,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }).start(() => {
+                            setInstructionSheet(false);
+                            instructionSheetRef.setValue(0);
+                        });
+                    } else {
+                        Animated.spring(instructionSheetRef, {
+                            toValue: 0,
+                            useNativeDriver: true,
+                        }).start();
+                    }
+                },
+            })
+        ).current;
 
 
     const totalApplied = Object.values(appliedAmounts).reduce(
@@ -468,12 +502,12 @@ export default function BillsApplyInvoices() {
                     ([invoiceId, amount]) => ({ invoiceId, amount: Number(amount) })
                 );
 
-            const payload= {
+            const payload = {
                 appliedAmount: "",
                 retainersBreakup: retainersBreakup
             }
 
-            console.log("retainerPayload",payload)
+            console.log("retainerPayload", payload)
 
             const res = await ApplyRetainerToInvoices({
                 hostelId: activeHostelId,
@@ -482,14 +516,14 @@ export default function BillsApplyInvoices() {
             });
 
             if (res?.success) {
-              const res=  await GetAllBillDetails(activeHostelId);
-              console.log("getRetainerAllBill",res)
+                const res = await GetAllBillDetails(activeHostelId);
+                console.log("getRetainerAllBill", res)
                 await GetAdvanceBookingBills(activeHostelId);
                 // await getBillsPdfDetails(activeHostelId, currentInvoiceInfo?.invoiceId)
-                 setShowSuccessModal(true);
+                setShowSuccessModal(true);
                 setModalType("success");
                 setModalMessage("Applied successfully");
-               
+
 
                 setTimeout(() => {
                     navigation.goBack();
@@ -505,7 +539,7 @@ export default function BillsApplyInvoices() {
                 setShowSuccessModal(true);
                 setModalType("warning");
                 setModalMessage(res?.message || "Something went wrong");
-                
+
 
                 setTimeout(() => {
                     setShowSuccessModal(false);
@@ -550,11 +584,17 @@ export default function BillsApplyInvoices() {
 
                 {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Image source={ArrowLeft} style={styles.backIcon} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => navigation.goBack()}>
+                            <Image source={ArrowLeft} style={styles.backIcon} />
+                        </TouchableOpacity>
+                        {/* <Text style={styles.headerTitle}>Apply Booking to Invoice</Text> */}
+
+                        <Text style={styles.headerTitle}>Adjust with Retainer Invoice</Text>
+                    </View>
+                    <TouchableOpacity onPress={()=>setInstructionSheet(!instructionSheet)}>
+                        <Image source={MessageQuestion} style={{ width: 22, height: 22, tintColor: '#292D32' }} />
                     </TouchableOpacity>
-                    {/* <Text style={styles.headerTitle}>Apply Booking to Invoice</Text> */}
-                    <Text style={styles.headerTitle}>Adjust with Retainer Invoice</Text>
                 </View>
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
@@ -702,6 +742,9 @@ export default function BillsApplyInvoices() {
 
                                                             return;
                                                         }
+                                                        if (text.startsWith("0")) {
+                                                        return;
+                                                    }
 
                                                         let amount = Number(text);
 
@@ -831,6 +874,72 @@ export default function BillsApplyInvoices() {
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
+                {instructionSheet && (
+                    <View style={styles.sheetOverlay}>
+
+                        <TouchableWithoutFeedback onPress={() => {
+                            setInstructionSheet(false)
+                        }}
+                        >
+                            <View style={{ flex: 1 }} />
+                        </TouchableWithoutFeedback>
+
+                        <Animated.View
+                            style={[
+                                styles.sheet,
+                                {
+                                    // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+                                    maxHeight: '95%',
+                                    transform: [{ translateY: instructionSheetRef }]
+                                }
+                            ]}
+                            {...instructionSheetPan.panHandlers}
+                        >
+                            <View style={styles.sheetHandle} />
+
+                            <View style={{ marginBottom: 50 }}>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Image source={TickGreenIcon} style={{width:24,height:24,marginRight:6}}/>
+                                    <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        How it works</Text>               
+                                </View>
+
+                                <View style={{ borderWidth: 0.8, borderColor: '#E7E7E7', marginVertical: 20 }} />
+
+                                <View style={{flexDirection:'row',marginTop:5}}>
+                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>1.</Text>
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
+                                     Your available retainer balance can be used to pay outstanding invoices.</Text>
+                                </View>
+
+                                <View style={{flexDirection:'row',marginTop:12}}>
+                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>2.</Text>
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
+                                     Select one or more invoices and choose the amount to adjust. The adjusted amount will be
+                                    deducted from your retainer balance and applied to the selected invoices.</Text>
+                                </View>
+
+                                <View style={{flexDirection:'row',marginTop:12}}>
+                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>
+                                        3.</Text>
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
+                                      Any remaining invoice balance can be paid separately using your preferred payment method.</Text>
+                                </View>
+                                
+                                
+                                
+                                
+                                {/* <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:20,color:'#3A3A3A',marginTop:10}}>
+                                2.
+                                </Text>
+
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:20,color:'#3A3A3A',marginTop:10}}>
+                                3.</Text> */}
+                            </View>
+                        </Animated.View>
+                    </View>
+                )}
             </SafeAreaView>
         </>
     );
@@ -854,7 +963,7 @@ const styles = StyleSheet.create({
         paddingTop: Platform.OS === "android"
             ? StatusBar.currentHeight + 20
             : 20,
-        marginBottom: 20,
+        marginBottom: 20, justifyContent: 'space-between'
     },
 
     headerTitle: {
@@ -1186,6 +1295,29 @@ const styles = StyleSheet.create({
     bookingAmount: {
         fontSize: 16,
         fontFamily: "Gilroy-Semibold",
+    },
+      sheet: {
+        backgroundColor: "#ffffff",
+        padding: 20,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        paddingBottom: 30,
+        // minHeight: 400,
+    },
+    sheetOverlay: {
+        position: "absolute",
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "flex-end",
+        zIndex: 9999,
+    },
+    sheetHandle: {
+        width: 60,
+        height: 5,
+        backgroundColor: "#ccc",
+        alignSelf: "center",
+        borderRadius: 30,
+        marginBottom: 15,
     },
 
 
