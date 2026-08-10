@@ -1094,7 +1094,18 @@ export default function TenantsScreen({ route }) {
 
 
 
-
+    {!loading &&
+      (customers?.listCustomers?.length ?? 0) > 0 &&
+      searchText.trim() !== "" &&
+      filteredTenants?.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <Image source={EmptyState} style={styles.emptyImage} />
+          <Text style={styles.emptyText}>
+            No tenants found{"\n"}
+            Try searching with a different name
+          </Text>
+        </View>
+      )}
 
                 {filteredTenants?.length > 0 && (
                   <FlatList

@@ -1090,10 +1090,10 @@ export default function BedDetailsSheet({
     const ticking = useRef(false);
 
 
-    const onScroll = (e) => {
-        handleScroll(e);
-        handleFloorScroll(e);
-    };
+    // const onScroll = (e) => {
+    //     handleScroll(e);
+    //     handleFloorScroll(e);
+    // };
 
 
 
@@ -1307,7 +1307,7 @@ export default function BedDetailsSheet({
                                 scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
                                 keyboardShouldPersistTaps="always"
                                 keyboardDismissMode="none"
-                                onScroll={onScroll}
+                                // onScroll={onScroll}
                                 bounces={false}
                                 scrollEventThrottle={16}
 
