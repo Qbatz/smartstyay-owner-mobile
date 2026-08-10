@@ -833,7 +833,7 @@ const RetainerDetailsSheet = ({
 
               <View>
                 <Text
-                  style={{ fontSize: 15, fontFamily: "Gilroy-Regular" }}
+                  style={{ fontSize: 14, fontFamily: "Gilroy-Regular" }}
                 >
                   {selectedBill?.invoiceType}
                 </Text>
@@ -845,7 +845,7 @@ const RetainerDetailsSheet = ({
 
               <View>
                 <Text
-                  style={{ ffontSize: 15, fontFamily: "Gilroy-Regular" }}
+                  style={{ ffontSize: 14, fontFamily: "Gilroy-Regular" }}
                 >
                   {BillPdfdetails?.paymentHistory[0]?.paidBy || "N/A"}
                 </Text>
@@ -857,7 +857,7 @@ const RetainerDetailsSheet = ({
 
               <View>
                 <Text
-                  style={{ fontSize: 15, fontFamily: "Gilroy-Regular" }}
+                  style={{ fontSize: 14, fontFamily: "Gilroy-Regular" }}
                 >
                   {BillPdfdetails?.paymentHistory[0]?.date || "N/A"}
                 </Text>
@@ -869,7 +869,7 @@ const RetainerDetailsSheet = ({
 
               <View>
                 <Text
-                  style={{ fontSize: 15, fontFamily: "Gilroy-Regular" }}
+                  style={{ fontSize: 14, fontFamily: "Gilroy-Regular" }}
                 >
                   {selectedBill?.paymentMode}
                 </Text>

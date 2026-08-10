@@ -29,15 +29,16 @@ import ValidatedInput from "../ValidatedInput"
 import MessageQuestion from "../../../Assets/Images/MessageQuestion.png"
 import TickGreenIcon from "../../../Assets/Images/tickgreen.png"
 
-export default function BillsApplyInvoices() {
 
+export default function ApplyBookingToInvoice({ route }) {
 
     const navigation = useNavigation();
-    const route = useRoute();
+    // const route = useRoute();
 
-    console.log("ponammale",route)
+    console.log("ponammale", route)
 
     const onSuccess = route?.params?.onSuccess;
+    const type = route?.params?.type
 
     const { BillDetails, loading, GetAllBillDetails, GetAdvanceBookingBills, RecordPayment, GetInitializeRefundDetails,
         refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails,
@@ -46,7 +47,7 @@ export default function BillsApplyInvoices() {
     const { activeHostelId } = useContext(CommonContexts);
 
     const isApplyTriggeredRef = useRef(false);
-     const instructionSheetRef = useRef(new Animated.Value(0)).current;
+    const instructionSheetRef = useRef(new Animated.Value(0)).current;
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -98,7 +99,7 @@ export default function BillsApplyInvoices() {
     const [appliedAmounts, setAppliedAmounts] = useState({});
 
     const [showAmountField, setShowAmountField] = useState({})
-    const [instructionSheet,setInstructionSheet]=useState(false)
+    const [instructionSheet, setInstructionSheet] = useState(false)
 
 
     console.log("tempSinValue", tempValue)
@@ -123,30 +124,30 @@ export default function BillsApplyInvoices() {
 
 
     const instructionSheetPan = useRef(
-            PanResponder.create({
-                onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-                onPanResponderMove: (_, g) => {
-                    if (g.dy > 0) instructionSheetRef.setValue(g.dy);
-                },
-                onPanResponderRelease: (_, g) => {
-                    if (g.dy > 120) {
-                        Animated.timing(instructionSheetRef, {
-                            toValue: 700,
-                            duration: 200,
-                            useNativeDriver: true,
-                        }).start(() => {
-                            setInstructionSheet(false);
-                            instructionSheetRef.setValue(0);
-                        });
-                    } else {
-                        Animated.spring(instructionSheetRef, {
-                            toValue: 0,
-                            useNativeDriver: true,
-                        }).start();
-                    }
-                },
-            })
-        ).current;
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+            onPanResponderMove: (_, g) => {
+                if (g.dy > 0) instructionSheetRef.setValue(g.dy);
+            },
+            onPanResponderRelease: (_, g) => {
+                if (g.dy > 120) {
+                    Animated.timing(instructionSheetRef, {
+                        toValue: 700,
+                        duration: 200,
+                        useNativeDriver: true,
+                    }).start(() => {
+                        setInstructionSheet(false);
+                        instructionSheetRef.setValue(0);
+                    });
+                } else {
+                    Animated.spring(instructionSheetRef, {
+                        toValue: 0,
+                        useNativeDriver: true,
+                    }).start();
+                }
+            },
+        })
+    ).current;
 
 
     const totalApplied = Object.values(appliedAmounts).reduce(
@@ -163,18 +164,19 @@ export default function BillsApplyInvoices() {
     const pendingAmount = retainerInvoiceDetail?.currentInvoiceInfo?.pendingAmount || 0;
 
 
-    const bookingAmount = (advanceInfoList || []).reduce(
-        (sum, item) => sum + Number(item.availableBalance || 0),
-        0
-    );
+    // const bookingAmount = (advanceInfo || []).reduce(
+    //     (sum, item) => sum + Number(item.availableBalance || 0),
+    //     0
+    // );
+    const bookingAmount = advanceInfo?.availableBalance
 
 
     const remainingBalance = bookingAmount - totalApplied;
 
 
-    console.log("customerSeethainfo", customerInfo)
-    console.log("advanceInfoList", advanceInfoList)
-    console.log(bookingAmount)
+    // console.log("customerSeethainfo", customerInfo)
+    // console.log("advanceInfoList", advanceInfoList)
+    // console.log(bookingAmount)
 
 
 
@@ -454,12 +456,120 @@ export default function BillsApplyInvoices() {
     //     }
     // };
 
+    // const handleApply = async () => {
+    //     if (isApplyTriggeredRef.current) return;
+    //     isApplyTriggeredRef.current = true;
+
+    //     try {
+    //         // const bookingAmount = advanceInfo?.availableBalance || 0;
+
+    //         const totalApplied = Object.values(appliedAmounts).reduce(
+    //             (sum, val) => sum + Number(val || 0),
+    //             0
+    //         );
+
+    //         if (totalApplied <= 0) {
+    //             setModalType("warning");
+    //             setModalMessage("Please Enter valid Amount");
+    //             setShowSuccessModal(true);
+
+    //             setTimeout(() => {
+    //                 setShowSuccessModal(false);
+    //             }, 2000);
+
+    //             isApplyTriggeredRef.current = false;
+    //             return;
+    //         }
+
+    //         // if (totalApplied > bookingAmount) {
+    //         //     setModalType("warning");
+    //         //     setModalMessage("Applied amount exceeds booking amount");
+    //         //     setShowSuccessModal(true);
+
+    //         //     setTimeout(() => {
+    //         //         setShowSuccessModal(false);
+    //         //     }, 2000);
+
+    //         //     isApplyTriggeredRef.current = false;
+    //         //     return;
+    //         // }
+
+    //         const listItems = Object.entries(appliedAmounts).map(
+    //             ([invoiceId, amount]) => ({
+    //                 invoiceId,
+    //                 amount: Number(amount),
+    //             })
+    //         );
+
+    //         const retainersBreakup = Object.entries(appliedAmounts).
+    //             filter(([_, amount]) => Number(amount) > 0).map(
+    //                 ([invoiceId, amount]) => ({ invoiceId, amount: Number(amount) })
+    //             );
+
+    //         const payload = {
+    //             appliedAmount: "",
+    //             retainersBreakup: retainersBreakup
+    //         }
+
+    //         console.log("retainerPayload", payload)
+
+    //         const res = await ApplyRetainerToInvoices({
+    //             hostelId: activeHostelId,
+    //             invoiceId: currentInvoiceInfo?.invoiceId,
+    //             payload,
+    //         });
+
+    //         if (res?.success) {
+    //             const res = await GetAllBillDetails(activeHostelId);
+    //             console.log("getRetainerAllBill", res)
+    //             await GetAdvanceBookingBills(activeHostelId);
+    //             // await getBillsPdfDetails(activeHostelId, currentInvoiceInfo?.invoiceId)
+    //             setShowSuccessModal(true);
+    //             setModalType("success");
+    //             setModalMessage("Applied successfully");
+
+
+    //             setTimeout(() => {
+    //                 navigation.goBack();
+    //                 setShowSuccessModal(false);
+
+    //                 setTimeout(() => {
+    //                     isApplyTriggeredRef.current = false;
+    //                 }, 2000)
+
+    //             }, 1500);
+
+    //         } else {
+    //             setShowSuccessModal(true);
+    //             setModalType("warning");
+    //             setModalMessage(res?.message || "Something went wrong");
+
+
+    //             setTimeout(() => {
+    //                 setShowSuccessModal(false);
+    //                 isApplyTriggeredRef.current = false;
+    //             }, 2500);
+    //         }
+    //         // success / error logic
+
+    //     } catch (error) {
+    //         isApplyTriggeredRef.current = false;
+    //     }
+
+    // };
+
     const handleApply = async () => {
-        if (isApplyTriggeredRef.current) return;
-        isApplyTriggeredRef.current = true;
+
+        if (isApplyTriggeredRef.current) return
+        isApplyTriggeredRef.current = true
 
         try {
-            // const bookingAmount = advanceInfo?.availableBalance || 0;
+            const bookingAmount =
+                Number(
+                    advanceInfo?.availableBalance ||
+                    advanceInfo?.advanceBalanceAmount ||
+                    0
+                );
 
             const totalApplied = Object.values(appliedAmounts).reduce(
                 (sum, val) => sum + Number(val || 0),
@@ -475,85 +585,86 @@ export default function BillsApplyInvoices() {
                     setShowSuccessModal(false);
                 }, 2000);
 
-                isApplyTriggeredRef.current = false;
-                return;
+                //    isApplyTriggeredRef.current = false;
+                return
             }
 
-            // if (totalApplied > bookingAmount) {
-            //     setModalType("warning");
-            //     setModalMessage("Applied amount exceeds booking amount");
-            //     setShowSuccessModal(true);
+            if (totalApplied > bookingAmount) {
+                setModalType("warning");
+                setModalMessage("Applied amount exceeds booking amount");
+                setShowSuccessModal(true);
 
-            //     setTimeout(() => {
-            //         setShowSuccessModal(false);
-            //     }, 2000);
-
-            //     isApplyTriggeredRef.current = false;
-            //     return;
-            // }
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 2000);
+                // isApplyTriggeredRef.current = false;
+                return;
+            }
 
             const listItems = Object.entries(appliedAmounts).map(
                 ([invoiceId, amount]) => ({
                     invoiceId,
                     amount: Number(amount),
                 })
-            );
+            )
 
-            const retainersBreakup = Object.entries(appliedAmounts).
-                filter(([_, amount]) => Number(amount) > 0).map(
-                    ([invoiceId, amount]) => ({ invoiceId, amount: Number(amount) })
-                );
+            console.log("listitems", listItems);
+
 
             const payload = {
-                appliedAmount: "",
-                retainersBreakup: retainersBreakup
+                // reason: "Advance Applied",
+                // date: new Date().toISOString(),
+                listItems,
             }
 
-            console.log("retainerPayload", payload)
+            console.log("Kandpayload", payload);
+            console.log("ID", activeHostelId, advanceInfo?.invoiceId,);
 
-            const res = await ApplyRetainerToInvoices({
+
+
+            const res = await ApplyAdvanceToInvoices({
                 hostelId: activeHostelId,
-                invoiceId: currentInvoiceInfo?.invoiceId,
-                payload,
+                invoiceId: advanceInfo?.invoiceId,
+                listItems,
             });
 
+            console.log("Prematlatha", res);
+
+
             if (res?.success) {
-                const res = await GetAllBillDetails(activeHostelId);
-                console.log("getRetainerAllBill", res)
+              
+                await GetAllBillDetails(activeHostelId);
                 await GetAdvanceBookingBills(activeHostelId);
-                // await getBillsPdfDetails(activeHostelId, currentInvoiceInfo?.invoiceId)
-                setShowSuccessModal(true);
+                await getBillsPdfDetails(activeHostelId, advanceInfo?.advanceInvoiceId)
                 setModalType("success");
                 setModalMessage("Applied successfully");
-
+                  setShowSuccessModal(true);
+                
 
                 setTimeout(() => {
                     navigation.goBack();
                     setShowSuccessModal(false);
-
-                    setTimeout(() => {
-                        isApplyTriggeredRef.current = false;
-                    }, 2000)
-
                 }, 1500);
 
             } else {
+
                 setShowSuccessModal(true);
                 setModalType("warning");
                 setModalMessage(res?.message || "Something went wrong");
-
+                
 
                 setTimeout(() => {
                     setShowSuccessModal(false);
-                    isApplyTriggeredRef.current = false;
                 }, 2500);
             }
-            // success / error logic
+        }
+        catch {
+            console.log("error");
 
-        } catch (error) {
+        }
+        finally {
             isApplyTriggeredRef.current = false;
         }
-
     };
 
 
@@ -592,9 +703,9 @@ export default function BillsApplyInvoices() {
                         </TouchableOpacity>
                         {/* <Text style={styles.headerTitle}>Apply Booking to Invoice</Text> */}
 
-                        <Text style={styles.headerTitle}>Adjust with Retainer Invoice</Text>
+                        <Text style={styles.headerTitle}>Apply Booking To InVoice</Text>
                     </View>
-                    <TouchableOpacity onPress={()=>setInstructionSheet(!instructionSheet)}>
+                    <TouchableOpacity onPress={() => setInstructionSheet(!instructionSheet)}>
                         <Image source={MessageQuestion} style={{ width: 22, height: 22, tintColor: '#292D32' }} />
                     </TouchableOpacity>
                 </View>
@@ -609,36 +720,36 @@ export default function BillsApplyInvoices() {
                             {/* TOP CONTENT */}
                             <View style={{ flexDirection: "row", alignItems: "center" }}>
 
-                                {customerInfo?.profilePic ? (
-                                    <Image source={{ uri: customerInfo.profilePic }} style={styles.userImg} />
+                                {customer?.profilePic ? (
+                                    <Image source={{ uri: customer.profilePic }} style={styles.userImg} />
                                 ) : (
                                     <View style={styles.initialCircle}>
                                         <Text style={styles.initialText}>
-                                            {customerInfo?.initials || "M"}
+                                            {customer?.initials || "M"}
                                         </Text>
                                     </View>
                                 )}
 
                                 <View style={{ marginLeft: 10 }}>
                                     <Text style={styles.name}>
-                                        {customerInfo?.fullName || "--"}
+                                        {customer?.fullName || "--"}
                                     </Text>
 
                                     <View style={{ flexDirection: "row", marginTop: 5 }}>
                                         <View style={styles.badge}>
                                             <Text style={styles.badgeText}>
-                                                {customerInfo?.floorName || "Ground Floor"}
+                                                {customer?.floorName || "Ground Floor"}
                                             </Text>
                                         </View>
 
                                         <Image source={room} style={{ width: 18, height: 18, marginHorizontal: 4 }} />
                                         <Text style={styles.detailText}>
-                                            {customerInfo?.roomName || "--"}
+                                            {customer?.roomName || "--"}
                                         </Text>
 
                                         <Image source={Bed} style={{ width: 18, height: 18, marginHorizontal: 4 }} />
                                         <Text style={styles.detailText}>
-                                            {customerInfo?.bedName || "--"}
+                                            {customer?.bedName || "--"}
                                         </Text>
                                     </View>
                                 </View>
@@ -651,7 +762,7 @@ export default function BillsApplyInvoices() {
                             <View style={styles.bookingRowInside}>
                                 <Text style={styles.bookingLabel}>Invoice Amount</Text>
                                 <Text style={styles.bookingAmount}>
-                                    ₹ {currentInvoiceInfo?.pendingAmount || 0}
+                                    ₹ {advanceInfo?.availableBalance || 0}
                                 </Text>
                             </View>
 
@@ -663,7 +774,7 @@ export default function BillsApplyInvoices() {
                                     Rental Inv</Text>
 
                                 <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Medium', color: '#1E45E1', marginLeft: 4 }}>
-                                    {currentInvoiceInfo?.invoiceNumber}</Text>
+                                    {advanceInfo?.invoiceNumber}</Text>
                             </View>
 
                         </View>
@@ -672,12 +783,12 @@ export default function BillsApplyInvoices() {
 
                         {/* Invoice Card */}
                         <View style={styles.card}>
-                            <Text style={styles.sectionTitle}>Retainer Invoices</Text>
+                            <Text style={styles.sectionTitle}>Unpaid Invoice</Text>
 
-                            <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', color: '#4B4B4B', marginTop: 4 }}>
-                                Select Retainer Balance to adjust with Bills</Text>
+                            {/* <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', color: '#4B4B4B', marginTop: 4 }}>
+                                Unpaid Invoice</Text> */}
 
-                            {advanceInfoList?.map((item, index) => (
+                            {invoicesList?.map((item, index) => (
                                 <View key={item?.invoiceId || index} style={styles.innerCard}>
 
                                     <View style={styles.rowBetween}>
@@ -688,7 +799,7 @@ export default function BillsApplyInvoices() {
 
 
                                         <Text style={styles.amount}>
-                                            ₹ {item?.availableBalance || 0}
+                                            ₹ {item?.pendingAmount || 0}
                                         </Text>
                                     </View>
                                     <View style={{ display: 'flex', flexDirection: 'row', }}>
@@ -731,6 +842,7 @@ export default function BillsApplyInvoices() {
                                                     value={tempValue?.[item.invoiceId] || ""}
                                                     maxLength={7}
                                                     onChangeText={(text) => {
+                                                        // Allow clearing
                                                         if (text === "") {
                                                             setTempValue((prev) => ({
                                                                 ...prev,
@@ -744,40 +856,50 @@ export default function BillsApplyInvoices() {
 
                                                             return;
                                                         }
+
+                                                        // Only allow digits
+                                                        if (!/^\d+$/.test(text)) {
+                                                            return;
+                                                        }
+
+                                                        // Don't allow 0 as first digit
                                                         if (text.startsWith("0")) {
-                                                        return;
-                                                    }
+                                                            return;
+                                                        }
 
                                                         let amount = Number(text);
 
-
-                                                        if (amount > item.availableBalance) {
-                                                            amount = item.availableBalance;
+                                                        // Safety check
+                                                        if (!Number.isFinite(amount)) {
+                                                            return;
                                                         }
 
-                                                        const appliedWithoutCurrent = Object.entries(appliedAmounts).reduce(
-                                                            (sum, [invoiceId, value]) => {
-                                                                if (invoiceId === item.invoiceId) return sum;
-                                                                return sum + Number(value || 0);
-                                                            },
-                                                            0
+                                                        const appliedWithoutCurrent = Object.entries(appliedAmounts)
+                                                            .filter(([invoiceId]) => invoiceId !== item.invoiceId)
+                                                            .reduce(
+                                                                (sum, [, value]) => sum + Number(value || 0),
+                                                                0
+                                                            );
+
+                                                        const availableBalance = Number(
+                                                            advanceInfo?.availableBalance || 0
                                                         );
 
-                                                        const remainingInvoiceAmount = pendingAmount - appliedWithoutCurrent;
+                                                        const pendingAmount = Number(
+                                                            item?.pendingAmount || 0
+                                                        );
 
-                                                        if (amount > remainingInvoiceAmount) {
-                                                            amount = Math.max(remainingInvoiceAmount, 0);
+                                                        const remainingBalance =
+                                                            availableBalance - appliedWithoutCurrent;
 
-                                                            // setModalType("warning");
-                                                            // setModalMessage(
-                                                            //     `Only ₹${remainingInvoiceAmount} can be applied to this invoice.`
-                                                            // );
-                                                            // setShowSuccessModal(true);
+                                                        const maxAllowed = Math.min(
+                                                            remainingBalance,
+                                                            pendingAmount
+                                                        );
 
-                                                            // setTimeout(() => setShowSuccessModal(false), 1500);
+                                                        if (amount > maxAllowed) {
+                                                            amount = Math.max(maxAllowed, 0);
                                                         }
-
-                                                        amount = Math.min(amount, item.availableBalance);
 
                                                         setTempValue((prev) => ({
                                                             ...prev,
@@ -902,36 +1024,36 @@ export default function BillsApplyInvoices() {
                             <View style={{ marginBottom: 50 }}>
 
                                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <Image source={TickGreenIcon} style={{width:24,height:24,marginRight:6}}/>
+                                    <Image source={TickGreenIcon} style={{ width: 24, height: 24, marginRight: 6 }} />
                                     <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
-                                        How it works</Text>               
+                                        How it works</Text>
                                 </View>
 
                                 <View style={{ borderWidth: 0.8, borderColor: '#E7E7E7', marginVertical: 20 }} />
 
-                                <View style={{flexDirection:'row',marginTop:5}}>
-                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>1.</Text>
-                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
-                                     Your available retainer balance can be used to pay outstanding invoices.</Text>
+                                <View style={{ flexDirection: 'row', marginTop: 5 }}>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', color: '#3A3A3A', marginRight: 4, marginTop: 2 }}>1.</Text>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', lineHeight: 21, color: '#3A3A3A' }}>
+                                        Your available retainer balance can be used to pay outstanding invoices.</Text>
                                 </View>
 
-                                <View style={{flexDirection:'row',marginTop:12}}>
-                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>2.</Text>
-                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
-                                     Select one or more invoices and choose the amount to adjust. The adjusted amount will be
-                                    deducted from your retainer balance and applied to the selected invoices.</Text>
+                                <View style={{ flexDirection: 'row', marginTop: 12 }}>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', color: '#3A3A3A', marginRight: 4, marginTop: 2 }}>2.</Text>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', lineHeight: 21, color: '#3A3A3A' }}>
+                                        Select one or more invoices and choose the amount to adjust. The adjusted amount will be
+                                        deducted from your retainer balance and applied to the selected invoices.</Text>
                                 </View>
 
-                                <View style={{flexDirection:'row',marginTop:12}}>
-                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>
+                                <View style={{ flexDirection: 'row', marginTop: 12 }}>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', color: '#3A3A3A', marginRight: 4, marginTop: 2 }}>
                                         3.</Text>
-                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
-                                      Any remaining invoice balance can be paid separately using your preferred payment method.</Text>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', lineHeight: 21, color: '#3A3A3A' }}>
+                                        Any remaining invoice balance can be paid separately using your preferred payment method.</Text>
                                 </View>
-                                
-                                
-                                
-                                
+
+
+
+
                                 {/* <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:20,color:'#3A3A3A',marginTop:10}}>
                                 2.
                                 </Text>
@@ -945,7 +1067,9 @@ export default function BillsApplyInvoices() {
             </SafeAreaView>
         </>
     );
+
 }
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -1298,7 +1422,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: "Gilroy-Semibold",
     },
-      sheet: {
+    sheet: {
         backgroundColor: "#ffffff",
         padding: 20,
         borderTopLeftRadius: 25,
