@@ -1437,9 +1437,19 @@ export default function BillsDesign({ route }) {
     setShowBillDetails(false)
 
   }
-  const handleShowBookingtoInvoice = () => {
-    navigation.navigate("BookingtoDiscount")
+  
+  const handleApplyBookingToInvoice= async () => {
+
+    navigation.navigate("ApplyBookingToInvoice");
+
+    const AdvanceCredits = await GetAdvanceCreditDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      type: "Credit", // booking invoice
+    })
+    setShowMenu(false);
     setShowBillDetails(false)
+
   }
 
 
@@ -2400,18 +2410,6 @@ export default function BillsDesign({ route }) {
     setFilterError("");
     setSearchText("");
   };
-
-  useFocusEffect(
-  useCallback(() => {
-
-
-    return () => {
-      clearBillFilters();      
-      setActiveTab("Invoices"); 
-       GetAllBillDetails(activeHostelId);
-    };
-  }, [])
-);
 
   const handleTabChange = (tab) => {
     if (activeTab === "Invoices" && tab !== "Invoices") {
@@ -4384,7 +4382,7 @@ export default function BillsDesign({ route }) {
                           The booking amount isn't applied with any bills yet.
                         </Text>
 
-                        <TouchableOpacity style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem && { opacity: 0.4 }]} onPress={handleBookingApplyInvoices}
+                        <TouchableOpacity style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem && { opacity: 0.4 }]} onPress={handleApplyBookingToInvoice}
                           disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}
                         >
                           <Text style={{

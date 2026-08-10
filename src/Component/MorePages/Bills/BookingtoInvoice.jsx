@@ -700,7 +700,7 @@ export default function BookingToInvoice() {
                                                 }}
                                             />
 
-                                            <TouchableOpacity
+                                            {/* <TouchableOpacity
                                                 style={styles.setBtn}
                                                 onPress={() =>
                                                     handleSetAmount(
@@ -711,7 +711,7 @@ export default function BookingToInvoice() {
                                                 }
                                             >
                                                 <Text style={{ color: "#1E45E1" }}>Set</Text>
-                                            </TouchableOpacity>
+                                            </TouchableOpacity> */}
                                         </View>
                                     </View>
                                 ))

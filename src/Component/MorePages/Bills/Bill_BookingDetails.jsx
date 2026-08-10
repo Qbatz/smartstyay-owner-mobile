@@ -704,7 +704,7 @@ const BillBookingDetailsSheet = ({
 
             <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <View>
-                <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Booking</Text>
+                <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Balance</Text>
               </View>
               <View>
                 <Text

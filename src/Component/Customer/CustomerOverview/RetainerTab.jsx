@@ -105,43 +105,48 @@ export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
             >
               <View>
                 <View style={styles.subRow}>
-                  <Text style={styles.billType}>{item.invoiceType}</Text>
+                  <Text style={styles.billType}>{item.invoiceNo}</Text>
 
+                
+
+                </View>
+
+        <View style={{flexDirection:'row',alignItems:'center',marginTop:4}}>
+          <Text style={styles.billId}>{item?.invoiceType}</Text>
                   <View
                     style={[
                       styles.statusBadge,
-                      item.paymentStatus === "Paid"
-                        ? styles.paidBadge
+                      item.status === "Available"
+                        ? styles.paidBadge : item?.status ==="Fully Adjusted" ? styles.adjustedBadge
                         : styles.overdueBadge,
                     ]}
                   >
                     <Text
                       style={[
                         styles.statusText,
-                        item.paymentStatus === "Paid"
-                          ? styles.paidText
+                        item.status === "Available" 
+                          ? styles.paidText : item?.status == "Fully Adjusted" ? styles.adjustedText
                           : styles.overdueText,
                       ]}
                     >
-                      {item?.paymentStatus}
+                      {item?.status}
                     </Text>
                   </View>
-
+                
                 </View>
-                <Text style={styles.billId}>{item?.invoiceNumber}</Text>
 
                 
-                {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                {/* {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
                   <Text style={styles.dueLabel}>Outstanding</Text>
-                )}
+                )} */}
               </View>
 
               <View style={styles.rightBox}>
-                <Text style={styles.amount}>₹{item.totalAmount}</Text>
-                <Text style={styles.date}> {item?.dueDate}</Text>
-                {["Partially Paid", "Partial Payment"].includes(item?.paymentStatus) && (
+                <Text style={styles.amount}>₹{item.availableBalance}</Text>
+                <Text style={styles.date}> {item?.date}</Text>
+                {/* {["Partially Paid", "Partial Payment"].includes(item?.paymentStatus) && (
                   <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
-                )}
+                )} */}
               </View>
 
             </TouchableOpacity>
