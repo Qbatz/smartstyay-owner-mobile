@@ -9,7 +9,7 @@ import BillDetailsSheet from "../../MorePages/Bills/BillDetails"
 import EmptyState from "../../../Assets/Images/Empty_state.png";
 
 export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
-  const invoiceList = customerDetails?.invoiceResponseList || [];
+  const invoiceList = customerDetails?.retainerInfo?.retainerList || [];
   const navigation = useNavigation();
   console.log("customerDetailsBillTab", invoiceList);
   const { BillDetails, loading, GetAllBillDetails,
@@ -61,6 +61,8 @@ export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
 
   const status = customerDetails?.customerCurrentStatus;
 
+  
+
   const disableFinancialEdit =
     status === "BOOKED" ||
     status === "VACATED" ||
@@ -91,67 +93,85 @@ export default function RetainerTab({ customerDetails, ShowBillsDetails }) {
 
 
 <View style={{ flex: 1 }}>
-  {/* {invoiceList?.length > 0 ? (
+  {invoiceList?.length > 0 ? (
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 120 }}
     >
-     {invoiceList?.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.row}
-              onPress={() => handleOpenBillDetails(item)}
+    {invoiceList?.map((item, index) => {
+  const isAvailable = item?.status === "Available";
+
+  return (
+    <TouchableOpacity
+      key={item?.invoiceId || index}
+      style={styles.row}
+    //   onPress={() => handleOpenBillDetails(item)}
+    >
+      <View style={{ flex: 1 }}>
+        <View style={styles.subRow}>
+          <Text style={styles.billType}>
+            {item?.invoiceType?.replace("_", " ")}
+          </Text>
+
+          <View
+            style={[
+              styles.statusBadge,
+              isAvailable
+                ? styles.paidBadge
+                : styles.overdueBadge,
+            ]}
+          >
+            <Text
+              style={[
+                styles.statusText,
+                isAvailable
+                  ? styles.paidText
+                  : styles.overdueText,
+              ]}
             >
-              <View>
-                <View style={styles.subRow}>
-                  <Text style={styles.billType}>{item.invoiceType}</Text>
+              {item?.status || "Used"}
+            </Text>
+          </View>
+        </View>
 
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      item.paymentStatus === "Paid"
-                        ? styles.paidBadge
-                        : styles.overdueBadge,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.statusText,
-                        item.paymentStatus === "Paid"
-                          ? styles.paidText
-                          : styles.overdueText,
-                      ]}
-                    >
-                      {item?.paymentStatus}
-                    </Text>
-                  </View>
+        <Text style={styles.billId}>
+          {item?.invoiceNo}
+        </Text>
 
-                </View>
-                <Text style={styles.billId}>{item?.invoiceNumber}</Text>
+        {/* <Text style={styles.date}>
+          Payment Mode : {item?.paymentMode}
+        </Text> */}
 
-                
-                {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
-                  <Text style={styles.dueLabel}>Outstanding</Text>
-                )}
-              </View>
+       
+      </View>
 
-              <View style={styles.rightBox}>
-                <Text style={styles.amount}>₹{item.totalAmount}</Text>
-                <Text style={styles.date}> {item?.dueDate}</Text>
-                {["Partially Paid", "Partial Payment"].includes(item?.paymentStatus) && (
-                  <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
-                )}
-              </View>
+      <View style={styles.rightBox}>
+        <Text style={styles.amount}>
+          ₹{item?.amount}
+        </Text>
 
-            </TouchableOpacity>
-          ))}
+        <Text style={styles.date}>
+          {item?.date}
+        </Text>
+         {item?.availableBalance > 0 && (
+          <Text style={styles.dueAmount}>
+            Available : ₹{item?.availableBalance}
+          </Text>
+        )}
+      </View>
+      
+    </TouchableOpacity>
+  );
+})}
     </ScrollView>
-  ) : ( */}
+  ) : (
      <View style={styles.emptyContainer}>
       <Image source={EmptyState} style={styles.emptyImage} />
       <Text style={styles.emptySubTitle}>
         No Retainer have been generated yet.
       </Text>
     </View>
-  {/* )} */}
+   )} 
 </View>
 
      
