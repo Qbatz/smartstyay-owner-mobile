@@ -663,7 +663,7 @@ const BillBookingDetailsSheet = ({
                 <View style={{ flexDirection: "row", marginTop: 4, alignItems: 'center' }}>
 
                   <View style={styles.invTypeBadge}>
-                    <Text style={styles.invTypeText}>Booking</Text>
+                    <Text style={styles.invTypeText}>{InitializebookingBills?.advanceInfo.invoiceType}</Text>
                   </View>
                   <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginRight: 5 }} />
                   <Text style={styles.billNumber}>
