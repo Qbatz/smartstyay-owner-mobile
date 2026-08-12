@@ -15,6 +15,7 @@ import Loader from "../../Loader/Loader";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import EditConfigure from "../../../Assets/Images/Edit_Configure.png"
 import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen"
 
 
 
@@ -45,22 +46,25 @@ const NewRecordPayment = ({ route }) => {
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
     const [recordLoading, setRecordLoading] = useState(false)
+    const [showLeavePageScreen,setShowLeavePageScreen]=useState(false)
 
     console.log("InitializeRecordPaymentDetails", InitializeRecordPaymentDetails);
 
 
     console.log(selectedBill)
 
-    const totalAmount = 15000;
-
-    // const balanceAmount = totalAmount - paidAmount;
-
-    const paymentModeTypes = [{ id: 0, lable: "Gpayf" }, { id: 1, lable: "phonepay" }, { id: 2, lable: "Cash" }]
-
-    const TransferAcntTypes = [{ id: 0, lable: "HHtb" }, { id: 1, lable: "BTT Acn" }, { id: 2, lable: "Gpytt" }]
+   
 
     const today = dayjs();
     const invoiceDate = dayjs(selectedBill?.invoiceDate, "DD-MM-YYYY");
+
+    const handleLeaveScreen=()=>{
+        if(paidAmount.trim() || paidDate || selectedMode || transactionId.trim() ){
+            setShowLeavePageScreen(true)
+        }else{
+            navigation.goBack();
+        }
+    }
 
     const handleBookingApplyInvoices = async () => {
 
@@ -259,9 +263,9 @@ const NewRecordPayment = ({ route }) => {
             <View style={styles.mainheadPage}>
 
 
-                <View style={{ marginTop: 15, flexDirection: 'row', alignItems: 'center' }}>
+                  <View style={{ marginTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity style={{ marginRight: 5 }}
-                        onPress={() => navigation.goBack()} >
+                        onPress={handleLeaveScreen} >
                         <Image source={ArrowLeft} style={{ width: 22, height: 22 }} />
                     </TouchableOpacity>
                     <Text style={styles.pageHead}>Payment for {BillPdfdetails?.invoiceNumber || selectedBill?.invoiceNumber}</Text>
@@ -645,6 +649,16 @@ const NewRecordPayment = ({ route }) => {
                     </View>
                 </View>
             )}
+
+            <LeavePageScreen 
+            visible={showLeavePageScreen}
+            onClose={()=>setShowLeavePageScreen(false)}
+            discardClose={()=>{             
+                setShowLeavePageScreen(false)
+                setTimeout(() => {
+                    navigation.goBack()
+                }, 300);               
+            }}/>
         </>
     )
 

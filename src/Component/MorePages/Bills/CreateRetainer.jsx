@@ -251,6 +251,9 @@ const NewRetainerInvoiceSheet = ({ }) => {
         if (!totalRetainerAmount) {
             newErrors.retainerAmount = "Please Enter Amount"
         }
+        if ( !String(selectedGuardian || "").trim()  && !receivedFrom) {
+            newErrors.guardianName = "Please Enter Guardian Name";
+        }
 
         setErrors(newErrors)
 
@@ -429,10 +432,12 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     <Text style={styles.headerTxt}>Received from <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
 
-                    <TouchableOpacity onPress={() => setGuardianOpen(!guardianOpen)}
+                    <TouchableOpacity onPress={() => {setGuardianOpen(!guardianOpen)
+                        //  setErrors(prev => ({ ...prev, guardianName: "" }))
+                    }}
                         style={[styles.inputBox, { marginTop: 10 }]}>
                         <TextInput
-
+                            style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}
                             placeholder="Enter/Select the Respective Person"
                             value={guardianOpen ? receivedFrom || selectedGuardian?.guardianName : selectedGuardian?.guardianName}
                             onPressIn={() => setGuardianOpen(!guardianOpen)}
@@ -440,6 +445,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
                                 setReceivedFrom(onlyLetters)
                                 setSelectedGuardian("")
+                                setGuardianOpen(false)
+                                setErrors(prev => ({ ...prev, guardianName: "" }))
                             }}
                         />
 
@@ -448,6 +455,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             style={{ width: 18, height: 18, tintColor: "#555" }}
                         />
                     </TouchableOpacity>
+                    {errors.guardianName && <ErrorMessage message={errors.guardianName} type="error" />}
 
                     {guardianOpen && (
                         selectedTenant?.guardiansList?.length > 0 ? (
@@ -470,8 +478,10 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                                     setSelectedGuardian(i)
                                                     setStateQuery("");
                                                     setGuardianOpen(false)
+                                                    setErrors(prev => ({ ...prev, guardianName: "" }))
                                                 }}>
-                                                <Text>{i.guardianName}</Text>
+                                                <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
+                                                    {i.guardianName}</Text>
                                             </TouchableOpacity>
 
                                         ))}
@@ -496,7 +506,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     }}
                         style={[styles.inputBox, { marginTop: 10 }]}>
 
-                        <Text>
+                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
                             {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
                         </Text>
 
@@ -544,9 +554,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     </View> */}
                                 </View>
 
-                                <Text style={styles.itemdetailTxt}>Item Detail
-                                    {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text>
-                                </Text>
+                                <Text style={styles.itemdetailTxt}>Item Detail</Text>
 
                                 <TextInput
                                     style={styles.itemTxtInpt}
@@ -563,7 +571,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
                                 <TouchableOpacity onPress={() => setOpenRetainerType(!openRetainerType)}
                                     style={styles.retainTypeBox}>
-                                    <Text>{item.retainerType ? item?.retainerType : "Select Type"}</Text>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
+                                        {item.retainerType ? item?.retainerType : "Select Type"}</Text>
 
                                     <Image
                                         source={DownArrow}
@@ -583,7 +592,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                             }}
                                                 style={{ paddingVertical: 8, paddingHorizontal: 14 }}
                                                 key={i.id}>
-                                                <Text>{i?.retainerType}</Text>
+                                                <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
+                                                    {i?.retainerType}</Text>
                                             </TouchableOpacity>
                                         ))}
                                     </View>
@@ -600,7 +610,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     placeholder="Enter Amount"
                                     value={item.amount}
                                     onChangeText={(text) => {
-                                        handleChange(index, "amount", text)
+                                        const onlyNumbers = text.replace(/[^0-9\s]/g, "")
+                                        handleChange(index, "amount", onlyNumbers)
                                         setErrors(prev => ({ ...prev, retainerAmount: "" }))
                                     }} />
 
@@ -669,11 +680,18 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
                     {/* <TouchableOpacity style={[styles.inputBox, { marginTop: 10 }]}> */}
                     <TextInput
+                        value={transactionId}
                         style={[styles.inputBox, { marginTop: 10 }]}
                         // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
                         placeholder="Enter Transaction ID"
-                        onChangeText={(text) =>
-                            setTransactionId(text)
+                        onChangeText={(text) => {
+                            const filteredText = text.replace(
+                                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+                                , ""
+                            );
+                            setTransactionId(filteredText)
+                        }
+
                         } />
 
                     {/* <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} /> */}
@@ -717,8 +735,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             markedDates={paidMarkedDates}
                             minDate={
                                 selectedTenant?.joiningDate ? dayjs(
-                                        selectedTenant.joiningDate,"DD/MM/YYYY"
-                                    ).format("YYYY-MM-DD"): undefined
+                                    selectedTenant.joiningDate, "DD/MM/YYYY"
+                                ).format("YYYY-MM-DD") : undefined
                             }
                             current={
                                 paidDate
@@ -834,7 +852,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         justifyContent: "center",
         alignItems: "center",
-        marginTop: 10,
+        marginTop: 10, fontFamily: 'Gilroy-Medium', fontSize: 14
     },
     addRowField: {
         flexDirection: 'row',

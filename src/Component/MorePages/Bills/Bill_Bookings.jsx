@@ -52,7 +52,7 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, GetAdvanceBookingBills } = useContext(BillContext);
-  const { activeHostelId } = useContext(CommonContexts);
+  const { activeHostelId,hostelList} = useContext(CommonContexts);
 
   const {
     canReadModule: canReadBooking,
@@ -687,7 +687,8 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
 
         )}
 
-        {!loading && (
+
+        {!loading && hostelList?.length > 0 && (
           <>
 
 
@@ -1053,7 +1054,7 @@ export default BillBookings;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 15,
+    paddingHorizontal: 8,
     backgroundColor: "#fff",
     position: "relative",
     zIndex: 1,

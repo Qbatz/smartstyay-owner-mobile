@@ -796,7 +796,7 @@ export default function BookingCheckIn({ navigation, route }) {
                         >
                             <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Tenant Check-In</Text>
+                        <Text style={styles.headerTitle}>Tenant Check-Inff</Text>
                     </View>
 
                     <View style={styles.segmentRow}>
@@ -914,10 +914,10 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
                                     <TouchableOpacity style={{
                                         flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10,
-                                        opacity: isDashboardCheckIn ? 0.5 : 1,
+                                        opacity: isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect ? 0.5 : 1,
                                     }}
                                         onPress={handleshowBedDetailsheet}
-                                        disabled={isDashboardCheckIn}
+                                        disabled={isDashboardCheckIn ||bookingDetails?.bedName !=null}
                                     >
 
                                         <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
