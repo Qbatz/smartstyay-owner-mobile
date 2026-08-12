@@ -761,7 +761,7 @@ export default function GeneralDetailsScreen({ navigation }) {
           colors={["#E2E8FF", "#FFFFFF"]}
               start={{ x: 0.5, y: 0 }}
               end={{ x: 0.5, y: 0.8 }}
-              style={{ paddingHorizontal: 16, paddingTop: 50,}}>
+              style={{ paddingHorizontal: Platform.OS === "android" ? 16 : 3, paddingTop: 50,}}>
             
           
 

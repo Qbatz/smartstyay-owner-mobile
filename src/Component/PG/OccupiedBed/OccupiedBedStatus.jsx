@@ -644,6 +644,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
     elevation: 8,
+        borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
 
   popupItem: {
@@ -732,6 +734,8 @@ const styles = StyleSheet.create({
     elevation: 6,
     paddingVertical: 6,
     zIndex: 999,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   menuItem: {
     flexDirection: "row",
