@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext , useRef} from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
     View,
     Text,
@@ -31,19 +31,19 @@ import Location from "../../../Assets/Images/Locations.png";
 import TransactionSheet from "./TransactionSheet"
 
 
-export default function BankDetails({  }) {
+export default function BankDetails({ }) {
     // const { expense } = route.params;
 
     // console.log("expense", expense);
 
     const navigation = useNavigation()
 
-      const route = useRoute();
+    const route = useRoute();
 
-  const { bankDetails, bankId } = route.params || {};
+    const { bankDetails, bankId } = route.params || {};
 
-  console.log("bankDetails", bankDetails);
-  
+    console.log("bankDetails", bankDetails);
+
 
     //   const {
     //     canWriteModule: canWriteExpense,
@@ -68,9 +68,9 @@ export default function BankDetails({  }) {
 
     const [activeTab, setActiveTab] = useState("Overview")
 
- 
-    const {  getBankOverview, getTransferInitialize , transferInitialize,
-  bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+
+    const { getBankOverview, getTransferInitialize, transferInitialize,
+        bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
         useContext(BankingContext);
     const { activeHostelId } = useContext(CommonContexts);
 
@@ -82,7 +82,7 @@ export default function BankDetails({  }) {
     const [deletePopup, setDeletePopup] = useState(false)
 
 
-  
+
 
 
 
@@ -130,12 +130,12 @@ export default function BankDetails({  }) {
     //   };
 
 
-    const handleTransfer = async() => {
+    const handleTransfer = async () => {
 
-          const res = await getTransferInitialize(
-    activeHostelId,
-    bankId , 
-  );
+        const res = await getTransferInitialize(
+            activeHostelId,
+            bankId,
+        )
         navigation.navigate("BankTransfer")
 
     }
@@ -156,22 +156,22 @@ export default function BankDetails({  }) {
         }
     };
 
-  const tabs = [
-  "Overview",
-  ...(bankDetails?.accountType === "BANK"
-    ? ["Linked Methods"]
-    : []),
-  "Ledger",
-];
+    const tabs = [
+        "Overview",
+        ...(bankDetails?.accountType === "BANK"
+            ? ["Linked Methods"]
+            : []),
+        "Ledger",
+    ];
 
-useEffect(() => {
-  if (
-    bankDetails?.accountType !== "BANK" &&
-    activeTab === "Linked Methods"
-  ) {
-    setActiveTab("Overview");
-  }
-}, [bankDetails?.accountType]);
+    useEffect(() => {
+        if (
+            bankDetails?.accountType !== "BANK" &&
+            activeTab === "Linked Methods"
+        ) {
+            setActiveTab("Overview");
+        }
+    }, [bankDetails?.accountType]);
 
     const renderContent = () => {
         switch (activeTab) {
@@ -196,7 +196,7 @@ useEffect(() => {
 
     return (
         <>
- {loading && <Loader />}
+            {loading && <Loader />}
             <SuccessModal
                 visible={showSuccessModal}
                 onClose={() => setShowSuccessModal(false)}
@@ -207,60 +207,60 @@ useEffect(() => {
             <View style={styles.container}>
 
                 <View style={styles.bankHeader}>
-                      <TouchableOpacity onPress={() => navigation.goBack()}>
-    <Image source={ArrowLeft} style={styles.backIcon} />
-  </TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Image source={ArrowLeft} style={styles.backIcon} />
+                    </TouchableOpacity>
 
-                   <View style={styles.topHeader}>
+                    <View style={styles.topHeader}>
 
 
-  <View style={styles.bankInfoRow}>
-    <Image source={BankIcon} style={styles.bankIcon} />
+                        <View style={styles.bankInfoRow}>
+                            <Image source={BankIcon} style={styles.bankIcon} />
 
-    <View style={{ flex: 1, marginLeft: 18 }}>
-      <Text style={styles.bankName}>
-        {bankDetails?.bankName || bankDetails?.cashAccountType}
-        {/* Canara Bank */}
-      </Text>
+                            <View style={{ flex: 1, marginLeft: 18 }}>
+                                <Text style={styles.bankName}>
+                                    {bankDetails?.bankName || bankDetails?.cashAccountType}
+                                    {/* Canara Bank */}
+                                </Text>
 
-      <View style={styles.locationRow}>
-        <Text style={styles.accountType}>{bankDetails?.accountType} Account</Text>
-       {bankDetails?.accountType === "BANK" && (
-        <>
-        <Image
-          source={Location}
-          style={styles.smallLocation}
-        />
+                                <View style={styles.locationRow}>
+                                    <Text style={styles.accountType}>{bankDetails?.accountType} Account</Text>
+                                    {bankDetails?.accountType === "BANK" && (
+                                        <>
+                                            <Image
+                                                source={Location}
+                                                style={styles.smallLocation}
+                                            />
 
-        <Text style={styles.locationText}>
-         {bankDetails?.branchName || "N/A"}
-        </Text>
-        </>
-       ) }
-       
-      </View>
-    </View>
-  </View>
+                                            <Text style={styles.locationText}>
+                                                {bankDetails?.branchName || "N/A"}
+                                            </Text>
+                                        </>
+                                    )}
 
-  <TouchableOpacity>
-    <Image source={ThreeDots} style={styles.menuIcon}/>
-  </TouchableOpacity>
-</View>
+                                </View>
+                            </View>
+                        </View>
+
+                        <TouchableOpacity>
+                            <Image source={ThreeDots} style={styles.menuIcon} />
+                        </TouchableOpacity>
+                    </View>
 
 
 
                     <View style={styles.actionRow}>
 
-                        <TouchableOpacity style={styles.addBtn}    onPress={() => setShowTransactionSheet(true)}>
+                        <TouchableOpacity style={styles.addBtn} onPress={() => setShowTransactionSheet(true)}>
                             <Text style={styles.addBtnText}>
                                 ＋ Add Transaction
                             </Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.transferBtn} onPress={handleTransfer}>
-                            <Image source={TransferIcon} style={{height:18, width:18, marginRight:10}} />
+                            <Image source={TransferIcon} style={{ height: 18, width: 18, marginRight: 10 }} />
                             <Text style={styles.transferText}>
-                                 Transfer
+                                Transfer
                             </Text>
                         </TouchableOpacity>
 
@@ -307,17 +307,17 @@ useEffect(() => {
                     {renderContent()}
                 </View>
                 <TransactionSheet
-  visible={showTransactionSheet}
-  onClose={() => setShowTransactionSheet(false)}
-   navigation={navigation}
-   bankId={bankId}
-   bankDetails={bankDetails}
-/>
+                    visible={showTransactionSheet}
+                    onClose={() => setShowTransactionSheet(false)}
+                    navigation={navigation}
+                    bankId={bankId}
+                    bankDetails={bankDetails}
+                />
 
             </View>
 
-         
-{/* 
+
+            {/* 
             <Modal
                 transparent
                 animationType="fade"
@@ -473,17 +473,17 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Semibold",
     },
 
-   tabWrapper:{
-  borderBottomWidth:1,
-  borderBottomColor:"#ECECEC",
-  marginTop:20,
-},
+    tabWrapper: {
+        borderBottomWidth: 1,
+        borderBottomColor: "#ECECEC",
+        marginTop: 20,
+    },
 
-tabItem:{
-  width:140,
-  alignItems:"center",
-  paddingBottom:14,
-},
+    tabItem: {
+        width: 140,
+        alignItems: "center",
+        paddingBottom: 14,
+    },
     // tabItem: {
     //     marginHorizontal: 18,
     //     paddingVertical: 14,
@@ -727,7 +727,7 @@ tabItem:{
         width: 14,
         height: 14,
         marginHorizontal: 6,
-        tintColor: "#B8860B", 
+        tintColor: "#B8860B",
     },
 
     locationText: {
@@ -769,80 +769,80 @@ tabItem:{
         fontSize: 14,
         fontFamily: "Gilroy-Semibold"
     },
-    topHeader:{
-  flexDirection:"row",
-  alignItems:"center",
-  justifyContent:"space-between",
-  marginBottom:26,
-},
+    topHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 26,
+    },
 
-bankInfoRow:{
-  flex:1,
-  flexDirection:"row",
-  alignItems:"center",
-  marginHorizontal:8,
-  marginTop:14
-},
+    bankInfoRow: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        marginHorizontal: 8,
+        marginTop: 14
+    },
 
-bankIcon:{
-  width:42,
-  height:42,
-  borderRadius:22,
-},
+    bankIcon: {
+        width: 42,
+        height: 42,
+        borderRadius: 22,
+    },
 
-bankName:{
-  fontSize:18,
-  fontFamily:"Gilroy-Bold",
-  color:"#232323",
-},
+    bankName: {
+        fontSize: 18,
+        fontFamily: "Gilroy-Bold",
+        color: "#232323",
+    },
 
-accountType:{
-  fontSize:15,
-  color:"#6E6E6E",
-  fontFamily:"Gilroy-Medium",
-},
+    accountType: {
+        fontSize: 15,
+        color: "#6E6E6E",
+        fontFamily: "Gilroy-Medium",
+    },
 
-locationText:{
-  fontSize:13,
-  color:"#A56C00",
-  fontFamily:"Gilroy-Semibold",
-},
+    locationText: {
+        fontSize: 13,
+        color: "#A56C00",
+        fontFamily: "Gilroy-Semibold",
+    },
 
-// smallLocation:{
-//   width:18,
-//   height:18,
-//   marginHorizontal:8,
-// },
+    // smallLocation:{
+    //   width:18,
+    //   height:18,
+    //   marginHorizontal:8,
+    // },
 
-menuIcon:{
-  width:34,
-  height:34,
-},
+    menuIcon: {
+        width: 34,
+        height: 34,
+    },
 
-actionRow:{
-  flexDirection:"row",
-  justifyContent:"space-between",
-  marginTop:12,
-},
+    actionRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 12,
+    },
 
-addBtn:{
-  width:"55%",
-  height:40,
-  backgroundColor:"#2F49E7",
-  borderRadius:30,
-  justifyContent:"center",
-  alignItems:"center",
-},
+    addBtn: {
+        width: "55%",
+        height: 40,
+        backgroundColor: "#2F49E7",
+        borderRadius: 30,
+        justifyContent: "center",
+        alignItems: "center",
+    },
 
-transferBtn:{
-  width:"40%",
-  height:40,
-  borderRadius:30,
-  borderWidth:1,
-  borderColor:"#D9D9D9",
-  justifyContent:"center",
-  alignItems:"center",
-  backgroundColor:"#fff",
-  flexDirection:'row'
-},
+    transferBtn: {
+        width: "40%",
+        height: 40,
+        borderRadius: 30,
+        borderWidth: 1,
+        borderColor: "#D9D9D9",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        flexDirection: 'row'
+    },
 });
