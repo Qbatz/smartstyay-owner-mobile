@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef , useContext } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,9 @@ import {
   ScrollView,
   Image, TouchableWithoutFeedback
 } from "react-native";
+import { BankingContext } from "../../../Context/BankingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+
 
 const { height } = Dimensions.get("window");
 const SHEET_HEIGHT = height * 0.48;
@@ -20,6 +23,10 @@ export default function TransactionSheet({
 }) {
 
 
+     const { getBankOverview, getTransferInitialize, transferInitialize,
+          bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+          useContext(BankingContext);
+      const { activeHostelId } = useContext(CommonContexts);
 
   const translateY = useRef(
     new Animated.Value(SHEET_HEIGHT)
@@ -82,11 +89,12 @@ export default function TransactionSheet({
       icon: require("../../../Assets/Images/TenantPayment.png"),
       screen: "TenantPayment",
     },
-    {
-      title: "Transfer",
-      icon: require("../../../Assets/Images/arrow-transfer.png"),
-      screen: "BankTransfer",
-    },
+   {
+  title: "Transfer",
+  icon: require("../../../Assets/Images/arrow-transfer.png"),
+  screen: "BankTransfer",
+  action: "TRANSFER",
+},
     {
       title: "Vendor Payment",
       icon: require("../../../Assets/Images/VendorPaymentIcon.png"),
@@ -138,20 +146,44 @@ export default function TransactionSheet({
   //   });
   // };
 
-  const handleItemPress = (item) => {
-    Animated.timing(translateY, {
-      toValue: SHEET_HEIGHT,
-      duration: 220,
-      useNativeDriver: true,
-    }).start(() => {
-      onClose?.();
+  // const handleItemPress = (item) => {
+  //   Animated.timing(translateY, {
+  //     toValue: SHEET_HEIGHT,
+  //     duration: 220,
+  //     useNativeDriver: true,
+  //   }).start(() => {
+  //     onClose?.();
 
-      navigation.navigate(item.screen, {
-        bankId: bankId,
-        bankDetails:bankDetails,
-      })
-    })
+  //     navigation.navigate(item.screen, {
+  //       bankId: bankId,
+  //       bankDetails:bankDetails,
+  //     })
+  //   })
+  // }
+
+  const handleItemPress = async (item) => {
+  if (item.title === "Transfer") {
+    const res = await getTransferInitialize(
+      activeHostelId,
+      bankId
+    );
+
+    if (!res?.success) return;
   }
+
+  Animated.timing(translateY, {
+    toValue: SHEET_HEIGHT,
+    duration: 220,
+    useNativeDriver: true,
+  }).start(() => {
+    onClose?.();
+
+    navigation.navigate(item.screen, {
+      bankId,
+      bankDetails,
+    });
+  });
+};
 
   if (!mounted) return null;
 
