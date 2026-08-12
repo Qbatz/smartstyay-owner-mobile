@@ -2416,16 +2416,21 @@ export default function BillsDesign({ route }) {
 
   const handleTabChange = (tab) => {
     if (activeTab === "Invoices" && tab !== "Invoices") {
-      clearBillFilters();
+      clearBillFilters()
     }
 
-    setSearchText("");
-    setActiveTab(tab);
+    setSearchText("")
+    setActiveTab(tab)
 
     if (tab === "Invoices") {
-      GetAllBillDetails(activeHostelId);
+      GetAllBillDetails(activeHostelId)
     }
-  };
+    if (tab === "Receipt") {
+      GetAllBillDetails(activeHostelId)
+      clearBillFilters()
+    }
+
+  }
 
   // const handleTabChange = (tab) => {
   //   setActiveTab(tab);

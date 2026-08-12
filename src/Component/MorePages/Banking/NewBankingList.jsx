@@ -1889,8 +1889,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
     borderRadius: 24,
     marginHorizontal: 16,
-    padding: 18,
-
+    padding: 14,
+overflow: "visible",
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -1898,6 +1898,8 @@ const styles = StyleSheet.create({
       width: 0,
       height: 0,
     },
+    borderWidth: 1,
+  borderColor: "#E8E8E8",
     elevation: 4,
   },
 
@@ -2790,22 +2792,22 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-    width: 56,
-    height: 56,
+    width: 50,
+    height: 50,
     borderRadius: 28,
     justifyContent: "center",
     alignItems: "center",
   },
 
   transactionIcon: {
-    width: 26,
-    height: 26,
+    width: 23,
+    height: 23,
     resizeMode: "contain",
     tintColor: "#FFFFFF", // white icon
   },
 
   transactionTitle: {
-    fontSize: 15,
+    fontSize: 13,
     color: "#222",
     fontFamily: "Gilroy-SemiBold",
   },
@@ -2822,7 +2824,7 @@ const styles = StyleSheet.create({
   },
 
   transactionAmount: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#222",
     fontFamily: "Gilroy-Bold",
   },
@@ -2834,8 +2836,8 @@ const styles = StyleSheet.create({
   },
 
   smallIcon: {
-    width: 26,
-    height: 26,
+    width: 23,
+    height: 23,
     resizeMode: "contain",
   },
 
