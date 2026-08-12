@@ -638,7 +638,7 @@ export default function BillsProvider({ children }) {
 
   const downloadReceipt = async (hostelId, transactionId) => {
     console.log(hostelId)
-    console.log(transactionId)
+    console.log("istransactionGet",transactionId)
     if (!hostelId || !transactionId) {
       return { success: false, message: "Invalid data" };
     }
@@ -663,6 +663,8 @@ export default function BillsProvider({ children }) {
       return { success: false, message: "Download failed" };
     } catch (error) {
       const msg = getErrorMessage(error);
+      console.log("whyError",msg)
+      console.log("whyError",error.message)
       return { success: false, message: msg };
     } finally {
       setLoading(false);

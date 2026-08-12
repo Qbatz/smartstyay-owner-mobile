@@ -628,8 +628,6 @@ export default function ApplyBookingToInvoice({ route }) {
                 listItems,
             });
 
-            console.log("Prematlatha", res);
-
 
             if (res?.success) {
               
@@ -760,7 +758,7 @@ export default function ApplyBookingToInvoice({ route }) {
 
                             {/* BOOKING AMOUNT */}
                             <View style={styles.bookingRowInside}>
-                                <Text style={styles.bookingLabel}>Invoice Amount</Text>
+                                <Text style={styles.bookingLabel}>Booking Amount</Text>
                                 <Text style={styles.bookingAmount}>
                                     ₹ {advanceInfo?.availableBalance || 0}
                                 </Text>

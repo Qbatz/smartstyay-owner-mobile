@@ -392,7 +392,7 @@ export default function BookingToInvoice() {
                 listItems,
             });
 
-            console.log("res", res);
+            console.log("resDiscount", res);
 
 
             if (res?.success) {
@@ -952,7 +952,7 @@ export default function BookingToInvoice() {
                         >
                             <View style={styles.sheetHandle} />
 
-                            <View style={{ marginBottom: 50 }}>
+                            <View style={{ marginBottom: 30 }}>
                                 <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
                                         Total Retainer Amount</Text>
@@ -1379,6 +1379,14 @@ const styles = StyleSheet.create({
         color: "red",
         fontFamily: "Gilroy-Medium",
     },
+    
+    sheetOverlay: {
+        position: "absolute",
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "flex-end",
+        zIndex: 9999,
+    },
     sheet: {
         backgroundColor: "#ffffff",
         padding: 20,
@@ -1386,13 +1394,6 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 25,
         paddingBottom: 30,
         // minHeight: 400,
-    },
-    sheetOverlay: {
-        position: "absolute",
-        top: 0, left: 0, right: 0, bottom: 0,
-        backgroundColor: "rgba(0,0,0,0.4)",
-        justifyContent: "flex-end",
-        zIndex: 9999,
     },
     sheetHandle: {
         width: 60,

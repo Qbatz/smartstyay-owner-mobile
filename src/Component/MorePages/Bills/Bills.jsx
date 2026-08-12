@@ -1462,6 +1462,8 @@ export default function BillsDesign({ route }) {
       hostelId: activeHostelId,
       advanceInvoiceId: selectedBill?.invoiceId,
     });
+    setShowMenu(false);
+    setShowBillDetails(false)
   }
 
 
@@ -2186,6 +2188,7 @@ export default function BillsDesign({ route }) {
       activeHostelId,
       item.transactionId
     );
+    console.log("receipturl",response)
 
     CommonModule.downloadAndShareFile(response?.url);
   };
@@ -2492,7 +2495,8 @@ export default function BillsDesign({ route }) {
         isPaid &&
         selectedBill?.invoiceMode === "Manual" &&
         selectedBill?.invoiceType !== "Settlement"
-      )
+      ) || (isPaid && selectedBill?.canRedeem &&
+        selectedBill?.invoiceType !== "Settlement")
     );
 
 
