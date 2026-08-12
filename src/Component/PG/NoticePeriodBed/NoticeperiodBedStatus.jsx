@@ -393,14 +393,14 @@ export default function NoticePeriodBedSheet({
                     </View>
                   )}
 
-                  <View style={{marginRight:40}}>
+                  <View style={{ marginRight: 40 }}>
                     {console.log("haha", selectedBed)}
                     <TouchableOpacity onPress={() =>
                       navigation.navigate("CustomerOverviewScreen", {
                         customerId: tenant.tenetId,
                         customer: tenant,
                       })
-                    }  styles={{marginRight:20}}>
+                    } styles={{ marginRight: 20 }}>
                       <Text style={styles.tenantName} numberOfLines={1} >
                         {tenant?.tenantFullName}</Text>
                     </TouchableOpacity>
@@ -696,6 +696,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 4,
     zIndex: 999,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
 
 

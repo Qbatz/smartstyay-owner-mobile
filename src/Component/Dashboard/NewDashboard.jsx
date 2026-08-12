@@ -109,11 +109,11 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
-  const { getDashboard, getParticularHostelDetails, PGDetails, loading } = useContext(PGContext);
+  const { getDashboard, getParticularHostelDetails, PGDetails  , pgLoading} = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
   const { GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    GetInitializeRecordPaymentDetails } = useContext(BillContext);
+    GetInitializeRecordPaymentDetails , loading } = useContext(BillContext);
   const [unreadCount, setUnreadCount] = useState(0);
   const [dashboardList, setDashboardList] = useState([])
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -260,6 +260,9 @@ export default function DashboardNewDesign({ initialParams, route }) {
   useEffect(() => {
     const fetchDashboard = async () => {
       if (activeHostelId) {
+    console.log("apicall", activeHostelId);
+    
+
         const res = await getDashboard(activeHostelId, {
           billingFilter: "This Month",
           complaintRequestFilter: "This Month",
@@ -4026,6 +4029,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 10,
     maxWidth: 120,
+     opacity: 0.4
   },
 
   monthText: {
@@ -4287,7 +4291,8 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 6,
     paddingHorizontal: 6,
-    paddingVertical: 2
+    paddingVertical: 2, 
+     opacity: 0.4
   },
 
   occupancyRow: {
