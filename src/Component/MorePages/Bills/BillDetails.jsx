@@ -1120,10 +1120,30 @@ const BillDetailsSheet = ({
               </>
             )}
 
+             {(partiallyRefund) && (
+                                  <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                    <View>
+                                      <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
+                                    </View>
+                                    <View>
+                                      <Text
+                                        style={[
+                                          styles.amountValue,
+                                          { color: "#FF0000" },
+                                        ]}
+                                      >
+                                        ₹ {Math.round(BillPdfdetails?.invoiceInfo?.totalPayable ?? 0)}
+                                      </Text>
+                                    </View>
+                                  </View>
+            
+                                )}
+
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
               <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold", color: "#777", }}>
                 Invoice Date</Text>
-              <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>{BillPdfdetails?.invoiceDate}</Text>
+              <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>
+                {BillPdfdetails?.invoiceDate}</Text>
             </View>
 
             {BillPdfdetails?.invoiceInfo?.isCancelled && (
