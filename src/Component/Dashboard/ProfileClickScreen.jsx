@@ -52,6 +52,7 @@ export default function ProfileDrawer({ visible, onClose, setShowTabBar }) {
   const [popupPos, setPopupPos] = useState({ top: 0, right: 0 });
 
   const loginContext = useContext(LoginContexts)
+  const { setProfileDetails } = useContext(ExpensesContext);
   const { CommonModule } = NativeModules;
 
   useEffect(() => {
@@ -133,6 +134,7 @@ export default function ProfileDrawer({ visible, onClose, setShowTabBar }) {
       loginContext.logoutf("false")
        setActiveHostelId(null)
       setPgDetails(null)
+      setProfileDetails("")
 
       loginContext.updateUserId("")
 

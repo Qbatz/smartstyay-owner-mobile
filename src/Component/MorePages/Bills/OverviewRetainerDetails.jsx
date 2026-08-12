@@ -156,6 +156,7 @@ const RetainerDetailsSheet = ({
   const stay = BillPdfdetails?.stayInfo;
 
   console.log("invoice_details", invoice);
+  console.log("InitializebookingBills",InitializebookingBills)
 
 
   // const normalizedBill = {
@@ -725,7 +726,8 @@ const RetainerDetailsSheet = ({
   console.log(invoice?.status);
   console.log(bill?.configurations);
   console.log(selectedBill?.invoiceType);
-  const canRedeem = true
+    // const advanceInfo = InitializebookingBills?.advanceInfo || {};
+  const canRedeem = InitializebookingBills?.advanceInfo?.status
 
 
   if (!visible) return null;
