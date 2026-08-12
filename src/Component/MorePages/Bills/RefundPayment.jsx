@@ -69,6 +69,7 @@ const RefundPaymentSheet = ({
 
   const [showPaymentMode, setShowPaymentMode] = useState(false);
 
+  const [isRefundClicked, setIsRefundClicked] = useState(false);
   useEffect(() => {
     if (visible) {
       setPaidAmount("");
@@ -469,6 +470,9 @@ const RefundPaymentSheet = ({
     }
 
     if (!valid) return;
+      if (isRefundClicked) return;
+    setIsRefundClicked(true);
+
 
     const payload = {
       refundAmount: String(refundAmount),
@@ -481,7 +485,7 @@ const RefundPaymentSheet = ({
 
     console.log("payload", payload);
 
-
+    try{
 
     const res = await CreateRefund({
       hostelId: activeHostelId,
@@ -501,6 +505,9 @@ const RefundPaymentSheet = ({
         setShowSuccessModal(false)
         onSuccess?.();
         resetRefundForm();
+        setTimeout(() => {
+           setIsRefundClicked(false)
+        }, 100);
       }, 1500);
 
 
@@ -517,12 +524,17 @@ const RefundPaymentSheet = ({
       setModalMessage(res?.refundableError);
       setShowSuccessModal(true);
       setTimeout(() => setShowSuccessModal(false), 1500);
+       setIsRefundClicked(false)
     } else {
       setModalType("warning");
       setModalMessage(res?.message);
       setShowSuccessModal(true);
       setTimeout(() => setShowSuccessModal(false), 1500);
+       setIsRefundClicked(false)
     }
+  }catch(error){
+     setIsRefundClicked(false)
+  }
   };
 
 
@@ -823,8 +835,9 @@ const RefundPaymentSheet = ({
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.saveBtn}
+                style={[styles.saveBtn, isRefundClicked && { opacity: 0.4 }]}
                 onPress={handleSaveRefund}
+                disabled={isRefundClicked}
               >
                 <Text style={styles.saveText}>Refund</Text>
               </TouchableOpacity>

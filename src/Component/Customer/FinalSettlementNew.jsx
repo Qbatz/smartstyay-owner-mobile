@@ -1831,6 +1831,13 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     </Text>
                   </View>
 
+                   <View style={styles.rowBetween}>
+                    <Text style={styles.label}>Retainer Invoices</Text>
+                    <Text style={{fontSize: 12,fontFamily: "Gilroy-Bold"}}>
+                      ₹ {settlementDetails?.settlementInfo?.retainerBalance}
+                    </Text>
+                  </View>
+
 
                   {/* <View style={styles.rowBetween}>
                     <Text style={styles.label}>Refundable Rent</Text>

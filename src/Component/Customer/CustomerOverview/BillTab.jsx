@@ -128,7 +128,7 @@ export default function BillTab({ customerDetails, ShowBillsDetails }) {
                   </View>
 
                 </View>
-                {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                {["Partially Paid", "Partial Payment","Partially Refunded"].includes(item.paymentStatus) && (
                   <Text style={styles.dueLabel}>Outstanding</Text>
                 )}
               </View>
@@ -137,7 +137,7 @@ export default function BillTab({ customerDetails, ShowBillsDetails }) {
               <View style={styles.rightBox}>
                 <Text style={styles.amount}>₹{item.totalAmount}</Text>
                 <Text style={styles.date}>on {item.dueDate}</Text>
-                {["Partially Paid", "Partial Payment"].includes(item.paymentStatus) && (
+                {["Partially Paid", "Partial Payment","Partially Refunded"].includes(item.paymentStatus) && (
                   <Text style={styles.dueAmount}>   ₹ {item?.dueAmount || 0}</Text>
                 )}
               </View>
