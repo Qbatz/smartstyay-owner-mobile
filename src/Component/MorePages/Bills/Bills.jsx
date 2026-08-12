@@ -383,11 +383,11 @@ export default function BillsDesign({ route }) {
   //   GetAllBillDetails(activeHostelId);
   // }, [activeHostelId])
 
-  // useEffect(() => {
-  //   if (activeHostelId && canReadInvoice) {
-  //     GetAllBillDetails(activeHostelId);
-  //   }
-  // }, [activeHostelId, canReadInvoice]);
+  useEffect(() => {
+    if (activeHostelId && canReadInvoice) {
+      GetAllBillDetails(activeHostelId);
+    }
+  }, [activeHostelId, canReadInvoice]);
 
   //  useFocusEffect(
   //   useCallback(() => {
@@ -2414,6 +2414,16 @@ export default function BillsDesign({ route }) {
     setSearchText("");
   };
 
+  useFocusEffect(
+  useCallback(() => {
+
+    return () => {
+      clearBillFilters();      
+      setActiveTab("Invoices"); 
+    };
+  }, [])
+);
+
   const handleTabChange = (tab) => {
     if (activeTab === "Invoices" && tab !== "Invoices") {
       clearBillFilters()
@@ -2426,7 +2436,7 @@ export default function BillsDesign({ route }) {
       GetAllBillDetails(activeHostelId)
     }
     if (tab === "Receipt") {
-      GetAllBillDetails(activeHostelId)
+      // GetAllBillDetails(activeHostelId)
       clearBillFilters()
     }
 
