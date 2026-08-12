@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, TextInput, TouchableWithoutFeedback } from "react-native";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableWithoutFeedback } from "react-native";
 import { View, Text, TouchableOpacity } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import { useNavigation } from "@react-navigation/native";
@@ -67,6 +67,38 @@ const NewRetainerInvoiceSheet = ({ }) => {
     const [modalMessage, setModalMessage] = useState("")
     const [modalType, setModalType] = useState("")
     const [isSubmitClicked, setIsSubmitClicked] = useState(false)
+    const scrollRef = useRef(null);
+    const descriptionRef = useRef(null);
+    const transactionRef = useRef(null)
+
+
+    //   const scrollToField = (ref) => {
+    //     if (!ref?.current || !scrollRef.current) return;
+
+    //     ref.current.measureLayout(
+    //       scrollRef.current,
+    //       (x, y) => {
+    //         scrollRef.current.scrollTo({
+    //           y: y - 100,
+    //           animated: true,
+    //         });
+    //       },
+    //       () => { }
+    //     );
+    //   };
+    const scrollToField = (ref) => {
+        if (!ref?.current || !scrollRef.current) {
+            return;
+        }
+
+        setTimeout(() => {
+            scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
+                ref.current,
+                120,
+                true
+            );
+        }, 100);
+    };
 
     const retainerTypeList = [{ id: 1, retainerType: "AMOUNT_HOLDING" }, { id: 2, retainerType: "EB_HOLDING" }]
 
@@ -248,17 +280,34 @@ const NewRetainerInvoiceSheet = ({ }) => {
         if (!selectedMode) {
             newErrors.payMode = "Please Select Mode"
         }
-        if (!totalRetainerAmount) {
-            newErrors.retainerAmount = "Please Enter Amount"
-        }
-        if ( !String(selectedGuardian || "").trim()  && !receivedFrom) {
+        // if (!totalRetainerAmount) {
+        //     newErrors.retainerAmount = "Please Enter Amount"
+        // }
+
+        items.forEach((item, index) => {
+
+            if (!item?.retainerType) {
+                newErrors[`retainerType_${index}`] =
+                    "Please Select Retainer Type";
+            }
+
+            if (!item?.amount || Number(item.amount) <= 0) {
+                newErrors[`amount_${index}`] =
+                    "Please Enter Amount";
+            }
+
+        });
+        if (!String(selectedGuardian || "").trim() && !receivedFrom) {
             newErrors.guardianName = "Please Enter Guardian Name";
         }
 
         setErrors(newErrors)
 
-        if (newErrors.length > 0) {
-            return;
+        // if (newErrors.length > 0) {
+        //     return;
+        // }
+        if (Object.keys(newErrors).length > 0) {
+            return false;
         }
 
         if (isSubmitClicked) return;
@@ -328,141 +377,83 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     message={modalMessage}
                     type={modalType} />
 
-                <View style={{ marginTop: 15, flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity style={{ marginRight: 5 }}
                         onPress={() => navigation.goBack()} >
                         <Image source={ArrowLeft} style={{ width: 22, height: 22 }} />
                     </TouchableOpacity>
                     <Text style={styles.pageHead}>New Retainer Invoice</Text>
                 </View>
-                <ScrollView contentContainerStyle={{ paddingBottom: 50 }} showsVerticalScrollIndicator={false}>
+                <KeyboardAvoidingView
+                    style={{ flex: 1, backgroundColor: "#fff" }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}   // ✅ change here
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+                >
+                    <ScrollView
+                        ref={scrollRef}
+                        contentContainerStyle={{ paddingBottom: 50 }}
+                        showsVerticalScrollIndicator={false}
+                        keyboardDismissMode="on-drag">
 
 
-                    <Text style={styles.tntNameTxt}>
-                        Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                        <Text style={styles.tntNameTxt}>
+                            Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                    <View style={[styles.container, isTenantLocked && { backgroundColor: "#F3F4F6" }]}>
-                        <TextInput
-                            placeholder="Add or Search Tenant"
-                            style={styles.input}
-                            value={showTenantName ? stateQuery || selectedName : selectedName}
-                            placeholderTextColor="#B5B5B5"
-                            editable={!isTenantLocked}
-                            onPressIn={() => {
+                        <View style={[styles.container, isTenantLocked && { backgroundColor: "#F3F4F6" }]}>
+                            <TextInput
+                                placeholder="Add or Search Tenant"
+                                style={styles.input}
+                                value={showTenantName ? stateQuery || selectedName : selectedName}
+                                placeholderTextColor="#B5B5B5"
+                                editable={!isTenantLocked}
+                                onPressIn={() => {
+                                    if (isTenantLocked) return;
+                                    setShowTenantName(!showTenantName)
+                                    setErrors(prev => ({ ...prev, name: "" }))
+                                }}
+                                onChangeText={(text) => {
+                                    if (isTenantLocked) return;
+                                    const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
+                                    setStateQuery(onlyLetters)
+                                    setErrors(prev => ({ ...prev, name: "" }))
+                                    setReceivedFrom("")
+                                    setSelectedGuardian("")
+                                    setSelectedName("")
+                                }}
+                            />
+
+                            <TouchableOpacity onPress={() => {
                                 if (isTenantLocked) return;
                                 setShowTenantName(!showTenantName)
                                 setErrors(prev => ({ ...prev, name: "" }))
                             }}
-                            onChangeText={(text) => {
-                                if (isTenantLocked) return;
-                                const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
-                                setStateQuery(onlyLetters)
-                                setErrors(prev => ({ ...prev, name: "" }))
-                                setReceivedFrom("")
-                                setSelectedGuardian("")
-                                setSelectedName("")
-                            }}
-                        />
+                                style={styles.arrowContainer}
+                                disabled={isTenantLocked}
+                            >
+                                <Image
+                                    source={DownArrow}
+                                    style={styles.arrow}
+                                    resizeMode="contain"
+                                />
+                            </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => {
-                            if (isTenantLocked) return;
-                            setShowTenantName(!showTenantName)
-                            setErrors(prev => ({ ...prev, name: "" }))
-                        }}
-                            style={styles.arrowContainer}
-                            disabled={isTenantLocked}
-                        >
-                            <Image
-                                source={DownArrow}
-                                style={styles.arrow}
-                                resizeMode="contain"
-                            />
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.searchButton}>
+                                <Image
+                                    source={SearchIcon}
+                                    style={styles.searchIcon}
+                                    resizeMode="contain"
+                                />
+                            </TouchableOpacity>
+                        </View>
 
-                        <TouchableOpacity style={styles.searchButton}>
-                            <Image
-                                source={SearchIcon}
-                                style={styles.searchIcon}
-                                resizeMode="contain"
-                            />
-                        </TouchableOpacity>
-                    </View>
-
-                    {errors.name && <ErrorMessage message={errors.name} type="error" />}
+                        {errors.name && <ErrorMessage message={errors.name} type="error" />}
 
 
-                    {showTenantName && (
-                        <>
-                            <TouchableWithoutFeedback onPress={() => {
-                                setShowTenantName(false)
-                                setStateQuery("")
-                            }}>
-                                <View style={styles.dropdownOverlay} />
-                            </TouchableWithoutFeedback>
-                            <View style={styles.dropdownMenu}>
-                                <ScrollView keyboardShouldPersistTaps="always"
-                                    nestedScrollEnabled={true}
-                                    showsVerticalScrollIndicator={true}>
-                                    {filterList.map((i, index) => (
-                                        <TouchableOpacity key={index}
-                                            style={{ paddingVertical: 8, paddingHorizontal: 14 }}
-                                            onPress={() => {
-                                                setSelectedName(i.fullName)
-                                                setSelectedTenant(i)
-                                                setStateQuery("");
-                                                setShowTenantName(false)
-                                                setReceivedFrom("")
-                                                setSelectedGuardian("")
-                                            }}>
-                                            <Text>{i.fullName}</Text>
-                                        </TouchableOpacity>
-
-                                    ))}
-                                </ScrollView>
-                            </View>
-                        </>
-
-                    )}
-
-
-                    <Text style={{ fontSize: 12, fontFamily: 'Gilroy-Medium', marginTop: 12, lineHeight: 16 }}
-                    >Search existing tenants in the property flow ecosystem to auto-fill details</Text>
-
-
-                    <Text style={styles.headerTxt}>Received from <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-
-
-                    <TouchableOpacity onPress={() => {setGuardianOpen(!guardianOpen)
-                        //  setErrors(prev => ({ ...prev, guardianName: "" }))
-                    }}
-                        style={[styles.inputBox, { marginTop: 10 }]}>
-                        <TextInput
-                            style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}
-                            placeholder="Enter/Select the Respective Person"
-                            value={guardianOpen ? receivedFrom || selectedGuardian?.guardianName : selectedGuardian?.guardianName}
-                            onPressIn={() => setGuardianOpen(!guardianOpen)}
-                            onChangeText={(text) => {
-                                const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
-                                setReceivedFrom(onlyLetters)
-                                setSelectedGuardian("")
-                                setGuardianOpen(false)
-                                setErrors(prev => ({ ...prev, guardianName: "" }))
-                            }}
-                        />
-
-                        <Image
-                            source={DownArrow}
-                            style={{ width: 18, height: 18, tintColor: "#555" }}
-                        />
-                    </TouchableOpacity>
-                    {errors.guardianName && <ErrorMessage message={errors.guardianName} type="error" />}
-
-                    {guardianOpen && (
-                        selectedTenant?.guardiansList?.length > 0 ? (
+                        {showTenantName && (
                             <>
                                 <TouchableWithoutFeedback onPress={() => {
-                                    setGuardianOpen(false)
-                                    // setStateQuery("")
+                                    setShowTenantName(false)
+                                    setStateQuery("")
                                 }}>
                                     <View style={styles.dropdownOverlay} />
                                 </TouchableWithoutFeedback>
@@ -470,18 +461,18 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     <ScrollView keyboardShouldPersistTaps="always"
                                         nestedScrollEnabled={true}
                                         showsVerticalScrollIndicator={true}>
-                                        {selectedTenant?.guardiansList.map((i, index) => (
+                                        {filterList.map((i, index) => (
                                             <TouchableOpacity key={index}
                                                 style={{ paddingVertical: 8, paddingHorizontal: 14 }}
                                                 onPress={() => {
-                                                    // setSelectedName(i.guardianName)
-                                                    setSelectedGuardian(i)
+                                                    setSelectedName(i.fullName)
+                                                    setSelectedTenant(i)
                                                     setStateQuery("");
-                                                    setGuardianOpen(false)
-                                                    setErrors(prev => ({ ...prev, guardianName: "" }))
+                                                    setShowTenantName(false)
+                                                    setReceivedFrom("")
+                                                    setSelectedGuardian("")
                                                 }}>
-                                                <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
-                                                    {i.guardianName}</Text>
+                                                <Text>{i.fullName}</Text>
                                             </TouchableOpacity>
 
                                         ))}
@@ -489,36 +480,104 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 </View>
                             </>
 
-                        ) : (
-                            <View style={[styles.dropdownMenu, { minHeight: 50, justifyContent: 'center', alignItems: 'center' }]}>
-                                <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular' }}>
-                                    No guardian Details Available
-                                </Text>
-                            </View>
-                        )
-                    )}
+                        )}
 
-                    <Text style={styles.headerTxt}>Invoice Date <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                    <TouchableOpacity onPress={() => {
-                        setOpenPaidDate(true)
-                        setErrors(prev => ({ ...prev, paidDate: "" }))
-                    }}
-                        style={[styles.inputBox, { marginTop: 10 }]}>
+                        <Text style={{ fontSize: 12, fontFamily: 'Gilroy-Medium', marginTop: 12, lineHeight: 16 }}
+                        >Search existing tenants in the property flow ecosystem to auto-fill details</Text>
 
-                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
-                            {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
-                        </Text>
 
-                        <Image
-                            source={CalendarIcon}
-                            style={{ width: 22, height: 22, tintColor: "#444" }}
-                        />
-                    </TouchableOpacity>
+                        <Text style={styles.headerTxt}>Received from <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                    {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error" />}
 
-                    {/* <Text style={styles.headerTxt}>Reference No</Text>
+                        <TouchableOpacity onPress={() => {
+                            setGuardianOpen(!guardianOpen)
+                            //  setErrors(prev => ({ ...prev, guardianName: "" }))
+                        }}
+                            style={[styles.inputBox, { marginTop: 10 }]}>
+                            <TextInput
+                                style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}
+                                placeholder="Enter/Select the Respective Person"
+                                value={guardianOpen ? receivedFrom || selectedGuardian?.guardianName : selectedGuardian?.guardianName}
+                                onPressIn={() => setGuardianOpen(!guardianOpen)}
+                                onChangeText={(text) => {
+                                    const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
+                                    setReceivedFrom(onlyLetters)
+                                    setSelectedGuardian("")
+                                    setGuardianOpen(false)
+                                    setErrors(prev => ({ ...prev, guardianName: "" }))
+                                }}
+                            />
+
+                            <Image
+                                source={DownArrow}
+                                style={{ width: 18, height: 18, tintColor: "#555" }}
+                            />
+                        </TouchableOpacity>
+                        {errors.guardianName && <ErrorMessage message={errors.guardianName} type="error" />}
+
+                        {guardianOpen && (
+                            selectedTenant?.guardiansList?.length > 0 ? (
+                                <>
+                                    <TouchableWithoutFeedback onPress={() => {
+                                        setGuardianOpen(false)
+                                        // setStateQuery("")
+                                    }}>
+                                        <View style={styles.dropdownOverlay} />
+                                    </TouchableWithoutFeedback>
+                                    <View style={styles.dropdownMenu}>
+                                        <ScrollView keyboardShouldPersistTaps="always"
+                                            nestedScrollEnabled={true}
+                                            showsVerticalScrollIndicator={true}>
+                                            {selectedTenant?.guardiansList.map((i, index) => (
+                                                <TouchableOpacity key={index}
+                                                    style={{ paddingVertical: 8, paddingHorizontal: 14 }}
+                                                    onPress={() => {
+                                                        // setSelectedName(i.guardianName)
+                                                        setSelectedGuardian(i)
+                                                        setStateQuery("");
+                                                        setGuardianOpen(false)
+                                                        setErrors(prev => ({ ...prev, guardianName: "" }))
+                                                    }}>
+                                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
+                                                        {i.guardianName}</Text>
+                                                </TouchableOpacity>
+
+                                            ))}
+                                        </ScrollView>
+                                    </View>
+                                </>
+
+                            ) : (
+                                <View style={[styles.dropdownMenu, { minHeight: 50, justifyContent: 'center', alignItems: 'center' }]}>
+                                    <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular' }}>
+                                        No guardian Details Available
+                                    </Text>
+                                </View>
+                            )
+                        )}
+
+                        <Text style={styles.headerTxt}>Invoice Date <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+
+                        <TouchableOpacity onPress={() => {
+                            setOpenPaidDate(true)
+                            setErrors(prev => ({ ...prev, paidDate: "" }))
+                        }}
+                            style={[styles.inputBox, { marginTop: 10 }]}>
+
+                            <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
+                                {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+                            </Text>
+
+                            <Image
+                                source={CalendarIcon}
+                                style={{ width: 22, height: 22, tintColor: "#444" }}
+                            />
+                        </TouchableOpacity>
+
+                        {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error" />}
+
+                        {/* <Text style={styles.headerTxt}>Reference No</Text>
 
                     <TouchableOpacity style={[styles.inputBox, { marginTop: 10 }]}>
                         <TextInput
@@ -530,19 +589,19 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         />
                     </TouchableOpacity> */}
 
-                    <View style={{ marginTop: 15 }}>
-                        <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>
-                            Description</Text>
-                    </View>
+                        <View style={{ marginTop: 15 }}>
+                            <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>
+                                Description</Text>
+                        </View>
 
 
-                    {items?.map((item, index) => {
-                        return (
-                            <View style={[styles.itemBox, { position: 'relative' }]} key={index}>
-                                <View style={styles.itemHealine}>
-                                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>Item  </Text>
+                        {items?.map((item, index) => {
+                            return (
+                                <View style={[styles.itemBox, { position: 'relative' }]} key={index}>
+                                    <View style={styles.itemHealine}>
+                                        <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>Item  </Text>
 
-                                    {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        {/* <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <TouchableOpacity onPress={() => { handleRepeatRow(index) }}>
                                             <Image source={RepeatIcon} style={{ width: 16, height: 16 }} />
                                         </TouchableOpacity>
@@ -552,173 +611,206 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                             <Text style={styles.closeIcon}>X</Text>
                                         </TouchableOpacity>
                                     </View> */}
-                                </View>
-
-                                <Text style={styles.itemdetailTxt}>Item Detail</Text>
-
-                                <TextInput
-                                    style={styles.itemTxtInpt}
-                                    value={item.itemDetail}
-                                    placeholder="Enter Item"
-                                    onChangeText={(text) => {
-                                        // setItems(items.itemDetail(text))
-                                        const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
-                                        handleChange(index, "itemDetail", onlyLetters)
-                                    }} />
-
-
-                                <Text style={styles.itemdetailTxt}>Retainer Type {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-
-                                <TouchableOpacity onPress={() => setOpenRetainerType(!openRetainerType)}
-                                    style={styles.retainTypeBox}>
-                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
-                                        {item.retainerType ? item?.retainerType : "Select Type"}</Text>
-
-                                    <Image
-                                        source={DownArrow}
-                                        style={{ width: 18, height: 18, tintColor: "#555" }}
-                                    />
-                                </TouchableOpacity>
-
-                                {openRetainerType && (
-                                    <View style={[styles.dropdownMenu, {
-                                        position: 'absolute', maxHeight: 150, top: 200,
-                                        width: '100%', left: 14, right: 20
-                                    }]}>
-                                        {retainerTypeList.map((i) => (
-                                            <TouchableOpacity onPress={() => {
-                                                handleChange(index, "retainerType", i.retainerType)
-                                                setOpenRetainerType(false)
-                                            }}
-                                                style={{ paddingVertical: 8, paddingHorizontal: 14 }}
-                                                key={i.id}>
-                                                <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
-                                                    {i?.retainerType}</Text>
-                                            </TouchableOpacity>
-                                        ))}
                                     </View>
-                                )}
 
-                                <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular', color: '#3C3C4399', marginTop: 12 }}>
-                                    Amount {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                                    <Text style={styles.itemdetailTxt}>Item Detail</Text>
 
-                                <ValidatedInput
-                                    keyboardType="numeric"
-                                    type="numberOnly"
-                                    inputType="numeric"
-                                    style={styles.itemAmountBox}
-                                    placeholder="Enter Amount"
-                                    value={item.amount}
-                                    onChangeText={(text) => {
-                                        const onlyNumbers = text.replace(/[^0-9\s]/g, "")
-                                        handleChange(index, "amount", onlyNumbers)
-                                        setErrors(prev => ({ ...prev, retainerAmount: "" }))
-                                    }} />
+                                    <TextInput
+                                        style={styles.itemTxtInpt}
+                                        value={item.itemDetail}
+                                        placeholder="Enter Item"
+                                        onChangeText={(text) => {
+                                            // setItems(items.itemDetail(text))
+                                            const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
+                                            handleChange(index, "itemDetail", onlyLetters)
 
-                            </View>)
-                    })}
+                                        }} />
 
-                    {/* <TouchableOpacity style={styles.addRowField} onPress={handleAddRow}>
+
+                                    <Text style={styles.itemdetailTxt}>Retainer Type {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+
+                                    <TouchableOpacity onPress={() => {
+                                        setErrors(prev => ({
+                                            ...prev,
+                                            [`retainerType_${index}`]: "",
+                                        }));
+                                        setOpenRetainerType(!openRetainerType)
+
+                                    }}
+                                        style={styles.retainTypeBox}>
+                                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
+                                            {item.retainerType ? item?.retainerType : "Select Type"}</Text>
+
+                                        <Image
+                                            source={DownArrow}
+                                            style={{ width: 18, height: 18, tintColor: "#555" }}
+                                        />
+                                    </TouchableOpacity>
+
+                                    {errors[`retainerType_${index}`] && (
+                                        <ErrorMessage
+                                            message={errors[`retainerType_${index}`]}
+                                            type="error"
+                                        />
+                                    )}
+
+                                    {openRetainerType && (
+                                        <View style={[styles.dropdownMenu, {
+                                            position: 'absolute', maxHeight: 150, top: 200,
+                                            width: '100%', left: 14, right: 20
+                                        }]}>
+                                            {retainerTypeList.map((i) => (
+                                                <TouchableOpacity onPress={() => {
+                                                    handleChange(index, "retainerType", i.retainerType)
+                                                    setOpenRetainerType(false)
+                                                }}
+                                                    style={{ paddingVertical: 8, paddingHorizontal: 14 }}
+                                                    key={i.id}>
+                                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
+                                                        {i?.retainerType}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </View>
+                                    )}
+
+                                    <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular', color: '#3C3C4399', marginTop: 12 }}>
+                                        Amount {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+
+                                    <ValidatedInput
+                                        keyboardType="numeric"
+                                        type="numberOnly"
+                                        inputType="numeric"
+                                        style={styles.itemAmountBox}
+                                        placeholder="Enter Amount"
+                                        value={item.amount}
+                                        onChangeText={(text) => {
+                                            const onlyNumbers = text.replace(/[^0-9\s]/g, "")
+                                            handleChange(index, "amount", onlyNumbers)
+                                            // setErrors(prev => ({ ...prev, retainerAmount: "" }))
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                [`amount_${index}`]: "",
+                                            }));
+                                        }} />
+
+                                    {errors[`amount_${index}`] && (
+                                        <ErrorMessage
+                                            message={errors[`amount_${index}`]}
+                                            type="error"
+                                        />
+                                    )}
+
+                                </View>)
+                        })}
+
+                        {/* <TouchableOpacity style={styles.addRowField} onPress={handleAddRow}>
                         <Image source={AddCircle} style={{ width: 17.35, height: 17.35, tintColor: '#1E45E1' }} />
                         <Text style={styles.addRowTxt}>Add New Row</Text>
                     </TouchableOpacity> */}
 
-                    <View style={styles.totlRtnAmntFiel}>
-                        <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Semibold', color: '#505F76' }}>
-                            Total Retainer Amount</Text>
-                        <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold' }}>₹ {totalRetainerAmount ? totalRetainerAmount : "0.00"} </Text>
-                    </View>
-                    {errors.retainerAmount && <ErrorMessage message={errors.retainerAmount} type="error" />}
+                        <View style={styles.totlRtnAmntFiel}>
+                            <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Semibold', color: '#505F76' }}>
+                                Total Retainer Amount</Text>
+                            <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold' }}>₹ {totalRetainerAmount ? totalRetainerAmount : "0.00"} </Text>
+                        </View>
+                        {errors.retainerAmount && <ErrorMessage message={errors.retainerAmount} type="error" />}
 
-                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 18 }}>
-                        Payment Method <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                        <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 18 }}>
+                            Payment Method <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                    <TouchableOpacity onPress={() => {
-                        setShowPaymentMode(!showPaymentMode)
-                        setErrors(prev => ({ ...prev, payMode: "" }))
-                    }}
-                        style={[styles.inputBox, { marginTop: 10 }]}>
-                        <Text style={styles.pymentMthdTxt}>
-                            {selectedMode ? selectedMode : "Select Payment Method"}
-                        </Text>
+                        <TouchableOpacity onPress={() => {
+                            setShowPaymentMode(!showPaymentMode)
+                            setErrors(prev => ({ ...prev, payMode: "" }))
+                        }}
+                            style={[styles.inputBox, { marginTop: 10 }]}>
+                            <Text style={styles.pymentMthdTxt}>
+                                {selectedMode ? selectedMode : "Select Payment Method"}
+                            </Text>
 
-                        <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} />
-                    </TouchableOpacity>
-
-
-                    {showPaymentMode && (
-                        <>
-                            <TouchableWithoutFeedback onPress={() => setShowPaymentMode(false)}>
-                                <View style={styles.dropdownOverlay} />
-                            </TouchableWithoutFeedback>
-                            <View style={styles.dropdownMenu}>
-                                <ScrollView keyboardShouldPersistTaps="always"
-                                    nestedScrollEnabled={true}
-                                    showsVerticalScrollIndicator={true}>
-                                    {retainerBankList.map((i, index) => (
-                                        <TouchableOpacity key={index}
-                                            style={{ paddingVertical: 12, paddingHorizontal: 14 }}
-                                            onPress={() => {
-                                                setSelectedMode(i?.bankName)
-                                                setSelectedBankId(i?.bankId)
-                                                setShowPaymentMode(false)
-                                            }}>
-                                            <Text>{i.bankName}</Text>
-                                        </TouchableOpacity>
-
-                                    ))}
-                                </ScrollView>
-                            </View>
-                        </>
-
-                    )}
-                    {errors.payMode && <ErrorMessage message={errors.payMode} type="error" />}
-
-                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 12 }}>
-                        Transaction ID
-                    </Text>
-
-                    {/* <TouchableOpacity style={[styles.inputBox, { marginTop: 10 }]}> */}
-                    <TextInput
-                        value={transactionId}
-                        style={[styles.inputBox, { marginTop: 10 }]}
-                        // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
-                        placeholder="Enter Transaction ID"
-                        onChangeText={(text) => {
-                            const filteredText = text.replace(
-                                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
-                                , ""
-                            );
-                            setTransactionId(filteredText)
-                        }
-
-                        } />
-
-                    {/* <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} /> */}
-                    {/* </TouchableOpacity> */}
-
-                    <Text style={styles.dscptTxt}>Description</Text>
-
-                    <TextInput
-                        style={styles.dscpBox}
-                        placeholder="Enter Description"
-                        value={description}
-                        onChangeText={handleDescriptionChange}
-                    />
-
-                    <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', marginTop: 22 }}>
-                        <TouchableOpacity style={{ marginRight: 8 }}>
-                            <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
-                                Cancel</Text>
+                            <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} />
                         </TouchableOpacity>
 
-                        <TouchableOpacity onPress={savegenerate}
-                            style={[{ backgroundColor: '#1E45E1', padding: 10, borderRadius: 8, marginLeft: 8 }, isSubmitClicked && { opacity: 0.4 }]}>
-                            <Text style={{ color: '#ffffff', fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
-                                Save & Generate</Text>
-                        </TouchableOpacity>
-                    </View>
-                </ScrollView>
+
+                        {showPaymentMode && (
+                            <>
+                                <TouchableWithoutFeedback onPress={() => setShowPaymentMode(false)}>
+                                    <View style={styles.dropdownOverlay} />
+                                </TouchableWithoutFeedback>
+                                <View style={styles.dropdownMenu}>
+                                    <ScrollView keyboardShouldPersistTaps="always"
+                                        nestedScrollEnabled={true}
+                                        showsVerticalScrollIndicator={true}>
+                                        {retainerBankList.map((i, index) => (
+                                            <TouchableOpacity key={index}
+                                                style={{ paddingVertical: 12, paddingHorizontal: 14 }}
+                                                onPress={() => {
+                                                    setSelectedMode(i?.bankName)
+                                                    setSelectedBankId(i?.bankId)
+                                                    setShowPaymentMode(false)
+                                                }}>
+                                                <Text>{i.bankName}</Text>
+                                            </TouchableOpacity>
+
+                                        ))}
+                                    </ScrollView>
+                                </View>
+                            </>
+
+                        )}
+                        {errors.payMode && <ErrorMessage message={errors.payMode} type="error" />}
+
+                        <View ref={transactionRef}>
+                            <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 12 }}>
+                                Transaction ID
+                            </Text>
+
+                            {/* <TouchableOpacity style={[styles.inputBox, { marginTop: 10 }]}> */}
+                            <TextInput
+                                ref={transactionRef}
+                                value={transactionId}
+                                style={[styles.inputBox, { marginTop: 10 }]}
+                                // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
+                                placeholder="Enter Transaction ID"
+                                onFocus={() => scrollToField(transactionRef)}
+                                onChangeText={(text) => {
+                                    const filteredText = text.replace(
+                                        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+                                        , ""
+                                    );
+                                    setTransactionId(filteredText)
+                                }
+
+                                } />
+                        </View>
+
+                        {/* <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} /> */}
+                        {/* </TouchableOpacity> */}
+
+                        <Text style={styles.dscptTxt}>Description</Text>
+
+                        <TextInput
+                            ref={descriptionRef}
+                            style={styles.dscpBox}
+                            placeholder="Enter Description"
+                            value={description}
+                            onFocus={() => scrollToField(descriptionRef)}
+                            onChangeText={handleDescriptionChange}
+                        />
+
+                        <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', marginTop: 22 }}>
+                            <TouchableOpacity style={{ marginRight: 8 }}>
+                                <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
+                                    Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={savegenerate}
+                                style={[{ backgroundColor: '#1E45E1', padding: 10, borderRadius: 8, marginLeft: 8 }, isSubmitClicked && { opacity: 0.4 }]}>
+                                <Text style={{ color: '#ffffff', fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
+                                    Save & Generate</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </ScrollView>
+                </KeyboardAvoidingView>
             </View>
 
             {console.log("slected", selectedTenant)}

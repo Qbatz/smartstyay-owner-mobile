@@ -328,6 +328,8 @@ export default function BillsDesign({ route }) {
   const rentRotate = useRef(new Animated.Value(openRefundRent ? 1 : 0)).current;
   const ebRotate = useRef(new Animated.Value(openEBill ? 1 : 0)).current;
 
+  const [showRetainer,setShowRetainer]=useState(false)
+
   useEffect(() => {
     Animated.timing(unpaidRotate, {
       toValue: openUnpaid ? 1 : 0,
@@ -4050,6 +4052,81 @@ export default function BillsDesign({ route }) {
                         )}
 
 
+                          {showSettlementRedeem && (
+                                          <View style={styles.accordionCard}>
+                                            <TouchableOpacity
+                                              style={styles.accordionHeader}
+                                              onPress={() => setShowRetainer(!showRetainer)}
+                                              activeOpacity={0.8}
+                                            >
+                                              <Animated.Image
+                                                source={DownArrow}
+                                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                                              />
+                                              <Text style={styles.cardTitle}>Retainer Invoices</Text>
+                                              <Text style={styles.amountText}>
+                                                ₹  {BillPdfdetails?.retainerInfo?.totalRetainerAmount || 0}
+                                              </Text>
+                                            </TouchableOpacity>
+                        
+                        {/* Retainer */}
+                                            {showRetainer && (
+                        
+                                              <View style={styles.accordionBody}>
+                        
+                                                <View style={styles.tableHeader}>
+                                                  <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+                                                  {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
+                                                  <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                                                    Invoice Amount
+                                                  </Text>
+                                                </View>
+                        
+                        
+                                                {Array.isArray(BillPdfdetails?.retainerInfo?.retainerItems) &&
+                                                  BillPdfdetails?.retainerInfo?.retainerItems.length > 0 ? (
+                                                  <>
+                                                    {BillPdfdetails?.retainerInfo?.retainerItems?.map((item, index) => (
+                                                      <View key={index} style={styles.invoiceRow}>
+                                                        <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
+                                                          {item?.invoiceNo}
+                                                        </Text>
+                                                        {/* <Text style={[styles.invText, { flex: 1 }]}>
+                                                                              {item?.type}
+                                                                            </Text> */}
+                                                        <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
+                                                          ₹ {item?.appliedAmount}
+                                                        </Text>
+                                                      </View>
+                                                    ))}
+                                                  </>
+                                                ) : (
+                                                  <View style={styles.emptyWallet}>
+                                                    <View style={styles.emptyState}>
+                                                      <Text style={styles.emptyWalletText}>No pending invoices</Text>
+                                                    </View>
+                                                  </View>
+                                                )}
+                        
+                                                <View style={styles.totalInvoiceRow}>
+                                                  <Text style={styles.totalText}>Total</Text>
+                                                  <Text style={styles.totalAmount}>
+                                                    {BillPdfdetails?.retainerInfo?.totalRetainerAmount}
+                                                    {/* ₹{" "}
+                                                                                {Array.isArray(settlementDetails?.unpaidInvoices)
+                                                                                  ? settlementDetails.unpaidInvoices.reduce(
+                                                                                    (sum, i) => sum + Number(i.payableAmount || 0),
+                                                                                    0
+                                                                                  )
+                                                                                  : 0} */}
+                                                  </Text>
+                                                </View>
+                                              </View>
+                        
+                                            )}
+                                          </View>
+                                        )}
+                        
 
 
                         {showSettlementRedeem && (
@@ -4779,7 +4856,7 @@ export default function BillsDesign({ route }) {
                     <View
                       style={[
                         styles.popupBox,
-                        { bottom: popupPosition.y - 50, left: popupPosition.x - 180 },
+                        { bottom: popupPosition.y + 70, left: popupPosition.x - 180 },
                       ]}
                     >
                       {/* <TouchableOpacity
