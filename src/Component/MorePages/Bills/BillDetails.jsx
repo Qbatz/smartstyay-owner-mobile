@@ -72,9 +72,9 @@ const BillDetailsSheet = ({
 
 
   const { BillDetails, loading, GetAllBillDetails, RecordPayment, GetInitializeRefundDetails, CreateRefund,
-    refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+    refundError, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails,
-    GetInitializeAdvanceRedeem, GetInitializeRecordPaymentDetails } = useContext(BillContext);
+    GetInitializeAdvanceRedeem, GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -125,7 +125,7 @@ const BillDetailsSheet = ({
   const [showDeductions, setShowDeductions] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
-  const [showRetainer,setShowRetainer]=useState(false)
+  const [showRetainer, setShowRetainer] = useState(false)
 
 
   const formatEBDate = (date) => {
@@ -657,6 +657,25 @@ const BillDetailsSheet = ({
     });
   }
 
+  const handlemakeDiscount = async () => {
+    setShowMenu(false)
+
+    navigation.navigate("DiscountInvoice", {
+      bill: selectedBill,
+      onSuccess: () => {
+        onClose();
+      },
+    });
+
+    const res = await GetInitializeDiscountDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId
+    })
+
+    console.log("res", res);
+
+  }
+
 
   // booking invoice
   // const handleBookingApplyInvoices = async () => {
@@ -700,6 +719,20 @@ const BillDetailsSheet = ({
       setTimeout(() => setShowSuccessModal(false), 1500);
     }
   };
+
+   const handleApplyBookingToInvoice= async () => {
+
+    navigation.navigate("ApplyBookingToInvoice");
+
+    const AdvanceCredits = await GetAdvanceCreditDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      type: "Credit", // booking invoice
+    })
+    setShowMenu(false);
+    onClose();
+
+  }
 
 
 
@@ -1120,24 +1153,24 @@ const BillDetailsSheet = ({
               </>
             )}
 
-             {(partiallyRefund) && (
-                                  <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <View>
-                                      <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
-                                    </View>
-                                    <View>
-                                      <Text
-                                        style={[
-                                          styles.amountValue,
-                                          { color: "#FF0000" },
-                                        ]}
-                                      >
-                                        ₹ {Math.round(BillPdfdetails?.invoiceInfo?.totalPayable ?? 0)}
-                                      </Text>
-                                    </View>
-                                  </View>
-            
-                                )}
+            {(partiallyRefund) && (
+              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View>
+                  <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
+                </View>
+                <View>
+                  <Text
+                    style={[
+                      styles.amountValue,
+                      { color: "#FF0000" },
+                    ]}
+                  >
+                    ₹ {Math.round(BillPdfdetails?.invoiceInfo?.totalPayable ?? 0)}
+                  </Text>
+                </View>
+              </View>
+
+            )}
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
               <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold", color: "#777", }}>
@@ -1767,7 +1800,7 @@ const BillDetailsSheet = ({
                       </Text>
                     </TouchableOpacity>
 
-{/* Retainer */}
+                    {/* Retainer */}
                     {showRetainer && (
 
                       <View style={styles.accordionBody}>
@@ -2031,7 +2064,7 @@ const BillDetailsSheet = ({
               )}
 
 
-            {/* {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
+            {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
               <View style={styles.creditCard}>
                 <View style={styles.creditTopRow}>
                   <View style={styles.creditTitleRow}>
@@ -2054,7 +2087,7 @@ const BillDetailsSheet = ({
                 </Text>
 
                 <TouchableOpacity style={styles.applyBtn}
-                  onPress={handleBookingApplyInvoices}
+                  onPress={handleApplyBookingToInvoice}
                 >
                   <Text style={{
                     color: "#fff",
@@ -2065,7 +2098,7 @@ const BillDetailsSheet = ({
                   </Text>
                 </TouchableOpacity>
               </View>
-            )} */}
+            )}
 
 
 
@@ -2258,21 +2291,22 @@ const BillDetailsSheet = ({
               )}
 
             {paymentStatus === "Pending" &&
-              (invoiceType === "Rent" || invoiceType === "Settlement") &&
+              (invoiceType === "Rent" || invoiceType === "Settlement" || invoiceType === "Reassign Rent") &&
               !isDiscounted &&
               (
                 <TouchableOpacity
                   style={styles.popupRow}
-                  onPress={() => {
-                    setShowMenu(false);
-                    // setShowBillDetails(false)
-                    navigation.navigate("DiscountInvoice", {
-                      // bill: selectedBill,
-                      onSuccess: () => {
-                        onClose();
-                      },
-                    });
-                  }}
+                  onPress={handlemakeDiscount}
+                // onPress={() => {
+                //   setShowMenu(false);
+                //   setShowBillDetails(false)
+                //   navigation.navigate("DiscountInvoice", {
+                //     bill: selectedBill,
+                //     onSuccess: () => {
+                //       onClose();
+                //     },
+                //   });
+                // }}
                 >
                   <Image
                     source={require("../../../Assets/Images/discount-circle.png")}

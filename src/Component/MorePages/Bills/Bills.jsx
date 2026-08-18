@@ -117,7 +117,7 @@ export default function BillsDesign({ route }) {
   const { handleScroll } =
     useHideTabbarOnScroll(setShowTabBar);
 
-  const { BillDetails, loading, GetAllBillDetails,
+  const { BillDetails, loading, GetAllBillDetails,setBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
@@ -388,6 +388,8 @@ export default function BillsDesign({ route }) {
   useEffect(() => {
     if (activeHostelId && canReadInvoice) {
       GetAllBillDetails(activeHostelId);
+    }else{
+      setBillDetails([])
     }
   }, [activeHostelId, canReadInvoice]);
 

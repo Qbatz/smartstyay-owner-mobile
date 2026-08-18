@@ -39,7 +39,7 @@ const RecurringBills = ({onSelectRecurringBill , setShowTabBar}) => {
 
 
   const { BillDetails, loading, GetAllBillDetails, RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError,
-    GetRecurringBills, recurringBills, UpdateTenantRecurringStatus } = useContext(BillContext);
+    GetRecurringBills, recurringBills, UpdateTenantRecurringStatus,setRecurringBills } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   console.log("recurringBills", recurringBills);
@@ -128,6 +128,8 @@ const RecurringBills = ({onSelectRecurringBill , setShowTabBar}) => {
   useEffect(() => {
     if (activeHostelId && canReadRecurringBills) {
       GetRecurringBills(activeHostelId);
+    }else{
+      setRecurringBills([])
     }
   }, [activeHostelId, canReadRecurringBills]);
 
