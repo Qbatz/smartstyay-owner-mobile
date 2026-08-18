@@ -796,7 +796,7 @@ export default function BookingCheckIn({ navigation, route }) {
                         >
                             <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Tenant Check-Inff</Text>
+                        <Text style={styles.headerTitle}>Tenant Check-Info</Text>
                     </View>
 
                     <View style={styles.segmentRow}>
