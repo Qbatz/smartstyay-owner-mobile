@@ -1515,7 +1515,7 @@ const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
         GetAdvanceCreditDetails,
         ReceiptFilter,
         GetInitializeRecordPaymentDetails , GetInitializeDiscountDetails,createRetainderInvoice,
-        getRetainerInvoiceDetail,retainerInvoiceDetail,ApplyRetainerToInvoices
+        getRetainerInvoiceDetail,retainerInvoiceDetail,ApplyRetainerToInvoices,setBillDetails,setRecurringBills
       }}
     >
       {children}

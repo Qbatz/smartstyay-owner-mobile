@@ -142,7 +142,7 @@ export default function OverviewTab({ customerDetails,
   const manualDocs = dataSource?.files?.otherDoc || [];
   const kycDocs = dataSource?.files?.kycDoc || [];
 
-  const contacts = ParticularcustomerDetails?.additionalContacts || [];
+  const contacts = ParticularcustomerDetails?.additionalContacts || customerDetails?.additionalContacts || [];
   const hasContacts = contacts.length > 0;
   const [expandedIndex, setExpandedIndex] = useState(null);
   console.log("particularcustomer", ParticularcustomerDetails);
