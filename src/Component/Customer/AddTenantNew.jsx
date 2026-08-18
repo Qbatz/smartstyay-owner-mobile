@@ -3297,10 +3297,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 handleSearchCustomer(value);
                                             }}
                                             maxLength={10}
-                                             style={{
-                                            paddingHorizontal: 12,
-                                            height: 50, fontSize: 14,  marginBottom: 1,
-                                        }}
+                                            style={{
+                                                paddingHorizontal: 12,
+                                                height: 50, fontSize: 14, marginBottom: 1,
+                                            }}
                                         />
 
                                     </View>
@@ -3480,10 +3480,10 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                         <TextInput
                                             // style={styles.mobileInput}
-                                                style={{
-                                            paddingHorizontal: 12,
-                                            height: 50, fontSize: 14,  marginBottom: 1,
-                                        }}
+                                            style={{
+                                                paddingHorizontal: 12,
+                                                height: 50, fontSize: 14, marginBottom: 1,
+                                            }}
                                             keyboardType="number-pad"
                                             placeholder="Enter Mobile Number"
                                             placeholderTextColor="#A1A1A1"
@@ -3917,13 +3917,14 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                     <View style={styles.tabRow}>
 
-                                          <TouchableOpacity
+                                        <TouchableOpacity
                                             style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
                                             onPress={() => {
                                                 setActiveTab("CheckIn");
                                                 setCheckinTenantSelected(null);
                                                 setCheckinTenantsopen(false);
                                                 setJoiningDate(null)
+                                                 setcheckJoiningDate(null);
                                                 setRentalAmount("")
                                                 setCheckinRentalAmount("")
                                                 setAdvanceAmount("");
@@ -3958,7 +3959,8 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 setFloorSelected(null)
                                                 setRoomSelected(null)
                                                 setBedSelected(null)
-
+                                                setPurchaseDate(null);        
+                                                setJoiningDate(null);
                                             }}
 
                                         >
@@ -3968,7 +3970,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                         </TouchableOpacity>
 
 
-                                      
+
 
                                     </View>
                                     {activeTab === "Booking" && (
@@ -6065,7 +6067,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 setWorkLocations(cleaned);
                                                 setWorkLocationError("");
                                             }}
-                                                 onFocus={(e) => scrollInputIntoView(e)} 
+                                            onFocus={(e) => scrollInputIntoView(e)}
 
                                         />
                                         {workLocationError ? <ErrorMessage message={workLocationError} /> : null}
@@ -6135,7 +6137,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     }
                                                     keyboardType="number-pad"
                                                     placeholder="00:00 AM"
-                                                         onFocus={(e) => scrollInputIntoView(e)} 
+                                                    onFocus={(e) => scrollInputIntoView(e)}
                                                 />
 
                                                 <Image
@@ -6159,7 +6161,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     }
                                                     keyboardType="number-pad"
                                                     placeholder="00:00 PM"
-                                                         onFocus={(e) => scrollInputIntoView(e)} 
+                                                    onFocus={(e) => scrollInputIntoView(e)}
                                                 />
 
                                                 <Image
@@ -6497,8 +6499,10 @@ export default function AddTenantNewform({ navigation, route }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 60 ,  borderRadius: 10,
-  overflow: "visible",},
+    container: {
+        flex: 1, backgroundColor: "#fff", padding: 20, paddingTop: 60, borderRadius: 10,
+        overflow: "visible",
+    },
 
     backArrow: {
         fontSize: 18,

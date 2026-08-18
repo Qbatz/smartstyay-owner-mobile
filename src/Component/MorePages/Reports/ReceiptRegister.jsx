@@ -217,7 +217,7 @@ const isExportAllow = isValidSubscription && canReadReports;
 >
   <View style={styles.row}>
     <Text style={styles.label}>Total Receipts</Text>
-    <Text style={styles.totalValue}>₹ {receiptData?.pagination?.totalRecords || 0}</Text>
+    <Text style={styles.totalValue}>₹ {receiptData?.totalItems || 0}</Text>
   </View>
 <View style={styles.divider} />
   <View style={styles.row}>

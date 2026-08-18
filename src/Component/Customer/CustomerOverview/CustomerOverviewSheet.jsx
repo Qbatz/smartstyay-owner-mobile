@@ -69,6 +69,7 @@ import TransactionDetailSheet from "../../../Component/Customer/CustomerOverview
 import KYCPendingSheet from "./KYCPendingSheet"
 import AddJobDetails from "./AddJobDetailsSheet"
 import JobDetailsSheet from "./AddJobDetailsSheet";
+import AddVechileSheet from "./AddVechileSheet";
 
 
 
@@ -106,6 +107,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [selectedBill, setSelectedBill] = useState(null);
 
   const [showJobdetails, setShowJobDetails] = useState(false);
+  const [showVechiledetails, setShowVechileDetails] = useState(false);
   const [showNotice, setShowNotice] = useState(false);
   const [showCheckout, setShowCheckout] = useState(false);
   const [reason, setReason] = useState("");
@@ -211,6 +213,10 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const handleshowJobdetails = () => {
     setShowJobDetails(true)
   }
+ const handleshowVechiledetails = () => {
+    setShowVechileDetails(true)
+  }
+
 
   const fetchCustomerDetails = async () => {
     const res = await getCustomerDetails(customer.customerId || customerId);
@@ -773,6 +779,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             openAdditionalContact={() => setShowContactSheet(true)}
             handleshowKYCPendingSheet={handleshowKYCPendingSheet}
             handleJobdetails={handleshowJobdetails}
+            handleVechileDetails={handleshowVechiledetails}
           />
         );
     }
@@ -1571,6 +1578,13 @@ export default function CustomerOverviewScreen({ route, navigation }) {
       <AddJobDetails
         visible={showJobdetails}
         onClose={() => setShowJobDetails(false)}
+        customerDetails={customerDetails}
+        onSuccess={fetchCustomerDetails}
+      />
+
+        <AddVechileSheet
+        visible={showVechiledetails}
+        onClose={() => setShowVechileDetails(false)}
         customerDetails={customerDetails}
         onSuccess={fetchCustomerDetails}
       />
