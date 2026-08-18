@@ -2218,7 +2218,7 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
 
-  bedsRow: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  bedsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
 
   bedItem: {
     width: 60,

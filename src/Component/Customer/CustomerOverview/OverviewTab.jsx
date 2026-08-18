@@ -44,7 +44,7 @@ import Remainderbtn from "../../../Assets/Images/RemainderIcon.png"
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  , openAdditionalContact, handleshowKYCPendingSheet, handleJobdetails }) {
+  , openAdditionalContact, handleshowKYCPendingSheet, handleJobdetails  , handleVechileDetails}) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
@@ -87,6 +87,10 @@ export default function OverviewTab({ customerDetails,
 
   const handleshowJobDetails = () => {
     handleJobdetails()
+  }
+
+   const handleshowVechileDetails = () => {
+    handleVechileDetails()
   }
 
   const {
@@ -1517,7 +1521,6 @@ export default function OverviewTab({ customerDetails,
                   <TouchableOpacity
                     style={[styles.addNowBtn, (disableAssignBtn || !canWriteTenant) && { opacity: 0.4 }]}
                     onPress={handleshowJobDetails}
-                    // disabled={disableAssignBtn}
                     disabled={
                       disableAssignBtn ||
                       !canWriteTenant
@@ -1599,6 +1602,105 @@ export default function OverviewTab({ customerDetails,
 
 
           </View>
+
+           {/* <View style={{ backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 10,
+    marginTop: 14,
+    elevation: 2,
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,}}>
+
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Vechile Details</Text>
+
+              {hasJobDetails && (
+                <TouchableOpacity
+                  disabled={!canUpdateTenant || disableAssignBtn}
+                  style={(!canUpdateTenant || disableAssignBtn) && { opacity: 0.4 }}
+                  onPress={handleshowVechileDetails}
+                >
+                  <Image source={EditIcon} style={styles.editIcon} />
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {!hasJobDetails ? (
+              <View style={styles.jobEmptyContainer}>
+                <Image
+                  source={EmptyState}
+                  style={styles.jobEmptyImage}
+                />
+
+                <Text style={styles.jobEmptyText}>
+                  Vechile Details aren't added yet!
+                </Text>
+
+                <View style={styles.jobButtonRow}>
+
+
+
+                  <TouchableOpacity
+                    style={[styles.addNowBtn, (disableAssignBtn || !canWriteTenant) && { opacity: 0.4 }]}
+                    onPress={handleshowVechileDetails}
+                    disabled={
+                      disableAssignBtn ||
+                      !canWriteTenant
+                    }
+                  >
+                    <Text style={styles.addNowText}>
+                      Add Now
+                    </Text>
+                    <Image source={RighArrow} style={{
+                      width: 16,
+                      height: 16,
+                      marginRight: 6,
+                      marginLeft: 6,
+                      resizeMode: "contain", transform: 'rotate(90deg)'
+                    }} />
+                  </TouchableOpacity>
+
+                </View>
+              </View>
+            ) : (
+              <>
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Vechile Type</Text>
+                  <Text style={styles.detailValue}>
+                    {customerDetails?.jobDetails?.employmentStatus || "N/A"}
+                  </Text>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Vechile Number</Text>
+                  <Text style={styles.detailValue}>
+                    {customerDetails?.jobDetails?.organizationName || "N/A"}
+                  </Text>
+                </View>
+
+                <View style={styles.detailRow}>
+                  <Text style={styles.detailLabel}>Vechile Slot Number</Text>
+                  <View style={styles.valueWithIcon}>
+                    <Text style={styles.detailValue}>
+                      {customerDetails?.jobDetails?.role || "N/A"}
+                    </Text>
+                  </View>
+                </View>
+
+               
+
+               
+
+              
+              </>
+            )}
+
+
+
+          </View> */}
 
 
           <View style={styles.sectionBox}>

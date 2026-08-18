@@ -4707,21 +4707,33 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold"
   },
 
-  revenueCard: {
-    height: 200,
-    marginHorizontal: 16,
-    marginTop: 10,
-    // paddingTop: 5,
-    paddingTop: Platform.OS === "ios" ? 0 : 5,
-    paddingRight: Platform.OS === "ios" ? 1 : 15,
-    paddingBottom: Platform.OS === "ios" ? 1 : 1,
-    paddingLeft: Platform.OS === "ios" ? 2 : 15,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    justifyContent: "space-between",
+  // revenueCard: {
+  //   height: 200,
+  //   marginHorizontal: 16,
+  //   marginTop: 10,
+  //   paddingTop: Platform.OS === "ios" ? 0 : 5,
+  //   paddingRight: Platform.OS === "ios" ? 1 : 15,
+  //   paddingBottom: Platform.OS === "ios" ? 1 : 1,
+  //   paddingLeft: Platform.OS === "ios" ? 2 : 15,
+  //   borderRadius: 10,
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+  //   justifyContent: "space-between",
 
-  },
+  // },
+
+  revenueCard: {
+  minHeight: 200,
+  marginHorizontal: 16,
+  marginTop: 10,
+  padding: 16,         
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  justifyContent: "space-between",
+  overflow: "hidden", 
+},
+
 
   revenueHeader: {
     flexDirection: "row",

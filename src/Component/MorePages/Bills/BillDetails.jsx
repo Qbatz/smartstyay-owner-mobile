@@ -74,7 +74,7 @@ const BillDetailsSheet = ({
   const { BillDetails, loading, GetAllBillDetails, RecordPayment, GetInitializeRefundDetails, CreateRefund,
     refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails,
-    GetInitializeAdvanceRedeem, GetInitializeRecordPaymentDetails } = useContext(BillContext);
+    GetInitializeAdvanceRedeem, GetInitializeRecordPaymentDetails , GetInitializeDiscountDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -474,6 +474,8 @@ const BillDetailsSheet = ({
 
   const paymentStatus = invoice?.paymentStatus ?? invoice?.status;
 
+  
+
   const BillsStatusStyle = getStatusStyle(paymentStatus)
   // console.log("bill", bill);
 
@@ -659,18 +661,18 @@ const BillDetailsSheet = ({
 
 
   // booking invoice
-  // const handleBookingApplyInvoices = async () => {
+  const handleBookingApplyInvoices = async () => {
 
-  //   navigation.navigate("BillsApplyInvoices");
+    navigation.navigate("BillsApplyInvoices");
 
-  //   const AdvanceCredits = await GetAdvanceCreditDetails({
-  //     hostelId: activeHostelId,
-  //     invoiceId: selectedBill?.invoiceId,
-  //     type: "Credit", 
-  //   })
+    const AdvanceCredits = await GetAdvanceCreditDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      type: "Credit", 
+    })
 
-  //   console.log("AdvanceCredits", AdvanceCredits);
-  // }
+    console.log("AdvanceCredits", AdvanceCredits);
+  }
 
 
   const handleBillUnpaid = async () => {
@@ -2031,7 +2033,7 @@ const BillDetailsSheet = ({
               )}
 
 
-            {/* {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
+            {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
               <View style={styles.creditCard}>
                 <View style={styles.creditTopRow}>
                   <View style={styles.creditTitleRow}>
@@ -2065,7 +2067,7 @@ const BillDetailsSheet = ({
                   </Text>
                 </TouchableOpacity>
               </View>
-            )} */}
+            )}
 
 
 
@@ -2257,15 +2259,27 @@ const BillDetailsSheet = ({
                 </TouchableOpacity>
               )}
 
-            {paymentStatus === "Pending" &&
-              (invoiceType === "Rent" || invoiceType === "Settlement") &&
+            {/* {paymentStatus === "Pending" &&
+              (invoiceType === "Rent" || invoiceType === "Settlement" || invoiceType === "REASSIGN_RENT") &&
               !isDiscounted &&
-              (
+              ( */}
+              {BillPdfdetails?.invoiceInfo?.paymentStatus === "Pending" &&
+(
+  BillPdfdetails?.invoiceInfo?.invoiceType === "REASSIGN_RENT" ||
+  BillPdfdetails?.invoiceInfo?.invoiceType === "RENT" ||
+  BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT"
+) &&
+!BillPdfdetails?.invoiceInfo?.isDiscounted && (
+
                 <TouchableOpacity
                   style={styles.popupRow}
                   onPress={() => {
                     setShowMenu(false);
                     // setShowBillDetails(false)
+                     const res =  GetInitializeDiscountDetails({
+      hostelId: activeHostelId,
+      invoiceId: BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId || selectedBill?.invoiceId
+    })
                     navigation.navigate("DiscountInvoice", {
                       // bill: selectedBill,
                       onSuccess: () => {
