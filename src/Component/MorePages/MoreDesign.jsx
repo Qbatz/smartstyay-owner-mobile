@@ -140,6 +140,16 @@ export default function MoreDesign({ navigation }) {
       bg: "#FF7A00",
       screen: "Vendor",
     },
+      ...(environment?.toUpperCase() !== "PROD"
+      ? [
+        {
+          title: "Requests",
+          icon: Bankingimage,
+          bg: "#0F6EFF",
+          screen: "Requests",
+        },
+      ]
+      : []),
     //   ]
     // : [])
     ,
