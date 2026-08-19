@@ -33,6 +33,8 @@ import EditIcon from "../../../Assets/Images/editIcon.png"
 import Dots from "../../../Assets/Images/3dots.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import BedIcon from "../../../Assets/Images/Bed_Icon.png"
+import ResetEBAmount from "./ResetEBAmount"
+import ResetIcon from "../../../Assets/Images/recheckinIcon.png"
 
 export default function RoomDetails({ route, navigation }) {
   const { activeHostelId } = useContext(CommonContexts);
@@ -123,6 +125,7 @@ export default function RoomDetails({ route, navigation }) {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const dotsRefs = useRef({});
   const today = dayjs();
+  const [showResetEbSheet,setShowResetEbSheet]=useState(false)
   
 
   const isDisabledReadingDate = (d) => {
@@ -760,6 +763,20 @@ export default function RoomDetails({ route, navigation }) {
                         disabled={!canUpdateElectricity}
                         onPress={() => {
                           setShowActionMenu(false);
+                          setShowResetEbSheet(true)
+                        }}
+                      >
+                        <Image source={ResetIcon} style={[styles.popupIcon,{tintColor:'#1E45E1'}]} />
+                        <Text style={styles.popupText}>Reset EB</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[styles.popupRow,
+                        !canUpdateElectricity && { opacity: 0.4 }]}
+                        disabled={!canUpdateElectricity}
+                        onPress={() => {
+                          setShowActionMenu(false);
                           handleEditRoomReading(matchedRoomData);
                         }}
                       >
@@ -1220,6 +1237,11 @@ export default function RoomDetails({ route, navigation }) {
         setApiError={setApiError}
         initialValues={matchedRoomData}
       />
+
+      <ResetEBAmount
+       visible={showResetEbSheet}
+       onClose={()=>setShowResetEbSheet(false)}
+       roomInfo={roomData}/> 
 
     </>
   );
@@ -1791,6 +1813,7 @@ const styles = StyleSheet.create({
 
   popupText: {
     fontSize: 14,
+    fontFamily:'Gilroy-Medium',
     color: "#333",
   },
 

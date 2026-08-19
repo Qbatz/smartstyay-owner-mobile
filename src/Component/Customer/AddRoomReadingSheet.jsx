@@ -42,6 +42,7 @@ export default function AddRoomReadingSheet({
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
+   const [isSubmitClicked, setIsSubmitClicked] = useState(false)
 
   console.log("selectedPendingEb", selectedPendingEb)
   console.log("settlementDetails", settlementDetails)
@@ -170,6 +171,8 @@ export default function AddRoomReadingSheet({
       return;
     }
 
+    if(isSubmitClicked) return;
+
     const payload = {
       hostelId: activeHostelId, // OR pass hostelId as prop
       reading: Number(currentReading),
@@ -177,6 +180,9 @@ export default function AddRoomReadingSheet({
       roomId: selectedItem?.roomId || selectedPendingEb?.roomId,
       floorId: selectedItem?.floorId || selectedItem?.hostelInfo?.floorId,
     };
+
+    try{
+      setIsSubmitClicked(true)
 
     const res = await AddRoomReading(payload);
 
@@ -202,13 +208,17 @@ export default function AddRoomReadingSheet({
       setTimeout(() => {
         setShowSuccess(false);
         onClose();
-
+        setIsSubmitClicked(false)
       }, 800);
 
 
     }
     else {
       setReadingError(res?.message || "Something went wrong");
+       setIsSubmitClicked(false)
+    }
+    }catch(error){
+       setIsSubmitClicked(false)
     }
   };
 
