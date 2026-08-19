@@ -54,6 +54,8 @@ export default function AddRoomReading({
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
 
+  const [isSubmitClicked, setIsSubmitClicked] = useState(false)
+
 
   const today = dayjs();
   const isDisabledReadingDate = (d) => {
@@ -65,7 +67,7 @@ export default function AddRoomReading({
   };
 
   console.log(readingDate)
-  console.log("intialsVa",initialValues)
+  console.log("intialsVa", initialValues)
 
 
 
@@ -147,9 +149,9 @@ export default function AddRoomReading({
   }, []);
   // 🔥 Open / Close animation
   useEffect(() => {
-     if (!visible) {
-    setOpenReadingDatePic(false); 
-  }
+    if (!visible) {
+      setOpenReadingDatePic(false);
+    }
     Animated.timing(translateY, {
       toValue: visible ? 0 : 500,
       duration: 250,
@@ -211,6 +213,7 @@ export default function AddRoomReading({
     }
 
     if (hasError) return;
+    if (isSubmitClicked) return;
 
     const payload = {
       hostelId: activeHostelId,
@@ -221,26 +224,35 @@ export default function AddRoomReading({
       readingId: initialValues?.readingId || initialValues?.ebId,
     };
 
-    const res = isEditMode
-      ? await UpdateRoomReading(payload)
-      : await AddRoomReading(payload);
+    try {
+      setIsSubmitClicked(true)
 
-    if (res.success) {
-      GetEBRoomReading(activeHostelId);
-      ParticularRoomReadingDetails(activeHostelId, initialValues?.roomId);
 
-      setModalType("success");
-      setMessage(isEditMode ? "Reading Updated" : "Reading Added");
-      setShowSuccess(true);
+      const res = isEditMode
+        ? await UpdateRoomReading(payload)
+        : await AddRoomReading(payload);
 
-      setTimeout(() => {
-        setShowSuccess(false);
-        onClose();
-        setCurrentReading("");
-        setReadingDate(null);
-      }, 800);
-    } else {
-      setApiError(res?.message || "Something went wrong");
+      if (res.success) {
+        GetEBRoomReading(activeHostelId);
+        ParticularRoomReadingDetails(activeHostelId, initialValues?.roomId);
+
+        setModalType("success");
+        setMessage(isEditMode ? "Reading Updated" : "Reading Added");
+        setShowSuccess(true);
+
+        setTimeout(() => {
+          setShowSuccess(false);
+          onClose();
+          setCurrentReading("");
+          setReadingDate(null);
+            setIsSubmitClicked(false)
+        }, 800);
+      } else {
+        setApiError(res?.message || "Something went wrong");
+          setIsSubmitClicked(false)
+      }
+    } catch (error) {
+       setIsSubmitClicked(false)
     }
   };
 
@@ -397,7 +409,8 @@ export default function AddRoomReading({
               <Text>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.submit} onPress={handleSubmit}>
+            <TouchableOpacity style={[styles.submit,isSubmitClicked && {opacity:0.4}]}
+             onPress={handleSubmit} disabled={isSubmitClicked}>
               <Text style={{ color: "#fff" }}>
                 {isEditMode ? "Update" : "Add"}
               </Text>

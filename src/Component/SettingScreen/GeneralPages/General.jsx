@@ -1390,7 +1390,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 26,
     borderRadius: 8,
     justifyContent:'flex-end',
-    bottom:60,
+    bottom:55,
     right:18,
     flexDirection:'row',alignItems:'center'
   },
