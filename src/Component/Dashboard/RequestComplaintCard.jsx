@@ -251,6 +251,7 @@ monthBtn: {
   borderColor: "#E5E7EB",
   borderRadius: 10,
   maxWidth: 130,   // 👈 IMPORTANT
+   opacity: 0.4
 },
 monthText: {
   fontSize: 13,

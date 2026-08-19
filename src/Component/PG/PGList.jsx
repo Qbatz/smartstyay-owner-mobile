@@ -39,8 +39,9 @@ import CheckoutBottomSheet from '../Customer/Checkout/CheckoutTenant';
 import OccupiedAndReservedBedSheet from "../PG/OccupiedAndReservedStatus";
 import Loader from "../Loader/Loader";
 import { useHasPermission } from "../../Utils/useHasPermission";
-import {useHideTabbarOnScroll} from "../../Utils/useHideTabbarOnScroll"
+import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll"
 import { UIContext } from "../Tabs/UIContext";
+import OtherHostelSwitchSheet from "../../Component/PG/OtherHostelSwitchSheet";
 
 
 
@@ -102,13 +103,14 @@ export default function PGPageFull({ route }) {
   const [bedUserDetails, setBedUserDetails] = useState("")
   const [showCheckout, setShowCheckout] = useState(false);
   const [inactiveTenant, setInactiveTenant] = useState(null);
+  const [showOtherHostelsSheet, setShowOtherHostelsSheet] = useState(false)
   // const [matchedBed, setMatchedBed] = useState(null);
 
   // const[showFloorBar,setShowFloorBar]=useState(true)
 
-   const { setShowTabBar } = route.params
+  const { setShowTabBar } = route.params
 
-  const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
+  const { handleScroll } = useHideTabbarOnScroll(setShowTabBar);
 
 
 
@@ -516,30 +518,30 @@ export default function PGPageFull({ route }) {
     }, [isAnySheetOpen])
   );
 
-   useFocusEffect(
-  React.useCallback(() => {
-    setShowFloorMenu(false);
-    setOpenMenuRoomId(null);
-  }, [])
-);
+  useFocusEffect(
+    React.useCallback(() => {
+      setShowFloorMenu(false);
+      setOpenMenuRoomId(null);
+    }, [])
+  );
 
-useFocusEffect(
-  React.useCallback(() => {
-    setShowFloorMenu(false);
-    setOpenMenuRoomId(null);
-    setShowActionSheet(false);
-    setShowAddBed(false);
-    setShowManageBed(false);
-  }, [])
-)
+  useFocusEffect(
+    React.useCallback(() => {
+      setShowFloorMenu(false);
+      setOpenMenuRoomId(null);
+      setShowActionSheet(false);
+      setShowAddBed(false);
+      setShowManageBed(false);
+    }, [])
+  )
 
-useFocusEffect(
-  useCallback(()=>{
-    return()=>{
-      setShowTabBar(true);
-    }
-  },[])
-)
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        setShowTabBar(true);
+      }
+    }, [])
+  )
 
 
 
@@ -722,7 +724,7 @@ useFocusEffect(
   ]);
 
 
- 
+
 
   useEffect(() => {
     const onBack = () => {
@@ -905,161 +907,161 @@ useFocusEffect(
   const showReadBlockedState = activeHostelId && !canReadPayingGuests;
 
   const floorAccumulator = useRef(0);
-const [showFloorBar, setShowFloorBar] = useState(true);
-const lastScrollY = useRef(0);
-const isHiddenRef = useRef(false);
-const floorAnim = useRef(new Animated.Value(1)).current;
-const [floorHeight, setFloorHeight] = useState(0);
-const scrollAccumulator = useRef(0);
-const ticking = useRef(false);
+  const [showFloorBar, setShowFloorBar] = useState(true);
+  const lastScrollY = useRef(0);
+  const isHiddenRef = useRef(false);
+  const floorAnim = useRef(new Animated.Value(1)).current;
+  const [floorHeight, setFloorHeight] = useState(0);
+  const scrollAccumulator = useRef(0);
+  const ticking = useRef(false);
 
 
-const onScroll = (e) => {
-  handleScroll(e);     
-  handleFloorScroll(e);  
-};
+  const onScroll = (e) => {
+    handleScroll(e);
+    handleFloorScroll(e);
+  };
 
 
 
-// const handleFloorScroll = (event) => {
-//   const currentY = event.nativeEvent.contentOffset.y;
-//   const diff = currentY - lastScrollY.current;
+  // const handleFloorScroll = (event) => {
+  //   const currentY = event.nativeEvent.contentOffset.y;
+  //   const diff = currentY - lastScrollY.current;
 
-//   floorAccumulator.current += diff;
+  //   floorAccumulator.current += diff;
 
-//   if (floorAccumulator.current > 30) {
-//     setShowFloorBar(false);
-//     floorAccumulator.current = 0;
-//   } else if (floorAccumulator.current < -30) {
-//     setShowFloorBar(true);
-//     floorAccumulator.current = 0;
-//   }
+  //   if (floorAccumulator.current > 30) {
+  //     setShowFloorBar(false);
+  //     floorAccumulator.current = 0;
+  //   } else if (floorAccumulator.current < -30) {
+  //     setShowFloorBar(true);
+  //     floorAccumulator.current = 0;
+  //   }
 
-//   lastScrollY.current = currentY;
-// };
+  //   lastScrollY.current = currentY;
+  // };
 
 
-//  const handleFloorScroll = (event) => {
-//   const currentY = event.nativeEvent.contentOffset.y;
-//   const diff = currentY - lastScrollY.current;
+  //  const handleFloorScroll = (event) => {
+  //   const currentY = event.nativeEvent.contentOffset.y;
+  //   const diff = currentY - lastScrollY.current;
 
-//   // 🔽 scroll down → hide ONLY ONCE
-//   if (diff > 8 && currentY > 80 && !isHiddenRef.current) {
-//     isHiddenRef.current = true;
-//     setShowFloorBar(false);
-//   }
+  //   // 🔽 scroll down → hide ONLY ONCE
+  //   if (diff > 8 && currentY > 80 && !isHiddenRef.current) {
+  //     isHiddenRef.current = true;
+  //     setShowFloorBar(false);
+  //   }
 
-//   // 🔼 scroll up → show ONLY ONCE
-//   if (diff < -8 && isHiddenRef.current) {
-//     isHiddenRef.current = false;
-//     setShowFloorBar(true);
-//   }
+  //   // 🔼 scroll up → show ONLY ONCE
+  //   if (diff < -8 && isHiddenRef.current) {
+  //     isHiddenRef.current = false;
+  //     setShowFloorBar(true);
+  //   }
 
-//   lastScrollY.current = currentY;
-// };
+  //   lastScrollY.current = currentY;
+  // };
 
-// const isHiddenRef = useRef(false);
+  // const isHiddenRef = useRef(false);
 
-// const handleFloorScroll = (event) => {
-//   const y = event.nativeEvent.contentOffset.y;
+  // const handleFloorScroll = (event) => {
+  //   const y = event.nativeEvent.contentOffset.y;
 
-//   // 🔽 SCROLL DOWN → hide (based on position)
-//   if (y > 70 && !isHiddenRef.current) {
-//     isHiddenRef.current = true;
-//     setShowFloorBar(false);
-//   }
+  //   // 🔽 SCROLL DOWN → hide (based on position)
+  //   if (y > 70 && !isHiddenRef.current) {
+  //     isHiddenRef.current = true;
+  //     setShowFloorBar(false);
+  //   }
 
-//   // 🔼 SCROLL UP → show immediately when near top
-//   if (y < 40 && isHiddenRef.current) {
-//     isHiddenRef.current = false;
-//     setShowFloorBar(true);
-//   }
-// };
-// const handleFloorScroll = (event) => {
-//   lastScrollY.current = event.nativeEvent.contentOffset.y;
-// };
+  //   // 🔼 SCROLL UP → show immediately when near top
+  //   if (y < 40 && isHiddenRef.current) {
+  //     isHiddenRef.current = false;
+  //     setShowFloorBar(true);
+  //   }
+  // };
+  // const handleFloorScroll = (event) => {
+  //   lastScrollY.current = event.nativeEvent.contentOffset.y;
+  // };
 
-// const handleScrollEnd = () => {
-//   const y = lastScrollY.current;
+  // const handleScrollEnd = () => {
+  //   const y = lastScrollY.current;
 
-//   if (y > 80 && !isHiddenRef.current) {
-//     isHiddenRef.current = true;
-//     setShowFloorBar(false);
-//   } else if (y < 80 && isHiddenRef.current) {
-//     isHiddenRef.current = false;
-//     setShowFloorBar(true);
-//   }
-// };
-const triggerPoint = useRef(0); // 👈 prevents frequent updates
+  //   if (y > 80 && !isHiddenRef.current) {
+  //     isHiddenRef.current = true;
+  //     setShowFloorBar(false);
+  //   } else if (y < 80 && isHiddenRef.current) {
+  //     isHiddenRef.current = false;
+  //     setShowFloorBar(true);
+  //   }
+  // };
+  const triggerPoint = useRef(0); // 👈 prevents frequent updates
 
-// const handleFloorScroll = (event) => {
-//   const y = event.nativeEvent.contentOffset.y;
+  // const handleFloorScroll = (event) => {
+  //   const y = event.nativeEvent.contentOffset.y;
 
-//   if (
-//     y - triggerPoint.current > 30 &&  
-//     y > 60 &&
-//     !isHiddenRef.current
-//   ) {
-//     isHiddenRef.current = true;
-//     triggerPoint.current = y;
-//     setShowFloorBar(false);
-//   }
+  //   if (
+  //     y - triggerPoint.current > 30 &&  
+  //     y > 60 &&
+  //     !isHiddenRef.current
+  //   ) {
+  //     isHiddenRef.current = true;
+  //     triggerPoint.current = y;
+  //     setShowFloorBar(false);
+  //   }
 
-//   else if (
-//     triggerPoint.current - y > 30 &&   
-//     isHiddenRef.current
-//   ) {
-//     isHiddenRef.current = false;
-//     triggerPoint.current = y;
-//     setShowFloorBar(true);
-//   }
+  //   else if (
+  //     triggerPoint.current - y > 30 &&   
+  //     isHiddenRef.current
+  //   ) {
+  //     isHiddenRef.current = false;
+  //     triggerPoint.current = y;
+  //     setShowFloorBar(true);
+  //   }
 
-//   lastScrollY.current = y;
-// };
+  //   lastScrollY.current = y;
+  // };
 
-const handleFloorScroll = (event) => {
-  const y = event.nativeEvent.contentOffset.y;
+  const handleFloorScroll = (event) => {
+    const y = event.nativeEvent.contentOffset.y;
 
-  if (y < 0) return;
+    if (y < 0) return;
 
-  const diff = y - lastScrollY.current;
+    const diff = y - lastScrollY.current;
 
-  // Ignore tiny movements
-  if (Math.abs(diff) < 10) {
-    lastScrollY.current = y;
-    return;
-  }
+    // Ignore tiny movements
+    if (Math.abs(diff) < 10) {
+      lastScrollY.current = y;
+      return;
+    }
 
-  // Scrolling DOWN
-  // if (diff > 0 && !isHiddenRef.current) {
-  //   isHiddenRef.current = true;
-  //   setShowFloorBar(false);
-  //   return;
-  // }
+    // Scrolling DOWN
+    // if (diff > 0 && !isHiddenRef.current) {
+    //   isHiddenRef.current = true;
+    //   setShowFloorBar(false);
+    //   return;
+    // }
 
-  // // Scrolling UP
-  // else if (diff < 0 && isHiddenRef.current) {
-  //   isHiddenRef.current = false;
-  //   setShowFloorBar(true);
-  // }
+    // // Scrolling UP
+    // else if (diff < 0 && isHiddenRef.current) {
+    //   isHiddenRef.current = false;
+    //   setShowFloorBar(true);
+    // }
 
     if (diff > 0) {
-    if (!isHiddenRef.current) {
-      isHiddenRef.current = true;
-      setShowFloorBar(false);
+      if (!isHiddenRef.current) {
+        isHiddenRef.current = true;
+        setShowFloorBar(false);
+      }
     }
-  }
 
-  // UP → SHOW
-  else if (diff < 0) {
-    if (isHiddenRef.current) {
-      isHiddenRef.current = false;
-      setShowFloorBar(true);
+    // UP → SHOW
+    else if (diff < 0) {
+      if (isHiddenRef.current) {
+        isHiddenRef.current = false;
+        setShowFloorBar(true);
+      }
     }
-  }
 
-  lastScrollY.current = y;
-};
+    lastScrollY.current = y;
+  };
 
 
 
@@ -1116,67 +1118,69 @@ const handleFloorScroll = (event) => {
   </View>
 )} */}
 
-<View style={styles.header}>
+        <View style={styles.header}>
 
-  {!!activeHostelId && (
-    <>
-      <View style={styles.leftSection}>
-        <TouchableOpacity onPress={() => navigation.navigate("SettingsPG")}>
-          {activeHostelName?.mainImage ? (
-            <Image
-              source={{ uri: activeHostelName?.mainImage }}
-              style={styles.HostelImg}
-            />
-          ) : (
-            <View
-              style={[
-                styles.HostelImg,
-                {
-                  backgroundColor: "#EEF2FF",
-                  alignItems: "center",
-                  justifyContent: "center",
-                },
-              ]}
-            >
-              <Text
-                style={{
-                  fontSize: 14,
-                  fontFamily: "Gilroy-Semibold",
-                }}
-              >
-                {activeHostelName?.initials}
-              </Text>
-            </View>
+          {!!activeHostelId && (
+            <>
+              <View style={styles.leftSection}>
+                <TouchableOpacity onPress={() => setShowOtherHostelsSheet(true)}
+                // onPress={() => navigation.navigate("SettingsPG")}
+                >
+                  {activeHostelName?.mainImage ? (
+                    <Image
+                      source={{ uri: activeHostelName?.mainImage }}
+                      style={styles.HostelImg}
+                    />
+                  ) : (
+                    <View
+                      style={[
+                        styles.HostelImg,
+                        {
+                          backgroundColor: "#EEF2FF",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        },
+                      ]}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 14,
+                          fontFamily: "Gilroy-Semibold",
+                        }}
+                      >
+                        {activeHostelName?.initials}
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.centerTitleWrapper}>
+                <Text
+                  style={styles.centerTitle}
+                >
+                  {activeHostelName?.name}
+                </Text>
+              </View>
+            </>
           )}
-        </TouchableOpacity>
-      </View>
 
-     <View style={styles.centerTitleWrapper}>
-  <Text
-    style={styles.centerTitle}
-  >
-    {activeHostelName?.name}
-  </Text>
-</View>
-    </>
-  )}
-
-  {!!activeHostelId && floors?.length > 0 && (
-    <TouchableOpacity
-      disabled={!canWritePayingGuests}
-      style={[
-        styles.floorButton,
-        !canWritePayingGuests && { opacity: 0.4 },
-      ]}
-      onPress={() => {
-        setOpenMenuRoomId(null);
-        setShowAddFloor(true);
-      }}
-    >
-      <Text style={styles.floorButtonText}>+ Floor</Text>
-    </TouchableOpacity>
-  )}
-</View>
+          {!!activeHostelId && floors?.length > 0 && (
+            <TouchableOpacity
+              disabled={!canWritePayingGuests}
+              style={[
+                styles.floorButton,
+                !canWritePayingGuests && { opacity: 0.4 },
+              ]}
+              onPress={() => {
+                setOpenMenuRoomId(null);
+                setShowAddFloor(true);
+              }}
+            >
+              <Text style={styles.floorButtonText}>+ Floor</Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {/* <View style={styles.header}>
 
@@ -1214,7 +1218,7 @@ const handleFloorScroll = (event) => {
         </View> */}
 
 
-       
+
 
 
 
@@ -1226,8 +1230,8 @@ const handleFloorScroll = (event) => {
           ></ScrollView>
         </View>
 
-      
-        {!showReadBlockedState && showFloorBar &&(
+
+        {!showReadBlockedState && showFloorBar && (
 
           <View style={{ flexDirection: "row", marginLeft: 13 }}>
             <ScrollView
@@ -1261,14 +1265,14 @@ const handleFloorScroll = (event) => {
                   }}
                 >
                   <View
-  style={{
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    width: "100%",
-  }}
->
+                    style={{
+                      flexDirection: "column",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                      width: "100%",
+                    }}
+                  >
                     <View
                       style={[
                         styles.floorCircle,
@@ -1280,16 +1284,16 @@ const handleFloorScroll = (event) => {
                         //   styles.circleText,
                         //   activeFloorIndex === i && styles.circleTextActive,
                         // ]}
-                         style={[
-    styles.circleText,
-    activeFloorIndex === i && styles.circleTextActive,
-  ]}
-  //                        numberOfLines={2}
-  // ellipsizeMode="tail"
-  // style={[
-  //   styles.floorLabel,
-  //   activeFloorIndex === i && styles.floorLabelActive,
-  // ]}
+                        style={[
+                          styles.circleText,
+                          activeFloorIndex === i && styles.circleTextActive,
+                        ]}
+                      //                        numberOfLines={2}
+                      // ellipsizeMode="tail"
+                      // style={[
+                      //   styles.floorLabel,
+                      //   activeFloorIndex === i && styles.floorLabelActive,
+                      // ]}
                       >
                         {getFloorLabel(f.name)}
                       </Text>
@@ -1311,14 +1315,14 @@ const handleFloorScroll = (event) => {
         )
         }
 
-         {activeHostelId && canReadPayingGuests && floors?.length > 0 && (
+        {activeHostelId && canReadPayingGuests && floors?.length > 0 && (
           <View style={{ flexDirection: "row", alignItems: "center", marginLeft: 13 }}>
 
             {rooms?.length > 0 && (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={[styles.filterScroll, { flexGrow: 1 }]}  
+                contentContainerStyle={[styles.filterScroll, { flexGrow: 1 }]}
               >
                 <View style={styles.filterItem}>
                   <View style={styles.availableDot} />
@@ -1348,7 +1352,7 @@ const handleFloorScroll = (event) => {
             )}
 
             <TouchableOpacity
-              style={[styles.addRoomBtn, { marginLeft: "auto" }]}  
+              style={[styles.addRoomBtn, { marginLeft: "auto" }]}
               onPress={() => {
                 setOpenMenuRoomId(null);
                 setShowFloorMenu(prev => !prev);
@@ -1467,7 +1471,7 @@ const handleFloorScroll = (event) => {
             keyboardDismissMode="none"
             onScroll={onScroll}
             bounces={false}
-  scrollEventThrottle={16}
+            scrollEventThrottle={16}
 
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
@@ -1558,7 +1562,7 @@ const handleFloorScroll = (event) => {
                         if (b.onNotice) statusArray.push("noticeperiod");
                         if (b.overDue) statusArray.push("overdue");
                       }
-                       else if (b.overDue && b.isBooked) {
+                      else if (b.overDue && b.isBooked) {
                         statusArray = ["overdue"];
                         statusCount = 2;
                       }
@@ -1640,12 +1644,11 @@ const handleFloorScroll = (event) => {
                         // style={styles.addBedBox}
                         disabled={!canWritePayingGuests}
                         style={[styles.addBedBox, !canWritePayingGuests && { opacity: 0.4 }]}
-                        onPress={() =>
-                        {
+                        onPress={() => {
                           setShowFloorMenu(false)
                           handleAddBed(item.id)
                         }
-                       }
+                        }
                       >
                         <View style={styles.addIconBox}>
                           <Image source={AddIcon} style={styles.addIconImg} />
@@ -1903,9 +1906,12 @@ const handleFloorScroll = (event) => {
         selectedBed={selectedBed}
         bookedItems={inactiveTenant}
         onBedAdded={handleBedAdded}
-
-
       />
+
+      <OtherHostelSwitchSheet
+        visible={showOtherHostelsSheet}
+        onClose={() => setShowOtherHostelsSheet(false)} />
+
       <Modal
         transparent
         animationType="fade"
@@ -2009,35 +2015,35 @@ const styles = StyleSheet.create({
   //   marginBottom: 8,
   // },
 
-header: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  paddingHorizontal: 16,
-  marginBottom: 8,
-  position: "relative",
-},
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    position: "relative",
+  },
 
-leftSection: {
-  width: 40,
-  zIndex: 2,
-},
+  leftSection: {
+    width: 40,
+    zIndex: 2,
+  },
 
-centerTitleWrapper: {
-  position: "absolute",
-  left: 65,
-  right: 80,
-  // alignItems: "center",
-  // justifyContent: "center",
-},
+  centerTitleWrapper: {
+    position: "absolute",
+    left: 65,
+    right: 80,
+    // alignItems: "center",
+    // justifyContent: "center",
+  },
 
-centerTitle: {
-  fontSize: 18,
-  fontFamily: "Gilroy-Bold",
-  color: "#000",
-  // textAlign: "center",
-  lineHeight: 24,
-},
+  centerTitle: {
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+    color: "#000",
+    // textAlign: "center",
+    lineHeight: 24,
+  },
   headerLeft: {
     flexDirection: "row",
     alignItems: "flex-start",   // 🔥 allow multi-line
@@ -2055,7 +2061,7 @@ centerTitle: {
 
   title: {
     fontSize: 18,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     flexWrap: "wrap",
     flexShrink: 1,
     marginLeft: 7
@@ -2084,33 +2090,33 @@ centerTitle: {
   //   width: 80,
   // },
 
-floorTab: {
-  paddingVertical: 12,
-  paddingHorizontal: 8,
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#eee",
-  marginRight: 10,
-  alignItems: "center",
-  justifyContent: "center",
-  width: 110,
-},
+  floorTab: {
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#eee",
+    marginRight: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    width: 110,
+  },
 
-floorLabel: {
-  fontSize: 12,
-  color: "#777",
-  fontFamily: "Gilroy-Semibold",
-  textAlign: "center",
-  width: "100%",
-  flexShrink: 1,
-  lineHeight: 17,
-},
+  floorLabel: {
+    fontSize: 12,
+    color: "#777",
+    fontFamily: "Gilroy-Semibold",
+    textAlign: "center",
+    width: "100%",
+    flexShrink: 1,
+    lineHeight: 17,
+  },
 
-floorLabelActive: {
-  color: "#1E45E1",
-  fontFamily: "Gilroy-Bold",
-  textAlign: "center",
-},
+  floorLabelActive: {
+    color: "#1E45E1",
+    fontFamily: "Gilroy-Bold",
+    textAlign: "center",
+  },
 
   floorTabActive: {
     borderColor: "#1E45E1",
@@ -2131,16 +2137,16 @@ floorLabelActive: {
     backgroundColor: "#1E45E1",
   },
 
- circleText: {
-  color: "#333",
-  fontSize: 15,
-  fontFamily: "Gilroy-Bold",
-  textAlign: "center",
-},
+  circleText: {
+    color: "#333",
+    fontSize: 15,
+    fontFamily: "Gilroy-Bold",
+    textAlign: "center",
+  },
 
-circleTextActive: {
-  color: "#fff",
-},
+  circleTextActive: {
+    color: "#fff",
+  },
 
   // floorLabel: {
   //   fontSize: 12,
@@ -2153,21 +2159,21 @@ circleTextActive: {
   //  fontFamily: "Gilroy-Bold" ,
   // },
   roomCard: {
-  backgroundColor: "#fff",
-  borderRadius: 12,
-  padding: 14,
-  marginBottom: 14,
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 14,
 
-  elevation: 2,
+    elevation: 2,
 
-  shadowColor: "#000",
-  shadowOpacity: 0.05,
-  shadowRadius: 10,
-  shadowOffset: { width: 0, height: 3 },
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 },
 
-  borderWidth: Platform.OS === "ios" ? 3 : 1,
-  borderColor: "#E5E7EB",
-},
+    borderWidth: Platform.OS === "ios" ? 3 : 1,
+    borderColor: "#E5E7EB",
+  },
 
   // roomCard: {
   //   backgroundColor: "#fff",
@@ -2204,15 +2210,15 @@ circleTextActive: {
     marginBottom: 12,
   },
 
-  roomTitle: { fontSize: 16, fontFamily: "Gilroy-Bold"  },
-  roomSubtitle: { fontSize: 12, color: "#888" ,fontFamily: "Gilroy-Semibold"},
+  roomTitle: { fontSize: 16, fontFamily: "Gilroy-Bold" },
+  roomSubtitle: { fontSize: 12, color: "#888", fontFamily: "Gilroy-Semibold" },
 
   addRoomBtn: {
     padding: 8,
     borderRadius: 0,
   },
 
-  bedsRow: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
+  bedsRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
 
   bedItem: {
     width: 60,
@@ -2231,7 +2237,7 @@ circleTextActive: {
     right: 12,
   },
 
-  bedLabel: { fontSize: 12 ,fontFamily: "Gilroy-Medium"  },
+  bedLabel: { fontSize: 12, fontFamily: "Gilroy-Medium" },
 
   centerContainer: {
     // flex: 3,
@@ -2264,7 +2270,7 @@ circleTextActive: {
   addFloorText: {
     color: "#fff",
     fontSize: 15,
- fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   addFab: {
@@ -2441,6 +2447,8 @@ circleTextActive: {
     shadowOpacity: 0.1,
     shadowRadius: 10,
     zIndex: 999,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
   menuBox1: {
     position: "absolute",
@@ -2455,6 +2463,8 @@ circleTextActive: {
     shadowOpacity: 0.1,
     shadowRadius: 10,
     zIndex: 999,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
   },
 
 
@@ -2502,7 +2512,7 @@ circleTextActive: {
 
   deleteTitle: {
     fontSize: 18,
-  fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: '#111',
     textAlign: 'center',
   },
@@ -2535,7 +2545,7 @@ circleTextActive: {
   cancelText: {
     color: '#444',
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   deleteBtn: {
@@ -2577,7 +2587,7 @@ circleTextActive: {
   addBedText: {
     fontSize: 12,
     color: "#1E45E1",
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
   addBedHead: {
     marginTop: "-4"

@@ -7,7 +7,10 @@ import {
     TextInput,
     Image,
     SafeAreaView, ScrollView,
-    KeyboardAvoidingView, Platform, StatusBar
+    KeyboardAvoidingView, Platform, StatusBar,
+    TouchableWithoutFeedback,
+    Animated,
+    PanResponder
 } from "react-native";
 import { BackHandler } from "react-native";
 import { useEffect } from "react";
@@ -23,6 +26,9 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import Loader from "../../Loader/Loader";
 import ValidatedInput from "../ValidatedInput"
+import NotesIcon from "../../../Assets/Images/invoice.png"
+import DirectionDownIcon from "../../../Assets/Images/direction_down.png"
+
 
 export default function BookingToInvoice() {
 
@@ -42,6 +48,7 @@ export default function BookingToInvoice() {
     const { activeHostelId } = useContext(CommonContexts);
 
     const isApplyTriggeredRef = useRef(false);
+    const retainerSheetRef = useRef(new Animated.Value(0)).current;
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -77,14 +84,45 @@ export default function BookingToInvoice() {
     const [finalValue, setFinalValue] = useState("")
 
     const [appliedAmounts, setAppliedAmounts] = useState({});
+    const [showTotalRetainerSheet, setShowTotalRetainerSheet] = useState(false)
 
     const bookingData = InitializebookingBills?.data;
 
     const customer = InitializebookingBills?.customerInfo || {};
     const invoicesList = InitializebookingBills?.listInvoices || [];
     const advanceInfo = InitializebookingBills?.advanceInfo || {};
+    const retainerSummary = InitializebookingBills?.retainerSummary || {};
 
     console.log("invoicesList", invoicesList);
+
+    const retainerSheetPan = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+            onPanResponderMove: (_, g) => {
+                if (g.dy > 0) retainerSheetRef.setValue(g.dy);
+            },
+            onPanResponderRelease: (_, g) => {
+                if (g.dy > 120) {
+                    Animated.timing(retainerSheetRef, {
+                        toValue: 700,
+                        duration: 200,
+                        useNativeDriver: true,
+                    }).start(() => {
+                        setShowTotalRetainerSheet(false);
+                        retainerSheetRef.setValue(0);
+                    });
+                } else {
+                    Animated.spring(retainerSheetRef, {
+                        toValue: 0,
+                        useNativeDriver: true,
+                    }).start();
+                }
+            },
+        })
+    ).current;
+
+    console.log("advanceListbool",InitializebookingBills)
+
 
     const totalApplied = Object.values(appliedAmounts).reduce(
         (sum, val) => sum + Number(val || 0),
@@ -354,7 +392,7 @@ export default function BookingToInvoice() {
                 listItems,
             });
 
-            console.log("res", res);
+            console.log("resDiscount", res);
 
 
             if (res?.success) {
@@ -472,35 +510,52 @@ export default function BookingToInvoice() {
 
                             {/* BOOKING AMOUNT */}
                             <View style={styles.bookingRowInside}>
-                                <Text style={styles.bookingLabel}>
-                                    {source === "bill"
-                                        ? "Balance advance Amount"
-                                        : "Retainer Amount of"}
-                                </Text>
-                                <View style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <Text style={styles.bookingAmount}>
-                                        {/* ₹ {advanceInfo?.advanceBalanceAmount || 0} */}
-                                        ₹ {
-                                            advanceInfo?.availableBalance ||
-                                            advanceInfo?.advanceBalanceAmount ||
-                                            0
-                                        }
+                                <View style={{ display: 'flex', flexDirection: 'column', marginTop: 8 }}>
+                                    <Text style={styles.bookingLabel}>
+                                        {source === "bill"
+                                            ? "Balance advance Amount"
+                                            : "Retainer Amount of"}
                                     </Text>
-                                    {source === "bill" &&
-                                        (
-                                            <View style={{ display: 'flex', flexDirection: 'row', marginTop: 3 }}>
 
-                                                <Text style={styles.smallText}>
-                                                    {advanceInfo?.advanceInvoiceNumber}
-                                                </Text>
-                                                <Image
-                                                    source={InvoiceLinkIcon}
-                                                    style={{ height: 14, width: 14, marginLeft: 3 }}
-                                                />
-                                            </View>
-                                        )}
+                                    {/* {source === "bill" && */}
+                                    {/* ( */}
+                                    <View style={{ display: 'flex', flexDirection: 'row', marginTop: 3 }}>
+
+                                        <Text style={{
+                                            fontSize: 12, color: "#1E45E1", marginBottom: 8,
+                                            fontFamily: "Gilroy-Semibold", textDecorationLine: 'underline'
+                                        }}
+                                        >
+                                            {advanceInfo?.advanceInvoiceNumber || advanceInfo?.invoiceNumber}
+                                        </Text>
+                                        <Image
+                                            source={InvoiceLinkIcon}
+                                            style={{ height: 14, width: 14, marginLeft: 3 }}
+                                        />
+                                    </View>
+                                    {/* )} */}
                                 </View>
+
+
+                                <Text style={styles.bookingAmount}>
+                                    {/* ₹ {advanceInfo?.advanceBalanceAmount || 0} */}
+                                    ₹ {
+                                        advanceInfo?.availableBalance ||
+                                        advanceInfo?.advanceBalanceAmount ||
+                                        0
+                                    }
+                                </Text>
+
                             </View>
+
+                            <TouchableOpacity onPress={() => { setShowTotalRetainerSheet(!showTotalRetainerSheet) }}
+                                style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end' }}>
+                                <Image source={NotesIcon} style={{ width: 17, height: 17, tintColor: '#007AFF' }} />
+                                <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#007AFF', marginLeft: 5 }}>
+                                    View Total Retainer Amount</Text>
+
+                                <Image source={DirectionDownIcon} style={{ width: 17, height: 17, marginLeft: 8 }} />
+                            </TouchableOpacity>
 
                         </View>
 
@@ -519,7 +574,7 @@ export default function BookingToInvoice() {
                                             </Text>
 
                                             <Text style={styles.amount}>
-                                                ₹ {item?.invoiceAmount || 0}
+                                                ₹ {item?.pendingAmount || 0}
                                             </Text>
                                         </View>
 
@@ -550,10 +605,10 @@ export default function BookingToInvoice() {
                                             </Text>
                                         </View>
 
-                                        <View style={styles.rowBetween}>
+                                        {/* <View style={styles.rowBetween}>
                                             <Text style={styles.label}>Due</Text>
                                             <Text style={styles.valueText}>{item?.pendingAmount ? item?.pendingAmount : "N/A"}</Text>
-                                        </View>
+                                        </View> */}
 
                                         <Text style={styles.inputLabel}>
                                             Amount to apply
@@ -569,6 +624,8 @@ export default function BookingToInvoice() {
                                                 maxLength={7}
                                                 onChangeText={(text) => {
 
+
+
                                                     if (text === "") {
                                                         setTempValue((prev) => ({
                                                             ...prev,
@@ -580,6 +637,10 @@ export default function BookingToInvoice() {
                                                             [item.invoiceId]: 0,
                                                         }));
 
+                                                        return;
+                                                    }
+
+                                                    if (text.startsWith("0")) {
                                                         return;
                                                     }
 
@@ -639,7 +700,7 @@ export default function BookingToInvoice() {
                                                 }}
                                             />
 
-                                            <TouchableOpacity
+                                            {/* <TouchableOpacity
                                                 style={styles.setBtn}
                                                 onPress={() =>
                                                     handleSetAmount(
@@ -650,7 +711,7 @@ export default function BookingToInvoice() {
                                                 }
                                             >
                                                 <Text style={{ color: "#1E45E1" }}>Set</Text>
-                                            </TouchableOpacity>
+                                            </TouchableOpacity> */}
                                         </View>
                                     </View>
                                 ))
@@ -865,7 +926,86 @@ export default function BookingToInvoice() {
                             </TouchableOpacity>
                         </View>
                     </ScrollView>
+
+
                 </KeyboardAvoidingView>
+                {showTotalRetainerSheet && (
+                    <View style={styles.sheetOverlay}>
+
+                        <TouchableWithoutFeedback onPress={() => {
+                            setShowTotalRetainerSheet(false)
+                        }}
+                        >
+                            <View style={{ flex: 1 }} />
+                        </TouchableWithoutFeedback>
+
+                        <Animated.View
+                            style={[
+                                styles.sheet,
+                                {
+                                    // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+                                    maxHeight: '95%',
+                                    transform: [{ translateY: retainerSheetRef }]
+                                }
+                            ]}
+                            {...retainerSheetPan.panHandlers}
+                        >
+                            <View style={styles.sheetHandle} />
+
+                            <View style={{ marginBottom: 30 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        Total Retainer Amount</Text>
+
+                                    <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        ₹ {retainerSummary?.totalRetainerAmount}</Text>
+                                </View>
+
+                                <View style={{ borderWidth: 0.8, borderColor: '#E7E7E7', marginVertical: 20 }} />
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 10, marginTop: 4 }}>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#3C3C4399' }}>
+                                        Advance</Text>
+
+                                    <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        ₹  {retainerSummary?.totalAdvanceAmount}</Text>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 10 }}>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#3C3C4399' }}>
+                                        Rent</Text>
+
+                                    <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        ₹ {retainerSummary?.totalRentAmount}</Text>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 10 }}>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#3C3C4399' }}>
+                                        EB</Text>
+
+                                    <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        ₹ {retainerSummary?.totalEbAmount}</Text>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 10 }}>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', color: '#3C3C4399' }}>
+                                        Booking</Text>
+
+                                    <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        ₹ {retainerSummary?.totalBookingAmount}</Text>
+                                </View>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginVertical: 10 }}>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Semibold', color: '#3C3C4399' }}>
+                                        General</Text>
+
+                                    <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        ₹ {retainerSummary?.otherAmount}</Text>
+                                </View>
+                            </View>
+                        </Animated.View>
+                    </View>
+                )}
             </SafeAreaView>
         </>
     );
@@ -1238,6 +1378,30 @@ const styles = StyleSheet.create({
         fontSize: 15,
         color: "red",
         fontFamily: "Gilroy-Medium",
+    },
+    
+    sheetOverlay: {
+        position: "absolute",
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "flex-end",
+        zIndex: 9999,
+    },
+    sheet: {
+        backgroundColor: "#ffffff",
+        padding: 20,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        paddingBottom: 30,
+        // minHeight: 400,
+    },
+    sheetHandle: {
+        width: 60,
+        height: 5,
+        backgroundColor: "#ccc",
+        alignSelf: "center",
+        borderRadius: 30,
+        marginBottom: 15,
     },
 
 });

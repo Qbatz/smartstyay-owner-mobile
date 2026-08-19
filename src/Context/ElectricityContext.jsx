@@ -227,6 +227,25 @@ const DeleteRoomReading = async ({ hostelId, readingId }) => {
   }
 };
 
+const resetEBMeterReading=async(hostelId,payload)=>{
+  setLoading(true)
+  try{
+    const axios=getAxios()
+
+    const res=await axios.post(`/v2/electricity/reset/${hostelId}`,payload)
+    console.log(res)
+    return res;
+  }catch(error){
+    const msg = getErrorMessage(error);
+    console.log("error", error , msg);
+    
+    setErrorMsg(msg);
+    return { success: false, message: msg };
+  }finally{
+    setLoading(false)
+  }
+}
+
 
     return(
         <ElectricityContext.Provider
@@ -246,7 +265,7 @@ const DeleteRoomReading = async ({ hostelId, readingId }) => {
             ParticularTenantReadingDetails,
             AddRoomReading,
             UpdateRoomReading,     
-            DeleteRoomReading,
+            DeleteRoomReading,resetEBMeterReading
         }}
         >
             {children}

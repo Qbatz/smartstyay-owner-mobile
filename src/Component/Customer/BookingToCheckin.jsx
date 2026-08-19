@@ -38,7 +38,7 @@ import BedDetailsSheet from "./BedDetailsBottomsheet"
 export default function BookingCheckIn({ navigation, route }) {
 
 
-    const { customerId, customer, onSuccess, selectedBedReserv, PGselectedBed, } = route.params || {};
+    const { customerId, customer, onSuccess, selectedBedReserv, PGselectedBed, isDashboardCheckIn = false, } = route.params || {};
     // const { customerId, customer, selectedBedReserv, selectedBed, onSuccess} = route.params || {};
     console.log("customerten", customerId)
     console.log("customer", customer);
@@ -250,7 +250,7 @@ export default function BookingCheckIn({ navigation, route }) {
     //     );
     // });
 
-       const handleshowBedDetailsheet = () => {
+    const handleshowBedDetailsheet = () => {
         if (!joiningDate) return
         setShowBedSheet(true);
     }
@@ -796,7 +796,7 @@ export default function BookingCheckIn({ navigation, route }) {
                         >
                             <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Tenant Check-In</Text>
+                        <Text style={styles.headerTitle}>Tenant Check-Info</Text>
                     </View>
 
                     <View style={styles.segmentRow}>
@@ -855,7 +855,7 @@ export default function BookingCheckIn({ navigation, route }) {
                             <View>
 
                                 <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
-                                    {profilePic ? <Image source={{ uri: profilePic }} style={{ width: 45, height: 45 , borderRadius: 22.5, }} /> :
+                                    {profilePic ? <Image source={{ uri: profilePic }} style={{ width: 45, height: 45, borderRadius: 22.5, }} /> :
 
                                         <View style={{
                                             width: 45, height: 45, borderRadius: 22.5, backgroundColor: '#e6e7eb',
@@ -912,8 +912,13 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                     <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
-                                    <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}
-                                     onPress={handleshowBedDetailsheet} >
+                                    <TouchableOpacity style={{
+                                        flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10,
+                                        opacity: isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect ? 0.5 : 1,
+                                    }}
+                                        onPress={handleshowBedDetailsheet}
+                                        disabled={isDashboardCheckIn ||bookingDetails?.bedName !=null}
+                                    >
 
                                         <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
 
@@ -928,11 +933,15 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
+                                        // style={[
+                                        //     styles.select,
+                                        // ]}
                                         style={[
                                             styles.select,
-                                            // customer && { backgroundColor: "#F3F4F6" }
+                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
                                         ]}
                                         onPress={() => setFloorOpen(!floorOpen)}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
                                     // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
@@ -990,10 +999,14 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
+                                        // style={[
+                                        //     styles.select,
+                                        // ]}
                                         style={[
                                             styles.select,
-                                            // customer && { backgroundColor: "#F3F4F6" }
+                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
                                         ]}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
                                         onPress={() => {
                                             if (selectedFloor) {
                                                 setRoomOpen(!roomOpen);
@@ -1036,8 +1049,9 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <TouchableOpacity
                                         style={[
                                             styles.select,
-                                            // customer && { backgroundColor: "#F3F4F6" }
+                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
                                         ]}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
                                         onPress={() => {
                                             if (selectedRoom) {
                                                 setBedOpen(!bedOpen);
@@ -1113,8 +1127,8 @@ export default function BookingCheckIn({ navigation, route }) {
                                             if (value) {
                                                 setAdvanceAmount("");
                                                 setAdvanceError("");
-                                                 setExtraCharges([]);
-                                                 setOpenDropdownId(null)
+                                                setExtraCharges([]);
+                                                setOpenDropdownId(null)
                                             }
                                         }}
                                     />
@@ -1782,50 +1796,50 @@ export default function BookingCheckIn({ navigation, route }) {
                 </KeyboardAvoidingView>
             </SafeAreaView>
 
-           <BedDetailsSheet
-    visible={showBedSheet}
-    joiningDate={joiningDate}
-    onClose={() => setShowBedSheet(false)}
-    onSelect={(data) => {
-        console.log("Selected Bed =>", data);
+            <BedDetailsSheet
+                visible={showBedSheet}
+                joiningDate={joiningDate}
+                onClose={() => setShowBedSheet(false)}
+                onSelect={(data) => {
+                    console.log("Selected Bed =>", data);
 
-        setSelectedBedDetails(data);
+                    setSelectedBedDetails(data);
 
-        setSelectedFloor({
-            id: data.floorId,
-            name: data.floorName,
-        });
+                    setSelectedFloor({
+                        id: data.floorId,
+                        name: data.floorName,
+                    });
 
-        const room = {
-            id: data.roomId,
-            name: data.roomName,
-        };
+                    const room = {
+                        id: data.roomId,
+                        name: data.roomName,
+                    };
 
-        setSelectedRoom(room);
+                    setSelectedRoom(room);
 
-        setRooms([
-            {
-                id: data.roomId,
-                name: data.roomName,
-            },
-        ]);
+                    setRooms([
+                        {
+                            id: data.roomId,
+                            name: data.roomName,
+                        },
+                    ]);
 
-        setSelectedBed({
-            bedId: data.bedId,
-            bedName: data.bedName,
-            rentAmount: data.rentAmount,
-        });
+                    setSelectedBed({
+                        bedId: data.bedId,
+                        bedName: data.bedName,
+                        rentAmount: data.rentAmount,
+                    });
 
-        setRentalAmount(String(data.rentAmount));
+                    setRentalAmount(String(data.rentAmount));
 
-        setFloorError("");
-        setRoomError("");
-        setBedError("");
-        setBookingDetailsError("");
+                    setFloorError("");
+                    setRoomError("");
+                    setBedError("");
+                    setBookingDetailsError("");
 
-        setShowBedSheet(false);
-    }}
-/>
+                    setShowBedSheet(false);
+                }}
+            />
 
             {openDatePicker && (
                 <View style={styles.sheetOverlay}>
@@ -2425,5 +2439,9 @@ const styles = StyleSheet.create({
         color: "#111827",
         fontFamily: "Gilroy-Medium",
     },
+    disabledSelect: {
+  backgroundColor: "#F3F4F6",
+  opacity: 0.7,
+},
 
 });

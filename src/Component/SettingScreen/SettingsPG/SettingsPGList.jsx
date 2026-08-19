@@ -35,6 +35,8 @@ import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
 import EmptyIcon from "../../../Assets/Images/Empty_state.png";
 import PlusIcon from "../../../Assets/Images/blue_circle.png"
 import OrangeLocationIcon from "../../../Assets/Images/OrangeLocationIcon.png"
+import { storeData } from "../../../Utils/Storage";
+import { ACTIVEHOSTELID } from "../../../Utils/Constant";
 
 export default function SettingsPG({ navigation }) {
   const { hostelList, updateHostelList, setActiveHostelId, activeHostelId } = useContext(CommonContexts);
@@ -195,6 +197,7 @@ export default function SettingsPG({ navigation }) {
 
     updateHostelList([selected, ...others]);
     setActiveHostelId(id);
+    storeData(ACTIVEHOSTELID, id)
     closeSheet();
   };;
 
@@ -310,6 +313,7 @@ export default function SettingsPG({ navigation }) {
       if (activeHostelId === deletedId) {
         if (updated.length > 0) {
           setActiveHostelId(updated[0].hostelId);
+          storeData(ACTIVEHOSTELID, updated[0].hostelId)
         } else {
           setActiveHostelId(null);
         }
@@ -400,8 +404,15 @@ export default function SettingsPG({ navigation }) {
 
       <>
         <View style={{
-          paddingHorizontal: 16, paddingTop: 40, paddingBottom: 12, flexDirection: "row",
-          alignItems: "center", backgroundColor: '#fff'
+              paddingHorizontal: 16,
+    paddingTop: Platform.OS === "android"
+  ? StatusBar.currentHeight + 20
+  : 70 ,
+    paddingBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",backgroundColor: '#fff'
+          // paddingHorizontal: 16, paddingTop: 40, paddingBottom: 12, flexDirection: "row",
+          // alignItems: "center", backgroundColor: '#fff'
         }}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <Image source={ArrowLeft} style={styles.backArrow} />
@@ -734,7 +745,7 @@ export default function SettingsPG({ navigation }) {
 
             {mainHostel?.images?.length > 0 && (
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {mainHostel.images.map((i, index) => (
+                {mainHostel.images?.slice(0, 4).map((i, index) => (
                   <Image
                     key={`${i?.uri}-${index}`}
                     source={{ uri: i?.uri?.image }}

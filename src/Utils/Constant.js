@@ -1,6 +1,8 @@
 export const ACCESS_TOKEN="access_token";
 export const LOGGEDIN="loggedin";
-export const USER_ID = "user_id"
+export const USER_ID = "user_id";
+export const PROFILEDETAILS= "profileDetails";
+export const ACTIVEHOSTELID = "activeHostelId";
 
 let _BASE_URL;         
 let _initialized = false;

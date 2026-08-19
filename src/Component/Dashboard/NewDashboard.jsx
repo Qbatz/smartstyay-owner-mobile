@@ -87,13 +87,14 @@ import {
   XAxis, StackedBarChart
 } from "react-native-svg-charts";
 import { getHostels } from "../../Action/HostelAction";
-import { retriveData } from "../../Utils/Storage";
+import { retriveData, storeData } from "../../Utils/Storage";
 import SuccessModal from "../../ToastFile/ToastPage";
 import SubscriptionFullScreenAlert from "./SubscriptionBannerAlert";
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 import SubscriptionExpiredCard from "./SubscriptionBannerAlert";
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 import { BillContext } from "../../Context/BillsContext";
+import { ACTIVEHOSTELID, PROFILEDETAILS } from "../../Utils/Constant";
 
 
 
@@ -108,11 +109,11 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
-  const { getDashboard, getParticularHostelDetails, PGDetails, loading } = useContext(PGContext);
+  const { getDashboard, getParticularHostelDetails, PGDetails  , pgLoading} = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
   const { GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    GetInitializeRecordPaymentDetails } = useContext(BillContext);
+    GetInitializeRecordPaymentDetails , loading } = useContext(BillContext);
   const [unreadCount, setUnreadCount] = useState(0);
   const [dashboardList, setDashboardList] = useState([])
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -259,6 +260,9 @@ export default function DashboardNewDesign({ initialParams, route }) {
   useEffect(() => {
     const fetchDashboard = async () => {
       if (activeHostelId) {
+    console.log("apicall", activeHostelId);
+    
+
         const res = await getDashboard(activeHostelId, {
           billingFilter: "This Month",
           complaintRequestFilter: "This Month",
@@ -358,6 +362,10 @@ export default function DashboardNewDesign({ initialParams, route }) {
   useEffect(() => {
     if (profileDetails?.roleId) {
       GetRoleBasedPermission(profileDetails?.roleId);
+
+      if (profileDetails) {
+        storeData(PROFILEDETAILS, JSON.stringify(profileDetails))
+      }
     }
   }, [profileDetails?.roleId]);
 
@@ -578,6 +586,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
       navigation.navigate("BookingCheckIn", {
         customerId: item?.tenantId,
         customer: res?.data,
+        isDashboardCheckIn: true,
       });
     }
 
@@ -924,14 +933,14 @@ export default function DashboardNewDesign({ initialParams, route }) {
   //   (h.hostelId ?? h.id) === activeHostelId
   // ) || hostelList[0];
 
-  const activeHostel =
-    hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
-    hostelList?.[0] ??
-    {};
+  const activeHostel = hostelList?.find(h => (h.hostelId ?? h.id) === activeHostelId) ??
+    hostelList?.[0] ?? {};
   if (!activeHostel) {
     return null;
   }
+  console.log(hostelList)
   console.log(activeHostel)
+  console.log("sonbam", activeHostelId)
 
 
   const navigation = useNavigation();
@@ -946,12 +955,25 @@ export default function DashboardNewDesign({ initialParams, route }) {
   //   });
   // }, [login.getToken]);
 
+  const reorderHostels = (list, activeId) => {
+    const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
+    const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
+
+    return selected ? [selected, ...others] : list;
+  };
+
   useEffect(() => {
     getHostels().then((res) => {
-      console.log("res", res);
+      console.log("resactivehostel", res);
 
       if (res?.data) {
-        updateHostelList(res.data);
+        if (activeHostelId) {
+          const reordered = reorderHostels(res.data, activeHostelId);
+          updateHostelList(reordered);
+        } else {
+          updateHostelList(res.data);
+        }
+
       }
     });
   }, []);
@@ -960,6 +982,9 @@ export default function DashboardNewDesign({ initialParams, route }) {
   useEffect(() => {
     if (activeHostel) {
       setActiveHostelId(activeHostel?.hostelId)
+    }
+    if (activeHostel?.hostelId) {
+      storeData(ACTIVEHOSTELID, activeHostel.hostelId);
     }
   }, [activeHostel])
 
@@ -1132,12 +1157,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
   };
 
 
-  const reorderHostels = (list, activeId) => {
-    const selected = list.find(h => (h.hostelId ?? h.id) === activeId);
-    const others = list.filter(h => (h.hostelId ?? h.id) !== activeId);
 
-    return selected ? [selected, ...others] : list;
-  };
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -4009,6 +4029,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 10,
     maxWidth: 120,
+     opacity: 0.4
   },
 
   monthText: {
@@ -4270,7 +4291,8 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 6,
     paddingHorizontal: 6,
-    paddingVertical: 2
+    paddingVertical: 2, 
+     opacity: 0.4
   },
 
   occupancyRow: {
@@ -4685,21 +4707,33 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold"
   },
 
-  revenueCard: {
-    height: 200,
-    marginHorizontal: 16,
-    marginTop: 10,
-    // paddingTop: 5,
-    paddingTop: Platform.OS === "ios" ? 0 : 5,
-    paddingRight: Platform.OS === "ios" ? 1 : 15,
-    paddingBottom: Platform.OS === "ios" ? 1 : 1,
-    paddingLeft: Platform.OS === "ios" ? 2 : 15,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    justifyContent: "space-between",
+  // revenueCard: {
+  //   height: 200,
+  //   marginHorizontal: 16,
+  //   marginTop: 10,
+  //   paddingTop: Platform.OS === "ios" ? 0 : 5,
+  //   paddingRight: Platform.OS === "ios" ? 1 : 15,
+  //   paddingBottom: Platform.OS === "ios" ? 1 : 1,
+  //   paddingLeft: Platform.OS === "ios" ? 2 : 15,
+  //   borderRadius: 10,
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+  //   justifyContent: "space-between",
 
-  },
+  // },
+
+  revenueCard: {
+  minHeight: 200,
+  marginHorizontal: 16,
+  marginTop: 10,
+  padding: 16,         
+  borderRadius: 10,
+  borderWidth: 1,
+  borderColor: "#E5E7EB",
+  justifyContent: "space-between",
+  overflow: "hidden", 
+},
+
 
   revenueHeader: {
     flexDirection: "row",

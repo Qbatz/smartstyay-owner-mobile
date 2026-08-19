@@ -14,7 +14,8 @@ import {
   Modal,
   Animated,
   PanResponder,
-  Keyboard
+  Keyboard,
+  Platform
 } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import Dots from "../../../Assets/Images/3dots.png";
@@ -49,11 +50,13 @@ import LogoutIcon from "../../../Assets/Images/Logout.png"
 import EmailLinkIcon from "../../../Assets/Images/maximize.png"
 import { removeData, storeData } from "../../../Utils/Storage";
 import { LoginContexts } from "../../../Context/LoginContext";
-import { ACCESS_TOKEN, LOGGEDIN, USER_ID } from "../../../Utils/Constant";
+import { ACCESS_TOKEN, ACTIVEHOSTELID, LOGGEDIN, PROFILEDETAILS, USER_ID } from "../../../Utils/Constant";
 import YellowCrownIcon from "../../../Assets/Images/YellowCrownAdmin.png"
 import CrownIcon from "../../../Assets/Images/crown.png"
 import AdminResetPasswordSheet from "./AdminResetPasswordSheet"
 import { PGContext } from "../../../Context/PGContext";
+import LinearGradient from "react-native-linear-gradient";
+import AddCircleIcon from "../../../Assets/Images/blue_circle.png"
 
 
 
@@ -598,6 +601,20 @@ export default function GeneralDetailsScreen({ navigation }) {
               showsVerticalScrollIndicator={false}
 
             />
+
+             <TouchableOpacity
+                style={[
+                  styles.masterButton,
+                  !canWriteProfile && { opacity: 0.4 },
+                ]}
+                disabled={!canWriteProfile}
+                onPress={() =>
+                  navigation.navigate("AddGeneralScreen")
+                }
+              >
+                <Image source={AddCircleIcon} style={{width:20,height:20,marginRight:3}}/>
+                <Text style={styles.masterText}> Master</Text>
+              </TouchableOpacity>
           </View>
         );
 
@@ -675,7 +692,9 @@ export default function GeneralDetailsScreen({ navigation }) {
       await Promise.all([
         removeData(ACCESS_TOKEN),
         storeData(LOGGEDIN, "false"),
-        removeData(USER_ID)
+        removeData(USER_ID),
+        removeData(PROFILEDETAILS),
+        removeData(ACTIVEHOSTELID)
       ])
 
       
@@ -738,27 +757,56 @@ export default function GeneralDetailsScreen({ navigation }) {
         />
 
         <View style={styles.container}>
+          <LinearGradient 
+          colors={["#E2E8FF", "#FFFFFF"]}
+              start={{ x: 0.5, y: 0 }}
+              end={{ x: 0.5, y: 0.8 }}
+              style={{ paddingHorizontal: Platform.OS === "android" ? 16 : 3, paddingTop: 50,}}>
+            
+          
+
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={() => navigation.goBack()}
+              style={{backgroundColor:'#FFFFFF9E',width:35,height:35,borderRadius:10,
+                      justifyContent:'center',alignItems:'center'}}>
               <Image source={ArrowLeft} style={styles.backIcon} />
             </TouchableOpacity>
 
-            <Text style={styles.headerTitle}>General</Text>
+            {/* <Text style={styles.headerTitle}>General</Text> */}
 
             {profileDetails && (
-              <TouchableOpacity
-                style={[
-                  styles.masterButton,
-                  !canWriteProfile && { opacity: 0.4 },
-                ]}
-                disabled={!canWriteProfile}
-                onPress={() =>
-                  navigation.navigate("AddGeneralScreen")
-                }
-              >
-                <Text style={styles.masterText}>+ Master</Text>
-              </TouchableOpacity>
+              // <TouchableOpacity
+              //   style={[
+              //     styles.masterButton,
+              //     !canWriteProfile && { opacity: 0.4 },
+              //   ]}
+              //   disabled={!canWriteProfile}
+              //   onPress={() =>
+              //     navigation.navigate("AddGeneralScreen")
+              //   }
+              // >
+              //   <Text style={styles.masterText}>+ Master</Text>
+              // </TouchableOpacity>
+               <TouchableOpacity style={{marginTop:3}}
+                    ref={DotsTopRef}
+                    onPress={() => {
+                      DotsTopRef.current.measureInWindow(
+                        (x, y, width, height) => {
+                          setPopupPo({
+                            top: y + height + 20,
+                            right: SCREEN_WIDTH - (x + width),
+                          });
+                        }
+                      );
+                      setActiveMenuProfile("box");
+                    }}
+                  >
+                    <Image
+                      source={ThreeDots}
+                      style={styles.menuDotsIcon}
+                    />
+                  </TouchableOpacity>
             )}
           </View>
 
@@ -791,11 +839,11 @@ export default function GeneralDetailsScreen({ navigation }) {
                         {getInitials(profileDetails)}
                       </Text>
                     )}
-                    <Image source={YellowCrownIcon} style={{width:23.2,height:23.2,position:'absolute',top:5,right:-5}}/>
+                    <Image source={YellowCrownIcon} style={{width:30,height:30,position:'absolute',top:-8,right:-5,}}/>
                   </View>
 
                  
-                  <Text style={[styles.name,{marginTop:10}]}>
+                  <Text style={[styles.name,{marginTop:16}]}>
                     {getFullName(profileDetails)}
                   </Text>
 
@@ -834,29 +882,11 @@ export default function GeneralDetailsScreen({ navigation }) {
                 </TouchableOpacity>
               </View> */}
             
-                  <TouchableOpacity style={{marginTop:3}}
-                    ref={DotsTopRef}
-                    onPress={() => {
-                      DotsTopRef.current.measureInWindow(
-                        (x, y, width, height) => {
-                          setPopupPo({
-                            top: y + height - 100,
-                            right: SCREEN_WIDTH - (x + width),
-                          });
-                        }
-                      );
-                      setActiveMenuProfile("box");
-                    }}
-                  >
-                    <Image
-                      source={ThreeDots}
-                      style={styles.dotsIcon}
-                    />
-                  </TouchableOpacity>
+                 
                 </View>
 
                  
-               <View style={{borderWidth:0.8,marginTop:15,marginBottom:5,borderColor:'#E5E5E5'}}/> 
+               {/* <View style={{borderWidth:0.8,marginTop:15,marginBottom:5,borderColor:'#E5E5E5'}}/>  */}
               
 
               <View style={styles.infoRow}>
@@ -906,21 +936,22 @@ export default function GeneralDetailsScreen({ navigation }) {
         width: 14,
         height: 14,
         marginLeft: 8, // 👈 margin will work now
-        tintColor: "#222222",
+        tintColor: "#1E45E1",
       }}
     />
   </View>
 </View>
-<Text style={styles.lastUpdatedText}>
+{/* <Text style={styles.lastUpdatedText}>
   Profile last updated - 
   <Text style={{color:'#222222', fontFamily: "Gilroy-Semibold",}}>{profileDetails?.lastUpdated || "-"}</Text> 
-</Text>
+</Text> */}
 
             </View>
           )}
+          </LinearGradient>
 
           {canReadProfile && (
-            <View style={{ flex: 1, marginTop: 8 }}>
+            <View style={{ flex: 1, marginTop: 8,marginHorizontal:14 }}>
               {/* Tabs */}
               <View style={{ backgroundColor: "#fff" }}>
                 <ScrollView
@@ -1331,12 +1362,12 @@ export default function GeneralDetailsScreen({ navigation }) {
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingHorizontal: 16, paddingTop: 50 },
+  container: { flex: 1, backgroundColor: "#fff" },
 
   header: {
     flexDirection: "row",
     alignItems: "center",
-    height: 60,
+    height: 20,justifyContent:'space-between'
   },
 
   backIcon: { width: 20, height: 20, tintColor: "#000" },
@@ -1351,13 +1382,20 @@ const styles = StyleSheet.create({
   },
 
   masterButton: {
-    backgroundColor: "#4466F2",
-    paddingVertical: 6,
-    paddingHorizontal: 14,
+    position:'absolute',
+    borderWidth:1,
+    backgroundColor: "#F2F5FA",
+    borderColor:'#1E45E1',
+    paddingVertical: 10,
+    paddingHorizontal: 26,
     borderRadius: 8,
+    justifyContent:'flex-end',
+    bottom:55,
+    right:18,
+    flexDirection:'row',alignItems:'center'
   },
 
-  masterText: { color: "#FFF",fontFamily: "Gilroy-Semibold" },
+  masterText: { color: "#1E45E1",fontFamily: "Gilroy-Semibold",fontSize:16 },
 
   card: {
     backgroundColor: "#FFF",
@@ -1400,7 +1438,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  dotsIcon: { width: 18, height: 18 },
+  // dotsIcon: { width: 18, height: 18 },
+  menuDotsIcon:{width:23,height:28.59},
 
   section: { marginTop: 10 },
 
@@ -1408,7 +1447,7 @@ const styles = StyleSheet.create({
 
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 15 },
 
-  infoIcon: { width: 18, height: 18, marginRight: 8 },
+  // infoIcon: { width: 18, height: 18, marginRight: 8,tintColor:'#7C7C7C' },
 
   
   menuOverlay: {
@@ -1536,15 +1575,15 @@ const styles = StyleSheet.create({
 
   // -----
   cards: {
-    backgroundColor: "#fff",
-    padding: 18,
-    paddingBottom: 30, 
+    // backgroundColor: "#fff",
+    // padding: 18,
+    paddingBottom: 10, 
     marginHorizontal: 10,
-    borderRadius: 14,
-    elevation: 2,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: "#EEE",
+    // borderRadius: 14,
+    // elevation: 2,
+    marginBottom: 12,marginTop:15,
+    // borderWidth: 1,
+    // borderColor: "#EEE",
     position: "relative",
   },
 
@@ -1554,9 +1593,9 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 95,
+    height: 95,
+    borderRadius: 20,
     backgroundColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
@@ -1564,15 +1603,15 @@ const styles = StyleSheet.create({
   },
 
   avatarText: {
-    fontSize: 14,
+    fontSize: 18,
     fontFamily: "Gilroy-Bold",
     color: "#374151",
   },
 
   profileImg: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 95,
+    height: 95,
+    borderRadius: 20,
   },
 
   row: {
@@ -1631,7 +1670,7 @@ const styles = StyleSheet.create({
     height: 18,
     marginRight: 10,
 
-    tintColor: "#2F80ED",
+    tintColor: "#7C7C7C",
   },
 
   infoText: {

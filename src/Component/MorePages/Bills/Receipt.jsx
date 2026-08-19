@@ -683,13 +683,13 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
                 <Text style={styles.popupText}>Download</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={[styles.popupRow, !canUpdateReceipt && { opacity: 0.4 }]}
                 disabled={!canUpdateReceipt}
                 onPress={handleEditBill}>
                 <Image source={EditIcon} style={styles.popupIcon} />
                 <Text style={styles.popupText}>Edit</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
               <TouchableOpacity
                 style={[styles.popupRow, !canDeleteReceipt && { opacity: 0.4 }]}

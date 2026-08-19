@@ -10,7 +10,8 @@ import {
   Image,
   TouchableWithoutFeedback,
   Modal, Animated, BackHandler, PanResponder,
-  NativeModules, Linking, Platform
+  NativeModules, Linking, Platform,
+  FlatList
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -61,6 +62,7 @@ import RoomView from "../../Assets/Images/Roomview.png";
 import RoomIcon from "../../Assets/Images/Room_Icon.png"
 import LeftArrow from "../../Assets/Images/Arrow_left.png"
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
+import { Swipeable } from "react-native-gesture-handler";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60
@@ -403,6 +405,17 @@ export default function TenantsScreen({ route }) {
   const isTabBarVisible = useRef(true);
 
   const [filterOptions, setFilterOptions] = useState([])
+  // const [openedRow, setOpenedRow] = useState(null);
+  const swipeRefs = useRef({});
+  const openedRow = useRef(null);
+
+  const closePrevious = (id) => {
+    if (openedRow.current && openedRow.current !== id) {
+      swipeRefs.current[openedRow.current]?.close();
+    }
+
+    openedRow.current = id;
+  };
 
   const billStatusOptions = filterOptions?.paymentStatus?.map(i => ({
     label: i?.name,
@@ -1081,266 +1094,140 @@ export default function TenantsScreen({ route }) {
 
 
 
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{
-                    paddingBottom: 50,
-                    paddingHorizontal: 16,
-                  }}
-                  scrollEventThrottle={16}
-
-                >
-
-
-                  {/* {
-                    customers?.listCustomers?.length > 0 &&
-                    <Text style={styles.sectionTitle}>This Month</Text>
-                  } */}
-
-                  {/* {
-          customers.map((item)=>{
-<View style={styles.tenantRow}>
-        <TouchableOpacity  onPress={() => openCustomerDetails(item.customerId)}>
-          <Image source={Profile} style={styles.profileImg} />
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.name}>{item.fullName} {item.lastName}</Text>
-            <View style={styles.detailRow}>
-              <View style={styles.floorBadge}>
-                <Text style={styles.floorText}>{item.floorName}</Text>
-              </View>
-              <Image source={room} style={styles.iconSmall} />
-              <Text style={styles.detailText}>{item.roomName}</Text>
-              <Image source={Bed} style={styles.iconSmall} />
-              <Text style={styles.detailText}>{item.bedName}</Text>
-            </View>
-          </View>
-          <View style={styles.rightSection}>
-          
-
-      
-<TouchableOpacity ref={dotsRef} onPress={() => openMenu(customerList[0])}>
-
-  <Image
-    source={Dots}
-    style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-  />
-</TouchableOpacity>
-
-
-            <Text style={styles.dateText}>01/06</Text>
-            
-          </View>
-        
+    {!loading &&
+      (customers?.listCustomers?.length ?? 0) > 0 &&
+      searchText.trim() !== "" &&
+      filteredTenants?.length === 0 && (
+        <View style={styles.emptyContainer}>
+          <Image source={EmptyState} style={styles.emptyImage} />
+          <Text style={styles.emptyText}>
+            No tenants found{"\n"}
+            Try searching with a different name
+          </Text>
         </View>
-          })
-        } */}
+      )}
 
-                  {filteredTenants?.map((item) => (
-                    // <View key={item.customerId} style={styles.tenantRow}>
+                {filteredTenants?.length > 0 && (
+                  <FlatList
+                    data={filteredTenants}
+                    keyExtractor={(item) => item.customerId.toString()}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16, }}
+                    scrollEventThrottle={16}
+                    renderItem={({ item }) => (
+                      <Swipeable
+                        ref={(ref) => {
+                          if (ref) {
+                            swipeRefs.current[item.customerId] = ref;
+                          }
+                        }}
+                        onSwipeableWillOpen={() => closePrevious(item.customerId)}
+                        onSwipeableWillClose={() => {
+                          if (openedRow.current === item.customerId) {
+                            openedRow.current = null;
+                          }
+                        }}
+                        renderRightActions={() => (
+                          <TouchableOpacity
+                            style={{
+                              width: 70,
+                              justifyContent: "center",
+                              alignItems: "center",
+                              backgroundColor: "#fff",
+                            }}
+                            onPress={() => handleCallPhone(item.mobile)}
+                          >
+                            <Image source={CallIcon} style={{ width: 22, height: 22 }} />
+                          </TouchableOpacity>
+                        )}
+                      >
 
-                    //   <TouchableOpacity onPress={() => openCustomerDetails(item)}>
-                    //     <Image source={Profile} style={styles.profileImg} />
-                    //   </TouchableOpacity>
-
-                    //   <View style={{ flex: 1 }}>
-                    //     <Text style={styles.name}>
-                    //       {item.fullName}
-                    //     </Text>
-
-                    //     <View style={styles.detailRow}>
-                    //       {item.floorName && (
-                    //         <View style={styles.floorBadge}>
-                    //           <Text style={styles.floorText}>{item.floorName}</Text>
-                    //         </View>
-                    //       )}
-
-                    //       {item.roomName && (
-                    //         <>
-                    //           <Image source={room} style={styles.iconSmall} />
-                    //           <Text style={styles.detailText}>{item.roomName}</Text>
-                    //         </>
-                    //       )}
-
-                    //       {item.bedName && (
-                    //         <>
-                    //           <Image source={Bed} style={styles.iconSmall} />
-                    //           <Text style={styles.detailText}>{item.bedName}</Text>
-                    //         </>
-                    //       )}
-                    //     </View>
-                    //   </View>
-
-                    //   <View style={styles.rightSection}>
-                    //     <TouchableOpacity ref={dotsRef} onPress={(e) => openMenu(e, item)}>
-                    //       <Image
-                    //         source={Dots}
-                    //         style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                    //       />
-                    //     </TouchableOpacity>
-
-                    //     <Text style={styles.dateText}>
-                    //       {item.bookedAt || "--"}
-                    //     </Text>
-                    //   </View>
-
-                    // </View>
-                    //                 <TouchableOpacity
-                    //   key={item.customerId}
-                    //   style={styles.tenantRow}
-                    //   activeOpacity={0.7}
-                    //   onPress={() => openCustomerDetails(item)}   
-                    // >
-
-                    //   <Image source={Profile} style={styles.profileImg} />
-
-
-                    //   <View style={{ flex: 1 }}>
-                    //     <Text style={styles.name}>{item.fullName}</Text>
-
-                    //     <View style={styles.detailRow}>
-                    //       {item.floorName && (
-                    //         <View style={styles.floorBadge}>
-                    //           <Text style={styles.floorText}>{item.floorName}</Text>
-                    //         </View>
-                    //       )}
-
-                    //       {item.roomName && (
-                    //         <>
-                    //           <Image source={room} style={styles.iconSmall} />
-                    //           <Text style={styles.detailText}>{item.roomName}</Text>
-                    //         </>
-                    //       )}
-
-                    //       {item.bedName && (
-                    //         <>
-                    //           <Image source={Bed} style={styles.iconSmall} />
-                    //           <Text style={styles.detailText}>{item.bedName}</Text>
-                    //         </>
-                    //       )}
-                    //     </View>
-                    //   </View>
-
-
-                    //   <View style={styles.rightSection}>
-                    //     <TouchableOpacity
-                    //       onPress={(e) => {
-                    //         e.stopPropagation();        
-                    //         openMenu(e, item);          
-                    //       }}
-                    //       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                    //     >
-                    //       <Image
-                    //         source={Dots}
-                    //         style={{ width: 30, height: 30, transform: [{ rotate: "90deg" }] }}
-                    //       />
-                    //     </TouchableOpacity>
-
-                    //     <Text style={styles.dateText}>
-                    //       {item.bookedAt || "--"}
-                    //     </Text>
-                    //   </View>
-                    // </TouchableOpacity>
-                    <View key={item.customerId}>
-                      <TouchableOpacity key={item.customerId} style={styles.tenantRow} activeOpacity={0.7}
-                        onPress={() => openCustomerDetails(item)}>
+                        <View key={item.customerId}>
+                          <TouchableOpacity key={item.customerId} style={styles.tenantRow} activeOpacity={0.7}
+                            onPress={() => openCustomerDetails(item)}>
 
 
 
 
 
-                        <TouchableOpacity
-                          activeOpacity={0.7}
-                          // onPress={() => openCustomerDetails(item)}
-                          style={{ position: "relative" }}
-                        >
-                          {/* {item?.profilePic ? (
-                            <Image
-                              source={{ uri: item.profilePic }}
-                              style={styles.profileImg}
-                            />
-                          ) : (
-                            <View style={styles.initialCircle}>
-                              <Text style={styles.initialText}>
-                                {item?.initials ||
-                                  item?.fullName?.slice(0, 2)?.toUpperCase() ||
-                                  "--"}
-                              </Text>
-                            </View>
-                          )} */}
-                          {isValidImageUrl(item?.profilePic) ? (
-                            <Image
-                              source={{ uri: item.profilePic }}
-                              style={styles.profileImg}
-                            />
-                          ) : (
-                            <View style={styles.initialCircle}>
-                              <Text style={styles.initialText}>
-                                {item?.initials ||
-                                  item?.fullName?.slice(0, 2)?.toUpperCase() ||
-                                  "--"}
-                              </Text>
-                            </View>
-                          )}
+                            <TouchableOpacity
+                              activeOpacity={0.7}
+                              // onPress={() => openCustomerDetails(item)}
+                              style={{ position: "relative" }}
+                            >
+                              {isValidImageUrl(item?.profilePic) ? (
+                                <Image
+                                  source={{ uri: item.profilePic }}
+                                  style={styles.profileImg}
+                                />
+                              ) : (
+                                <View style={styles.initialCircle}>
+                                  <Text style={styles.initialText}>
+                                    {item?.initials ||
+                                      item?.fullName?.slice(0, 2)?.toUpperCase() ||
+                                      "--"}
+                                  </Text>
+                                </View>
+                              )}
 
-                          {/* ✅ STATUS DOT */}
-                          <View
-                            style={[
-                              styles.statusDot,
-                              { backgroundColor: getStatusColor(item.currentStatus) },
-                            ]}
-                          />
-                        </TouchableOpacity>
+                              {/* ✅ STATUS DOT */}
+                              <View
+                                style={[
+                                  styles.statusDot,
+                                  { backgroundColor: getStatusColor(item.currentStatus) },
+                                ]}
+                              />
+                            </TouchableOpacity>
 
 
 
 
 
 
-                        {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
-                        <View
-                          style={{ flex: 1 }}
-                        // activeOpacity={0.7}
-                        // onPress={() => handleOverViewScrren(item)}
-                        >
-                          <Text style={styles.name} numberOfLines={1}
-                            ellipsizeMode="tail">{item.fullName}</Text>
+                            {/* 2️⃣ CENTER ROW CLICK (Overview screen) */}
+                            <View
+                              style={{ flex: 1 }}
+                            // activeOpacity={0.7}
+                            // onPress={() => handleOverViewScrren(item)}
+                            >
+                              <Text style={styles.name} numberOfLines={1}
+                                ellipsizeMode="tail">{item.fullName}</Text>
 
-                          <View style={styles.detailRow}>
-                            {item.currentStatus === "Draft" ? (
-                              <View style={styles.floorBadge}>
-                                <Text style={styles.floorText}>Draft</Text>
+                              <View style={styles.detailRow}>
+                                {item.currentStatus === "Draft" ? (
+                                  <View style={styles.floorBadge}>
+                                    <Text style={styles.floorText}>Draft</Text>
+                                  </View>
+                                ) : (
+                                  <>
+                                    {item.floorName && (
+                                      <View style={[styles.floorBadge, { flex: 1, alignItems: 'center' }]}>
+                                        <Text style={[styles.floorText]} numberOfLines={1}
+                                          ellipsizeMode="tail">{item.floorName}</Text>
+                                      </View>
+                                    )}
+
+                                    {item.roomName && (
+                                      <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
+                                        <Image source={room} style={styles.iconSmall} />
+                                        <Text style={[styles.detailText, { flexShrink: 1 }]} numberOfLines={1}
+                                          ellipsizeMode="tail">{item.roomName}</Text>
+
+                                      </View>
+
+                                    )}
+
+                                    {item.bedName && (
+                                      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                                        <Image source={Bed} style={styles.iconSmall} />
+                                        <Text style={[styles.detailText, { flexShrink: 1 }]} numberOfLines={1}
+                                          ellipsizeMode="tail">{item.bedName}</Text>
+                                      </View>
+                                    )}
+                                  </>
+                                )}
                               </View>
-                            ) : (
-                              <>
-                                {item.floorName && (
-                                  <View style={[styles.floorBadge, { flex: 1, alignItems: 'center' }]}>
-                                    <Text style={[styles.floorText]} numberOfLines={1}
-                                      ellipsizeMode="tail">{item.floorName}</Text>
-                                  </View>
-                                )}
-
-                                {item.roomName && (
-                                  <View style={{ flex: 1, flexDirection: "row", alignItems: 'center' }}>
-                                    <Image source={room} style={styles.iconSmall} />
-                                    <Text style={[styles.detailText, { flexShrink: 1 }]} numberOfLines={1}
-                                      ellipsizeMode="tail">{item.roomName}</Text>
-
-                                  </View>
-
-                                )}
-
-                                {item.bedName && (
-                                  <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
-                                    <Image source={Bed} style={styles.iconSmall} />
-                                    <Text style={[styles.detailText, { flexShrink: 1 }]} numberOfLines={1}
-                                      ellipsizeMode="tail">{item.bedName}</Text>
-                                  </View>
-                                )}
-                              </>
-                            )}
-                          </View>
-                          {/* <View style={styles.detailRow}>
+                              {/* <View style={styles.detailRow}>
                             {item.floorName && (
                               <View style={[styles.floorBadge, { flex: 1, alignItems: 'center' }]}>
                                 <Text style={[styles.floorText]} numberOfLines={1}
@@ -1366,10 +1253,10 @@ export default function TenantsScreen({ route }) {
                               </View>
                             )}
                           </View> */}
-                        </View >
+                            </View >
 
-                        <View style={styles.rightSection}>
-                          {/* <TouchableOpacity
+                            <View style={styles.rightSection}>
+                              {/* <TouchableOpacity
                           onPress={(e) => {
                             e.stopPropagation();   
                             openMenu(e, item);
@@ -1382,20 +1269,20 @@ export default function TenantsScreen({ route }) {
                           />
                         </TouchableOpacity> */}
 
-                          <TouchableOpacity
-                            style={[!isExportAllow && { opacity: 0.4 }]}
-                            disabled={!isExportAllow}
-                            onPress={() => {
-                              handleCallPhone(item.mobile)
-                            }}>
-                            <Image
-                              source={CallIcon}
-                              style={{ width: 20, height: 20, }}
-                            />
-                          </TouchableOpacity>
+                              {/* <TouchableOpacity
+                                style={[!isExportAllow && { opacity: 0.4 }]}
+                                disabled={!isExportAllow}
+                                onPress={() => {
+                                  handleCallPhone(item.mobile)
+                                }}>
+                                <Image
+                                  source={CallIcon}
+                                  style={{ width: 20, height: 20, }}
+                                />
+                              </TouchableOpacity> */}
 
 
-                          {/* <Text style={styles.dateText}>
+                              {/* <Text style={styles.dateText}>
                           {item?.actualJoining && item.actualJoining !== "0000-00-00"
                             ? item.actualJoining
                             : item?.expectedJoiningDate && item.expectedJoiningDate !== "0000-00-00"
@@ -1408,19 +1295,19 @@ export default function TenantsScreen({ route }) {
 
 
 
+                            </View>
+
+                          </TouchableOpacity>
+                          <View style={styles.dividerLine} />
                         </View>
+                      </Swipeable>
 
-                      </TouchableOpacity>
-                      <View style={styles.dividerLine} />
-                    </View>
-                  ))}
-
-
-
-                </ScrollView>
+                    )} />
+                )}
 
               </>
             )}
+
 
             {customers?.listCustomers?.length > 0 &&
               <>

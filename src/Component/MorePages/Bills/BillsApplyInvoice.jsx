@@ -7,7 +7,10 @@ import {
     TextInput,
     Image,
     SafeAreaView, ScrollView,
-    KeyboardAvoidingView, Platform, StatusBar
+    KeyboardAvoidingView, Platform, StatusBar,
+    TouchableWithoutFeedback,
+    Animated,
+    PanResponder
 } from "react-native";
 import { BackHandler } from "react-native";
 import { useEffect } from "react";
@@ -23,6 +26,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import Loader from "../../Loader/Loader";
 import ValidatedInput from "../ValidatedInput"
+import MessageQuestion from "../../../Assets/Images/MessageQuestion.png"
+import TickGreenIcon from "../../../Assets/Images/tickgreen.png"
 
 export default function BillsApplyInvoices() {
 
@@ -30,17 +35,18 @@ export default function BillsApplyInvoices() {
     const navigation = useNavigation();
     const route = useRoute();
 
+    console.log("ponammale",route)
+
     const onSuccess = route?.params?.onSuccess;
 
-    const { BillDetails, loading, GetAllBillDetails, GetAdvanceBookingBills,
-        RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
-        , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-        downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
-        UpdateBillDiscount,
-        ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices, advanceCreditDetails } = useContext(BillContext);
+    const { BillDetails, loading, GetAllBillDetails, GetAdvanceBookingBills, RecordPayment, GetInitializeRefundDetails,
+        refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails,
+        downloadReceipt, downloadBill, GetReceiptsList, receiptsList, MarkBillAsUnpaid, UpdateBillDiscount, ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices,
+        advanceCreditDetails, getRetainerInvoiceDetail, retainerInvoiceDetail, ApplyRetainerToInvoices } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
 
     const isApplyTriggeredRef = useRef(false);
+     const instructionSheetRef = useRef(new Animated.Value(0)).current;
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -91,7 +97,13 @@ export default function BillsApplyInvoices() {
 
     const [appliedAmounts, setAppliedAmounts] = useState({});
 
-    const [showAmountField, setShowAmountField]=useState({})
+    const [showAmountField, setShowAmountField] = useState({})
+    const [instructionSheet,setInstructionSheet]=useState(false)
+
+
+    console.log("tempSinValue", tempValue)
+    console.log(appliedAmounts)
+    console.log(showAmountField)
 
     const bookingData = InitializebookingBills?.data;
 
@@ -101,14 +113,69 @@ export default function BillsApplyInvoices() {
 
     console.log("invoicesList", invoicesList);
 
+    const fetchRetainerDetail = async () => {
+        const response = await getRetainerInvoiceDetail(activeHostelId, BillPdfdetails?.invoiceInfo?.invoiceId)
+    }
+
+    useEffect(() => {
+        fetchRetainerDetail();
+    }, [])
+
+
+    const instructionSheetPan = useRef(
+            PanResponder.create({
+                onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+                onPanResponderMove: (_, g) => {
+                    if (g.dy > 0) instructionSheetRef.setValue(g.dy);
+                },
+                onPanResponderRelease: (_, g) => {
+                    if (g.dy > 120) {
+                        Animated.timing(instructionSheetRef, {
+                            toValue: 700,
+                            duration: 200,
+                            useNativeDriver: true,
+                        }).start(() => {
+                            setInstructionSheet(false);
+                            instructionSheetRef.setValue(0);
+                        });
+                    } else {
+                        Animated.spring(instructionSheetRef, {
+                            toValue: 0,
+                            useNativeDriver: true,
+                        }).start();
+                    }
+                },
+            })
+        ).current;
+
+
     const totalApplied = Object.values(appliedAmounts).reduce(
         (sum, val) => sum + Number(val || 0),
         0
     );
 
-    const bookingAmount = advanceInfo?.availableBalance || 0;
+    // const bookingAmount = advanceInfo?.availableBalance || 0;
+
+
+    const customerInfo = retainerInvoiceDetail?.customerInfo;
+    const currentInvoiceInfo = retainerInvoiceDetail?.currentInvoiceInfo;
+    const advanceInfoList = retainerInvoiceDetail?.advanceInfo;
+    const pendingAmount = retainerInvoiceDetail?.currentInvoiceInfo?.pendingAmount || 0;
+
+
+    const bookingAmount = (advanceInfoList || []).reduce(
+        (sum, item) => sum + Number(item.availableBalance || 0),
+        0
+    );
+
 
     const remainingBalance = bookingAmount - totalApplied;
+
+
+    console.log("customerSeethainfo", customerInfo)
+    console.log("advanceInfoList", advanceInfoList)
+    console.log(bookingAmount)
+
 
 
 
@@ -124,6 +191,7 @@ export default function BillsApplyInvoices() {
         "Special Approval",
         "Other",
     ];
+
 
     const invoiceAmount = Number(
         BillPdfdetails?.invoiceInfo?.subTotal || totalamount
@@ -220,6 +288,7 @@ export default function BillsApplyInvoices() {
     // };
 
     const handleSetAmount = (invoiceId, value, maxAmount) => {
+        console.log(value, maxAmount, invoiceId)
 
         // remove spaces
         const trimmedValue = value?.trim();
@@ -292,130 +361,105 @@ export default function BillsApplyInvoices() {
 
     console.log("ADVANCEid", advanceInfo?.advanceInvoiceId);
 
-    // const handleApply = async () => {
-    //     const bookingAmount = advanceInfo?.availableBalance || 0;
 
-    //     const totalApplied = Object.values(appliedAmounts).reduce(
-    //         (sum, val) => sum + Number(val || 0),
-    //         0
-    //     );
-
-    //     if (totalApplied <= 0) {
-    //         setModalType("warning");
-    //         setModalMessage("Please enter at least one amount");
-    //         setShowSuccessModal(true);
-
-    //         setTimeout(() => {
-    //             setShowSuccessModal(false);
-    //         }, 2000);
-
-    //         return;
-    //     }
-
-    //     if (totalApplied > bookingAmount) {
-    //         setModalType("warning");
-    //         setModalMessage("Applied amount exceeds booking amount");
-    //         setShowSuccessModal(true);
-
-    //         setTimeout(() => {
-    //             setShowSuccessModal(false);
-    //         }, 2000);
-
-    //         return;
-    //     }
 
     // const handleApply = async () => {
-    //     const bookingAmount = advanceInfo?.availableBalance || 0;
+    //     if (isApplyTriggeredRef.current) return;
+    //     isApplyTriggeredRef.current = true;
 
-    //     const totalApplied = Object.values(appliedAmounts).reduce(
-    //         (sum, val) => sum + Number(val || 0),
-    //         0
-    //     );
+    //     try {
+    //         const bookingAmount = advanceInfo?.availableBalance || 0;
 
-    //     if (totalApplied <= 0) {
-    //         setModalType("warning");
-    //         setModalMessage("Please Enter valid Amount");
-    //         setShowSuccessModal(true);
+    //         const totalApplied = Object.values(appliedAmounts).reduce(
+    //             (sum, val) => sum + Number(val || 0),
+    //             0
+    //         );
 
-    //         setTimeout(() => {
-    //             setShowSuccessModal(false);
-    //         }, 2000);
+    //         if (totalApplied <= 0) {
+    //             setModalType("warning");
+    //             setModalMessage("Please Enter valid Amount");
+    //             setShowSuccessModal(true);
 
-    //         return;
+    //             setTimeout(() => {
+    //                 setShowSuccessModal(false);
+    //             }, 2000);
+
+    //             isApplyTriggeredRef.current = false;
+    //             return;
+    //         }
+
+    //         if (totalApplied > bookingAmount) {
+    //             setModalType("warning");
+    //             setModalMessage("Applied amount exceeds booking amount");
+    //             setShowSuccessModal(true);
+
+    //             setTimeout(() => {
+    //                 setShowSuccessModal(false);
+    //             }, 2000);
+
+    //             isApplyTriggeredRef.current = false;
+    //             return;
+    //         }
+
+    //         const listItems = Object.entries(appliedAmounts).map(
+    //             ([invoiceId, amount]) => ({
+    //                 invoiceId,
+    //                 amount: Number(amount),
+    //             })
+    //         );
+
+    //         const res = await ApplyAdvanceToInvoices({
+    //             hostelId: activeHostelId,
+    //             invoiceId: advanceInfo?.invoiceId,
+    //             listItems,
+    //         });
+
+    //         if (res?.success) {
+    //             await GetAllBillDetails(activeHostelId);
+    //             await GetAdvanceBookingBills(activeHostelId);
+    //             await getBillsPdfDetails(activeHostelId, advanceInfo?.invoiceId)
+    //             setModalType("success");
+    //             setModalMessage("Applied successfully");
+    //             setShowSuccessModal(true);
+
+    //             setTimeout(() => {
+    //                 navigation.goBack();
+    //                 setShowSuccessModal(false);
+
+    //                 setTimeout(() => {
+    //                     isApplyTriggeredRef.current = false;
+    //                 }, 2000)
+
+    //             }, 1500);
+
+    //         } else {
+
+    //             setModalType("warning");
+    //             setModalMessage(res?.message || "Something went wrong");
+    //             setShowSuccessModal(true);
+
+    //             setTimeout(() => {
+    //                 setShowSuccessModal(false);
+    //                 isApplyTriggeredRef.current = false;
+    //             }, 2500);
+    //         }
+    //         // success / error logic
+
+    //     } catch (error) {
+    //         isApplyTriggeredRef.current = false;
     //     }
 
-    //     if (totalApplied > bookingAmount) {
-    //         setModalType("warning");
-    //         setModalMessage("Applied amount exceeds booking amount");
-    //         setShowSuccessModal(true);
-
-    //         setTimeout(() => {
-    //             setShowSuccessModal(false);
-    //         }, 2000);
-
-    //         return;
-    //     }
-
-    //     const listItems = Object.entries(appliedAmounts).map(
-    //         ([invoiceId, amount]) => ({
-    //             invoiceId,
-    //             amount: Number(amount),
-    //         })
-    //     )
-
-    //     console.log("listitems", listItems);
-
-
-    //     const payload = {
-
-    //         listItems,
-    //     }
-
-    //     console.log("payload", payload);
-
-
-
-    //     const res = await ApplyAdvanceToInvoices({
-    //         hostelId: activeHostelId,
-    //         invoiceId: advanceInfo?.invoiceId,
-    //         listItems,
-    //     });
-
-    //     console.log("res", res);
-
-
-    //     if (res?.success) {
-    //         await GetAllBillDetails(activeHostelId);
-    //         await GetAdvanceBookingBills(activeHostelId);
-    //         await getBillsPdfDetails( activeHostelId, advanceInfo?.invoiceId)
-    //         setModalType("success");
-    //         setModalMessage("Applied successfully");
-    //         setShowSuccessModal(true);
-
-    //         setTimeout(() => {
-    //             navigation.goBack();
-    //             setShowSuccessModal(false);
-    //         }, 1500);
-
-    //     } else {
-
-    //         setModalType("warning");
-    //         setModalMessage(res?.message || "Something went wrong");
-    //         setShowSuccessModal(true);
-
-    //         setTimeout(() => {
-    //             setShowSuccessModal(false);
-    //         }, 2500);
+    //     finally {
+    //         isApplyTriggeredRef.current = false;
     //     }
     // };
-
 
     const handleApply = async () => {
         if (isApplyTriggeredRef.current) return;
         isApplyTriggeredRef.current = true;
 
         try {
-            const bookingAmount = advanceInfo?.availableBalance || 0;
+            // const bookingAmount = advanceInfo?.availableBalance || 0;
 
             const totalApplied = Object.values(appliedAmounts).reduce(
                 (sum, val) => sum + Number(val || 0),
@@ -435,18 +479,18 @@ export default function BillsApplyInvoices() {
                 return;
             }
 
-            if (totalApplied > bookingAmount) {
-                setModalType("warning");
-                setModalMessage("Applied amount exceeds booking amount");
-                setShowSuccessModal(true);
+            // if (totalApplied > bookingAmount) {
+            //     setModalType("warning");
+            //     setModalMessage("Applied amount exceeds booking amount");
+            //     setShowSuccessModal(true);
 
-                setTimeout(() => {
-                    setShowSuccessModal(false);
-                }, 2000);
+            //     setTimeout(() => {
+            //         setShowSuccessModal(false);
+            //     }, 2000);
 
-                isApplyTriggeredRef.current = false;
-                return;
-            }
+            //     isApplyTriggeredRef.current = false;
+            //     return;
+            // }
 
             const listItems = Object.entries(appliedAmounts).map(
                 ([invoiceId, amount]) => ({
@@ -455,60 +499,72 @@ export default function BillsApplyInvoices() {
                 })
             );
 
-            const res = await ApplyAdvanceToInvoices({
+            const retainersBreakup = Object.entries(appliedAmounts).
+                filter(([_, amount]) => Number(amount) > 0).map(
+                    ([invoiceId, amount]) => ({ invoiceId, amount: Number(amount) })
+                );
+
+            const payload = {
+                appliedAmount: "",
+                retainersBreakup: retainersBreakup
+            }
+
+            console.log("retainerPayload", payload)
+
+            const res = await ApplyRetainerToInvoices({
                 hostelId: activeHostelId,
-                invoiceId: advanceInfo?.invoiceId,
-                listItems,
+                invoiceId: currentInvoiceInfo?.invoiceId,
+                payload,
             });
 
             if (res?.success) {
-                await GetAllBillDetails(activeHostelId);
+                const res = await GetAllBillDetails(activeHostelId);
+                console.log("getRetainerAllBill", res)
                 await GetAdvanceBookingBills(activeHostelId);
-                await getBillsPdfDetails(activeHostelId, advanceInfo?.invoiceId)
+                // await getBillsPdfDetails(activeHostelId, currentInvoiceInfo?.invoiceId)
+                setShowSuccessModal(true);
                 setModalType("success");
                 setModalMessage("Applied successfully");
-                setShowSuccessModal(true);
+
 
                 setTimeout(() => {
                     navigation.goBack();
                     setShowSuccessModal(false);
 
-                    setTimeout(()=>{
+                    setTimeout(() => {
                         isApplyTriggeredRef.current = false;
-                    },2000)
-                     
+                    }, 2000)
+
                 }, 1500);
 
             } else {
-
+                setShowSuccessModal(true);
                 setModalType("warning");
                 setModalMessage(res?.message || "Something went wrong");
-                setShowSuccessModal(true);
+
 
                 setTimeout(() => {
                     setShowSuccessModal(false);
-                     isApplyTriggeredRef.current = false;
+                    isApplyTriggeredRef.current = false;
                 }, 2500);
             }
             // success / error logic
 
-        }catch(error){
-             isApplyTriggeredRef.current = false;
+        } catch (error) {
+            isApplyTriggeredRef.current = false;
         }
-        
-        // finally {
-        //     isApplyTriggeredRef.current = false;
-        // }
+
     };
 
-    const invoicesLists =[{id:0,invoiceId:'I2223',invoiceType:'Booking',pendingAmount:'200',invoiceNumber:"INV-009"},
-        {id:1,invoiceId:'I2224',invoiceType:'Rent',pendingAmount:'300',invoiceNumber:"INV-010"},
-        {id:2,invoiceId:'I2225',invoiceType:'Advance',pendingAmount:'400',invoiceNumber:"INV-011"}
+
+    const invoicesLists = [{ id: 0, invoiceId: 'I2223', invoiceType: 'Booking', pendingAmount: '200', invoiceNumber: "INV-009" },
+    { id: 1, invoiceId: 'I2224', invoiceType: 'Rent', pendingAmount: '300', invoiceNumber: "INV-010" },
+    { id: 2, invoiceId: 'I2225', invoiceType: 'Advance', pendingAmount: '400', invoiceNumber: "INV-011" }
     ]
 
 
-    const clickedRetainAmntField=(invoiceId)=>{
-        setShowAmountField(prev=> ({...prev, [invoiceId]: !prev[invoiceId],}))
+    const clickedRetainAmntField = (invoiceId) => {
+        setShowAmountField(prev => ({ ...prev, [invoiceId]: !prev[invoiceId], }))
     }
 
 
@@ -530,11 +586,17 @@ export default function BillsApplyInvoices() {
 
                 {/* Header */}
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Image source={ArrowLeft} style={styles.backIcon} />
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <TouchableOpacity onPress={() => navigation.goBack()}>
+                            <Image source={ArrowLeft} style={styles.backIcon} />
+                        </TouchableOpacity>
+                        {/* <Text style={styles.headerTitle}>Apply Booking to Invoice</Text> */}
+
+                        <Text style={styles.headerTitle}>Adjust with Retainer Invoice</Text>
+                    </View>
+                    <TouchableOpacity onPress={()=>setInstructionSheet(!instructionSheet)}>
+                        <Image source={MessageQuestion} style={{ width: 22, height: 22, tintColor: '#292D32' }} />
                     </TouchableOpacity>
-                    {/* <Text style={styles.headerTitle}>Apply Booking to Invoice</Text> */}
-                    <Text style={styles.headerTitle}>Adjust with Retainer Invoice</Text>
                 </View>
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
@@ -547,36 +609,36 @@ export default function BillsApplyInvoices() {
                             {/* TOP CONTENT */}
                             <View style={{ flexDirection: "row", alignItems: "center" }}>
 
-                                {customer?.profilePic ? (
-                                    <Image source={{ uri: customer.profilePic }} style={styles.userImg} />
+                                {customerInfo?.profilePic ? (
+                                    <Image source={{ uri: customerInfo.profilePic }} style={styles.userImg} />
                                 ) : (
                                     <View style={styles.initialCircle}>
                                         <Text style={styles.initialText}>
-                                            {customer?.initials || "M"}
+                                            {customerInfo?.initials || "M"}
                                         </Text>
                                     </View>
                                 )}
 
                                 <View style={{ marginLeft: 10 }}>
                                     <Text style={styles.name}>
-                                        {customer?.fullName || "--"}
+                                        {customerInfo?.fullName || "--"}
                                     </Text>
 
                                     <View style={{ flexDirection: "row", marginTop: 5 }}>
                                         <View style={styles.badge}>
                                             <Text style={styles.badgeText}>
-                                                {BillPdfdetails?.stayInfo?.floorName || "Ground Floor"}
+                                                {customerInfo?.floorName || "Ground Floor"}
                                             </Text>
                                         </View>
 
                                         <Image source={room} style={{ width: 18, height: 18, marginHorizontal: 4 }} />
                                         <Text style={styles.detailText}>
-                                            {customer?.roomName || "--"}
+                                            {customerInfo?.roomName || "--"}
                                         </Text>
 
                                         <Image source={Bed} style={{ width: 18, height: 18, marginHorizontal: 4 }} />
                                         <Text style={styles.detailText}>
-                                            {customer?.bedName || "--"}
+                                            {customerInfo?.bedName || "--"}
                                         </Text>
                                     </View>
                                 </View>
@@ -589,17 +651,19 @@ export default function BillsApplyInvoices() {
                             <View style={styles.bookingRowInside}>
                                 <Text style={styles.bookingLabel}>Invoice Amount</Text>
                                 <Text style={styles.bookingAmount}>
-                                    ₹ {advanceInfo?.availableBalance || 0}
+                                    ₹ {currentInvoiceInfo?.pendingAmount || 0}
                                 </Text>
                             </View>
 
-                            <View style={{flexDirection:'row',alignItems:'center',alignSelf:'flex-end',marginTop:5}}>
-                                <Text style={{backgroundColor:'#FFEFCF',fontSize:12,fontFamily:'Gilroy-Medium',borderRadius:8,
-                                                paddingHorizontal:8,paddingVertical:4,marginRight:5}}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-end', marginTop: 5 }}>
+                                <Text style={{
+                                    backgroundColor: '#FFEFCF', fontSize: 12, fontFamily: 'Gilroy-Medium', borderRadius: 8,
+                                    paddingHorizontal: 8, paddingVertical: 4, marginRight: 5
+                                }}>
                                     Rental Inv</Text>
 
-                                <Text style={{fontSize:13,fontFamily:'Gilroy-Medium',color:'#1E45E1',marginLeft:4}}>
-                                    {advanceInfo?.invoiceNumber}</Text>
+                                <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Medium', color: '#1E45E1', marginLeft: 4 }}>
+                                    {currentInvoiceInfo?.invoiceNumber}</Text>
                             </View>
 
                         </View>
@@ -610,10 +674,10 @@ export default function BillsApplyInvoices() {
                         <View style={styles.card}>
                             <Text style={styles.sectionTitle}>Retainer Invoices</Text>
 
-                            <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#4B4B4B',marginTop:4}}>
+                            <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', color: '#4B4B4B', marginTop: 4 }}>
                                 Select Retainer Balance to adjust with Bills</Text>
 
-                            {invoicesList.map((item, index) => (
+                            {advanceInfoList?.map((item, index) => (
                                 <View key={item?.invoiceId || index} style={styles.innerCard}>
 
                                     <View style={styles.rowBetween}>
@@ -624,7 +688,7 @@ export default function BillsApplyInvoices() {
 
 
                                         <Text style={styles.amount}>
-                                            ₹ {item?.pendingAmount || 0}
+                                            ₹ {item?.availableBalance || 0}
                                         </Text>
                                     </View>
                                     <View style={{ display: 'flex', flexDirection: 'row', }}>
@@ -648,113 +712,114 @@ export default function BillsApplyInvoices() {
                                         </Text>
                                     </View> */}
 
-                                    <View style={{borderWidth:0.8,borderColor:'#F2F2F2',marginVertical:8}}/>
+                                    <View style={{ borderWidth: 0.8, borderColor: '#F2F2F2', marginVertical: 8 }} />
 
                                     {/* Input */}
 
-                                    {showAmountField[item.invoiceId] ? ( 
+                                    {showAmountField[item.invoiceId] ? (
                                         <>
-                                    <Text style={styles.inputLabel}>
-                                        Amount to apply
-                                    </Text>
+                                            <Text style={styles.inputLabel}>
+                                                Amount to apply
+                                            </Text>
 
-                                    <View style={styles.inputWrapper}>
-                                        {/* <TextInput
-                                            style={styles.inputField}
-                                            placeholder="₹ 0.00"
-                                            keyboardType="numeric"
-                                            onChangeText={(text) =>
-                                                setTempValue((prev) => ({
-                                                    ...prev,
-                                                    [item.invoiceId]: text,
-                                                }))
-                                            }
-                                        /> */}
-                                        <ValidatedInput
-                                            type="numberOnly"
-                                            inputType="numeric"
-                                            style={styles.inputField}
-                                            placeholder="₹ 0.00"
-                                            value={tempValue?.[item.invoiceId] || ""}
-                                            maxLength={7}
-                                            onChangeText={(text) => {
+                                            <View style={styles.inputWrapper}>
+                                                <ValidatedInput
+                                                    type="numberOnly"
+                                                    inputType="numeric"
+                                                    style={styles.inputField}
+                                                    placeholder="₹ 0.00"
+                                                    value={tempValue?.[item.invoiceId] || ""}
+                                                    maxLength={7}
+                                                    onChangeText={(text) => {
+                                                        if (text === "") {
+                                                            setTempValue((prev) => ({
+                                                                ...prev,
+                                                                [item.invoiceId]: "",
+                                                            }));
 
-                                                if (text === "") {
-                                                    setTempValue((prev) => ({
-                                                        ...prev,
-                                                        [item.invoiceId]: "",
-                                                    }));
+                                                            setAppliedAmounts((prev) => ({
+                                                                ...prev,
+                                                                [item.invoiceId]: 0,
+                                                            }));
 
-                                                    setAppliedAmounts((prev) => ({
-                                                        ...prev,
-                                                        [item.invoiceId]: 0,
-                                                    }));
+                                                            return;
+                                                        }
+                                                        if (text.startsWith("0")) {
+                                                        return;
+                                                    }
 
-                                                    return;
-                                                }
+                                                        let amount = Number(text);
 
-                                                let amount = Number(text);
 
-                                                const maxAllowed = Math.min(
-                                                    item.pendingAmount,
-                                                    remainingBalance + (appliedAmounts[item.invoiceId] || 0)
-                                                );
+                                                        if (amount > item.availableBalance) {
+                                                            amount = item.availableBalance;
+                                                        }
 
-                                                if (amount > maxAllowed) {
+                                                        const appliedWithoutCurrent = Object.entries(appliedAmounts).reduce(
+                                                            (sum, [invoiceId, value]) => {
+                                                                if (invoiceId === item.invoiceId) return sum;
+                                                                return sum + Number(value || 0);
+                                                            },
+                                                            0
+                                                        );
 
-                                                    setModalType("warning");
-                                                    setModalMessage(
-                                                        `Maximum allowed amount is ₹ ${maxAllowed}`
-                                                    );
-                                                    setShowSuccessModal(true);
+                                                        const remainingInvoiceAmount = pendingAmount - appliedWithoutCurrent;
 
-                                                    setTimeout(() => {
-                                                        setShowSuccessModal(false);
-                                                    }, 1500);
+                                                        if (amount > remainingInvoiceAmount) {
+                                                            amount = Math.max(remainingInvoiceAmount, 0);
 
-                                                    text = String(maxAllowed);
-                                                    amount = maxAllowed;
-                                                }
+                                                            // setModalType("warning");
+                                                            // setModalMessage(
+                                                            //     `Only ₹${remainingInvoiceAmount} can be applied to this invoice.`
+                                                            // );
+                                                            // setShowSuccessModal(true);
 
-                                                setTempValue((prev) => ({
-                                                    ...prev,
-                                                    [item.invoiceId]: text,
-                                                }));
+                                                            // setTimeout(() => setShowSuccessModal(false), 1500);
+                                                        }
 
-                                                setAppliedAmounts((prev) => ({
-                                                    ...prev,
-                                                    [item.invoiceId]: amount,
-                                                }));
-                                            }}
-                                        />
+                                                        amount = Math.min(amount, item.availableBalance);
 
-                                        <TouchableOpacity
-                                            style={styles.setBtn}
-                                            onPress={() =>
-                                                handleSetAmount(
-                                                    item.invoiceId,
-                                                    tempValue?.[item.invoiceId],
-                                                    Math.min(
-                                                        item.pendingAmount,
-                                                        remainingBalance + (appliedAmounts[item.invoiceId] || 0)
-                                                    )
-                                                )
-                                            }
-                                        >
-                                            <Text style={{ color: "#1E45E1" }}>Set</Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                    </>
-                                    ) : <TouchableOpacity style={{alignSelf:'flex-end',backgroundColor:'#1E45E1',paddingHorizontal:14,
-                                                                paddingVertical:6,borderRadius:28,marginTop:3,marginRight:4,flexDirection:'row',alignItems:'center'}}
-                                     onPress={()=>clickedRetainAmntField(item.invoiceId)}>
-                                        <Text style={{fontSize:13,fontFamily:'Gilroy-Medium',color:'#FFFFFF',marginRight:5}}>
+                                                        setTempValue((prev) => ({
+                                                            ...prev,
+                                                            [item.invoiceId]: String(amount),
+                                                        }));
+
+                                                        setAppliedAmounts((prev) => ({
+                                                            ...prev,
+                                                            [item.invoiceId]: amount,
+                                                        }));
+                                                    }}
+                                                />
+
+                                                {/* <TouchableOpacity
+                                                    style={styles.setBtn}
+                                                    onPress={() =>
+                                                        handleSetAmount(
+                                                            item.invoiceId,
+                                                            tempValue?.[item.invoiceId],
+                                                            Math.min(
+                                                                item.pendingAmount,
+                                                                remainingBalance + (appliedAmounts[item.invoiceId] || 0)
+                                                            )
+                                                        )
+                                                    }
+                                                >
+                                                    <Text style={{ color: "#1E45E1" }}>Set</Text>
+                                                </TouchableOpacity> */}
+                                            </View>
+                                        </>
+                                    ) : <TouchableOpacity style={{
+                                        alignSelf: 'flex-end', backgroundColor: '#1E45E1', paddingHorizontal: 14,
+                                        paddingVertical: 6, borderRadius: 28, marginTop: 3, marginRight: 4, flexDirection: 'row', alignItems: 'center'
+                                    }}
+                                        onPress={() => clickedRetainAmntField(item.invoiceId)}>
+                                        <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Medium', color: '#FFFFFF', marginRight: 5 }}>
                                             Retain</Text>
 
-                                            <Image source={ArrowLeft} style={{width:18,height:18,tintColor:'#FFFFFF', transform: [{ rotate: "180deg" }],}}/>
+                                        <Image source={ArrowLeft} style={{ width: 18, height: 18, tintColor: '#FFFFFF', transform: [{ rotate: "180deg" }], }} />
                                     </TouchableOpacity>}
 
-                                    
+
 
                                 </View>
                             ))}
@@ -811,6 +876,72 @@ export default function BillsApplyInvoices() {
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
+                {instructionSheet && (
+                    <View style={styles.sheetOverlay}>
+
+                        <TouchableWithoutFeedback onPress={() => {
+                            setInstructionSheet(false)
+                        }}
+                        >
+                            <View style={{ flex: 1 }} />
+                        </TouchableWithoutFeedback>
+
+                        <Animated.View
+                            style={[
+                                styles.sheet,
+                                {
+                                    // height: isPaid ? "60%" : isPartial ? "80%" : "60%",
+                                    maxHeight: '95%',
+                                    transform: [{ translateY: instructionSheetRef }]
+                                }
+                            ]}
+                            {...instructionSheetPan.panHandlers}
+                        >
+                            <View style={styles.sheetHandle} />
+
+                            <View style={{ marginBottom: 50 }}>
+
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Image source={TickGreenIcon} style={{width:24,height:24,marginRight:6}}/>
+                                    <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold', color: '#1F2633' }}>
+                                        How it works</Text>               
+                                </View>
+
+                                <View style={{ borderWidth: 0.8, borderColor: '#E7E7E7', marginVertical: 20 }} />
+
+                                <View style={{flexDirection:'row',marginTop:5}}>
+                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>1.</Text>
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
+                                     Your available retainer balance can be used to pay outstanding invoices.</Text>
+                                </View>
+
+                                <View style={{flexDirection:'row',marginTop:12}}>
+                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>2.</Text>
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
+                                     Select one or more invoices and choose the amount to adjust. The adjusted amount will be
+                                    deducted from your retainer balance and applied to the selected invoices.</Text>
+                                </View>
+
+                                <View style={{flexDirection:'row',marginTop:12}}>
+                                    <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',color:'#3A3A3A',marginRight:4,marginTop:2}}>
+                                        3.</Text>
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:21,color:'#3A3A3A'}}>
+                                      Any remaining invoice balance can be paid separately using your preferred payment method.</Text>
+                                </View>
+                                
+                                
+                                
+                                
+                                {/* <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:20,color:'#3A3A3A',marginTop:10}}>
+                                2.
+                                </Text>
+
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Regular',lineHeight:20,color:'#3A3A3A',marginTop:10}}>
+                                3.</Text> */}
+                            </View>
+                        </Animated.View>
+                    </View>
+                )}
             </SafeAreaView>
         </>
     );
@@ -834,7 +965,7 @@ const styles = StyleSheet.create({
         paddingTop: Platform.OS === "android"
             ? StatusBar.currentHeight + 20
             : 20,
-        marginBottom: 20,
+        marginBottom: 20, justifyContent: 'space-between'
     },
 
     headerTitle: {
@@ -1166,6 +1297,29 @@ const styles = StyleSheet.create({
     bookingAmount: {
         fontSize: 16,
         fontFamily: "Gilroy-Semibold",
+    },
+      sheet: {
+        backgroundColor: "#ffffff",
+        padding: 20,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        paddingBottom: 30,
+        // minHeight: 400,
+    },
+    sheetOverlay: {
+        position: "absolute",
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "flex-end",
+        zIndex: 9999,
+    },
+    sheetHandle: {
+        width: 60,
+        height: 5,
+        backgroundColor: "#ccc",
+        alignSelf: "center",
+        borderRadius: 30,
+        marginBottom: 15,
     },
 
 

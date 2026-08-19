@@ -71,10 +71,10 @@ const BillDetailsSheet = ({
 
 
 
-  const { BillDetails, loading, GetAllBillDetails,RecordPayment, GetInitializeRefundDetails, CreateRefund,
-     refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
+  const { BillDetails, loading, GetAllBillDetails, RecordPayment, GetInitializeRefundDetails, CreateRefund,
+    refundError, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails,
-     GetInitializeAdvanceRedeem,GetInitializeRecordPaymentDetails } = useContext(BillContext);
+    GetInitializeAdvanceRedeem, GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails  } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -125,6 +125,7 @@ const BillDetailsSheet = ({
   const [showDeductions, setShowDeductions] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
+  const [showRetainer, setShowRetainer] = useState(false)
 
 
   const formatEBDate = (date) => {
@@ -386,18 +387,18 @@ const BillDetailsSheet = ({
     }
   }
 
-  const handleShowRecordPayment =async() => {
+  const handleShowRecordPayment = async () => {
     setShowMenu(false);
-     const res = await GetInitializeRecordPaymentDetails({
+    const res = await GetInitializeRecordPaymentDetails({
       hostelId: activeHostelId,
       invoiceId: BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId || selectedBill?.invoiceId,
     })
     console.log(res)
-     navigation.navigate("NewRecordPayment",
-                              {
-                                selectedBill, BillPdfdetails,
-                                onPaymentSuccess: onClose(),
-                              })
+    navigation.navigate("NewRecordPayment",
+      {
+        selectedBill, BillPdfdetails,
+        onPaymentSuccess: onClose(),
+      })
   };
 
   const handleShowRefundPayment = () => {
@@ -473,6 +474,8 @@ const BillDetailsSheet = ({
 
   const paymentStatus = invoice?.paymentStatus ?? invoice?.status;
 
+  
+
   const BillsStatusStyle = getStatusStyle(paymentStatus)
   // console.log("bill", bill);
 
@@ -500,7 +503,7 @@ const BillDetailsSheet = ({
   const FullyRefund = invoice?.paymentStatus === "Refunded";
 
   // const invoiceType = bill?.configurations?.invoiceType;
-   const showRefundButton =
+  const showRefundButton =
     selectedBill?.invoiceType === "Settlement" &&
     pendingRefund || partiallyRefund
 
@@ -656,20 +659,39 @@ const BillDetailsSheet = ({
     });
   }
 
+  const handlemakeDiscount = async () => {
+    setShowMenu(false)
+
+    navigation.navigate("DiscountInvoice", {
+      bill: selectedBill,
+      onSuccess: () => {
+        onClose();
+      },
+    });
+
+    const res = await GetInitializeDiscountDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId
+    })
+
+    console.log("res", res);
+
+  }
+
 
   // booking invoice
-  // const handleBookingApplyInvoices = async () => {
+  const handleBookingApplyInvoices = async () => {
 
-  //   navigation.navigate("BillsApplyInvoices");
+    navigation.navigate("BillsApplyInvoices");
 
-  //   const AdvanceCredits = await GetAdvanceCreditDetails({
-  //     hostelId: activeHostelId,
-  //     invoiceId: selectedBill?.invoiceId,
-  //     type: "Credit", 
-  //   })
+    const AdvanceCredits = await GetAdvanceCreditDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      type: "Credit", 
+    })
 
-  //   console.log("AdvanceCredits", AdvanceCredits);
-  // }
+    console.log("AdvanceCredits", AdvanceCredits);
+  }
 
 
   const handleBillUnpaid = async () => {
@@ -699,6 +721,20 @@ const BillDetailsSheet = ({
       setTimeout(() => setShowSuccessModal(false), 1500);
     }
   };
+
+   const handleApplyBookingToInvoice= async () => {
+
+    navigation.navigate("ApplyBookingToInvoice");
+
+    const AdvanceCredits = await GetAdvanceCreditDetails({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      type: "Credit", // booking invoice
+    })
+    setShowMenu(false);
+    onClose();
+
+  }
 
 
 
@@ -1119,10 +1155,30 @@ const BillDetailsSheet = ({
               </>
             )}
 
+            {(partiallyRefund) && (
+              <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View>
+                  <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Due Pending</Text>
+                </View>
+                <View>
+                  <Text
+                    style={[
+                      styles.amountValue,
+                      { color: "#FF0000" },
+                    ]}
+                  >
+                    ₹ {Math.round(BillPdfdetails?.invoiceInfo?.totalPayable ?? 0)}
+                  </Text>
+                </View>
+              </View>
+
+            )}
+
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
               <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold", color: "#777", }}>
                 Invoice Date</Text>
-              <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>{BillPdfdetails?.invoiceDate}</Text>
+              <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>
+                {BillPdfdetails?.invoiceDate}</Text>
             </View>
 
             {BillPdfdetails?.invoiceInfo?.isCancelled && (
@@ -1729,6 +1785,81 @@ const BillDetailsSheet = ({
                   </View>
                 )}
 
+                {showSettlementRedeem && (
+                  <View style={styles.accordionCard}>
+                    <TouchableOpacity
+                      style={styles.accordionHeader}
+                      onPress={() => setShowRetainer(!showRetainer)}
+                      activeOpacity={0.8}
+                    >
+                      <Animated.Image
+                        source={DownArrow}
+                        style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                      />
+                      <Text style={styles.cardTitle}>Retainer Invoices</Text>
+                      <Text style={styles.amountText}>
+                        ₹  {BillPdfdetails?.retainerInfo?.totalRetainerAmount || 0}
+                      </Text>
+                    </TouchableOpacity>
+
+                    {/* Retainer */}
+                    {showRetainer && (
+
+                      <View style={styles.accordionBody}>
+
+                        <View style={styles.tableHeader}>
+                          <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+                          {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
+                          <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                            Invoice Amount
+                          </Text>
+                        </View>
+
+
+                        {Array.isArray(BillPdfdetails?.retainerInfo?.retainerItems) &&
+                          BillPdfdetails?.retainerInfo?.retainerItems.length > 0 ? (
+                          <>
+                            {BillPdfdetails?.retainerInfo?.retainerItems?.map((item, index) => (
+                              <View key={index} style={styles.invoiceRow}>
+                                <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
+                                  {item?.invoiceNo}
+                                </Text>
+                                {/* <Text style={[styles.invText, { flex: 1 }]}>
+                                                      {item?.type}
+                                                    </Text> */}
+                                <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
+                                  ₹ {item?.appliedAmount}
+                                </Text>
+                              </View>
+                            ))}
+                          </>
+                        ) : (
+                          <View style={styles.emptyWallet}>
+                            <View style={styles.emptyState}>
+                              <Text style={styles.emptyWalletText}>No pending invoices</Text>
+                            </View>
+                          </View>
+                        )}
+
+                        <View style={styles.totalInvoiceRow}>
+                          <Text style={styles.totalText}>Total</Text>
+                          <Text style={styles.totalAmount}>
+                            {BillPdfdetails?.retainerInfo?.totalRetainerAmount}
+                            {/* ₹{" "}
+                                                        {Array.isArray(settlementDetails?.unpaidInvoices)
+                                                          ? settlementDetails.unpaidInvoices.reduce(
+                                                            (sum, i) => sum + Number(i.payableAmount || 0),
+                                                            0
+                                                          )
+                                                          : 0} */}
+                          </Text>
+                        </View>
+                      </View>
+
+                    )}
+                  </View>
+                )}
+
 
 
 
@@ -1935,7 +2066,7 @@ const BillDetailsSheet = ({
               )}
 
 
-            {/* {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
+            {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
               <View style={styles.creditCard}>
                 <View style={styles.creditTopRow}>
                   <View style={styles.creditTitleRow}>
@@ -1958,7 +2089,7 @@ const BillDetailsSheet = ({
                 </Text>
 
                 <TouchableOpacity style={styles.applyBtn}
-                  onPress={handleBookingApplyInvoices}
+                  onPress={handleApplyBookingToInvoice}
                 >
                   <Text style={{
                     color: "#fff",
@@ -1969,7 +2100,7 @@ const BillDetailsSheet = ({
                   </Text>
                 </TouchableOpacity>
               </View>
-            )} */}
+            )}
 
 
 
@@ -1982,7 +2113,7 @@ const BillDetailsSheet = ({
 
           <View style={styles.fixedBottomBar}>
 
-            {(isPaid || cancelled ) && (
+            {(isPaid || cancelled) && (
               <>
                 <TouchableOpacity
                   style={[styles.paidBtn, !isExportAllow && { opacity: 0.4 }]}
@@ -2161,15 +2292,27 @@ const BillDetailsSheet = ({
                 </TouchableOpacity>
               )}
 
-            {paymentStatus === "Pending" &&
-              (invoiceType === "Rent" || invoiceType === "Settlement") &&
+            {/* {paymentStatus === "Pending" &&
+              (invoiceType === "Rent" || invoiceType === "Settlement" || invoiceType === "REASSIGN_RENT") &&
               !isDiscounted &&
-              (
+              ( */}
+              {BillPdfdetails?.invoiceInfo?.paymentStatus === "Pending" &&
+(
+  BillPdfdetails?.invoiceInfo?.invoiceType === "REASSIGN_RENT" ||
+  BillPdfdetails?.invoiceInfo?.invoiceType === "RENT" ||
+  BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT"
+) &&
+!BillPdfdetails?.invoiceInfo?.isDiscounted && (
+
                 <TouchableOpacity
                   style={styles.popupRow}
                   onPress={() => {
                     setShowMenu(false);
                     // setShowBillDetails(false)
+                     const res =  GetInitializeDiscountDetails({
+      hostelId: activeHostelId,
+      invoiceId: BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId || selectedBill?.invoiceId
+    })
                     navigation.navigate("DiscountInvoice", {
                       // bill: selectedBill,
                       onSuccess: () => {
@@ -3401,12 +3544,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     // marginRight: 20
   },
-  refundActionTxt:{
+  refundActionTxt: {
     fontFamily: "Gilroy-Semibold"
   },
   refundBtn: {
     backgroundColor: "#E67E22",
-     paddingVertical: 14,
+    paddingVertical: 14,
     paddingHorizontal: 37,
     borderRadius: 10,
     paddingVertical: 14,

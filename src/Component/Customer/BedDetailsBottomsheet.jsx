@@ -63,7 +63,7 @@ const EmptyFloor = require("../../Assets/Images/Empty_floor.png");
 const AddIcon = require("../../Assets/Images/PGAddButton.png");
 const BedEmpty = require("../../Assets/Images/EmptyBed.png");
 const BedGreen = require("../../Assets/Images/OccubiedBedImg.png");
-const BedBlue  = require("../../Assets/Images/BluebedIcon.png");
+const BedBlue = require("../../Assets/Images/BluebedIcon.png");
 
 const TickIcon = require("../../Assets/Images/tickgreen.png");
 
@@ -74,6 +74,7 @@ const IconNotice = require("../../Assets/Images/Noticeperiodimg.png");
 export default function BedDetailsSheet({
     visible,
     onClose,
+    type,
     joiningDate,
     onSelect,
     //   onSuccessRefresh,onSuccess 
@@ -84,7 +85,7 @@ export default function BedDetailsSheet({
     // const [showSuccess, setShowSuccess] = useState(false);
     // const [message, setMessage] = useState("");
 
-      const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, TenantCheckIn } = useCustomer();
+    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, TenantCheckIn } = useCustomer();
 
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedAmenity, setSelectedAmenity] = useState(null);
@@ -95,8 +96,9 @@ export default function BedDetailsSheet({
     const [amenityError, setAmenityError] = useState("");
     // const [loading, setLoading] = useState(false);
 
-  console.log("joiningDate", joiningDate);
-  
+    console.log("joiningDate", joiningDate);
+    console.log("activetabview",type)
+
 
 
 
@@ -105,7 +107,8 @@ export default function BedDetailsSheet({
     const [selectedRoom, setSelectedRoom] = useState(null);
 
     const [availableBeds, setAvailableBeds] = useState([]);
-    
+    const [lastActiveTab,setLastActiveTab]=useState("")
+
 
 
     useEffect(() => {
@@ -130,11 +133,19 @@ export default function BedDetailsSheet({
     };
 
 
+    console.log("lastactivetab",lastActiveTab)
 
 
     const resetState = () => {
         onClose?.()
+        setLastActiveTab(type)
     }
+
+    useEffect(()=>{
+        if(type != lastActiveTab){
+            setSelectedBed(null)
+        }
+    },[visible])
 
 
 
@@ -400,46 +411,46 @@ export default function BedDetailsSheet({
     //   return arr;
     // };
 
-//     const handleBedPress = (bed) => {
-//     onSelect?.(bed);
-//     onClose?.();
-// };
+    //     const handleBedPress = (bed) => {
+    //     onSelect?.(bed);
+    //     onClose?.();
+    // };
 
-const handleBedPress = (bed, room) => {
-    const floor = floors[activeFloorIndex];
+    const handleBedPress = (bed, room) => {
+        const floor = floors[activeFloorIndex];
 
-    setSelectedBed({
-    ...bed,
+        setSelectedBed({
+            ...bed,
 
-    floorId: floor?.id,
-    floorName: floor?.name,
+            floorId: floor?.id,
+            floorName: floor?.name,
 
-    roomId: room?.id,
-    roomName: room?.name,
+            roomId: room?.id,
+            roomName: room?.name,
 
-    bedId: bed?.bedId,
-    bedName: bed?.bedName,
+            bedId: bed?.bedId,
+            bedName: bed?.bedName,
 
-    rentAmount: bed?.rentAmount,
-    sharing: (bedsByRoom[room?.id] || []).length,
-});
+            rentAmount: bed?.rentAmount,
+            sharing: (bedsByRoom[room?.id] || []).length,
+        });
 
-    // setSelectedBed({
-    //     floorId: floor.id,
-    //     floorName: floor.name,
+        // setSelectedBed({
+        //     floorId: floor.id,
+        //     floorName: floor.name,
 
-    //     roomId: room.id,
-    //     roomName: room.name,
+        //     roomId: room.id,
+        //     roomName: room.name,
 
-    //     bedId: bed.bedId,
-    //     bedName: bed.bedName,
+        //     bedId: bed.bedId,
+        //     bedName: bed.bedName,
 
-    //     rentAmount: bed.rentAmount,
-    //     sharing: (bedsByRoom[room.id] || []).length,
+        //     rentAmount: bed.rentAmount,
+        //     sharing: (bedsByRoom[room.id] || []).length,
 
-    //     ...bed,
-    // });
-};
+        //     ...bed,
+        // });
+    };
 
     // const handleBedPress = async (bed, room) => {
     //     const res = await getBedById(bed.id);
@@ -1039,7 +1050,7 @@ const handleBedPress = (bed, room) => {
     // const handleCheckIn = () => {
     //     setShowDoubleStatus(false)
     //     setShowReservedSheet(false)
-      
+
     //     navigation.navigate("ReserveToCheckin", {
     //         selectedBed: selectedBed,
     //         onBedAdded: handleBedAdded
@@ -1079,10 +1090,10 @@ const handleBedPress = (bed, room) => {
     const ticking = useRef(false);
 
 
-    const onScroll = (e) => {
-        handleScroll(e);
-        handleFloorScroll(e);
-    };
+    // const onScroll = (e) => {
+    //     handleScroll(e);
+    //     handleFloorScroll(e);
+    // };
 
 
 
@@ -1296,14 +1307,14 @@ const handleBedPress = (bed, room) => {
                                 scrollEnabled={!isAnySheetOpen && !isKeyboardOpen}
                                 keyboardShouldPersistTaps="always"
                                 keyboardDismissMode="none"
-                                onScroll={onScroll}
+                                // onScroll={onScroll}
                                 bounces={false}
                                 scrollEventThrottle={16}
 
                                 // keyExtractor={(item) => item.id}
                                 keyExtractor={(item) => String(item?.id)}
                                 renderItem={({ item }) => {
-   
+
                                     //   const bedCount = bedsByRoom[item.id]?.length || 0;
                                     const bedCount = (bedsByRoom[item.id] || []).length;
                                     return (
@@ -1342,13 +1353,13 @@ const handleBedPress = (bed, room) => {
 
                                                 {bedsByRoom[item?.id]?.map((b) => {
 
-                                                                                     console.log("bedds",
-  bedsByRoom[item.id].map(b => ({
-    id: b.id,
-    bedId: b.bedId,
-    bedName: b.bedName,
-  }))
-);
+                                                    console.log("bedds",
+                                                        bedsByRoom[item.id].map(b => ({
+                                                            id: b.id,
+                                                            bedId: b.bedId,
+                                                            bedName: b.bedName,
+                                                        }))
+                                                    );
                                                     const status = getBedStatus(b);
                                                     console.log("bedsByRoom..b", b)
                                                     let statusArray = [];
@@ -1387,52 +1398,52 @@ const handleBedPress = (bed, room) => {
 
 
                                                     return (
-                                                      <TouchableOpacity
-    // key={b?.id}
-       key={`${item.id}-${b.bedId}`}
-    style={styles.bedItem}
-    onPress={() => handleBedPress(b, item)}
->
-    <View style={styles.bedWrapper}>
+                                                        <TouchableOpacity
+                                                            // key={b?.id}
+                                                            key={`${item.id}-${b.bedId}`}
+                                                            style={styles.bedItem}
+                                                            onPress={() => handleBedPress(b, item)}
+                                                        >
+                                                            <View style={styles.bedWrapper}>
 
-        <Image
-            source={
-                selectedBed?.bedId === b?.bedId
-                    ? BedBlue      // blue bed
-                    : BedEmpty         // white bed
-            }
-            style={styles.bedIcon}
-        />
+                                                                <Image
+                                                                    source={
+                                                                        selectedBed?.bedId === b?.bedId
+                                                                            ? BedBlue      // blue bed
+                                                                            : BedEmpty         // white bed
+                                                                    }
+                                                                    style={styles.bedIcon}
+                                                                />
 
-        {/* Existing status icons */}
-        {statusCount > 1 ? (
-            <View style={styles.multiBadge}>
-                <Text style={styles.multiBadgeText}>
-                    {statusCount}
-                </Text>
-            </View>
-        ) : statusCount === 1 ? (
-            <Image
-                source={overlayIcons[statusArray[0]]}
-                style={styles.overlayIcon}
-            />
-        ) : null}
+                                                                {/* Existing status icons */}
+                                                                {statusCount > 1 ? (
+                                                                    <View style={styles.multiBadge}>
+                                                                        <Text style={styles.multiBadgeText}>
+                                                                            {statusCount}
+                                                                        </Text>
+                                                                    </View>
+                                                                ) : statusCount === 1 ? (
+                                                                    <Image
+                                                                        source={overlayIcons[statusArray[0]]}
+                                                                        style={styles.overlayIcon}
+                                                                    />
+                                                                ) : null}
 
-        {/* Tick only for selected bed */}
-        {selectedBed?.bedId === b?.bedId && (
-            <Image
-                source={TickIcon}
-                style={styles.tickIcon}
-            />
-        )}
+                                                                {/* Tick only for selected bed */}
+                                                                {selectedBed?.bedId === b?.bedId && (
+                                                                    <Image
+                                                                        source={TickIcon}
+                                                                        style={styles.tickIcon}
+                                                                    />
+                                                                )}
 
-    </View>
+                                                            </View>
 
-    <Text style={styles.bedLabel}>
-        {b.bedName}
-    </Text>
+                                                            <Text style={styles.bedLabel}>
+                                                                {b.bedName}
+                                                            </Text>
 
-</TouchableOpacity>
+                                                        </TouchableOpacity>
                                                     );
                                                 })}
 
@@ -1457,41 +1468,42 @@ const handleBedPress = (bed, room) => {
                         )}
                     </View>
 
-{selectedBed && (
-    <View style={styles.bottomCard}>
+                    {selectedBed && (
+                        <View style={styles.bottomCard}>
 
-        <View style={{ flex: 1 }}>
-            <Text style={styles.bottomTitle}>
-                {selectedBed.roomName} | {selectedBed.bedName}
-            </Text>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.bottomTitle}>
+                                    {selectedBed.roomName} | {selectedBed.bedName}
+                                </Text>
 
-            <Text style={styles.bottomSub}>
-                {selectedBed.sharing} Sharing | ₹{selectedBed.rentAmount}/Month
-            </Text>
-        </View>
+                                <Text style={styles.bottomSub}>
+                                    {selectedBed.sharing} Sharing | ₹{selectedBed.rentAmount}/Month
+                                </Text>
+                            </View>
 
-        <TouchableOpacity
-    style={styles.continueBtn}
-   onPress={() => {
-        onSelect?.(selectedBed);
-        onClose?.();
-    }}
->
-    <Text style={styles.continueTxt}>Continue</Text>
+                            <TouchableOpacity
+                                style={styles.continueBtn}
+                                onPress={() => {
+                                    onSelect?.(selectedBed);
+                                    onClose?.();
+                                    setLastActiveTab(type)
+                                }}
+                            >
+                                <Text style={styles.continueTxt}>Continue</Text>
 
-    <Image
-        source={require("../../Assets/Images/ArrowRight.png")}
-        style={{
-            width: 18,
-            height: 18,
-            marginLeft: 8,
-            tintColor: "#fff",
-        }}
-    />
-</TouchableOpacity>
+                                <Image
+                                    source={require("../../Assets/Images/ArrowRight.png")}
+                                    style={{
+                                        width: 18,
+                                        height: 18,
+                                        marginLeft: 8,
+                                        tintColor: "#fff",
+                                    }}
+                                />
+                            </TouchableOpacity>
 
-    </View>
-)}
+                        </View>
+                    )}
 
 
 
@@ -2377,111 +2389,111 @@ const styles = StyleSheet.create({
 
     },
 
-bedWrapper: {
-    position: "relative",
-    width: 42,
-    height: 42,
-    alignItems: "center",
-    justifyContent: "center",
-},
-
-bedIcon: {
-    width: 38,
-    height: 35,
-},
-
-tickIcon: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    width: 18,
-    height: 18,
-    zIndex: 100,
-},
-
-overlayIcon: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    width: 18,
-    height: 18,
-},
-
-multiBadge: {
-    position: "absolute",
-    top: -4,
-    right: -4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: "#fff",
-    borderWidth: 2,
-    borderColor: "#00A32E",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 10,
-},
-bottomCard: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-
-    flexDirection: "row",
-    alignItems: "center",
-
-    paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: Platform.OS === "ios" ? 28 : 18,
-
-    backgroundColor: "#FFFFFF",
-
-    borderTopWidth: 1,
-    borderTopColor: "#EAEAEA",
-
-    shadowColor: "#000",
-    shadowOffset: {
-        width: 0,
-        height: -2,
+    bedWrapper: {
+        position: "relative",
+        width: 42,
+        height: 42,
+        alignItems: "center",
+        justifyContent: "center",
     },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
 
-    elevation: 10,
-},
+    bedIcon: {
+        width: 38,
+        height: 35,
+    },
 
-bottomTitle: {
-    fontSize: 20,
-    color: "#2952E8",
-    fontFamily: "Gilroy-Bold",
-},
+    tickIcon: {
+        position: "absolute",
+        top: -4,
+        right: -4,
+        width: 18,
+        height: 18,
+        zIndex: 100,
+    },
 
-bottomSub: {
-    marginTop: 6,
-    fontSize: 15,
-    color: "#555",
-    fontFamily: "Gilroy-Medium",
-},
+    overlayIcon: {
+        position: "absolute",
+        top: -4,
+        right: -4,
+        width: 18,
+        height: 18,
+    },
 
-continueBtn: {
-    marginLeft: 16,
+    multiBadge: {
+        position: "absolute",
+        top: -4,
+        right: -4,
+        width: 18,
+        height: 18,
+        borderRadius: 9,
+        backgroundColor: "#fff",
+        borderWidth: 2,
+        borderColor: "#00A32E",
+        justifyContent: "center",
+        alignItems: "center",
+        zIndex: 10,
+    },
+    bottomCard: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        bottom: 0,
 
-    width: 150,
-    height: 54,
+        flexDirection: "row",
+        alignItems: "center",
 
-    borderRadius: 14,
-    backgroundColor: "#2952E8",
+        paddingHorizontal: 16,
+        paddingTop: 14,
+        paddingBottom: Platform.OS === "ios" ? 28 : 18,
 
-    justifyContent: "center",
-    alignItems: "center",
+        backgroundColor: "#FFFFFF",
 
-    flexDirection: "row",
-},
+        borderTopWidth: 1,
+        borderTopColor: "#EAEAEA",
 
-continueTxt: {
-    color: "#FFFFFF",
-    fontSize: 17,
-    fontFamily: "Gilroy-Bold",
-},
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: -2,
+        },
+        shadowOpacity: 0.08,
+        shadowRadius: 6,
+
+        elevation: 10,
+    },
+
+    bottomTitle: {
+        fontSize: 20,
+        color: "#2952E8",
+        fontFamily: "Gilroy-Bold",
+    },
+
+    bottomSub: {
+        marginTop: 6,
+        fontSize: 15,
+        color: "#555",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    continueBtn: {
+        marginLeft: 16,
+
+        width: 150,
+        height: 54,
+
+        borderRadius: 14,
+        backgroundColor: "#2952E8",
+
+        justifyContent: "center",
+        alignItems: "center",
+
+        flexDirection: "row",
+    },
+
+    continueTxt: {
+        color: "#FFFFFF",
+        fontSize: 17,
+        fontFamily: "Gilroy-Bold",
+    },
 
 });

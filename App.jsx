@@ -95,13 +95,13 @@ import CommonContext, { CommonContexts } from './src/Context/CommonContext'
 import PGContext from './src/Context/PGContext';
 import ComplaintProvider from "./src/Context/ComplaintContext";
 import { SettingProvider } from "./src/Context/SettingContext";
-import ExpensesProvider from "./src/Context/ExpensesContext"
+import ExpensesProvider, { ExpensesContext } from "./src/Context/ExpensesContext"
 import AmenityProvider from './src/Context/AmenityContext';
 import { CustomerProvider } from "./src/Context/CustomerContext";
 import VendorProvider from './src/Context/VendorContext';
-import { UIProvider  } from "./src/Component/Tabs/UIContext"
+import { UIProvider } from "./src/Component/Tabs/UIContext"
 import BillsProvider from "./src/Context/BillsContext"
-import {AssetProvider} from  "./src/Context/AssetContext"
+import { AssetProvider } from "./src/Context/AssetContext"
 import { FloorProvider } from './src/Context/PayingGuestContext';
 import BankingProvider from "./src/Context/BankingContext";
 import ElectricityProvider from "./src/Context/ElectricityContext"
@@ -109,11 +109,11 @@ import CreateMpin from "./src/Component/CreateAccount/CreatePin"
 import EnterMPin from "./src/Component/CreateAccount/EnterPin"
 import ConfirmMPin from "./src/Component/CreateAccount/ConfirmPin"
 import { retriveData } from './src/Utils/Storage';
-import { LOGGEDIN, USER_ID } from './src/Utils/Constant';
+import { ACTIVEHOSTELID, LOGGEDIN, PROFILEDETAILS, USER_ID } from './src/Utils/Constant';
 import SuccessFlow from './src/SuccessFlow'
 import { initBaseUrl } from './src/Utils/Constant';
 import { Text, TextInput } from "react-native";
-import {NotificationProvider} from "./src/Context/NotificationContext";
+import { NotificationProvider } from "./src/Context/NotificationContext";
 import NoInternetIcon from "./src/Assets/Images/noInternet.png"
 
 const { width, height } = Dimensions.get("window");
@@ -124,18 +124,18 @@ function App() {
   const isDarkMode = useColorScheme() === 'dark';
 
   Text.defaultProps = Text.defaultProps || {};
-Text.defaultProps.allowFontScaling = false;
+  Text.defaultProps.allowFontScaling = false;
 
-TextInput.defaultProps = TextInput.defaultProps || {};
-TextInput.defaultProps.allowFontScaling = false;
+  TextInput.defaultProps = TextInput.defaultProps || {};
+  TextInput.defaultProps.allowFontScaling = false;
 
   const { CommonModule } = NativeModules;
 
   const [userId, setUserId] = useState();
-  const [isLoginIn,setIsLoginIn]=useState()
+  const [isLoginIn, setIsLoginIn] = useState()
 
   useEffect(() => {
-    retriveData(LOGGEDIN).then(r=>{
+    retriveData(LOGGEDIN).then(r => {
       setIsLoginIn(r)
     })
 
@@ -144,7 +144,7 @@ TextInput.defaultProps.allowFontScaling = false;
     //   if(isLoginIn === "true"){
     //       setUserId(result)
     //   }
-   
+
     // })
 
     CommonModule.fetchBaseUrl().then(baseUrl => {
@@ -173,14 +173,14 @@ TextInput.defaultProps.allowFontScaling = false;
                               <ElectricityProvider>
                                 <VendorProvider>
                                   <UIProvider >
-                                     <NotificationProvider>
-                                    <AssetProvider>
-                                     
-                                <AppContent userId={userId} isLoginIn={isLoginIn}/>
-                               
-                                </AssetProvider>
-                                 </NotificationProvider>
-                                </UIProvider >
+                                    <NotificationProvider>
+                                      <AssetProvider>
+
+                                        <AppContent userId={userId} isLoginIn={isLoginIn} />
+
+                                      </AssetProvider>
+                                    </NotificationProvider>
+                                  </UIProvider >
                                 </VendorProvider>
                               </ElectricityProvider>
                             </BankingProvider>
@@ -202,86 +202,104 @@ TextInput.defaultProps.allowFontScaling = false;
 
 function AppContent(props) {
   const loginContext = useContext(LoginContexts);
-  const commonContext=useContext(CommonContexts);
+  const commonContext = useContext(CommonContexts);
+  const { setProfileDetails } = useContext(ExpensesContext);
 
   const Navigation = createStackNavigator();
-  const [isLoggedIn,setIsLoggedIn]=useState()
+  const [isLoggedIn, setIsLoggedIn] = useState()
   const [pinVerify, setPinVerify] = useState()
-    const [isConnected, setIsConnected] = useState(true);
+  const [isConnected, setIsConnected] = useState(true);
 
-  const {CommonModule}=NativeModules;
+  const { CommonModule } = NativeModules;
   const emitter = new NativeEventEmitter(CommonModule);
 
 
 
   console.log(isLoggedIn)
 
-  useEffect(()=>{
-    retriveData(LOGGEDIN).then(r=>{
-        setIsLoggedIn(r)
-        console.log(r)
-        if(r === "true"){
-             loginContext?.updateUserId(props.userId)
-              
-        }
-        // else{
-        //   loginContext?.updateUserId("")
-        // }
-       
+  useEffect(() => {
+    retriveData(LOGGEDIN).then(r => {
+      setIsLoggedIn(r)
+      console.log(r)
+      if (r === "true") {
+        loginContext?.updateUserId(props.userId)
+
+      }
+      // else{
+      //   loginContext?.updateUserId("")
+      // }
+
     })
-   
 
 
-   
-  },[])
 
-   useEffect(() => {
-    if(Platform.OS ==="android"){
-      if(emitter !== null){
 
-      
-      const subscription = emitter.addListener("networkStatus", (status) => {
-      // setIsConnected(status);
-      loginContext.internet(status)
-      console.log(status)
-      
-    });
-      return () => subscription.remove();
-}
-  
+  }, [])
+
+  useEffect(() => {
+    if (Platform.OS === "android") {
+      if (emitter !== null) {
+
+
+        const subscription = emitter.addListener("networkStatus", (status) => {
+          // setIsConnected(status);
+          loginContext.internet(status)
+          console.log(status)
+
+        });
+        return () => subscription.remove();
+      }
+
 
     }
-    
+
   }, []);
-  useEffect(()=>{
-    retriveData(LOGGEDIN).then(r=>{
-      if(r === "true"){
+  useEffect(() => {
+    retriveData(LOGGEDIN).then(r => {
+      if (r === "true") {
         loginContext.updateRoute("null")
       }
     })
-  },[loginContext.LoggedIN])
-  useEffect(()=>{
+  }, [loginContext.LoggedIN])
+  useEffect(() => {
     console.log(props.isLoginIn)
-    if(props.isLoginIn === "true"){
-        loginContext?.updateUserId(props.userId)
+    if (props.isLoginIn === "true") {
+      loginContext?.updateUserId(props.userId)
     }
 
     retriveData(USER_ID).then(result => {
       console.log(result)
       loginContext?.updateUserId(result)
     })
-      
 
-  },[props.isLoginIn,props.userId])
+    retriveData(PROFILEDETAILS).then(r => {
+      console.log("seetha",r)
+      const profileDetails = r ? JSON.parse(r) : null;
+      console.log("profileDet", profileDetails)
+      setProfileDetails(profileDetails)
+    })
+
+
+  }, [props.isLoginIn, props.userId])
+
+  useEffect(()=>{
+    retriveData(ACTIVEHOSTELID).then(r => {
+      console.log("ActiveHostelRetive", r)
+      if (r) {
+        commonContext.setActiveHostelId(r)
+      }
+
+    })
+  },[])
 
   useEffect(() => {
-     if (props.userId) {
-  console.log("props userId", props.userId)
-  console.log("login context", loginContext)
-  if(isLoggedIn === "true")
-      loginContext?.updateUserId(props.userId)
+    if (props.userId) {
+      console.log("props userId", props.userId)
+      console.log("login context", loginContext)
+      if (isLoggedIn === "true")
+        loginContext?.updateUserId(props.userId)
     }
-    
+
   }, [props.userId, loginContext])
 
 
@@ -289,35 +307,35 @@ function AppContent(props) {
   console.log(commonContext)
 
   useEffect(() => {
-      CommonModule.checkInternet().then(r => {
-        console.log("internet check")
-        console.log(r)
-        loginContext.internet(r)
-      }).catch(error => {
-        console.log(error)
-      })
-    
+    CommonModule.checkInternet().then(r => {
+      console.log("internet check")
+      console.log(r)
+      loginContext.internet(r)
+    }).catch(error => {
+      console.log(error)
+    })
+
 
     if (loginContext?.LoggedIN) {
       setIsLoggedIn(loginContext?.LoggedIN)
 
     }
-  }, [loginContext?.LoggedIN]) 
+  }, [loginContext?.LoggedIN])
 
   useEffect(() => {
     if (!loginContext?.requiredPinSetup) {
-        setPinVerify(true)
+      setPinVerify(true)
     }
     setPinVerify(false)
   }, [loginContext?.requiredPinSetup])
 
-  const checkInternet =()=>{
-    
-    if(Platform.OS == "android"){
-      CommonModule.checkInternet().then(r=>{
-         loginContext.internet(r)
+  const checkInternet = () => {
+
+    if (Platform.OS == "android") {
+      CommonModule.checkInternet().then(r => {
+        loginContext.internet(r)
         console.log(r)
-      }).catch((error)=>{
+      }).catch((error) => {
         console.log(error)
       })
     }
@@ -328,32 +346,32 @@ function AppContent(props) {
 
     <View style={styles.container}>
 
- {console.log(isLoggedIn)}
-      {isLoggedIn === "true" ?  <SuccessFlow/>: 
-      <NavigationContainer>
-        <Navigation.Navigator screenOptions={{headerShown:false}}>
-          <Navigation.Screen name="SplashText" component={SplashText} />
-          <Navigation.Screen name="SplashScreen" component={SplashScreen} />
-          <Navigation.Screen name="LandingScreen" component={LandingScreen} />
-          <Navigation.Screen name="CreateAccount" component={CreateAccount} />
-          <Navigation.Screen name="LoginDesign" component={LoginDesign} />
-          <Navigation.Screen name="CreateMpin" component={CreateMpin} />
-           <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
-           <Navigation.Screen name='ForgotPassword' component={ForgotPassword}/>
-           <Navigation.Screen name="OtpVerification" component={OtpVerification} />
+      {console.log(isLoggedIn)}
+      {isLoggedIn === "true" ? <SuccessFlow /> :
+        <NavigationContainer>
+          <Navigation.Navigator screenOptions={{ headerShown: false }}>
+            <Navigation.Screen name="SplashText" component={SplashText} />
+            <Navigation.Screen name="SplashScreen" component={SplashScreen} />
+            <Navigation.Screen name="LandingScreen" component={LandingScreen} />
+            <Navigation.Screen name="CreateAccount" component={CreateAccount} />
+            <Navigation.Screen name="LoginDesign" component={LoginDesign} />
+            <Navigation.Screen name="CreateMpin" component={CreateMpin} />
+            <Navigation.Screen name="ConfirmMPin" component={ConfirmMPin} />
+            <Navigation.Screen name='ForgotPassword' component={ForgotPassword} />
+            <Navigation.Screen name="OtpVerification" component={OtpVerification} />
             <Navigation.Screen name="SetNewPassword" component={SetNewPassword} />
-             <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
-          
-        </Navigation.Navigator>
+            <Navigation.Screen name="SucessUpdatePassword" component={SucessUpdatePassword} />
+
+          </Navigation.Navigator>
         </NavigationContainer>}
 
-        
 
-        {loginContext?.getNetworkConnectivity !=true && <View style={styles.noInternetContainer}>
+
+      {loginContext?.getNetworkConnectivity != true && <View style={styles.noInternetContainer}>
         <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
 
           <Image source={NoInternetIcon} style={{ width: 350, height: 246 }} />
-          <Text style={{ fontSize: 22, fontFamily:'Gilroy-Bold', color: '#000', marginBottom: 8, marginTop: 20 }}>
+          <Text style={{ fontSize: 22, fontFamily: 'Gilroy-Bold', color: '#000', marginBottom: 8, marginTop: 20 }}>
             You're Offline
           </Text>
           <Text style={styles.content}>
@@ -452,7 +470,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-   noInternetContainer: {
+  noInternetContainer: {
     position: "absolute",
     top: 0,
     left: 0,
@@ -469,7 +487,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1E45E1', justifyContent: 'center', alignItems: 'center', paddingVertical: 15, marginTop: height * 0.1,
     width: width * 0.8, borderRadius: 10
   },
-  content: { fontSize: 16,fontFamily:'Gilroy-Regular',color: '#555', textAlign: 'center', width: 270, lineHeight: 22, marginTop: 10 },
+  content: { fontSize: 16, fontFamily: 'Gilroy-Regular', color: '#555', textAlign: 'center', width: 270, lineHeight: 22, marginTop: 10 },
 });
 
 export default App;

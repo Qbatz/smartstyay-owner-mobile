@@ -599,7 +599,9 @@ const BillBookingDetailsSheet = ({
                 <View
                   style={[
                     styles.statusBadge,
-                    { backgroundColor: "#038C3D" },
+                   selectedBill.status === "Available"
+                      ? styles.paidBadge : selectedBill.status === "Fully Adjusted" ? styles.adjustedBadge
+                        : styles.overdueBadge,
                   ]}
                 >
                   <View
@@ -611,10 +613,12 @@ const BillBookingDetailsSheet = ({
                   <Text
                     style={[
                       styles.statusText,
-                      { color: "#fff" },
+                      selectedBill.status === "Available"
+                        ? styles.paidTxt : selectedBill.status === "Fully Adjusted" ? styles.adjustedText
+                          : styles.overdueText, 
                     ]}
                   >
-                    {InitializebookingBills?.advanceInfo?.paymentStatus}
+                    {selectedBill?.status}
                   </Text>
                 </View>
 
@@ -663,7 +667,7 @@ const BillBookingDetailsSheet = ({
                 <View style={{ flexDirection: "row", marginTop: 4, alignItems: 'center' }}>
 
                   <View style={styles.invTypeBadge}>
-                    <Text style={styles.invTypeText}>Booking</Text>
+                    <Text style={styles.invTypeText}>{InitializebookingBills?.advanceInfo?.invoiceType || "N/A"}</Text>
                   </View>
                   <Image source={Bills_Black_Icon} style={{ width: 12, height: 12, marginRight: 5 }} />
                   <Text style={styles.billNumber}>
@@ -686,12 +690,12 @@ const BillBookingDetailsSheet = ({
                     {/* ₹ {BillPdfdetails?.invoiceInfo?.totalAmount ?? "--"} */}
                     ₹ {selectedBill?.invoiceAmount ? Number(selectedBill?.invoiceAmount).toFixed(2) : "0.00"}
                   </Text>
-                  <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                  {/* <View style={{ marginTop: 3, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
 
                     <Image source={TickIcon} style={{ height: 13, width: 13, marginRight: 5, marginTop: 2 }} />
                     <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>Full Paid</Text>
 
-                  </View>
+                  </View> */}
                 </View>
 
               </View>
@@ -704,7 +708,7 @@ const BillBookingDetailsSheet = ({
 
             <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
               <View>
-                <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Booking</Text>
+                <Text style={{ fontSize: 15, fontFamily: "Gilroy-Semibold" }}>Balance</Text>
               </View>
               <View>
                 <Text
@@ -1424,6 +1428,13 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     elevation: 1,
   },
+  adjustedBadge: { backgroundColor: '#FFE9E3' },
+  overdueBadge: {
+    backgroundColor: "#FEF3C7",
+  },
+   paidBadge: {
+    backgroundColor: "#DCFCE7",
+  },
 
 
 
@@ -1438,6 +1449,16 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 12,
     fontFamily: "Gilroy-Bold",
+  },
+
+  paidTxt: {
+    color: "#15803D",
+  },
+  adjustedText: {
+    color: '#E02D2D'
+  },
+  overdueText: {
+    color: "#FF9900",
   },
   actionRow: {
     flexDirection: "row",

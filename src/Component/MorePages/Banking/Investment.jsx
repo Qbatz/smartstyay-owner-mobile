@@ -1,4 +1,4 @@
-import React, {useRef, useState, useContext, useEffect } from "react";
+import React, { useRef, useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -23,7 +23,7 @@ import { CustomerContext } from "../../../Context/CustomerContext"
 import { CommonContexts } from "../../../Context/CommonContext";
 import { VendorContext } from "../../../Context/VendorContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
-
+import { BankingContext } from "../../../Context/BankingContext";
 
 
 
@@ -32,23 +32,25 @@ export default function Investment({
   route,
 }) {
 
-
-    const isApplyTriggeredRef = useRef(false);
-
+  const isApplyTriggeredRef = useRef(false);
 
   const { settleExpense, settleVendorPayment } = useContext(CustomerContext);;
   const { getVendorDetails, vendorDetails, getVendorSettlementInitialize, vendorSettlementInitialize, } = useContext(VendorContext)
   const { activeHostelId } = useContext(CommonContexts)
 
-  const { expensesList, GetExpenseList, loading, IntializeexpensesList, GetInitializeExpense,
+  const { expensesList, GetExpenseList, IntializeexpensesList, GetInitializeExpense,
     DeleteExpense, expenseoverviewDetails, GetExpenseById,
   } = useContext(ExpensesContext);
 
+  const { addMoneyInvestment, getBankOverview, NewgetBankList,
+    bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+    useContext(BankingContext);
 
 
   const [vendorAppliedAmounts, setVendorAppliedAmounts] = useState({});
 
-  
+
+  console.log("banklist", bankList);
 
 
   const dueAmount = 0
@@ -82,28 +84,37 @@ export default function Investment({
   const [dateErr, setDateErr] = useState("");
 
 
+  const paymentOptions =
+    bankList?.map((item) => ({
+      id: item?.bankId,
+      bankId: item?.bankId,
+      name: item?.accountHolderName,
+    })) || [];
 
 
-  // const paymentOptions =
-  //   vendorSettlementInitialize?.banks?.map((b) => ({
-  //     id: b?.bankId,
-  //     name: `${b?.holderName} - ${b?.bankName}`,
-  //   })) || [];
+
+  useEffect(() => {
+    const bank = route.params?.bankDetails;
+
+    if (bank) {
+      setSelectedMode({
+        id: bank?.bankId,
+        bankId: bank?.bankId,
+        displayName: bank?.displayName,
+        accountType: bank?.accountType,
+        accountHolderName: bank?.accountHolderName,
+      });
+
+      setErrors((prev) => ({
+        ...prev,
+        paymentMethod: "",
+      }));
+    }
+  }, [route.params?.bankDetails]);
 
 
- 
 
   const today = dayjs();
-
-  // const isDisabledDate = (d) => {
-  //     if (!d) return false;
-
-  //     if (d.isAfter(today, "day")) return true;
-
-  //     if ( minDate && d.isBefore(minDate, "day")) return true;
-
-  //     return false;
-  // }
 
 
   const isDisabledDate = (d) => {
@@ -159,7 +170,7 @@ export default function Investment({
     ImagePicker.launchImageLibrary(
       {
         mediaType: "photo",
-        selectionLimit: 0, 
+        selectionLimit: 0,
       },
       (response) => {
         if (response.didCancel) return;
@@ -203,146 +214,92 @@ export default function Investment({
       newErrors.purchaseDate = "Please select paid date";
     }
 
-    if (!selectedMode) {
-      newErrors.paymentMethod = "Please select transferring account";
-    }
+    // if (!selectedMode) {
+    //   newErrors.paymentMethod = "Please select transferring account";
+    // }
 
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    if (isApplyTriggeredRef.current) return;
+    isApplyTriggeredRef.current = true;
+
+    try {
 
 
- 
+      const payload = {
+        bankId: selectedMode?.bankId,
+        paymentMethodId: "",
+        amount: Number(paidAmount),
+        description: description?.trim(),
+        transactionDate: dayjs(purchaseDate).format("YYYY-MM-DD"),
+        transactionId: transactionId?.trim(),
+        investorName: route.params?.bankDetails?.responsiblePersonName || "",
+      };
+      console.log("Investment Payload =>", payload);
 
-//   const autoDistributeAmount = (totalPaid) => {
-//     if (!isVendorSettlement) return;
+      const response = await addMoneyInvestment(
+        activeHostelId,
+        payload
+      );
 
-//     const expenses = vendorSettlementInitialize?.expenses || [];
-//     let remaining = Number(totalPaid) || 0;
-//     const newAmounts = {};
+      if (response?.success) {
 
-//     expenses.forEach((exp) => {
-//       const maxAllowed = Number(exp.totalBalance || 0);
-//       const toApply = Math.min(remaining, maxAllowed);
-//       newAmounts[exp.expenseId] = toApply > 0 ? String(toApply) : "";
-//       remaining -= toApply;
-//     });
+        await getBankOverview(
+          activeHostelId,
+          route.params?.bankId
+        );
 
-//     setVendorAppliedAmounts(newAmounts);
-//   };
+        await NewgetBankList(activeHostelId);
 
-//   const handleSubmit = async () => {
+        setModalType("success");
+        setModalMessage("Investment Added Successfully");
+        setShowSuccessModal(true);
 
-//     if (!validateForm()) return;
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          navigation.goBack();
+        }, 1500);
 
-//       if (isApplyTriggeredRef.current) return
-//     isApplyTriggeredRef.current = true
+      } else {
 
-//      try {
+        setModalType("error");
+        setModalMessage(
+          response?.message || "Failed to add investment"
+        );
+        setShowSuccessModal(true);
 
-//     let response;
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1500);
+      }
 
+    } catch (error) {
 
+      console.log("Investment Error =>", error);
 
-//     if (isVendorSettlement) {
-//       const payload = {
-//         images: attachments?.map(item => item?.uri) || [],
-//         payLoads: {
-//           paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-//           bankId: String(selectedMode?.id),
-//           paymentMethod: String(selectedMode?.id),
-//           transactionId,
-//           notes: description,
-//           expenses: vendorExpensesPayload,
-//         },
-//       };
+      setModalType("error");
+      setModalMessage(
+        error?.message || "Something went wrong"
+      );
+      setShowSuccessModal(true);
 
-//       response = await settleVendorPayment(
-//         vendor?.id,
-//         payload,
-//       );
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
 
-//       if (response?.success) {
-//         setModalType("success");
-//         setModalMessage("Created Succesfully");
-//         setShowSuccessModal(true)
-
-//         const res = await getVendorDetails(vendor?.id)
-
-//         setTimeout(() => {
-//           setShowSuccessModal(false)
-//           navigation.goBack()
-//         }, 1500);
-//       }
-//       else {
-
-//         setModalType("error")
-//         setModalMessage(response?.message || "Something went wrong")
-//         setShowSuccessModal(true)
-
-//         setTimeout(() => {
-//           setShowSuccessModal(false)
-//         }, 1500);
-//       }
-
-//     } else {
-
-//       const payload = {
-//         images: attachments?.map(item => item?.uri) || [],
-//         payLoads: {
-//           paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-//           bankId: String(selectedMode?.id),
-//           paymentMethod: String(selectedMode?.id),
-//           transactionId,
-//           notes: description,
-//           paidAmount: Number(paidAmount),
-//         },
-//       };
-
-//       console.log(
-//         "EXPENSE SETTLE PAYLOAD",
-//         JSON.stringify(payload, null, 2)
-//       );
-
-//       response = await settleExpense(
-//         expense?.expenseId,
-//         payload
-//       );
-
-//       if (response?.success) {
-//         setModalType("success");
-//         setModalMessage("Created Succesfully");
-//         setShowSuccessModal(true)
-
-//         const result = await GetExpenseById(activeHostelId, expense?.expenseId);
-
-//         setTimeout(() => {
-//           setShowSuccessModal(false)
-//           navigation.goBack()
-//         }, 1500);
-//       }
-//       else {
-
-//         setModalType("error")
-//         setModalMessage(response?.message || "Something went wrong")
-//         setShowSuccessModal(true)
-
-//         setTimeout(() => {
-//           setShowSuccessModal(false)
-//         }, 1500);
-//       }
-//     }
-//   }
-//    catch (error) {
-//     console.log(error);
-//   } finally {
-//     isApplyTriggeredRef.current = false;
-//   }
+    } finally {
+      isApplyTriggeredRef.current = false;
+    }
+  };
 
 
-//   }
+
 
 
 
@@ -351,7 +308,6 @@ export default function Investment({
 
     <>
 
-      {/* {loading && <Loader />} */}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -360,7 +316,6 @@ export default function Investment({
       />
 
       <View style={styles.container}>
-        {/* Header */}
 
         <View style={styles.header}>
           <TouchableOpacity
@@ -384,32 +339,26 @@ export default function Investment({
         <ScrollView
           showsVerticalScrollIndicator={false}
         >
-          {/* Vendor */}
 
           <Text style={styles.label}>
             Investment
-            {/* {isVendorSettlement
-              ? "Vendor / Business Name *"
-              : "Expense Name *"} */}
+
           </Text>
 
           <View style={styles.inputBox}>
             <Text>
-                test
-              {/* {isVendorSettlement
-                ? vendor?.fullName
-                : expense?.title} */}
+              test
+
             </Text>
           </View>
 
-          {/* Paid Amount */}
 
           <Text style={styles.label}>
-             Amount (INR)  <Text style={{ color: "red" }}>*</Text>
+            Amount (INR)  <Text style={{ color: "red" }}>*</Text>
           </Text>
 
           <View style={styles.amountRow}>
-           
+
 
             <ValidatedInput
               placeholder="Enter Amount"
@@ -419,7 +368,6 @@ export default function Investment({
               value={paidAmount}
               onChangeText={(text) => {
                 setPaidAmount(text);
-                autoDistributeAmount(text)
                 setErrors((prev) => ({
                   ...prev,
                   paidAmount: "",
@@ -428,45 +376,22 @@ export default function Investment({
               style={styles.amountInput}
             />
 
-            {/* <TouchableOpacity
-              style={styles.setBtn}
-              onPress={() => {
-                setPaidAmount(String(dueAmount))
-                autoDistributeAmount(dueAmount)
-              }}
-            >
-              <Text style={styles.setBtnText}>Set</Text>
-            </TouchableOpacity> */}
+
 
           </View>
 
-<View style={styles.errorWrapper}>
-          {errors.paidAmount && (
-            <ErrorMessage
-              message={errors.paidAmount}
-              type="error"
-            />
-          )}
+          <View style={styles.errorWrapper}>
+            {errors.paidAmount && (
+              <ErrorMessage
+                message={errors.paidAmount}
+                type="error"
+              />
+            )}
           </View>
 
-          {/* <Text style={styles.dueText}>
-            Due Amount is ₹
-            {dueAmount.toFixed(2)}
-          </Text> */}
 
-{/* 
-          <Text style={styles.label}>
-            Balance Payable If
-          </Text>
 
-          <View style={styles.inputBox}>
-            <Text>
-              ₹
-              {balance > 0
-                ? balance.toFixed(2)
-                : "0.00"}
-            </Text>
-          </View> */}
+
 
 
           <Text style={styles.label}>
@@ -496,15 +421,15 @@ export default function Investment({
             </View>
           </TouchableOpacity>
 
-<View style={styles.errorWrapper}>
-          {errors.purchaseDate && (
-            <ErrorMessage
-              message={errors.purchaseDate}
-              type="error"
-            />
-          )}
+          <View style={styles.errorWrapper}>
+            {errors.purchaseDate && (
+              <ErrorMessage
+                message={errors.purchaseDate}
+                type="error"
+              />
+            )}
           </View>
-         
+
 
 
 
@@ -512,22 +437,31 @@ export default function Investment({
             Payment Method  <Text style={{ color: "red" }}>*</Text>
           </Text>
 
-          <TouchableOpacity
 
+          <TouchableOpacity
+            disabled
+            activeOpacity={1}
             style={[
               styles.expensesDropdownBox,
-              // isEditMode && { opacity: 0.4 }
+              styles.disabledDropdown,
             ]}
-            // disabled={isEditMode}
-            onPress={() => {
-              setModePaymentOpen(!modePaymentOpen);
-            }}
           >
-            <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
-              {selectedMode?.name || "Select Mode"}
-            </Text>
-            <Image source={DownArrow} style={styles.expensesArrowIcon} />
+            <View>
+              <Text style={styles.accountName}>
+                {selectedMode?.displayName || "-"}
+              </Text>
+
+              <Text style={styles.accountType}>
+                {selectedMode?.accountType || "-"}
+              </Text>
+            </View>
+
+            <Image
+              source={DownArrow}
+              style={styles.expensesArrowIcon}
+            />
           </TouchableOpacity>
+
 
           {modePaymentOpen && (
             <View style={styles.expensesDropdownMenu}>
@@ -577,17 +511,17 @@ export default function Investment({
             </View>
           )}
 
-<View style={styles.errorWrapper}>
-          {errors.paymentMethod && (
-            <ErrorMessage
-              message={errors.paymentMethod}
-              type="error"
-            />
-          )}
+          <View style={styles.errorWrapper}>
+            {errors.paymentMethod && (
+              <ErrorMessage
+                message={errors.paymentMethod}
+                type="error"
+              />
+            )}
           </View>
 
 
-          {/* <Text style={styles.label}>
+          <Text style={styles.label}>
             Transaction ID
           </Text>
 
@@ -597,121 +531,7 @@ export default function Investment({
             value={transactionId}
             onChangeText={handleTransactionChange}
 
-          /> */}
-
-          {/* Upload */}
-
-          <Text style={styles.label}>
-            Attachments (if any)
-          </Text>
-
-          {attachments.length === 0 ? (
-            <TouchableOpacity
-              style={styles.uploadBox}
-              onPress={pickImage}
-            >
-              <Text style={styles.uploadText}>
-                Choose Image to Upload
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <>
-              {/* Main Preview */}
-
-              <View style={styles.previewCard}>
-                <Image
-                  source={{ uri: selectedImage?.uri }}
-                  style={styles.previewImage}
-                />
-
-                <View style={styles.fileInfoRow}>
-                  <View>
-                    <Text style={styles.fileName}>
-                      {selectedImage?.fileName}
-                    </Text>
-
-                    <Text style={styles.fileSize}>
-                      {(
-                        (selectedImage?.fileSize || 0) /
-                        1024
-                      ).toFixed(0)}{" "}
-                      KB
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    onPress={() => {
-                      const index =
-                        attachments.findIndex(
-                          (item) =>
-                            item.uri ===
-                            selectedImage.uri
-                        );
-
-                      removeImage(index);
-                    }}
-                    style={styles.deleteBtn}
-                  >
-                    <Text
-                      style={{
-                        color: "#FF4D4F",
-                        fontSize: 20,
-                      }}
-                    >
-                      ✕
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              {/* Thumbnail List */}
-
-              <View style={styles.thumbnailRow}>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={
-                    false
-                  }
-                >
-                  {attachments.map(
-                    (item, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        onPress={() =>
-                          setSelectedImage(item)
-                        }
-                      >
-                        <Image
-                          source={{
-                            uri: item.uri,
-                          }}
-                          style={[
-                            styles.thumbImage,
-                            selectedImage?.uri ===
-                            item.uri && {
-                              borderColor:
-                                "#2D5BFF",
-                              borderWidth: 2,
-                            },
-                          ]}
-                        />
-                      </TouchableOpacity>
-                    )
-                  )}
-                </ScrollView>
-
-                <TouchableOpacity
-                  onPress={pickImage}
-                >
-                  <Text style={styles.addMore}>
-                    + Add more Files
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
-
-          {/* Description */}
+          />
 
           <Text style={styles.label}>
             Description
@@ -725,164 +545,15 @@ export default function Investment({
             onChangeText={
               setDescription
             }
-            placeholder="Ex : Wifi Bill Paid for May"
+            placeholder="Enter Description"
             style={
               styles.descriptionInput
             }
           />
 
-          {/* {isVendorSettlement && vendorSettlementInitialize?.expenses?.length > 0 && (
-
-            <View style={styles.card}>
-              <View style={styles.cardheadingsection}>
-                <Text style={styles.sectionTitle}>Unpaid Expense List</Text>
-              </View>
 
 
-              {vendorSettlementInitialize?.expenses?.length > 0 ? (
-                vendorSettlementInitialize?.expenses.map((item, index) => (
-                  <View key={item?.expenseId || index} style={styles.innerCard}>
 
-                    <View style={styles.rowBetween}>
-                      <Text style={styles.amount}>
-                        {item?.expenseNo || "N/A"}
-                      </Text>
-                      <Text style={styles.amount}>
-                        ₹ {item?.totalAmount || 0}
-                      </Text>
-                    </View>
-
-                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
-                      <Image source={InvoiceLinkIcon} style={{ height: 14, width: 14, marginRight: 4 ,}} />
-                      <Text style={styles.smallText}>{item?.referenceNo || "N/A"}</Text>
-                    </View>
-
-                    <View style={{ height: 1, backgroundColor: "#F3F4F6", marginBottom: 8 }} />
-
-                    <View style={styles.rowBetween}>
-                      <Text style={styles.dueLabel}>Due</Text>
-                      <Text style={styles.dueValue}>₹{Number(item?.totalBalance || 0).toFixed(2)}</Text>
-                    </View>
-
-                    <Text style={styles.applyLabel}>Amount to apply</Text>
-
-                    <View style={styles.applyInputBox}>
-                      <Text style={styles.rupeeSymbol}>₹</Text>
-                      <ValidatedInput
-                        style={styles.applyInput}
-                        placeholder="0.00"
-
-                        keyboardType="numeric"
-                        type="numberOnly"
-                        inputType="numeric"
-                        value={String(vendorAppliedAmounts[item.expenseId] || "")}
-                       
-
-                        onChangeText={(text) => {
-                          let amount = Number(text);
-                          const maxAllowed = Number(item?.totalBalance || 0);
-
-                          if (amount > maxAllowed) {
-                            setModalType("warning");
-                            setModalMessage(`Maximum allowed is ₹ ${maxAllowed}`);
-                            setShowSuccessModal(true);
-                            setTimeout(() => setShowSuccessModal(false), 1500);
-                            amount = maxAllowed;
-                            text = String(maxAllowed);
-                          }
-
-                          const newAmounts = {
-                            ...vendorAppliedAmounts,
-                            [item.expenseId]: text,
-                          };
-
-                          setVendorAppliedAmounts(newAmounts);
-
-                          const total = Object.values(newAmounts).reduce(
-                            (sum, val) => sum + (Number(val) || 0), 0
-                          );
-                          setPaidAmount(String(total));
-                        }}
-                      />
-                    </View>
-
-                  </View>
-                ))
-              ) : (
-                <View style={styles.emptyCard}>
-                  <Text style={styles.emptyText}>
-                    No pending invoices found
-                  </Text>
-                </View>
-              )}
-            </View>
-
-          )} */}
-
-
-          {/* <View style={styles.summaryCard}>
-            <Text
-              style={styles.summaryTitle}
-            >
-              SUMMARY
-            </Text>
-
-            <Text
-              style={styles.summaryAmount}
-            >
-              ₹
-              {(
-                Number(paidAmount) ||
-                0
-              ).toFixed(2)}
-            </Text>
-
-            <View
-              style={styles.divider}
-            />
-
-            <View
-              style={styles.summaryRow}
-            >
-              <Text
-                style={styles.summaryText}
-              >
-                Paid Amount
-              </Text>
-
-              <Text
-                style={styles.summaryText}
-              >
-                ₹
-                {(
-                  Number(
-                    paidAmount
-                  ) || 0
-                ).toFixed(2)}
-              </Text>
-            </View>
-
-            <View
-              style={styles.summaryRow}
-            >
-              <Text
-                style={styles.summaryText}
-              >
-                Balance Amount
-              </Text>
-
-              <Text
-                style={styles.summaryText}
-              >
-                ₹
-                {balance > 0
-                  ? balance.toFixed(
-                    2
-                  )
-                  : "0.00"}
-              </Text>
-            </View>
-          </View> */}
 
 
           <View
@@ -890,6 +561,7 @@ export default function Investment({
           >
             <TouchableOpacity
               style={styles.cancelBtn}
+              onPress={() => navigation.goBack()}
             >
               <Text style={{ fontFamily: "Gilroy-Semibold" }}>
                 Cancel
@@ -897,23 +569,20 @@ export default function Investment({
             </TouchableOpacity>
 
             <TouchableOpacity
-            //   onPress={handleSubmit}
-
-                  style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+              onPress={handleSubmit}
+              style={[
+                styles.submitBtn,
+                isApplyTriggeredRef.current && { opacity: 0.6 },
+              ]}
               disabled={isApplyTriggeredRef.current}
             >
               <Text
                 style={{
                   color: "#fff",
-                  fontFamily: "Gilroy-Semibold"
+                  fontFamily: "Gilroy-Semibold",
                 }}
               >
-                Settle ₹
-                {(
-                  Number(
-                    paidAmount
-                  ) || 0
-                ).toFixed(0)}
+                Invest ₹{Number(paidAmount || 0).toFixed(0)}
               </Text>
             </TouchableOpacity>
           </View>
@@ -949,7 +618,6 @@ export default function Investment({
               }}
               current={purchaseDate || dayjs().format("YYYY-MM-DD")}
               onDayPress={(day) => {
-                // 🚫 STOP FUTURE DATE CLICK
                 if (markedDates[day.dateString]?.disabled) return;
 
                 setPurchaseDate(day.dateString);
@@ -998,15 +666,6 @@ const styles = StyleSheet.create({
     width: 25,
     height: 25,
   },
-
-  // label: {
-  //   fontSize: 14,
-  //   marginHorizontal: 16,
-  //   marginTop: 18,
-  //   marginBottom: 8,
-  //   color: "#111827",
-  //   fontFamily: "Gilroy-Semibold"
-  // },
 
   inputBox: {
     height: 56,
@@ -1210,7 +869,7 @@ const styles = StyleSheet.create({
 
   },
   cardheadingsection: {
-    borderLeftWidth: 3,          // 👈 blue border
+    borderLeftWidth: 3,
     borderLeftColor: "#2D5BFF",
     paddingLeft: 12,
   },
@@ -1238,7 +897,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1.5,
-    borderColor: "#2D5BFF",   // focused blue border
+    borderColor: "#2D5BFF",
     borderRadius: 10,
     paddingHorizontal: 12,
     height: 52,
@@ -1278,15 +937,7 @@ const styles = StyleSheet.create({
     marginVertical: 5,
   },
 
-  // label: {
-  //   fontSize: 13,
-  //   color: "#6B7280",
-  //   fontFamily: "Gilroy-Regular",
-  //   marginLeft: 15,
-  //   marginBottom: 5,
-  //   marginTop: 5
 
-  // },
 
   valueText: {
     fontSize: 13,
@@ -1301,18 +952,17 @@ const styles = StyleSheet.create({
   smallText: {
     fontSize: 12,
     color: "#9CA3AF",
-    // marginBottom: 8,
     fontFamily: "Gilroy-Semibold"
   },
 
-label: {
-  marginHorizontal: 16,
-  marginBottom: 8,
-  marginTop: 16,
-  fontSize: 15,
-  fontFamily: "Gilroy-Medium",
-  color: "#111827",
-},
+  label: {
+    marginHorizontal: 16,
+    marginBottom: 8,
+    marginTop: 16,
+    fontSize: 15,
+    fontFamily: "Gilroy-Medium",
+    color: "#111827",
+  },
   expensesDropdownBox: {
     borderWidth: 1,
     borderColor: "#D4D4D4",
@@ -1413,17 +1063,25 @@ label: {
     elevation: 10,
   },
   errorWrapper: {
-  marginHorizontal: 16,
-  marginTop: 6,
-  alignItems: "flex-start",
-},
-  // input: {
-  //     borderWidth: 1,
-  //     borderColor: "#4F46E5",
-  //     borderRadius: 8,
-  //     padding: 12,
-  //     marginTop: 6,
-  //     fontFamily: "Gilroy-Regular"
-  // },
+    marginHorizontal: 16,
+    marginTop: 6,
+    alignItems: "flex-start",
+  },
+  disabledDropdown: {
+    backgroundColor: "#F9FAFB",
+    opacity: 0.7,
+  },
+  accountName: {
+    fontSize: 17,
+    fontFamily: "Gilroy-Medium",
+    color: "#111827",
+  },
+
+  accountType: {
+    marginTop: 2,
+    fontSize: 13,
+    fontFamily: "Gilroy-Regular",
+    color: "#6B7280",
+  },
 
 });

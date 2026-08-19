@@ -588,7 +588,7 @@ const GetExpenseById = async (hostelId, expenseId) => {
         DeleteExpense,
         
         SettleExpense,
-        GetExpenseById,
+        GetExpenseById,setProfileDetails
       }}
     >
       {children}

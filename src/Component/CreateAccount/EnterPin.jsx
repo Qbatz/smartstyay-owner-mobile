@@ -1,5 +1,5 @@
 import React, { useContext, useRef, useState, useEffect } from "react";
-import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Animated, NativeModules, Platform } from "react-native";
+import { View, Text, Image, StyleSheet, TextInput, TouchableOpacity, Animated, NativeModules, Platform, Modal } from "react-native";
 import Sm_logo from "../../Assets/Images/Sm_Icon.png";
 import { useNavigation } from "@react-navigation/native";
 import SuccessModal from "../../ToastFile/ToastPage";
@@ -11,11 +11,13 @@ import WaveIcon from "../../Assets/Images/login_Rectangle.png";
 import { updateFcmToken } from "../../Action/LoginAction";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SmartstayNewLogo from "../../Assets/Images/SmartstayNewLogo.png"
+import { ExpensesContext } from "../../Context/ExpensesContext";
 
 
 const EnterMPin = (props) => {
 
     const { verifyMpin, updatePinSetupStatus } = useContext(LoginContexts)
+    const {profileDetails}=useContext(ExpensesContext)
     const navigation = useNavigation()
     const [createMpin, setCreateMpin] = useState(["", "", "", ""])
     const [mPinNumber, setmPinNumber] = useState(null)
@@ -38,6 +40,8 @@ const EnterMPin = (props) => {
     const [fcmToken, setFcmToken] = useState();
     const [enterPinError, setEnterPinError] = useState();
     const [incorrectMpin, setIncorrectMpin] = useState(false);
+    const [forgotMpinPopup, setForgotMpinPopup] = useState(false);
+    const [sendLinkPopup, setSendLinkPopup] = useState(false)
 
     const showSuccessPopup = () => {
         setShowPopup(true);
@@ -145,7 +149,7 @@ const EnterMPin = (props) => {
             setmPinNumber(pinNumber)
             console.log(pinNumber)
 
-            const data= {
+            const data = {
                 pin: Number(pinNumber),
                 platform: Platform.OS,
             }
@@ -271,13 +275,14 @@ const EnterMPin = (props) => {
         navigation.navigate('CreateMpin')
     }
 
-    return <View style={{ paddingHorizontal: 20, flex: 1 }}>
+    return <View style={{ paddingHorizontal: 20, flex: 1, backgroundColor: '#ffffff' }}>
         <SuccessModal visible={showModal} message={message} type={type} />
         <View style={{ paddingTop: 70, alignItems: 'center', flex: 1 }} >
             <Image source={SmartstayNewLogo} style={style.logo} />
 
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingTop: 15 }}>
-                <Text style={style.title}>Welcome Back</Text>
+                <Text style={style.title}>
+                    {profileDetails?.firstName ? `Hi, ${profileDetails?.firstName} ${profileDetails?.lastName}` : "Welcome Back"}</Text>
 
                 {/* <Animated.Image
                     source={WaveIcon}
@@ -306,7 +311,7 @@ const EnterMPin = (props) => {
                         ref={(ref) => (inputs.current[index] = ref)}
                         secureTextEntry
                         keyboardType="number-pad"
-                        style={[style.pinBox, enterPinError && { borderColor: 'red' },  showModal && {borderColor:'green'}]}
+                        style={[style.pinBox, enterPinError && { borderColor: 'red' }, showModal && { borderColor: 'green' }]}
                         maxLength={1}
                         value={digit}
 
@@ -320,14 +325,14 @@ const EnterMPin = (props) => {
                     />
                 ))}
             </View>
-            {enterPinError && <View style={{ marginTop: 18 }}>
+            {enterPinError && <View style={{ marginTop: 28 }}>
                 <Text style={{ fontSize: 14, fontFamily: "Gilroy-Medium", color: '#FF0000' }}>{enterPinError}</Text>
             </View>}
 
             {
                 incorrectMpin &&
-                <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20 }}>
-                    <TouchableOpacity onPress={forgotMpinClick}
+                <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20,marginTop:20 }}>
+                    <TouchableOpacity onPress={() => setForgotMpinPopup(true)}
                     >
                         <Text style={{ color: '#1E45E1', fontSize: 14, fontFamily: "Gilroy-Regular", textDecorationLine: 'underline', }}>
                             Forgot Mpin</Text>
@@ -371,6 +376,74 @@ const EnterMPin = (props) => {
             </View>
         )}
 
+        <Modal visible={forgotMpinPopup}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setForgotMpinPopup(false)}>
+            <View style={style.frgtMpinOverlay}>
+                <View style={style.frgtMpinBox}>
+                    <Text style={{ fontSize: 18, fontFamily: 'Gilroy-Semibold' }}>Want to Reset your Mpin?</Text>
+                    <Text style={{ fontSize: 12, fontFamily: 'Gilroy-Regular', marginTop: 12, color: '#6F6C8F' }}>
+                        Reset process were complete through your mailID</Text>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 24, alignSelf: 'flex-end' }}>
+                        <TouchableOpacity onPress={() => setForgotMpinPopup(false)}
+                            style={{
+                                borderWidth: 1, borderColor: '#DCDCDC', paddingVertical: 6, paddingHorizontal: 12,
+                                borderRadius: 5, marginRight: 5
+                            }}>
+                            <Text style={{ fontSize: 12, fontFamily: "Gilroy-Medium" }}>Cancel</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity onPress={() => {
+                            setForgotMpinPopup(false)
+                            setSendLinkPopup(true)
+                        }}
+                            style={{
+                                paddingVertical: 6, paddingHorizontal: 12, backgroundColor: '#1E45E1', borderRadius: 5,
+                                marginLeft: 5
+                            }}>
+                            <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold", color: '#ffffff' }}>
+                                Send Link</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                </View>
+
+            </View>
+
+        </Modal>
+
+        <Modal visible={sendLinkPopup}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setSendLinkPopup(false)}>
+            <View style={style.frgtMpinOverlay}>
+                <View style={style.frgtMpinBox}>
+                    {/* <Text style={{fontSize:18,fontFamily:'Gilroy-Semibold'}}>Want to Reset your Mpin?</Text> */}
+                    <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Regular', marginTop: 12, color: '#6F6C8F', lineHeight: 20 }}>
+                        We've sent a 4-digit mPIN reset link to your registered email
+                        {" "}<Text style={{ fontSize: 14, fontFamily: 'Gilroy-Semibold', color: '#222222' }}>ramku.gmail</Text>,
+                        Please Check your inbox and get confirm</Text>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 24, alignSelf: 'flex-end' }}>
+
+                        <TouchableOpacity onPress={() => setSendLinkPopup(false)}
+                            style={{
+                                paddingVertical: 6, paddingHorizontal: 20, backgroundColor: '#1E45E1', borderRadius: 5,
+                                marginLeft: 5
+                            }}>
+                            <Text style={{ fontSize: 12, fontFamily: "Gilroy-Semibold", color: '#ffffff' }}>
+                                Ok</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                </View>
+
+            </View>
+
+        </Modal>
+
 
 
     </View>
@@ -381,12 +454,15 @@ const style = StyleSheet.create({
     logo: { width: 66.30, height: 66.25 },
     createText: { fontSize: 23, fontFamily: "Gilroy-Bold", color: '#222222', marginTop: 20 },
     subtitle: { fontSize: 14, fontFamily: "Gilroy-Regular", color: '#4B4B4B', marginTop: 15 },
-    pinContainer: { width: "100%", flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20, paddingLeft: 10, paddingRight: 10 },
+    pinContainer: {
+        width: "100%", flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20,
+        paddingLeft: 10, paddingRight: 10, height: 60, marginTop: 18
+    },
     pinBox: {
-        width: 60, height: 55, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, textAlign: "center",
+        width: 60, height: 60, borderWidth: 1, borderColor: "#ccc", borderRadius: 12, textAlign: "center",
         fontSize: 20, color: "#000"
     },
-    nextButton: { backgroundColor: '#1A73E8', borderRadius: 8, paddingVertical: 20, alignItems: 'center' },
+    nextButton: { backgroundColor: '#1A73E8', borderRadius: 12, paddingVertical: 20, alignItems: 'center' },
     nextText: { color: '#ffffff', fontSize: 16, fontFamily: "Gilroy-Bold" },
     title: {
         fontSize: 28,
@@ -426,6 +502,21 @@ const style = StyleSheet.create({
         color: "#777",
         fontFamily: "Gilroy-Medium",
         marginTop: 6,
+    },
+    frgtMpinOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    frgtMpinBox: {
+        width: "90%",
+        backgroundColor: "#fff",
+        padding: 25,
+        borderRadius: 15,
+        // alignItems: "center",
+        elevation: 10,
     },
 
 

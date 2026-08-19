@@ -10,17 +10,19 @@ import {
   Image,
   ScrollView,Platform
 } from "react-native";
-
+import { useRoute } from "@react-navigation/native";
 import CategoryIcon from "../../../Assets/Images/Category.png";
 import CallIcon from "../../../Assets/Images/call.png";
 import LocationIcon from "../../../Assets/Images/LocationIcon.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import MobileIcon from "../../../Assets/Images/mobile.png";
 
+import { BankingContext } from "../../../Context/BankingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+
 import { Animated } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { UseSetting } from "../../../Context/SettingContext";
-import { CommonContexts } from "../../../Context/CommonContext";
 import Loader from "../../../Component/Loader/Loader"
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -58,6 +60,28 @@ export default function BankOverview({ expense }) {
 
     const horizontalRef = useRef(null);
 
+      const route = useRoute();
+
+  const bankDetails = route?.params?.bankDetails || {};
+  const overview = bankOverview || {};
+
+  console.log("bankDetails", bankDetails);
+
+      const {  getBankOverview,
+      bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+            useContext(BankingContext);
+        const { activeHostelId } = useContext(CommonContexts);
+
+        console.log("bankOverview", bankOverview);
+        
+    
+
+//         useEffect(() => {
+//   if (activeHostelId && bankId) {
+//     getBankOverview(activeHostelId, bankId);
+//   }
+// }, [activeHostelId, bankId]);
+
 
     const handleSwipe = () => {
         const nextPage = currentPage === 0 ? 1 : 0;
@@ -85,35 +109,36 @@ export default function BankOverview({ expense }) {
 <SummaryCard
   icon={RevenueIcon}
   title="Current Balance"
-  value={"10000"}
+   value={overview?.currentBalance || 0}
   prefix="₹ "
 />
 
 <SummaryCard
   icon={RupeeIcon}
   title="Opening Balance"
-  value={"1000"}
+  value={overview?.openingBalance || 0}
   prefix="₹ "
 />
 
 <SummaryCard
   icon={PeopleIcon}
   title="inflow (Income)"
-  value={"35"}
+ value={overview?.inflow || 0}
 />
 
 <SummaryCard
   icon={CategoryIcon}
   title="Outflow (Expenses)"
-  value={"1.24"}
+  value={overview?.outflow || 0}
   suffix=" %"
 />
 <SummaryCard
   icon={CategoryIcon}
   title="Transfers"
-  value={"1.24"}
+  value={overview?.transfers || 0}
   suffix=" %"
 />
+
 
         </ScrollView>
     
@@ -123,47 +148,73 @@ export default function BankOverview({ expense }) {
           <Text style={styles.swipeText}>‹‹ Swipe</Text>
         </TouchableOpacity>
 
-
+ {bankDetails?.accountType === "BANK" && (
+        <>
     <ScrollView
       showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.container}
     >
+
+       
       <InfoItem
         label="Bank Name"
-        value={"Canara Bank"} 
+       value={bankDetails?.bankName || "N/A"}
       />
 
       <InfoItem
         label="Account Holder Name"
-        value={"Immanuvel"}
+        value={bankDetails?.accountHolderName || "N/A"}
         icon={CategoryIcon}
       />
 
 
       <InfoItem
         label="Account No"
-        value={"65784195214"}
+       value={bankDetails?.accountNumber || "N/A"}
         icon={AccountIcon}
       />
 
        <InfoItem
         label="IFSC Code"
-        value={"CAN45789"}
+       value={bankDetails?.ifscCode || "N/A"}
        icon={InfoIcon}
       />
 
       <InfoItem
         label="Branch"
-        value={"Navalur Canara"}
+         value={bankDetails?.branchName || "N/A"}
         icon={LocationIcon}
       />
+     
+
 
       <InfoItem
-        label="Credit Limit"
-        value={"₹ 15,000.00"}
-        icon={CalendarIcon}
+        label="Description"
+        value={bankDetails?.description || "N/A"}
+        // icon={CalendarIcon}
       />
     </ScrollView>
+
+    </> )}
+
+
+ {bankDetails?.accountType !== "BANK" && (
+     <ScrollView
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={styles.container}
+    >
+        <InfoItem
+        label="Responisble Person"
+         value={bankDetails?.responsiblePersonName || "N/A"}
+         icon={CategoryIcon} />
+     
+      <InfoItem
+        label="Description"
+        value={bankDetails?.description || "N/A"}
+        // icon={CalendarIcon}
+      />
+    </ScrollView>
+ )}
     </>
     );
 }
@@ -312,9 +363,6 @@ marginTop:10,
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.1,
   shadowRadius: 4,
-
-  // borderWidth: 1,
-  // borderColor: "#E5E7EB",
 },
 
   // iconBox: {
