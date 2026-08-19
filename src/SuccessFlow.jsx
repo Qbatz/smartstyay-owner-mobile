@@ -107,6 +107,7 @@ import AddExpensesPage from "../src/Component/MorePages/Expenses/AddExpensesPage
 import NewRecordPayment from "../src/Component/MorePages/Bills/NewRecordPayment"
 import AddBookingNewForm from "../src/Component/Customer/AddBookingNew";
 import ApplyBookingToInvoice from "../src/Component/MorePages/Bills/ApplyBookingToInvoice"
+import Requests from "../src/Component/MorePages/Requests/RequestList";
 
 const SuccessFlow = (props) => {
 
@@ -234,6 +235,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="BookingtoDiscount" component={BookingtoDiscount} />
                     <Navigation.Screen name="BillsApplyInvoices" component={BillsApplyInvoices} />
                     <Navigation.Screen name="ApplyBookingToInvoice" component={ApplyBookingToInvoice}/>
+                     <Navigation.Screen name="Requests" component={Requests} />
                 </Navigation.Navigator>
             </NavigationContainer>
 
