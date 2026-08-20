@@ -208,7 +208,7 @@ const TenantRegister = ({ navigation }) => {
 
 
           <View style={styles.headerRow}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flexDirection: "row", alignItems: "center"}}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Image source={ArrowLeft} style={styles.backIcon} />
               </TouchableOpacity>

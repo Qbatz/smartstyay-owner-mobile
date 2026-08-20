@@ -948,6 +948,7 @@ export default function NewBankingList() {
           </View> */}
         </View>
 
+{console.log("sillana",mappedBankList)}
 
         {!loading && (
 

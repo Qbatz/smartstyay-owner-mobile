@@ -742,13 +742,33 @@ const GetExpenseRegisterReport = async (hostelId, filters = {}) => {
   }
 };
 
-const downloadReceiptReport = async (hostelId) => {
+const downloadReceiptReport = async (hostelId,filters) => {
   if (!hostelId) {
     return { success: false, message: "Invalid hostelId" };
   }
 
   try {
     setLoading(true);
+
+    const params = {
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+      invoiceType: filters?.invoiceType,
+      collectedBy: filters?.collectedBy,
+      period: filters?.period,
+      paymentMode: filters?.paymentMode,
+      page: filters?.page ?? 1,
+      size: filters?.size ?? 10,
+    };
+
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(
+        ([_, value]) =>
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+      )
+    );
 
     const token = await retriveData("token");
     const axios = getAxios();
@@ -759,6 +779,12 @@ const downloadReceiptReport = async (hostelId) => {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: cleanParams,
+        paramsSerializer: (params) =>
+          qs.stringify(params, {
+            arrayFormat: "repeat",
+          }),
+        
       }
     );
 
@@ -820,8 +846,7 @@ const downloadExpenseReport = async (hostelId) => {
   }
 }
 
-
-const downloadInvoiceReport = async (hostelId) => {
+const downloadInvoiceReport = async (hostelId,filters) => {
   if (!hostelId) {
     return { success: false, message: "Invalid hostelId" };
   }
@@ -832,12 +857,60 @@ const downloadInvoiceReport = async (hostelId) => {
     const token = await retriveData("token");
     const axios = getAxios();
 
+    const params = {
+            search: filters.search || undefined,
+            paymentStatus: filters.paymentStatus?.length
+                ? filters.paymentStatus
+                : undefined,
+
+            invoiceModes: filters.invoiceModes?.length
+                ? filters.invoiceModes
+                : undefined,
+
+            invoiceTypes: filters.invoiceTypes?.length
+                ? filters.invoiceTypes
+                : undefined,
+
+            createdBy: filters.createdBy?.length
+                ? filters.createdBy
+                : undefined,
+
+            period: filters.period || undefined,
+
+            minPaidAmount: filters.minPaidAmount || undefined,
+            maxPaidAmount: filters.maxPaidAmount || undefined,
+
+            minOutstandingAmount:
+                filters.minOutstandingAmount || undefined,
+
+            maxOutstandingAmount:
+                filters.maxOutstandingAmount || undefined,
+
+            startDate: filters.startDate || undefined,
+            endDate: filters.endDate || undefined,
+
+            page: filters.page ?? 1,
+            size: filters.size ?? 10,
+        };
+
+        const cleanParams = Object.fromEntries(
+            Object.entries(params).filter(
+                ([_, value]) =>
+                    value !== undefined &&
+                    value !== null &&
+                    value !== ""
+            )
+        );
+
     const res = await axios.get(
       `/v2/reports/download/invoice/${hostelId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`,
         },
+        params: cleanParams,
+        paramsSerializer: (params) =>
+          qs.stringify(params, { arrayFormat: "repeat" }),
       }
     );
 

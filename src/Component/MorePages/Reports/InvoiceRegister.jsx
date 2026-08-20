@@ -227,7 +227,17 @@ const applyFilters = (
 };
 
 const handleDownloadInvoiceReport = async () => {
-  const res = await downloadInvoiceReport(activeHostelId);
+     const filters = {
+        page: 1,
+        size: 10,
+        period: selectedMonth || undefined,
+        paymentStatus:
+            billStatus?.length > 0 ? billStatus : undefined,
+        invoiceTypes:
+            type?.length > 0 ? type : undefined,
+    };
+
+  const res = await downloadInvoiceReport(activeHostelId,filters);
 
   if (res?.success && res?.url) {
     await CommonModule.downloadAndViewDocument(res.url);

@@ -286,6 +286,7 @@ export default function BankingProvider({ children }) {
           res.data ||
           [];
 
+        setBankList(res?.data?.bankList)
         setTransactionList(transactions);
 
         return {

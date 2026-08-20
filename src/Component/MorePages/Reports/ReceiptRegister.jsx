@@ -156,7 +156,17 @@ const filters = {
 };
 
 const handleDownloadReceiptReport = async () => {
-  const res = await downloadReceiptReport(activeHostelId);
+
+  const filters = {
+  period: selectedMonth || undefined,
+  invoiceType: selectedType?.length ? selectedType[0] : undefined,
+  paymentMode: selectedPayment?.length ? selectedPayment : undefined,
+  page: 1,
+  size: 10,
+};
+
+
+  const res = await downloadReceiptReport(activeHostelId,filters);
 
   if (res?.success && res?.url) {
     await CommonModule.downloadAndViewDocument(res.url);
