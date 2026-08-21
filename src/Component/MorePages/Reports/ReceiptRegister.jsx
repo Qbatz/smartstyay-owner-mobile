@@ -1,10 +1,12 @@
-import React, {useState ,useContext , useEffect} from "react";
+import React, {useState ,useContext , useEffect,useRef} from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,Image
+  TouchableOpacity,Image,
+  Dimensions,
+  Animated
 } from "react-native";
 import { StatusBar , Platform } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
@@ -19,7 +21,12 @@ import EmptyState from "../../../Assets/Images/Empty_state.png"
 import { NativeModules } from "react-native";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import FilterBottomSheet from "./FilterBottomSheet";
+import RupeeIcon from "../../../Assets/Images/Rupees.png";
+import ReceiptsIcon from "../../../Assets/Images/ReceiptItem.png";
 
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width * 0.44
 const ReceiptRegister = ({navigation}) => {
 
     const { CommonModule } = NativeModules;
@@ -156,7 +163,17 @@ const filters = {
 };
 
 const handleDownloadReceiptReport = async () => {
-  const res = await downloadReceiptReport(activeHostelId);
+
+  const filters = {
+  period: selectedMonth || undefined,
+  invoiceType: selectedType?.length ? selectedType[0] : undefined,
+  paymentMode: selectedPayment?.length ? selectedPayment : undefined,
+  page: 1,
+  size: 10,
+};
+
+
+  const res = await downloadReceiptReport(activeHostelId,filters);
 
   if (res?.success && res?.url) {
     await CommonModule.downloadAndViewDocument(res.url);
@@ -167,6 +184,73 @@ console.log("receiptData", receiptData);
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
 const isExportAllow = isValidSubscription && canReadReports;
+
+ const AnimatedNumber = ({ value, duration = 800 }) => {
+    const animatedValue = useRef(new Animated.Value(0)).current;
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+      animatedValue.setValue(0);
+
+      Animated.timing(animatedValue, {
+        toValue: Number(value) || 0,
+        duration,
+        useNativeDriver: false,
+      }).start();
+
+      const listener = animatedValue.addListener(({ value }) => {
+        setDisplayValue(Math.floor(value));
+      });
+
+      return () => {
+        animatedValue.removeListener(listener);
+      };
+    }, [value]);
+
+    return <Text>{displayValue}</Text>;
+  };
+
+
+  const SummaryCard = ({
+    icon,
+    title,
+    value,
+    prefix,
+    suffix,
+    valueColor = "#111827",
+    linearcolor
+  }) => (
+    <LinearGradient
+      colors={["#FFFFFF", linearcolor]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.summaryCard}
+    >
+      <View style={styles.cardTopRow}>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>
+            {title}
+          </Text>
+
+          <Text style={[styles.cardValue, { color: valueColor }]}>
+            ₹ {prefix && <Text>{prefix}</Text>}
+
+            <AnimatedNumber value={value} />
+
+            {suffix && <Text>{suffix}</Text>}
+          </Text>
+        </View>
+
+        <View style={styles.iconBox}>
+          <Image
+            source={icon}
+            style={styles.cardIcon}
+          />
+        </View>
+      </View>
+    </LinearGradient>
+  );
+
 
 
   return (
@@ -209,7 +293,7 @@ const isExportAllow = isValidSubscription && canReadReports;
           </View>
         </TouchableOpacity>
                  </View>
-           <LinearGradient
+           {/* <LinearGradient
   colors={["#E7F1FF", "#FFFFFF"]}
   start={{ x: 1, y: 0 }}
   end={{ x: 0, y: 1 }}
@@ -225,11 +309,46 @@ const isExportAllow = isValidSubscription && canReadReports;
     <Text style={styles.value}>₹ {receiptData?.summary?.receivedAmount || 0}</Text>
   </View>
 
-  {/* <View style={styles.row}>
-    <Text style={styles.label}>Outstanding</Text>
-    <Text style={styles.value}>₹ {invoiceReports?.outStandingAmount || 0}</Text>
-  </View> */}
-</LinearGradient>
+ 
+</LinearGradient> */}
+
+ <View style={{height:110}}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+             style={{ height: 110 }}
+            contentContainerStyle={styles.cardRow}
+          >
+            <SummaryCard
+              title="Total Receipts"
+              value={receiptData?.totalItems}
+              icon={ReceiptsIcon}
+              linearcolor="#FFF4F4"
+            />
+
+            <SummaryCard
+              title="Total Amount"
+              value={receiptData?.summary?.totalTransactionAmount || 0}
+              icon={RupeeIcon}
+              valueColor="#00A651"
+              linearcolor="#F4FFF7"
+            />
+
+            <SummaryCard
+              title="Collected Amount"
+              value={receiptData?.summary?.receivedAmount || 0}
+              icon={RupeeIcon}
+              linearcolor="#FFF4F4"
+            />
+
+            <SummaryCard
+              title="Refunded Amount"
+              value={receiptData?.summary?.returnedAmount}
+              icon={RupeeIcon}
+              linearcolor="#FFF4F4"
+            />
+          </ScrollView>
+        </View>
 
   <View style={styles.filterRow}>
       <TouchableOpacity
@@ -488,7 +607,7 @@ totalValue: {
   /* FILTER */
   filterRow: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 10,marginTop:12
   },
 
   filterBtn: {
@@ -614,4 +733,67 @@ filterText: {
 filterTextActive: {
   color: "#fff",
 },
+summaryCard: {
+    width: CARD_WIDTH,
+    height: 90,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+
+    marginRight: 12, marginTop: 5
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  iconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardIcon: { width: 20, height: 20 },
+
+  cardTitle: {
+    fontSize: 13,
+    color: "#64748B",
+    fontFamily: "Gilroy-Medium",
+  },
+
+  cardValue: {
+    marginTop: 12,
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
+  cardRow: {
+        paddingLeft: 5,
+        paddingTop: 8,
+        // paddingBottom: 0,
+        marginBottom:5,alignItems: "flex-start",
+    },
 });

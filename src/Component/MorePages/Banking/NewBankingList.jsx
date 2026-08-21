@@ -947,6 +947,7 @@ const mappedBankList = (transactionList?.bankList || []).map((item) => {
           </View> */}
         </View>
 
+{console.log("sillana",mappedBankList)}
 
         {!loading && (
 
@@ -1237,9 +1238,9 @@ const mappedBankList = (transactionList?.bankList || []).map((item) => {
 <View style={{ paddingHorizontal: 20 }}>
   {/* <Text style={styles.todayText}>Today</Text> */}
 
-  {mappedTransactions.map((item) => (
+  {mappedTransactions.map((item,index) => (
     <TouchableOpacity
-      key={item?.id}
+      key={item?.id || index}
       // key={item?.transactionId}
       style={styles.transactionCard}
       onPress={() => handleshowTransaction(item)}

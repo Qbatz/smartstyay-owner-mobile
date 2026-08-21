@@ -281,6 +281,7 @@ export default function BankingProvider({ children }) {
 
         const transactions = res?.data || []
 
+        setBankList(res?.data?.bankList)
         setTransactionList(transactions);
 
         return {
