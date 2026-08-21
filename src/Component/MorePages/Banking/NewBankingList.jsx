@@ -64,6 +64,7 @@ export default function NewBankingList() {
   const {getBankOverview ,  NewgetBankList, bankList, getAllTransactions , transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
     useContext(BankingContext);
 
+
   console.log("bankinglist", bankList,);
     console.log("transactionList", transactionList,);
 
@@ -451,11 +452,11 @@ export default function NewBankingList() {
   //   };
   // });
 
-  const mappedBankList = (bankList || [])?.map((item) => {
+const mappedBankList = (transactionList?.bankList || []).map((item) => {
   const type = item.accountType;
 
   return {
-    id: item?.bankId || item?.bankingId,
+    id: item.bankId,
 
     title:
       type === "BANK"
@@ -475,24 +476,22 @@ export default function NewBankingList() {
         ? "Card"
         : "UPI",
 
-    name: item?.accountHolderName,
+    name: item.accountHolderName,
 
     acc:
       type === "BANK"
-        ? item?.accountNumber
+        ? item.accountNumber
         : type === "CARD"
-        ? item?.creditCardNumber || item?.debitCardNumber
+        ? item.cardNumber
         : type === "UPI"
-        ? item?.upiId
+        ? item.upiId
         : "",
 
-    balance: Number(item?.balance ?? item?.accountBalance ?? 0),
+    balance: Number(item.balance ?? 0),
 
-    branch: item?.branchName || "",
+    branch: item.branchName || "",
 
-    isDefaultAccount: item?.isDefaultAccount || item?.isDefault,
-
-    isDeleted: item?.isDeleted,
+    isDefaultAccount: item.isDefaultAccount,
 
     Icon:
       type === "BANK"
@@ -507,7 +506,7 @@ export default function NewBankingList() {
   };
 });
 
-  const mappedTransactions = (transactionList || []).map((t) => {
+ const mappedTransactions = (transactionList?.transactions || []).map((t) => {
   const isCredit = t.type === "CREDIT";
 
   return {
@@ -526,7 +525,7 @@ export default function NewBankingList() {
     icon: isCredit ? ArrowUp : ArrowDown,
 
     account:
-      t.bankAccountType === "Savings"
+      t.bankAccountType
         ? BankIcon
         : t.cashAccountType
         ? CashIcon
@@ -997,7 +996,8 @@ export default function NewBankingList() {
                     return (
 
                       <TouchableOpacity
-                        key={item.id}
+                        // key={item.id}
+                          key={`${item.id}-${index}`}
                         onPress={() => {
                           navigation.navigate("BankingDetails", {
                             bankDetails: item?.raw,
