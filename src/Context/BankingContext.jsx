@@ -279,12 +279,7 @@ export default function BankingProvider({ children }) {
       if (res.status === 200) {
         console.log("All Transactions =>", res.data);
 
-        const transactions =
-          res.data?.list ||
-          res.data?.data ||
-          res.data?.transactions ||
-          res.data ||
-          [];
+        const transactions = res?.data || []
 
         setTransactionList(transactions);
 
