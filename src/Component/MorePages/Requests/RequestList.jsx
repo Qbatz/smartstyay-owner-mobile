@@ -647,7 +647,7 @@ export default function Complaints({ route }) {
 
 
 
-                            {complaintsList?.length > 0 && (
+                            {/* {complaintsList?.length > 0 && ( */}
                                 <TouchableOpacity
                                     style={styles.searchBtn}
                                     onPress={() => setSearchOpen(true)}
@@ -657,7 +657,7 @@ export default function Complaints({ route }) {
                                         style={styles.headerSearchIcon}
                                     />
                                 </TouchableOpacity>
-                            )}
+                            {/* // )} */}
                         </>
                     ) : (
                         <View style={styles.searchWrapper}>
@@ -713,7 +713,7 @@ export default function Complaints({ route }) {
 </View>
         } */}
 
-                {!loading && complaintsList && complaintsList?.length > 0 && (
+                {/* {!loading && complaintsList && complaintsList?.length > 0 && ( */}
                     <FlatList
 
                         data={requestData}
@@ -727,23 +727,15 @@ export default function Complaints({ route }) {
                         contentContainerStyle={{ paddingBottom: 200 }}
                         // onScroll={handleScroll}
                         scrollEventThrottle={16}
-                    />)}
+                    />
+                     {/* )} */}
 
-                {!loading && complaintsList && complaintsList?.length === 0 && (
+                {/* {!loading && complaintsList && complaintsList?.length === 0 && (
                     <View style={styles.centerContainer}>
                         <Image source={EmptyState} style={styles.image} />
                         <Text style={styles.nodataText}>Complaints from tenants will appear here.</Text>
-                        {/* <TouchableOpacity style={[
-              styles.addcomplaintBtn,
-              !canWriteComplaints && { opacity: 0.6 }
-            ]}
-              disabled={!canWriteComplaints} onPress={handleAddComplaint}>
-              <Text style={styles.addComplaintText}>+ Add Complaint</Text>
-            </TouchableOpacity> */}
-
-
                     </View>
-                )}
+                )} */}
 
                 {/* {!loading && complaintsList && complaintsList?.length > 0 &&
           <>

@@ -27,6 +27,7 @@ import Bed from "../../../Assets/Images/bed.png";
 import DotsIcon from "../../../Assets/Images/3dots.png";
 import Complaint_InprogressIcon from "../../../Assets/Images/Complaint_Inprogress.png";
 import NotifyTenantDetails from "./NotifyTenant"
+import CheckAvailableBedSheet from "./CheckAvailableBedSheet"
 
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -47,6 +48,7 @@ export default function BedRequestDetails({
     const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const [notifytenantshow , setNotifyTenantShow] = useState(false)
+      const [showBedSheet, setShowBedSheet] = useState(false);
 
     const {
         canWriteModule: canWriteComplaints,
@@ -411,12 +413,12 @@ export default function BedRequestDetails({
                             styles.statusBtn,
                             !canWriteComplaints && { opacity: 0.5 }
                         ]}
-                        disabled={!canWriteComplaints}
+                        // disabled={!canWriteComplaints}
                         onPress={() => {
-                            if (!canWriteComplaints) return;
+                            // if (!canWriteComplaints) return
 
-                            handleCloseSheet();
-                            setTimeout(() => onOpenStatusSheet(complaint), 200);
+                            // handleCloseSheet()
+                            setTimeout(() => setShowBedSheet(true) , 200)
                         }}
                     >
                         <Image source={Exchange} style={styles.assignIcon} />
@@ -424,6 +426,13 @@ export default function BedRequestDetails({
                     </TouchableOpacity>
                 </View>
             </Animated.View>
+
+                        <CheckAvailableBedSheet
+                            visible={showBedSheet}
+                            // joiningDate={checkJoiningDate}
+                            onClose={() => setShowBedSheet(false)}
+
+                            />
 
                {notifytenantshow && (
                     <NotifyTenantDetails
