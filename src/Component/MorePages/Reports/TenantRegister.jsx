@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useContext, } from "react";
+import React, { useState, useEffect, useContext, useRef, } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity, Image
+  TouchableOpacity, Image,
+  Dimensions,
+  Animated
 } from "react-native";
 import { StatusBar, Platform } from "react-native";
 import { useHasPermission } from "../../../Utils/useHasPermission";
@@ -21,8 +23,15 @@ import { getAxios } from "../../../Config/AxiosConfig";
 import { retriveData } from "../../../Utils/Storage";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import FilterBottomSheet from "./FilterBottomSheet";
+import RupeeIcon from "../../../Assets/Images/Rupees.png";
+import InactiveIcon from "../../../Assets/Images/inActiveuser.png";
+import NoticePeriodIcon from "../../../Assets/Images/Noticeperiodimg.png";
+import TenantsIcon from "../../../Assets/Images/Tenants.png";
+import ReportsAllFilterBottomSheet from "./ReportsAllFilterBottomSheet"
 
 
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width * 0.44
 const TenantRegister = ({ navigation }) => {
 
   const { CommonModule } = NativeModules;
@@ -47,6 +56,7 @@ const TenantRegister = ({ navigation }) => {
   const [statusSheetOpen, setStatusSheetOpen] = useState(false);
   const [sharingSheetOpen, setSharingSheetOpen] = useState(false);
   const [monthSheetOpen, setMonthSheetOpen] = useState(false);
+  const [allFilterSheet,setAllFilterSheet]=useState(false)
 
   const {
     canWriteModule: canWriteReports,
@@ -192,6 +202,72 @@ const TenantRegister = ({ navigation }) => {
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadReports;
 
+  const AnimatedNumber = ({ value, duration = 800 }) => {
+      const animatedValue = useRef(new Animated.Value(0)).current;
+      const [displayValue, setDisplayValue] = useState(0);
+  
+      useEffect(() => {
+        animatedValue.setValue(0);
+  
+        Animated.timing(animatedValue, {
+          toValue: Number(value) || 0,
+          duration,
+          useNativeDriver: false,
+        }).start();
+  
+        const listener = animatedValue.addListener(({ value }) => {
+          setDisplayValue(Math.floor(value));
+        });
+  
+        return () => {
+          animatedValue.removeListener(listener);
+        };
+      }, [value]);
+  
+      return <Text>{displayValue}</Text>;
+    };
+  
+  
+    const SummaryCard = ({
+      icon,
+      title,
+      value,
+      prefix,
+      suffix,
+      valueColor ,
+      linearcolor
+    }) => (
+      <LinearGradient
+        colors={["#FFFFFF", linearcolor]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.summaryCard}
+      >
+        <View style={styles.cardTopRow}>
+          <View style={styles.cardContent}>
+            <Text style={styles.cardTitle}>
+              {title}
+            </Text>
+  
+            <Text style={[styles.cardValue, { color: valueColor }]}>
+              ₹ {prefix && <Text>{prefix}</Text>}
+  
+              <AnimatedNumber value={value} />
+  
+              {suffix && <Text>{suffix}</Text>}
+            </Text>
+          </View>
+  
+          <View style={styles.iconBox}>
+            <Image
+              source={icon}
+              style={[styles.cardIcon,{tintColor:valueColor}]}
+            />
+          </View>
+        </View>
+      </LinearGradient>
+    );
+
 
   return (
     <>
@@ -233,7 +309,7 @@ const TenantRegister = ({ navigation }) => {
               </View>
             </TouchableOpacity>
           </View>
-          <LinearGradient
+          {/* <LinearGradient
             colors={["#E7F1FF", "#FFFFFF"]}
             start={{ x: 1, y: 0 }}
             end={{ x: 0, y: 1 }}
@@ -257,9 +333,79 @@ const TenantRegister = ({ navigation }) => {
               <Text style={styles.label}>Check out</Text>
               <Text style={styles.value}>{tenantData?.summary?.checkoutMTD?.count}</Text>
             </View>
-          </LinearGradient>
+          </LinearGradient> */}
+
+          
+                      <View style={{height:110}}>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                       style={{ height: 110 }}
+                      contentContainerStyle={styles.cardRow}
+                    >
+                      <SummaryCard
+                        title="Total Tenants"
+                        value={tenantData?.summary?.totalTenants}
+                        icon={TenantsIcon}
+                        linearcolor="#FFF4F4"
+                      />
+          
+                      <SummaryCard
+                        title="Active Tenants"
+                        value={tenantData?.summary?.activeTenants?.count}
+                        icon={TenantsIcon}
+                        valueColor="#00A651"
+                        linearcolor="#F4FFF7"
+                      />
+          
+                      <SummaryCard
+                        title="Notice Period"
+                        value={tenantData?.summary?.noticePeriod?.count}
+                        icon={NoticePeriodIcon}
+                        linearcolor="#FFF4F4"
+                      />
+          
+                      <SummaryCard
+                        title="Check out(MTD)"
+                        value={tenantData?.summary?.checkoutMTD?.count}
+                        icon={NoticePeriodIcon}
+                        linearcolor="#FFF4F4"
+                      />
+
+                      <SummaryCard
+                        title="Inactive"
+                        value={tenantData?.summary?.inactive?.count}
+                        icon={InactiveIcon}
+                        linearcolor="#FFF4F4"
+                      />
+                    </ScrollView>
+                  </View>
 
           <View style={styles.filterRow}>
+
+            {/* All */}
+
+               <TouchableOpacity
+              style={[
+                styles.filterBtn,
+                selectedStatus.length > 0 && styles.activeFilter
+              ]}
+              onPress={() => {
+                setTempStatus(selectedStatus);
+                setStatusSheetOpen(true);
+              }}
+            >
+              <Text style={selectedStatus.length ? styles.activeFilterText : styles.filterText}>
+                {selectedStatus.length === 0
+                  ? "All"
+                  : `${statusOptions.find(s => s.value === selectedStatus[0])?.label}
+     ${selectedStatus.length > 1 ? `+${selectedStatus.length - 1} more` : ""}`
+                }
+              </Text>
+
+              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+            </TouchableOpacity>
+            
 
             {/* STATUS */}
             <TouchableOpacity
@@ -274,7 +420,7 @@ const TenantRegister = ({ navigation }) => {
             >
               <Text style={selectedStatus.length ? styles.activeFilterText : styles.filterText}>
                 {selectedStatus.length === 0
-                  ? "All"
+                  ? "Status"
                   : `${statusOptions.find(s => s.value === selectedStatus[0])?.label}
      ${selectedStatus.length > 1 ? `+${selectedStatus.length - 1} more` : ""}`
                 }
@@ -412,6 +558,11 @@ const TenantRegister = ({ navigation }) => {
         onClose={() => setSharingSheetOpen(false)}
       />
 
+      <ReportsAllFilterBottomSheet
+        visible={allFilterSheet}
+        options={filterOptions}
+       />
+
 
     </>
   );
@@ -500,7 +651,7 @@ const styles = StyleSheet.create({
 
   filterRow: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 10,marginTop:12
   },
 
   filterBtn: {
@@ -597,4 +748,67 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 15,
   },
+   summaryCard: {
+    width: CARD_WIDTH,
+    height: 90,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+
+    marginRight: 12, marginTop: 5
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  iconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardIcon: { width: 20, height: 20 },
+
+  cardTitle: {
+    fontSize: 13,
+    color: "#64748B",
+    fontFamily: "Gilroy-Medium",
+  },
+
+  cardValue: {
+    marginTop: 12,
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
+  cardRow: {
+        paddingLeft: 5,
+        paddingTop: 8,
+        // paddingBottom: 0,
+        marginBottom:5,alignItems: "flex-start",
+    },
 });

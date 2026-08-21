@@ -63,7 +63,7 @@ export default function BankOverview({ expense }) {
       const route = useRoute();
 
   const bankDetails = route?.params?.bankDetails || {};
-  const overview = bankOverview || {};
+  
 
   console.log("bankDetails", bankDetails);
 
@@ -71,6 +71,7 @@ export default function BankOverview({ expense }) {
       bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
             useContext(BankingContext);
         const { activeHostelId } = useContext(CommonContexts);
+        const overview = bankOverview || {};
 
         console.log("bankOverview", bankOverview);
         
@@ -123,19 +124,19 @@ export default function BankOverview({ expense }) {
 <SummaryCard
   icon={PeopleIcon}
   title="inflow (Income)"
- value={overview?.inflow || 0}
+ value={overview?.depositAmount || 0}
 />
 
 <SummaryCard
   icon={CategoryIcon}
   title="Outflow (Expenses)"
-  value={overview?.outflow || 0}
+  value={overview?.expenseAmount || 0}
   suffix=" %"
 />
 <SummaryCard
   icon={CategoryIcon}
   title="Transfers"
-  value={overview?.transfers || 0}
+  value={overview?.selfTransferAmount || 0}
   suffix=" %"
 />
 

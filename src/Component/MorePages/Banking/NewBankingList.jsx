@@ -998,7 +998,7 @@ export default function NewBankingList() {
                     return (
 
                       <TouchableOpacity
-                        key={item.id}
+                        key={index}
                         onPress={() => {
                           navigation.navigate("BankingDetails", {
                             bankDetails: item?.raw,
@@ -1238,9 +1238,9 @@ export default function NewBankingList() {
 <View style={{ paddingHorizontal: 20 }}>
   {/* <Text style={styles.todayText}>Today</Text> */}
 
-  {mappedTransactions.map((item) => (
+  {mappedTransactions.map((item,index) => (
     <TouchableOpacity
-      key={item?.id}
+      key={item?.id || index}
       // key={item?.transactionId}
       style={styles.transactionCard}
       onPress={() => handleshowTransaction(item)}
