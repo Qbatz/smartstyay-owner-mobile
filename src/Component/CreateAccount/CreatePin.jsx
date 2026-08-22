@@ -92,9 +92,14 @@ const style = StyleSheet.create({
     logo: { width: 151, height: 28.22, marginTop: 70, },
     createText: { fontSize: 27, fontWeight: 600, color: '#222222', marginTop: 20 },
     subtitle: { fontSize: 14, fontWeight: 400, color: '#4B4B4B', marginTop: 15 },
-    pinContainer: { flexDirection: 'row',justifyContent:'space-between',paddingTop:20,paddingLeft:20,paddingRight:80 },
+    // pinContainer: { flexDirection: 'row',justifyContent:'space-between',
+    //     paddingTop:20,paddingLeft:20,paddingRight:80 },
+    pinContainer: {
+        width: "100%", flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20,
+        paddingLeft: 10, paddingRight: 10, height: 60, marginTop: 18
+    },
     pinBox: {
-        width: 50, heiht: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, textAlign: "center",
+        width: 60, height: 60, borderWidth: 1, borderColor: "#ccc", borderRadius: 12, textAlign: "center",
         fontSize: 20, color: "#000"
     },
     nextButton:{backgroundColor: "#1A73E8",

@@ -61,12 +61,13 @@ export default function NewBankingList() {
   dayjs.extend(customParseFormat)
 
   const { activeHostelId } = useContext(CommonContexts);
-  const {getBankOverview ,  NewgetBankList, bankList, getAllTransactions , transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+  const {getBankOverview ,  NewgetBankList, bankList, getAllTransactions , newtransactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
     useContext(BankingContext);
 
 
-  console.log("bankinglist", bankList,);
-    console.log("transactionList", transactionList,);
+
+    console.log("bankinglist", bankList,);
+    console.log("transactionList", newtransactionList,);
 
 
   const [showAddBalance, setShowAddBalance] = useState(false);
@@ -106,6 +107,16 @@ export default function NewBankingList() {
   if (!canReadBanking && !loading) {
     return (
       <SafeAreaView style={styles.container}>
+
+        <View style={styles.headerRow}>
+
+            <TouchableOpacity
+              style={styles.backBtn}
+              onPress={() => navigation.goBack()}
+            >
+              <Image source={BackIcon} style={styles.backArrow} />
+            </TouchableOpacity>
+            </View>
         <View style={styles.emptyContainer}>
           <Image source={EmptyStateImage} style={styles.emptyImage} />
           <Text style={{ fontSize: 16, color: "#888", marginTop: 20 }}>
@@ -452,7 +463,7 @@ export default function NewBankingList() {
   //   };
   // });
 
-const mappedBankList = (transactionList?.bankList || []).map((item) => {
+const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
   const type = item.accountType;
 
   return {
@@ -506,7 +517,7 @@ const mappedBankList = (transactionList?.bankList || []).map((item) => {
   };
 });
 
- const mappedTransactions = (transactionList?.transactions || []).map((t) => {
+ const mappedTransactions = (newtransactionList?.transactions || []).map((t) => {
   const isCredit = t.type === "CREDIT";
 
   return {
@@ -1145,13 +1156,13 @@ const mappedBankList = (transactionList?.bankList || []).map((item) => {
   </View>
 )} */}
                           {
-                            type === "BANK" && (
+                            type === "BANK" && item?.upiId ? (
                               <View style={styles.upiChip}>
                                 <Text numberOfLines={1}>
                                   UPI : {item.acc}
                                 </Text>
                               </View>
-                            )
+                            ) : null
                           }
 
                           {
@@ -1243,7 +1254,7 @@ const mappedBankList = (transactionList?.bankList || []).map((item) => {
       key={item?.id || index}
       // key={item?.transactionId}
       style={styles.transactionCard}
-      onPress={() => handleshowTransaction(item)}
+      // onPress={() => handleshowTransaction(item)}
     >
       <View style={styles.leftSection}>
         <View
@@ -2808,7 +2819,7 @@ overflow: "visible",
   },
 
   transactionTitle: {
-    fontSize: 13,
+    fontSize: 16,
     color: "#222",
     fontFamily: "Gilroy-SemiBold",
   },
