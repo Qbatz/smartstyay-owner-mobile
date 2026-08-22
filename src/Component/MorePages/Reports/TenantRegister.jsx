@@ -56,7 +56,17 @@ const TenantRegister = ({ navigation }) => {
   const [statusSheetOpen, setStatusSheetOpen] = useState(false);
   const [sharingSheetOpen, setSharingSheetOpen] = useState(false);
   const [monthSheetOpen, setMonthSheetOpen] = useState(false);
-  const [allFilterSheet,setAllFilterSheet]=useState(false)
+  const [allFilterSheet, setAllFilterSheet] = useState(false)
+
+  const [allSelectedMonth, setAllSelectedMonth] = useState("");
+  const [allSelectedStatus, setAllSelectedStatus] = useState([]);
+  // const [tempStatus, setTempStatus] = useState([]);
+
+  const [allSelectedSharing, setAllSelectedSharing] = useState([]);
+  const [selectedFloorValue, setSelectedFloorValue] = useState([])
+  const [selectedRoomValue, setSelectedRoomValue] = useState([]);
+  const [selectedTenantValue,setTenantValue]=useState("")
+  // const [tempSharing, setTempSharing] = useState([]);
 
   const {
     canWriteModule: canWriteReports,
@@ -85,28 +95,28 @@ const TenantRegister = ({ navigation }) => {
 
   useEffect(() => {
     if (!activeHostelId) return;
-      console.log("useEffect running");
-      console.log(activeHostelId)
-  
-  
+    console.log("useEffect running");
+    console.log(activeHostelId)
+
+
     const fetchTenantRegister = async () => {
       const filters = {
-      page: 1,
-      size: 10,
-    };
+        page: 1,
+        size: 10,
+      };
       const response = await getTenantRegisterReport(activeHostelId, filters
       );
-  
+
       if (response.success) {
         setTenantData(response?.data);
       }
-       else{
-      setTenantData(null)
-    }
+      else {
+        setTenantData(null)
+      }
     };
-  
+
     fetchTenantRegister();
-  }, [activeHostelId, ]);
+  }, [activeHostelId,]);
 
   console.log("tenantdata", tenantData);
 
@@ -172,27 +182,61 @@ const TenantRegister = ({ navigation }) => {
 
 
   const applyTenantFilters = (
-    month = selectedMonth,
-    status = selectedStatus,
-    sharing = selectedSharing
+    month = allSelectedMonth,
+    status = allSelectedStatus,
+    sharing = allSelectedSharing,
+    floor = selectedFloorValue,
+    room = selectedRoomValue,
+    search = selectedTenantValue,
+
   ) => {
 
- const filters = {
-  period: month || undefined,
-  status: status.length ? status : undefined,
-  sharingType: sharing.length ? sharing : undefined,
-  page: 1,
-  size: 10,
-};
+    // const filters = {
+    //   period: month || undefined,
+    //   status: status.length ? status : undefined,
+    //   sharingType: sharing.length ? sharing : undefined,
+    //   page: 1,
+    //   size: 10,
+    // };
+    const finalMonth =
+      month !== undefined ? month : selectedMonth;
+
+    const finalStatus =
+      status !== undefined ? status : selectedStatus;
+
+    const finalSharing =
+      sharing !== undefined ? sharing : selectedSharing;
+
+    const filters = {
+      period: finalMonth || undefined,
+
+      status: finalStatus?.length
+        ? finalStatus
+        : undefined,
+
+      sharingType: finalSharing?.length
+        ? finalSharing
+        : undefined,
+
+      floor: floor?.length ? floor : undefined,
+
+      room: room?.length ? room : undefined,
+
+      search: search || undefined,
+
+      page: 1,
+      size: 10,
+    };
+
 
     console.log("filtervalues", filters);
-    
+
 
     getTenantRegisterReport(activeHostelId, filters)
       .then(res => {
         if (res.success) {
           console.log("filterres", res);
-          
+
           setTenantData(res.data);
         }
       });
@@ -203,70 +247,70 @@ const TenantRegister = ({ navigation }) => {
   const isExportAllow = isValidSubscription && canReadReports;
 
   const AnimatedNumber = ({ value, duration = 800 }) => {
-      const animatedValue = useRef(new Animated.Value(0)).current;
-      const [displayValue, setDisplayValue] = useState(0);
-  
-      useEffect(() => {
-        animatedValue.setValue(0);
-  
-        Animated.timing(animatedValue, {
-          toValue: Number(value) || 0,
-          duration,
-          useNativeDriver: false,
-        }).start();
-  
-        const listener = animatedValue.addListener(({ value }) => {
-          setDisplayValue(Math.floor(value));
-        });
-  
-        return () => {
-          animatedValue.removeListener(listener);
-        };
-      }, [value]);
-  
-      return <Text>{displayValue}</Text>;
-    };
-  
-  
-    const SummaryCard = ({
-      icon,
-      title,
-      value,
-      prefix,
-      suffix,
-      valueColor ,
-      linearcolor
-    }) => (
-      <LinearGradient
-        colors={["#FFFFFF", linearcolor]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.summaryCard}
-      >
-        <View style={styles.cardTopRow}>
-          <View style={styles.cardContent}>
-            <Text style={styles.cardTitle}>
-              {title}
-            </Text>
-  
-            <Text style={[styles.cardValue, { color: valueColor }]}>
-              ₹ {prefix && <Text>{prefix}</Text>}
-  
-              <AnimatedNumber value={value} />
-  
-              {suffix && <Text>{suffix}</Text>}
-            </Text>
-          </View>
-  
-          <View style={styles.iconBox}>
-            <Image
-              source={icon}
-              style={[styles.cardIcon,{tintColor:valueColor}]}
-            />
-          </View>
+    const animatedValue = useRef(new Animated.Value(0)).current;
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+      animatedValue.setValue(0);
+
+      Animated.timing(animatedValue, {
+        toValue: Number(value) || 0,
+        duration,
+        useNativeDriver: false,
+      }).start();
+
+      const listener = animatedValue.addListener(({ value }) => {
+        setDisplayValue(Math.floor(value));
+      });
+
+      return () => {
+        animatedValue.removeListener(listener);
+      };
+    }, [value]);
+
+    return <Text>{displayValue}</Text>;
+  };
+
+
+  const SummaryCard = ({
+    icon,
+    title,
+    value,
+    prefix,
+    suffix,
+    valueColor,
+    linearcolor
+  }) => (
+    <LinearGradient
+      colors={["#FFFFFF", linearcolor]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.summaryCard}
+    >
+      <View style={styles.cardTopRow}>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>
+            {title}
+          </Text>
+
+          <Text style={[styles.cardValue, { color: valueColor }]}>
+            ₹ {prefix && <Text>{prefix}</Text>}
+
+            <AnimatedNumber value={value} />
+
+            {suffix && <Text>{suffix}</Text>}
+          </Text>
         </View>
-      </LinearGradient>
-    );
+
+        <View style={styles.iconBox}>
+          <Image
+            source={icon}
+            style={[styles.cardIcon, { tintColor: valueColor }]}
+          />
+        </View>
+      </View>
+    </LinearGradient>
+  );
 
 
   return (
@@ -284,7 +328,7 @@ const TenantRegister = ({ navigation }) => {
 
 
           <View style={styles.headerRow}>
-            <View style={{ flexDirection: "row", alignItems: "center"}}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Image source={ArrowLeft} style={styles.backIcon} />
               </TouchableOpacity>
@@ -335,64 +379,65 @@ const TenantRegister = ({ navigation }) => {
             </View>
           </LinearGradient> */}
 
-          
-                      <View style={{height:110}}>
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                       style={{ height: 110 }}
-                      contentContainerStyle={styles.cardRow}
-                    >
-                      <SummaryCard
-                        title="Total Tenants"
-                        value={tenantData?.summary?.totalTenants}
-                        icon={TenantsIcon}
-                        linearcolor="#FFF4F4"
-                      />
-          
-                      <SummaryCard
-                        title="Active Tenants"
-                        value={tenantData?.summary?.activeTenants?.count}
-                        icon={TenantsIcon}
-                        valueColor="#00A651"
-                        linearcolor="#F4FFF7"
-                      />
-          
-                      <SummaryCard
-                        title="Notice Period"
-                        value={tenantData?.summary?.noticePeriod?.count}
-                        icon={NoticePeriodIcon}
-                        linearcolor="#FFF4F4"
-                      />
-          
-                      <SummaryCard
-                        title="Check out(MTD)"
-                        value={tenantData?.summary?.checkoutMTD?.count}
-                        icon={NoticePeriodIcon}
-                        linearcolor="#FFF4F4"
-                      />
 
-                      <SummaryCard
-                        title="Inactive"
-                        value={tenantData?.summary?.inactive?.count}
-                        icon={InactiveIcon}
-                        linearcolor="#FFF4F4"
-                      />
-                    </ScrollView>
-                  </View>
+          <View style={{ height: 110 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ height: 110 }}
+              contentContainerStyle={styles.cardRow}
+            >
+              <SummaryCard
+                title="Total Tenants"
+                value={tenantData?.summary?.totalTenants}
+                icon={TenantsIcon}
+                linearcolor="#FFF4F4"
+              />
+
+              <SummaryCard
+                title="Active Tenants"
+                value={tenantData?.summary?.activeTenants?.count}
+                icon={TenantsIcon}
+                valueColor="#00A651"
+                linearcolor="#F4FFF7"
+              />
+
+              <SummaryCard
+                title="Notice Period"
+                value={tenantData?.summary?.noticePeriod?.count}
+                icon={NoticePeriodIcon}
+                linearcolor="#FFF4F4"
+              />
+
+              <SummaryCard
+                title="Check out(MTD)"
+                value={tenantData?.summary?.checkoutMTD?.count}
+                icon={NoticePeriodIcon}
+                linearcolor="#FFF4F4"
+              />
+
+              <SummaryCard
+                title="Inactive"
+                value={tenantData?.summary?.inactive?.count}
+                icon={InactiveIcon}
+                linearcolor="#FFF4F4"
+              />
+            </ScrollView>
+          </View>
 
           <View style={styles.filterRow}>
 
             {/* All */}
 
-               <TouchableOpacity
+            <TouchableOpacity
               style={[
                 styles.filterBtn,
                 selectedStatus.length > 0 && styles.activeFilter
               ]}
               onPress={() => {
-                setTempStatus(selectedStatus);
-                setStatusSheetOpen(true);
+                // setTempStatus(selectedStatus);
+                // setStatusSheetOpen(true);
+                setAllFilterSheet(true)
               }}
             >
               <Text style={selectedStatus.length ? styles.activeFilterText : styles.filterText}>
@@ -405,7 +450,7 @@ const TenantRegister = ({ navigation }) => {
 
               <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
             </TouchableOpacity>
-            
+
 
             {/* STATUS */}
             <TouchableOpacity
@@ -560,8 +605,33 @@ const TenantRegister = ({ navigation }) => {
 
       <ReportsAllFilterBottomSheet
         visible={allFilterSheet}
-        options={filterOptions}
-       />
+        filters={filterOptions}
+        reportType="tenant"
+        // selectedFilters={ }
+        tenantList={tenantData?.tenants}
+        setSelectedSharingValue={setAllSelectedSharing}
+        setSelectedMonth={setAllSelectedMonth}
+        setSelectedTenantStatus={setAllSelectedStatus}
+        setSelectedFloorValue={setSelectedFloorValue}
+        setSelectedRoomValue={setSelectedRoomValue}
+        setTenantValue={setTenantValue}
+
+        onReset={() => {
+          setAllSelectedMonth("");
+          setAllSelectedSharing([]);
+          setAllSelectedStatus([]);
+          setSelectedFloorValue([])
+          setSelectedRoomValue([])
+          setTenantValue("")
+          setAllFilterSheet(false)
+          applyTenantFilters("",[],[],[],[],[],"")
+        }}
+        onApply={() => {
+          setAllFilterSheet(false)
+          applyTenantFilters()
+        }}
+        onClose={() => setAllFilterSheet(false)}
+      />
 
 
     </>
@@ -651,7 +721,7 @@ const styles = StyleSheet.create({
 
   filterRow: {
     flexDirection: "row",
-    marginBottom: 10,marginTop:12
+    marginBottom: 10, marginTop: 12
   },
 
   filterBtn: {
@@ -748,7 +818,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 15,
   },
-   summaryCard: {
+  summaryCard: {
     width: CARD_WIDTH,
     height: 90,
     backgroundColor: "#fff",
@@ -806,9 +876,9 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold",
   },
   cardRow: {
-        paddingLeft: 5,
-        paddingTop: 8,
-        // paddingBottom: 0,
-        marginBottom:5,alignItems: "flex-start",
-    },
+    paddingLeft: 5,
+    paddingTop: 8,
+    // paddingBottom: 0,
+    marginBottom: 5, alignItems: "flex-start",
+  },
 });
