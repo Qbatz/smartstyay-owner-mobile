@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef , useContext } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import {
   View,
   Text,
@@ -19,14 +19,14 @@ const SHEET_HEIGHT = height * 0.48;
 
 export default function TransactionSheet({
   visible,
-  onClose, navigation, bankId , bankDetails
+  onClose, navigation, bankId, bankDetails
 }) {
 
 
-     const { getBankOverview, getTransferInitialize, transferInitialize,
-          bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
-          useContext(BankingContext);
-      const { activeHostelId } = useContext(CommonContexts);
+  const { getBankOverview, getTransferInitialize, transferInitialize,
+    bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+    useContext(BankingContext);
+  const { activeHostelId } = useContext(CommonContexts);
 
   const translateY = useRef(
     new Animated.Value(SHEET_HEIGHT)
@@ -84,17 +84,23 @@ export default function TransactionSheet({
       icon: require("../../../Assets/Images/Room_bed.png"),
       screen: "AddExpensesPage",
     },
+    // {
+    //   title: "Tenant Payment",
+    //   icon: require("../../../Assets/Images/TenantPayment.png"),
+    //   screen: "TenantPayment",
+    // },
     {
       title: "Tenant Payment",
       icon: require("../../../Assets/Images/TenantPayment.png"),
       screen: "TenantPayment",
+      disabled: true,
     },
-   {
-  title: "Transfer",
-  icon: require("../../../Assets/Images/arrow-transfer.png"),
-  screen: "BankTransfer",
-  action: "TRANSFER",
-},
+    {
+      title: "Transfer",
+      icon: require("../../../Assets/Images/arrow-transfer.png"),
+      screen: "BankTransfer",
+      action: "TRANSFER",
+    },
     {
       title: "Vendor Payment",
       icon: require("../../../Assets/Images/VendorPaymentIcon.png"),
@@ -162,28 +168,28 @@ export default function TransactionSheet({
   // }
 
   const handleItemPress = async (item) => {
-  if (item.title === "Transfer") {
-    const res = await getTransferInitialize(
-      activeHostelId,
-      bankId
-    );
+    if (item.title === "Transfer") {
+      const res = await getTransferInitialize(
+        activeHostelId,
+        bankId
+      );
 
-    if (!res?.success) return;
-  }
+      if (!res?.success) return;
+    }
 
-  Animated.timing(translateY, {
-    toValue: SHEET_HEIGHT,
-    duration: 220,
-    useNativeDriver: true,
-  }).start(() => {
-    onClose?.();
+    Animated.timing(translateY, {
+      toValue: SHEET_HEIGHT,
+      duration: 220,
+      useNativeDriver: true,
+    }).start(() => {
+      onClose?.();
 
-    navigation.navigate(item.screen, {
-      bankId,
-      bankDetails,
+      navigation.navigate(item.screen, {
+        bankId,
+        bankDetails,
+      });
     });
-  });
-};
+  };
 
   if (!mounted) return null;
 
@@ -220,10 +226,20 @@ export default function TransactionSheet({
         >
           <View style={styles.grid}>
             {DATA.map((item, index) => (
+              // <TouchableOpacity
+              //   key={index}
+              //   style={styles.item}
+              //   activeOpacity={0.8}
+              //   onPress={() => handleItemPress(item)}
+              // >
               <TouchableOpacity
                 key={index}
-                style={styles.item}
-                activeOpacity={0.8}
+                disabled={item.disabled}
+                style={[
+                  styles.item,
+                  item.disabled && styles.disabledItem,
+                ]}
+                activeOpacity={item.disabled ? 1 : 0.8}
                 onPress={() => handleItemPress(item)}
               >
                 <View style={styles.iconBox}>
@@ -331,4 +347,19 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Semibold",
     color: "#00000",
   },
+  disabledItem: {
+  opacity: 0.45,
+},
+
+disabledIconBox: {
+  backgroundColor: "#F3F4F6",
+},
+
+disabledIcon: {
+  tintColor: "#9CA3AF",
+},
+
+disabledLabel: {
+  color: "#9CA3AF",
+},
 });

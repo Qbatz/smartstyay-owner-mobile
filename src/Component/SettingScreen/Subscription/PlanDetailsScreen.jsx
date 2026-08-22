@@ -122,16 +122,17 @@ export default function PlanDetailsScreen({ route, navigation }) {
         ? StatusBar.currentHeight
         : 40,
     }}>
-      <ScrollView style={{ paddingHorizontal: 16 }} contentContainerStyle={{ flexGrow: 1 }}>
-
-
-        <View style={styles.row}>
+       <View style={styles.row}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
             {/* <Text style={styles.backArrow}>←</Text> */}
             <Image source={Arrow} style={styles.backArrow} />
           </TouchableOpacity>
           <Text style={styles.header}>Subscription plans</Text>
         </View>
+      <ScrollView style={{ paddingHorizontal: 16 }} contentContainerStyle={{ flexGrow: 1 }}>
+
+
+       
 
 
         {currentPlan ? (<>
@@ -498,7 +499,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
   );
 }
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 20 },
+  row: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 20 , paddingHorizontal: 16 },
   backArrow: { marginRight: 8, width: 20, height: 20 },
   header: { fontSize: 20, fontWeight: "700" },
 

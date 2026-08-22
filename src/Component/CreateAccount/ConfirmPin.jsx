@@ -161,16 +161,14 @@ const styles = StyleSheet.create({
   logo: { width: 151, height: 28.22, marginTop: 70, },
   createText: { fontSize: 27, fontWeight: 600, color: '#222222', marginTop: 20 },
   subtitle: { fontSize: 14, fontWeight: 400, color: '#4B4B4B', marginTop: 15 },
-  pinContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingTop: 20,
-    paddingHorizontal: 20,
-  },
-  pinBox: {
-    width: 50, height: 50, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, textAlign: "center",
-    fontSize: 20, color: "#000"
-  },
+   pinContainer: {
+        width: "100%", flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20,
+        paddingLeft: 10, paddingRight: 10, height: 60, marginTop: 18
+    },
+    pinBox: {
+        width: 60, height: 60, borderWidth: 1, borderColor: "#ccc", borderRadius: 12, textAlign: "center",
+        fontSize: 20, color: "#000"
+    },
   nextButton: { backgroundColor: '#00A32E', borderRadius: 8, paddingVertical: 20, alignItems: 'center', marginTop: 250 },
   nextText: { color: '#ffffff', fontSize: 16, fontWeight: 600 }
 

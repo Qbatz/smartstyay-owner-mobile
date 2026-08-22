@@ -15,7 +15,7 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Dimensions,
-  PanResponder, KeyboardAvoidingView, Keyboard, SafeAreaView 
+  PanResponder, KeyboardAvoidingView, Keyboard, SafeAreaView
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
@@ -49,7 +49,7 @@ import MoneyMinus from "../../../Assets/Images/money-minus.png";
 import ArrowUp from "../../../Assets/Images/arrow-up.png";
 import ArrowDown from "../../../Assets/Images/arrow-down.png";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
-import DownArrow from "../../../Assets/Images/direction-down.png"; 
+import DownArrow from "../../../Assets/Images/direction-down.png";
 import SearchIcon from "../../../Assets/Images/SearchIcon.png";
 
 
@@ -102,6 +102,15 @@ export default function BankingScreen() {
   if (!canReadBanking && !loading) {
     return (
       <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image source={ArrowLeft} style={styles.backIcon} />
+            </TouchableOpacity>
+            <Text style={styles.title}>Banking</Text>
+          </View>
+        </View>
+
         <View style={styles.emptyContainer}>
           <Image source={EmptyStateImage} style={styles.emptyImage} />
           <Text style={{ fontSize: 16, color: "#888", marginTop: 20 }}>
@@ -335,7 +344,7 @@ export default function BankingScreen() {
         acc: b.accountNumber,
         balance: b.accountBalance ?? 0,
         Icon: BankIcon,
-        isDeleted: b.isDeleted, 
+        isDeleted: b.isDeleted,
         raw: b,
       };
     }
@@ -349,7 +358,7 @@ export default function BankingScreen() {
         acc: b.upiId,
         balance: b.accountBalance ?? 0,
         Icon: UpiIcon,
-        isDeleted: b.isDeleted, 
+        isDeleted: b.isDeleted,
         raw: b,
       };
     }
@@ -363,7 +372,7 @@ export default function BankingScreen() {
         acc: b.creditCardNumber || b.debitCardNumber,
         balance: b.accountBalance ?? 0,
         Icon: CardIcon,
-        isDeleted: b.isDeleted, 
+        isDeleted: b.isDeleted,
         raw: b,
       };
     }
@@ -377,7 +386,7 @@ export default function BankingScreen() {
         acc: "",
         balance: b.accountBalance ?? 0,
         Icon: CashIcon,
-        isDeleted: b.isDeleted, 
+        isDeleted: b.isDeleted,
         raw: b,
       };
     }
@@ -423,34 +432,34 @@ export default function BankingScreen() {
   //   setAmountError("");
   // }
 
-const handleAddBankAmount = (v) => {
-  let cleaned = v.replace(/[^0-9.]/g, "");
+  const handleAddBankAmount = (v) => {
+    let cleaned = v.replace(/[^0-9.]/g, "");
 
-  const parts = cleaned.split(".");
-  if (parts.length > 2) {
-    cleaned = parts[0] + "." + parts[1];
-  }
+    const parts = cleaned.split(".");
+    if (parts.length > 2) {
+      cleaned = parts[0] + "." + parts[1];
+    }
 
-  if (parts[1]?.length > 2) {
-    cleaned = parts[0] + "." + parts[1].slice(0, 2);
-  }
+    if (parts[1]?.length > 2) {
+      cleaned = parts[0] + "." + parts[1].slice(0, 2);
+    }
 
-  const num = Number(cleaned);
+    const num = Number(cleaned);
 
-  if (cleaned && num === 0) {
+    if (cleaned && num === 0) {
+      setAddBankAmount(cleaned);
+      setAmountError("Amount must be greater than 0");
+      return;
+    }
+
+    if (cleaned && (isNaN(num) || num < 0)) {
+      setAmountError("Enter valid amount");
+      return;
+    }
+
     setAddBankAmount(cleaned);
-    setAmountError("Amount must be greater than 0");
-    return;
-  }
-
-  if (cleaned && (isNaN(num) || num < 0)) {
-    setAmountError("Enter valid amount");
-    return;
-  }
-
-  setAddBankAmount(cleaned);
-  setAmountError("");
-};
+    setAmountError("");
+  };
 
   const closeAddBalancePopup = () => {
     setShowAddBalance(false);
@@ -489,39 +498,39 @@ const handleAddBankAmount = (v) => {
   //   }
   // };
 
-const handleAddAmountSubmit = async () => {
-  const num = Number(addBankAmount);
+  const handleAddAmountSubmit = async () => {
+    const num = Number(addBankAmount);
 
-  if (!addBankAmount.trim()) {
-    setAmountError("Please Enter Amount");
-    return;
-  }
+    if (!addBankAmount.trim()) {
+      setAmountError("Please Enter Amount");
+      return;
+    }
 
-  if (isNaN(num) || num <= 0) {
-    setAmountError("Amount must be greater than 0");
-    return;
-  }
+    if (isNaN(num) || num <= 0) {
+      setAmountError("Amount must be greater than 0");
+      return;
+    }
 
-  const res = await AddBankAmount(
-    activeHostelId,
-    selectedBankId,
-    addBankAmount
-  );
+    const res = await AddBankAmount(
+      activeHostelId,
+      selectedBankId,
+      addBankAmount
+    );
 
-  if (res?.success) {
-    setModalType("success");
-    setModalMessage(res?.message || "Amount Added Successfully");
-    setShowSuccessModal(true);
+    if (res?.success) {
+      setModalType("success");
+      setModalMessage(res?.message || "Amount Added Successfully");
+      setShowSuccessModal(true);
 
-    closeAddBalancePopup();
+      closeAddBalancePopup();
 
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 1200);
-  } else {
-    setAmountError(res?.message);
-  }
-};
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1200);
+    } else {
+      setAmountError(res?.message);
+    }
+  };
 
   const addBalanceTranslateY = useRef(new Animated.Value(0)).current;
 
@@ -805,27 +814,27 @@ const handleAddAmountSubmit = async () => {
               <Animated.View style={{ height: bankListHeight, opacity: bankListOpacity }}>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   {mappedBankList && mappedBankList?.length > 0 && mappedBankList?.map((item, index) => (
-                    <View key={index}   style={[
-    styles.bankCard,
-    item.isDeleted && {
-      opacity: 0.5,
-      backgroundColor: "#F3F4F6", 
-    },
-  ]}>
+                    <View key={index} style={[
+                      styles.bankCard,
+                      item.isDeleted && {
+                        opacity: 0.5,
+                        backgroundColor: "#F3F4F6",
+                      },
+                    ]}>
 
                       <View
-                       style={[
-    {
-      backgroundColor: '#f7f5ff',
-      padding: 20,
-      flexGrow: 1,
-      paddingTop: 7,
-      paddingBottom: 7,
-    },
-    item.isDeleted && {
-      backgroundColor: "#E5E7EB",
-    },
-  ]}
+                        style={[
+                          {
+                            backgroundColor: '#f7f5ff',
+                            padding: 20,
+                            flexGrow: 1,
+                            paddingTop: 7,
+                            paddingBottom: 7,
+                          },
+                          item.isDeleted && {
+                            backgroundColor: "#E5E7EB",
+                          },
+                        ]}
                       >
 
                         <View style={styles.topRow}>
@@ -843,8 +852,8 @@ const handleAddAmountSubmit = async () => {
                           </View>
 
                           <TouchableOpacity
-                          disabled={item?.isDeleted}
-                           style={styles.moreIcon} ref={(ref) => (dotsRef.current[item.id] = ref)} onPress={() => openMenu(item)}>
+                            disabled={item?.isDeleted}
+                            style={styles.moreIcon} ref={(ref) => (dotsRef.current[item.id] = ref)} onPress={() => openMenu(item)}>
                             <Image source={ThreeDotsIcon} style={styles.popupIcon} />
                           </TouchableOpacity>
                         </View>
@@ -875,15 +884,15 @@ const handleAddAmountSubmit = async () => {
                             // style={styles.addAmountText}
                             // onPress={() => handleShowAddBalance(item)}
 
-                           style={[
-  styles.addAmountText,
-  (!canWriteBanking || item?.isDeleted) && { opacity: 0.4 }
-]}
-disabled={!canWriteBanking || item?.isDeleted}
-                           onPress={() => {
-  if (!canWriteBanking || item?.isDeleted) return;
-  handleShowAddBalance(item);
-}}
+                            style={[
+                              styles.addAmountText,
+                              (!canWriteBanking || item?.isDeleted) && { opacity: 0.4 }
+                            ]}
+                            disabled={!canWriteBanking || item?.isDeleted}
+                            onPress={() => {
+                              if (!canWriteBanking || item?.isDeleted) return;
+                              handleShowAddBalance(item);
+                            }}
                           >
                             + Add Amount
                           </Text>
@@ -910,7 +919,9 @@ disabled={!canWriteBanking || item?.isDeleted}
 
 
               {mappedTransactions && mappedTransactions.length > 0 && mappedTransactions?.map((t) => (
-                <TouchableOpacity key={t.id} onPress={() => handleshowTransaction(t)}>
+                <TouchableOpacity key={t.id} 
+                // onPress={() => handleshowTransaction(t)}
+                >
                   {/* <View style={styles.transCard}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <View
@@ -1065,7 +1076,7 @@ disabled={!canWriteBanking || item?.isDeleted}
 
             <Text style={{
               fontSize: 18,
-              fontFamily: "Gilroy-Bold" ,
+              fontFamily: "Gilroy-Bold",
               marginBottom: 10,
             }}>Transaction Details</Text>
 
@@ -1110,7 +1121,7 @@ disabled={!canWriteBanking || item?.isDeleted}
                   fontSize: 14,
                   color: "#000",
                   fontFamily: "Gilroy-Semibold", marginLeft: -3
-                }}> {selectedTransaction?.raw?.accountHolder}</Text>
+                }}> {selectedTransaction?.raw?.bankName}</Text>
               </View>
 
               {/* <View style={{ flex: 1 }}>
@@ -1140,8 +1151,8 @@ disabled={!canWriteBanking || item?.isDeleted}
             {/* <Text style={styles.label}>Description</Text>
             <Text style={styles.description}>
               {/* Transfer Rs:10,000 for Balance maintenance */}
-              {/* {selectedTransaction?.raw?.referenceNumber || "-"}
-            </Text> */} 
+            {/* {selectedTransaction?.raw?.referenceNumber || "-"}
+            </Text> */}
           </Animated.View>
         </View>
       )}
@@ -1341,19 +1352,19 @@ disabled={!canWriteBanking || item?.isDeleted}
             ]}
           >
 
-            <TouchableOpacity     
-  //                         style={[
-  //   styles.popupRow,
-  //   (!canWriteBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
-  // ]}
+            <TouchableOpacity
+              //                         style={[
+              //   styles.popupRow,
+              //   (!canWriteBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
+              // ]}
 
-          style={[
-    styles.popupRow,
-     , { opacity: 0.4 }
-  ]}
-  disabled
-  
-  // disabled={!canWriteBanking || selectedItem?.isDeleted}
+              style={[
+                styles.popupRow,
+                , { opacity: 0.4 }
+              ]}
+              disabled
+
+              // disabled={!canWriteBanking || selectedItem?.isDeleted}
               onPress={() => {
                 if (!canWriteBanking || selectedItem?.isDeleted) return;
                 setShowMenu(false);
@@ -1371,16 +1382,16 @@ disabled={!canWriteBanking || item?.isDeleted}
               //  style={styles.popupRow} 
               //  onPress={()=>handleEditBanking(selectedItem)}
 
-               style={[
-    styles.popupRow,
-    (!canUpdateBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
-  ]}
+              style={[
+                styles.popupRow,
+                (!canUpdateBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
+              ]}
 
-  disabled={!canUpdateBanking || selectedItem?.isDeleted}
+              disabled={!canUpdateBanking || selectedItem?.isDeleted}
               onPress={() => {
-    if (!canUpdateBanking || selectedItem?.isDeleted) return;
-    handleEditBanking(selectedItem);
-  }}
+                if (!canUpdateBanking || selectedItem?.isDeleted) return;
+                handleEditBanking(selectedItem);
+              }}
             >
               <Image
                 source={EditIcon}
@@ -1397,23 +1408,23 @@ disabled={!canWriteBanking || item?.isDeleted}
 
             <TouchableOpacity
 
-  //             style={[
-  //   styles.popupRow,
-  //   (!canDeleteBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
-  // ]}
-         style={[
-    styles.popupRow,
-     , { opacity: 0.4 }
-  ]}
+              //             style={[
+              //   styles.popupRow,
+              //   (!canDeleteBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
+              // ]}
+              style={[
+                styles.popupRow,
+                , { opacity: 0.4 }
+              ]}
 
-  disabled
-  
-  // disabled={!canDeleteBanking || selectedItem?.isDeleted}
-  onPress={() => {
-    if (!canDeleteBanking || selectedItem?.isDeleted) return;
-    handleDeleteShow();
-  }}
-  
+              disabled
+
+              // disabled={!canDeleteBanking || selectedItem?.isDeleted}
+              onPress={() => {
+                if (!canDeleteBanking || selectedItem?.isDeleted) return;
+                handleDeleteShow();
+              }}
+
             >
               <Image
                 source={DeleteIcon}
@@ -1517,7 +1528,7 @@ const styles = StyleSheet.create({
 
   heading: {
     fontSize: 22,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   // searchBox: {
@@ -1532,33 +1543,33 @@ const styles = StyleSheet.create({
   // },
 
   searchBox: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  borderRadius: 14,
-  paddingHorizontal: 14,
-  height: 44, 
-},
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    height: 44,
+  },
 
   searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
   searchInput: {
-  flex: 1,
-  fontSize: 15,
-  color: "#000",
-  fontFamily: "Gilroy-Regular",
+    flex: 1,
+    fontSize: 15,
+    color: "#000",
+    fontFamily: "Gilroy-Regular",
 
-  paddingVertical: 0, 
+    paddingVertical: 0,
 
-  ...(Platform.OS === "ios" && {
-    height: 40, 
-  }),
-},
+    ...(Platform.OS === "ios" && {
+      height: 40,
+    }),
+  },
   // searchInput: { flex: 1, fontSize: 15, color: "#000" , fontFamily: "Gilroy-Regular" },
 
   sectionTitle: {
     fontSize: 17,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   rowBetween: {
@@ -1625,13 +1636,13 @@ const styles = StyleSheet.create({
 
   bankTitle: {
     fontSize: 17,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   bankSub: {
     color: "#777",
     fontSize: 13,
-     fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   // name: {
@@ -1676,7 +1687,7 @@ const styles = StyleSheet.create({
 
 
   balanceText: { color: "#777" },
-  balanceAmount: { fontFamily: "Gilroy-Bold" , fontSize: 16 },
+  balanceAmount: { fontFamily: "Gilroy-Bold", fontSize: 16 },
   addAmountText: {
     color: "#1D5DFF",
     fontFamily: "Gilroy-Semibold",
@@ -1716,14 +1727,14 @@ const styles = StyleSheet.create({
   defaultText: {
     color: "green",
     fontSize: 11,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   changeText: {
     color: "blue",
     marginTop: 2,
     fontSize: 11,
-     fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   /* TRANSACTION CARD */
@@ -1759,7 +1770,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#666",
     marginTop: 2,
-     fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   transRight: {
@@ -1776,10 +1787,10 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  transTitle: { fontSize: 16, fontFamily: "Gilroy-Semibold",},
+  transTitle: { fontSize: 16, fontFamily: "Gilroy-Semibold", },
   // category: { fontSize: 13, color: "#666" },
-  date: { fontSize: 12, color: "#777" , fontFamily: "Gilroy-Semibold",},
-  amount: { fontSize: 16, fontFamily: "Gilroy-Bold"  },
+  date: { fontSize: 12, color: "#777", fontFamily: "Gilroy-Semibold", },
+  amount: { fontSize: 16, fontFamily: "Gilroy-Bold" },
 
   /* FLOATING BUTTONS */
   filterBtn: {
@@ -1881,7 +1892,7 @@ const styles = StyleSheet.create({
 
   deleteTitle: {
     fontSize: 18,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     color: "#111",
     marginBottom: 10,
   },
@@ -1911,7 +1922,7 @@ const styles = StyleSheet.create({
 
   cancelText: {
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#2D6CDF",
   },
 
@@ -1964,7 +1975,7 @@ const styles = StyleSheet.create({
 
   sheetTitle: {
     fontSize: 18,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     marginBottom: 20,
   },
 
@@ -1993,7 +2004,7 @@ const styles = StyleSheet.create({
 
   backIcon: { width: 22, height: 22, marginRight: 10 },
 
-  title: { fontSize: 18, fontFamily: "Gilroy-Bold" ,},
+  title: { fontSize: 18, fontFamily: "Gilroy-Bold", },
 
   divider: { height: 1, backgroundColor: "#E8E8E8", marginVertical: 12 },
 
@@ -2001,12 +2012,12 @@ const styles = StyleSheet.create({
   colLeft: { width: "48%" },
   colRight: { width: "48%" },
 
-  label: { fontSize: 13, color: "#7A7A7A", marginBottom: 6 ,fontFamily: "Gilroy-Semibold", },
+  label: { fontSize: 13, color: "#7A7A7A", marginBottom: 6, fontFamily: "Gilroy-Semibold", },
   value: { fontSize: 15, fontFamily: "Gilroy-Semibold", color: "#000" },
 
   assignBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", backgroundColor: "#1E45E1", paddingVertical: 14, borderRadius: 12, marginTop: 20 },
   assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
-  assignText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Bold" ,},
+  assignText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Bold", },
 
   iconBox: {
     height: 45,
@@ -2058,7 +2069,7 @@ const styles = StyleSheet.create({
 
   amountText: {
     fontSize: 18,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     marginBottom: 20,
   },
 
@@ -2093,8 +2104,8 @@ const styles = StyleSheet.create({
   option: { paddingVertical: 12, paddingHorizontal: 14 },
   optionText: { fontSize: 15, color: "#000" },
 
-  filterTitle: { fontSize: 20, fontFamily: "Gilroy-Bold" ,},
-  resetTextSmall: { color: "#2D6CDF", ffontFamily: "Gilroy-Semibold",},
+  filterTitle: { fontSize: 20, fontFamily: "Gilroy-Bold", },
+  resetTextSmall: { color: "#2D6CDF", ffontFamily: "Gilroy-Semibold", },
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
@@ -2119,9 +2130,9 @@ const styles = StyleSheet.create({
   quickText: { color: "#111", fontFamily: "Gilroy-Semibold", },
   bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 42, marginBottom: 25 },
   resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
-  resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold" ,},
+  resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold", },
   applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
-  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold" ,},
+  applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold", },
 
   addBalanceSheet: {
     backgroundColor: "#fff",
@@ -2139,12 +2150,12 @@ const styles = StyleSheet.create({
 
   sheetTitle: {
     fontSize: 18,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   label: {
     fontSize: 14,
-    fontFamily: "Gilroy-Medium" ,
+    fontFamily: "Gilroy-Medium",
     // marginTop: 10,
     marginBottom: 6,
   },
@@ -2164,13 +2175,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginTop: 20,
-    marginBottom:30
+    marginBottom: 30
   },
 
   addBalanceBtnText: {
     color: "#fff",
     fontSize: 16,
-    fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
   },
 
   emptyContainer: {
@@ -2189,7 +2200,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: "#6B7280",
-     fontFamily: "Gilroy-Medium" ,
+    fontFamily: "Gilroy-Medium",
   },
 
 });
