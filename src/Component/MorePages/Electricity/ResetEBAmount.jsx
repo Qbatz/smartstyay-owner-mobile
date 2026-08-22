@@ -152,7 +152,8 @@ export default function ResetEBAmount({
         const payload = {
             roomId: roomInfo?.roomId,
             resetOn: dayjs(selectedStartDate).format("DD-MM-YYYY") || "",
-            startReading: Number(meterReading)
+            startReading: Number(meterReading),
+            resetReason: selectedReason,
         }
 
         try {
@@ -325,8 +326,8 @@ export default function ResetEBAmount({
                             //     ? bookingDateObj.format("YYYY-MM-DD")
                             //     : undefined
                             // }
-                            minDate={dayjs().format("YYYY-MM-DD")}
-                            // maxDate={dayjs().format("YYYY-MM-DD")}   
+                            // minDate={dayjs().format("YYYY-MM-DD")}
+                            maxDate={dayjs().format("YYYY-MM-DD")}   
                             onDayPress={(day) => {
                                 const selected = dayjs(day.dateString);
 

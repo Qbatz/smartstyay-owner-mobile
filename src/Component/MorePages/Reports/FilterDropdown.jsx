@@ -1,44 +1,102 @@
 import React,{useState} from "react";
-import { View,TouchableOpacity,Text,Image,ScrollView } from "react-native";
+import { View,TouchableOpacity,Text,Image,ScrollView, StyleSheet, } from "react-native";
+import DownArrow from "../../../Assets/Images/direction-down.png";
+
+
 
 const FilterDropdown = ({
     options = [],
-    selectedValue,
+    value,
     onSelect,
-    placeholder = "Select",
+    placeholder,
+    multiSelect = false,
 }) => {
     const [open, setOpen] = useState(false);
 
-    return (
-        <View style={{ position: "relative" }}>
+    const handleSelect = (item) => {
+        if (multiSelect) {
+           
+            const currentValues = Array.isArray(value) ? value : [];
 
+            const alreadySelected = currentValues.some(
+                selected => selected?.id === item?.id
+            );
+
+            let updatedValues;
+
+            if (alreadySelected) {          
+                updatedValues = currentValues.filter(
+                    selected => selected?.id !== item?.id
+                );
+            } else {            
+                updatedValues = [...currentValues, item];
+            }
+
+            onSelect(updatedValues);
+
+        } else {
+            // Single selection
+            onSelect(item);
+            setOpen(false);
+        }
+    };
+
+    // const isSelected = (item) => {
+    //     if (!multiSelect) {
+    //         return value?.id ?? value?.tenantId === item?.id ?? item?.tenantId;
+    //     }
+
+    //     return Array.isArray(value) &&
+    //         value.some(selected => selected?.id === item?.id);
+    // };
+    const getItemId = (item) => {
+    return item?.id ?? item?.tenantId;
+};
+
+const isSelected = (item) => {
+    const itemId = getItemId(item);
+
+    if (!multiSelect) {
+        const selectedId = getItemId(value);
+
+        return (
+            selectedId != null &&
+            itemId != null &&
+            String(selectedId) === String(itemId)
+        );
+    }
+
+    return Array.isArray(value) && value.some(selected => {
+        const selectedId = getItemId(selected);
+
+        return (
+            selectedId != null &&
+            itemId != null &&
+            String(selectedId) === String(itemId)
+        );
+    });
+};
+
+
+    return (
+        <View>
+
+           
             <TouchableOpacity
                 style={styles.dropdownButton}
-                onPress={() => setOpen(prev => !prev)}
+                onPress={() => setOpen(!open)}
             >
-                <Text
-                    style={[
-                        styles.dropdownText,
-                        !selectedValue && styles.placeholderText
-                    ]}
-                >
-                    {selectedValue?.label || placeholder}
+                <Text style={{fontSize:14,fontFamily:'Gilroy-Medium'}}>
+                    {multiSelect
+                        ? value?.length
+                            ?  value.map(i => i?.label || i?.name).join("  ")
+                            : placeholder || "Select"
+                        : value?.label || value?.name || placeholder || "Select"
+                    } 
                 </Text>
-
-                <Image
-                    source={DownArrow}
-                    style={[
-                        styles.dropdownArrow,
-                        {
-                            transform: [
-                                {
-                                    rotate: open ? "180deg" : "0deg"
-                                }
-                            ]
-                        }
-                    ]}
-                />
+                <Image source={DownArrow} style={{width:18,height:18}}/>
             </TouchableOpacity>
+
 
             {open && (
                 <View style={styles.dropdownMenu}>
@@ -51,22 +109,48 @@ const FilterDropdown = ({
                             <TouchableOpacity
                                 key={item?.id ?? index}
                                 style={styles.dropdownItem}
-                                onPress={() => {
-                                    onSelect(item);
-                                    setOpen(false);
-                                }}
+                                onPress={() => handleSelect(item)}
                             >
-                                <Text style={styles.dropdownItemText}>
-                                    {item?.label}
-                                </Text>
+                                <View
+                                    style={{
+                                        flexDirection: "row",
+                                        alignItems: "center",
+                                        justifyContent: "space-between"
+                                    }}
+                                >
+                                    <Text style={styles.dropdownItemText}>
+                                        {item?.label || item?.name}
+                                    </Text>
+
+                                    {isSelected(item) && (
+                                        <Text>✓</Text>
+                                    )}
+                                </View>
                             </TouchableOpacity>
                         ))}
+                        {options.length ===0 && (
+                            <View style={styles.dropdownItem}>
+                                <Text style={styles.dropdownItemText}>No Option availbale</Text>
+                            </View>
+                        )}
                     </ScrollView>
+
+                  
+                    {/* {multiSelect && (
+                        <TouchableOpacity
+                            onPress={() => setOpen(false)}
+                            style={styles.doneButton}
+                        >
+                            <Text>Done</Text>
+                        </TouchableOpacity>
+                    )} */}
                 </View>
             )}
+
         </View>
     );
 };
+export default FilterDropdown;
 
 const styles = StyleSheet.create({
 
@@ -102,17 +186,18 @@ const styles = StyleSheet.create({
     },
 
     dropdownMenu: {
-        position: "absolute",
-        top: 48,
+        // position: "absolute",
+        // top: 48,
+        marginTop:5,
         left: 0,
         right: 0,
 
         backgroundColor: "#FFFFFF",
         borderWidth: 1,
         borderColor: "#E2E8F0",
-        borderRadius: 8,
+        borderRadius: 10,
 
-        elevation: 5,
+        elevation: 2,
         zIndex: 999,
     },
 
