@@ -90,6 +90,10 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const [isGenerating, setIsGenerating] = useState(false);
 
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+
+
 
 
   //    useEffect(() => {
@@ -189,6 +193,21 @@ export default function FinalSettlementScreen({ navigation, route }) {
       }
     }, [selectedItem, selectedBed, actualCheckoutDate])
   );
+
+  useEffect(() => {
+  const show = Keyboard.addListener("keyboardDidShow", () => {
+    setKeyboardVisible(true);
+  });
+
+  const hide = Keyboard.addListener("keyboardDidHide", () => {
+    setKeyboardVisible(false);
+  });
+
+  return () => {
+    show.remove();
+    hide.remove();
+  };
+}, []);
 
 
   // useEffect(() => {
@@ -1211,7 +1230,10 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
           <ScrollView
             ref={scrollRef}
-            contentContainerStyle={{ paddingBottom: 200 }}
+         contentContainerStyle={{
+  paddingBottom: 
+   keyboardVisible ? 200 : 160,
+}}
             keyboardShouldPersistTaps="handled"
             onScroll={(e) => {
               currentScrollY.current = e.nativeEvent.contentOffset.y;
@@ -2499,6 +2521,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
           </ScrollView>
 
 
+{!keyboardVisible && (
           <View style={[styles.bottomFixed]}>
 
             <View style={styles.totalContainer}>
@@ -2577,6 +2600,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
               </TouchableOpacity>
             </View>
           </View>
+)}
+
 
           <AddRoomReadingSheet
             visible={showRoomReadingSheet}
