@@ -13,33 +13,72 @@ const FilterDropdown = ({
 }) => {
     const [open, setOpen] = useState(false);
 
-    const handleSelect = (item) => {
-        if (multiSelect) {
+    console.log("srithai",value)
+
+    // const handleSelect = (item) => {
+    //     if (multiSelect) {
            
-            const currentValues = Array.isArray(value) ? value : [];
+    //         const currentValues = Array.isArray(value) ? value : [];
 
-            const alreadySelected = currentValues.some(
-                selected => selected?.id === item?.id
+    //         const alreadySelected = currentValues.some(
+    //             selected => selected?.id ?? selected?.type === item?.id ?? item?.type
+    //         );
+
+    //         let updatedValues;
+
+    //         if (alreadySelected) {          
+    //             updatedValues = currentValues.filter(
+    //                 selected => selected?.id ?? selected?.type !== item?.id ?? item?.type
+    //             );
+    //         } else {            
+    //             updatedValues = [...currentValues, item];
+    //         }
+
+    //         onSelect(updatedValues);
+
+    //     } else {        
+    //         onSelect(item);
+    //         setOpen(false);
+    //     }
+    // };
+
+    const handleSelect = (item) => {
+    if (multiSelect) {
+        const currentValues = Array.isArray(value) ? value : [];
+
+        const itemId = getItemId(item);
+
+        const alreadySelected = currentValues.some(selected => {
+            const selectedId = getItemId(selected);
+
+            return (
+                selectedId != null &&
+                itemId != null &&
+                String(selectedId) === String(itemId)
             );
+        });
 
-            let updatedValues;
+        let updatedValues;
 
-            if (alreadySelected) {          
-                updatedValues = currentValues.filter(
-                    selected => selected?.id !== item?.id
-                );
-            } else {            
-                updatedValues = [...currentValues, item];
-            }
+        if (alreadySelected) {
+            // Remove selected item
+            updatedValues = currentValues.filter(selected => {
+                const selectedId = getItemId(selected);
 
-            onSelect(updatedValues);
-
+                return String(selectedId) !== String(itemId);
+            });
         } else {
-            // Single selection
-            onSelect(item);
-            setOpen(false);
+            // Add selected item
+            updatedValues = [...currentValues, item];
         }
-    };
+
+        onSelect(updatedValues);
+
+    } else {
+        onSelect(item);
+        setOpen(false);
+    }
+};
 
     // const isSelected = (item) => {
     //     if (!multiSelect) {
@@ -50,8 +89,11 @@ const FilterDropdown = ({
     //         value.some(selected => selected?.id === item?.id);
     // };
     const getItemId = (item) => {
-    return item?.id ?? item?.tenantId;
+    return item?.id ?? item?.tenantId ?? item?.type ;
 };
+const getLabel=(item)=>{
+    return item?.label ?? item?.name
+}
 
 const isSelected = (item) => {
     const itemId = getItemId(item);
@@ -91,7 +133,7 @@ const isSelected = (item) => {
                         ? value?.length
                             ?  value.map(i => i?.label || i?.name).join("  ")
                             : placeholder || "Select"
-                        : value?.label || value?.name || placeholder || "Select"
+                        : value?.label || value?.name || value || placeholder || "Select"
                     } 
                 </Text>
                 <Image source={DownArrow} style={{width:18,height:18}}/>
@@ -119,7 +161,7 @@ const isSelected = (item) => {
                                     }}
                                 >
                                     <Text style={styles.dropdownItemText}>
-                                        {item?.label || item?.name}
+                                        {item?.label || item?.name || item}
                                     </Text>
 
                                     {isSelected(item) && (

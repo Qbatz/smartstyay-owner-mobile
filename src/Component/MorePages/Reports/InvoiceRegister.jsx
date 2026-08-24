@@ -28,6 +28,10 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import FilterBottomSheet from "./FilterBottomSheet";
 import RupeeIcon from "../../../Assets/Images/Rupees.png";
 import ReceiptsIcon from "../../../Assets/Images/Receipts.png";
+import ReportsAllFilterBottomSheet from "./ReportsAllFilterBottomSheet"
+import dayjs from "dayjs";
+
+
 
 
 
@@ -55,6 +59,17 @@ const InvoiceRegister = ({ navigation }) => {
   const [monthSheetOpen, setMonthSheetOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [tempMonth, setTempMonth] = useState("");
+  const [allFilterSheet, setAllFilterSheet] = useState(false)
+
+  const [selectedBillStatus, setSelectedBillStatus] = useState(null)
+  const [allSelectedMonth, setAllSelectedMonth] = useState(null)
+  const [selectedInvoiceType, setSelectedInvoiceType] = useState(null)
+  const [selectedCreatedBy, setCreatedByValue] = useState(null)
+  const [selectedInvoiceMode, setSelectedModeValue] = useState(null)
+  const [startDateValue,setStartDateValue]=useState(null)
+  const[endDateValue,setEndDateValue]=useState(null)
+  const [minPaidValue,setMinPaidValue]=useState("")
+  const [maxPaidValue,setMaxPaidValue]=useState("")
 
   const slideAnim = useState(new Animated.Value(500))[0];
 
@@ -204,12 +219,23 @@ const InvoiceRegister = ({ navigation }) => {
 
   //   GetInvoiceReports(activeHostelId, filters);
   // };
+  const formatBackendDate = (date) => {
+  return dayjs(date).format("DD-MM-YYYY");
+};
 
   const applyFilters = (
-    newMonth = selectedMonth,
-    newStatus = billStatus,
-    newType = type
+    newMonth = selectedMonth ?? allSelectedMonth,
+    newStatus = billStatus ?? selectedBillStatus,
+    newType = type ?? selectedInvoiceType,
+    newCreated=selectedCreatedBy,
+    newMode = selectedInvoiceMode,
+    newStartDate= startDateValue,
+    newEndDate=endDateValue,
+    newMinPaid=minPaidValue,
+    newMaxPaid=maxPaidValue
   ) => {
+
+
     const filters = {
       page: 1,
       size: 10,
@@ -225,23 +251,50 @@ const InvoiceRegister = ({ navigation }) => {
         newType?.length > 0
           ? newType
           : undefined,
+
+      createdBy: newCreated?.length > 0 ? newCreated : undefined,
+
+      invoiceModes: newMode?.length >0 ? newMode : undefined,
+      startDate: newStartDate ? formatBackendDate(newStartDate) : undefined,
+      endDate: newEndDate ? formatBackendDate(newEndDate) : undefined,
+      minPaidAmount: newMinPaid ? Number(newMinPaid) : undefined,
+      maxPaidAmount: newMaxPaid ? Number(newMaxPaid) : undefined
     };
+    
 
     console.log("Invoice Filters =>", filters);
 
-    GetInvoiceReports(activeHostelId, filters);
+   const res= GetInvoiceReports(activeHostelId, filters);
+   console.log("karti",res)
   };
 
   const handleDownloadInvoiceReport = async () => {
+
+     const finalMonth =
+      allSelectedMonth !== undefined ? allSelectedMonth : selectedMonth ;
+
+    const finalStatus= selectedBillStatus !=undefined ? selectedBillStatus : billStatus;
+
+    const finalType= selectedInvoiceType !=undefined ? selectedInvoiceType : type;
+
     const filters = {
       page: 1,
       size: 10,
-      period: selectedMonth || undefined,
+      period: finalMonth || undefined,
       paymentStatus:
-        billStatus?.length > 0 ? billStatus : undefined,
+        finalStatus?.length > 0 ? finalStatus : undefined,
       invoiceTypes:
-        type?.length > 0 ? type : undefined,
+        finalType?.length > 0 ? finalType : undefined,
+      
+      createdBy: selectedCreatedBy?.length > 0 ? selectedCreatedBy : undefined,
+      invoiceModes: selectedInvoiceMode?.length > 0 ? selectedInvoiceMode : undefined,
+      startDate: startDateValue ?  formatBackendDate(startDateValue) : undefined,
+      endDate: endDateValue ? formatBackendDate(endDateValue) : undefined,
+      minPaidAmount: minPaidValue || undefined,
+      maxPaidAmount: maxPaidValue || undefined,
     };
+
+      
 
     const res = await downloadInvoiceReport(activeHostelId, filters);
 
@@ -386,47 +439,74 @@ const InvoiceRegister = ({ navigation }) => {
   </View>
 </LinearGradient> */}
 
-            <View style={{height:110}}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-             style={{ height: 110 }}
-            contentContainerStyle={styles.cardRow}
-          >
-            <SummaryCard
-              title="Total Invoice"
-              value={invoiceReports?.totalInvoices}
-              icon={ReceiptsIcon}
-              linearcolor="#FFF4F4"
-            />
+          <View style={{ height: 110 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ height: 110 }}
+              contentContainerStyle={styles.cardRow}
+            >
+              <SummaryCard
+                title="Total Invoice"
+                value={invoiceReports?.totalInvoices}
+                icon={ReceiptsIcon}
+                linearcolor="#FFF4F4"
+              />
 
-            <SummaryCard
-              title="Total Amount"
-              value={invoiceReports?.totalAmount}
-              icon={RupeeIcon}
-              valueColor="#00A651"
-              linearcolor="#F4FFF7"
-            />
+              <SummaryCard
+                title="Total Amount"
+                value={invoiceReports?.totalAmount}
+                icon={RupeeIcon}
+                valueColor="#00A651"
+                linearcolor="#F4FFF7"
+              />
 
-            <SummaryCard
-              title="Paid Amount"
-              value={invoiceReports?.paidAmount}
-              icon={RupeeIcon}
-              linearcolor="#FFF4F4"
-            />
+              <SummaryCard
+                title="Paid Amount"
+                value={invoiceReports?.paidAmount}
+                icon={RupeeIcon}
+                linearcolor="#FFF4F4"
+              />
 
-            <SummaryCard
-              title="Outstanding"
-              value={invoiceReports?.outStandingAmount}
-              icon={RupeeIcon}
-              linearcolor="#FFF4F4"
-            />
-          </ScrollView>
-        </View>
+              <SummaryCard
+                title="Outstanding"
+                value={invoiceReports?.outStandingAmount}
+                icon={RupeeIcon}
+                linearcolor="#FFF4F4"
+              />
+            </ScrollView>
+          </View>
 
 
           <View style={styles.filterRow}>
             {/* ALL BUTTON */}
+
+            <TouchableOpacity
+              style={[
+                styles.filterBox,
+                // billStatus.length > 0 && styles.filterBoxActive,
+              ]}
+              onPress={() => {
+                // setTempStatus(billStatus);
+                setAllFilterSheet(true);
+              }}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  // billStatus.length > 0 && styles.filterTextActive,
+                ]}
+              >
+                {/* {selectedBillStatus.length === 0 || !allSelectedMonth || !startDateValue || !endDateValue || 
+                  ? "All"
+                  : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
+                  }`} */}
+                  All
+              </Text>
+              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+            </TouchableOpacity>
+
+            {/* STATUS BUTTON */}
             <TouchableOpacity
               style={[
                 styles.filterBox,
@@ -444,7 +524,7 @@ const InvoiceRegister = ({ navigation }) => {
                 ]}
               >
                 {billStatus.length === 0
-                  ? "All"
+                  ? "Status"
                   : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
                   }`}
               </Text>
@@ -655,6 +735,37 @@ const InvoiceRegister = ({ navigation }) => {
         onClose={() => setTypeSheetOpen(false)}
       />
 
+      <ReportsAllFilterBottomSheet
+        visible={allFilterSheet}
+        filters={filterOptions}
+        reportType="invoice"
+        // selectedFilters={ }
+        setSelectedBillStatus={setSelectedBillStatus}
+        setSelectedMonth={setAllSelectedMonth}
+        setSelectedInvoiceType={setSelectedInvoiceType}
+        setCreatedByValue={setCreatedByValue}
+        setSelectedModeValue={setSelectedModeValue}
+        // setTenantValue={setTenantValue}
+        setStartDateValue={setStartDateValue}
+        setEndDateValue={setEndDateValue}
+        setMinPaidValue={setMinPaidValue}
+        setMaxPaidValue={setMaxPaidValue}
+
+        onReset={() => {
+            setSelectedBillStatus(null),setAllSelectedMonth(""),setSelectedInvoiceType(null),
+            setCreatedByValue(null),setSelectedModeValue(null),setStartDateValue(null),
+            setEndDateValue(null),setMaxPaidValue(""),setMinPaidValue("")
+            setAllFilterSheet(false)
+            applyFilters("",[],[],[],[],"","","","")
+        }}
+        onApply={() => {
+          setAllFilterSheet(false)
+          applyFilters(allSelectedMonth,selectedBillStatus,selectedInvoiceType,selectedCreatedBy,
+            selectedInvoiceMode,startDateValue,endDateValue,minPaidValue,maxPaidValue)
+        }}
+        onClose={() => setAllFilterSheet(false)}
+      />
+
 
     </>
 
@@ -782,7 +893,7 @@ const styles = StyleSheet.create({
 
   /* FILTER */
   filterRow: {
-    flexDirection: "row",alignItems:'center',
+    flexDirection: "row", alignItems: 'center',
     marginTop: 10,
   },
 
@@ -900,7 +1011,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     marginRight: 10,
     backgroundColor: "#fff",
-          flexDirection: "row", justifyContent: "center", alignItems: "center" 
+    flexDirection: "row", justifyContent: "center", alignItems: "center"
   },
 
   filterBoxActive: {
@@ -1047,10 +1158,10 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold",
   },
   cardRow: {
-        paddingLeft: 5,
-        paddingTop: 8,
-        // paddingBottom: 0,
-        marginBottom:5,alignItems: "flex-start",
-    },
+    paddingLeft: 5,
+    paddingTop: 8,
+    // paddingBottom: 0,
+    marginBottom: 5, alignItems: "flex-start",
+  },
 
 });

@@ -8,10 +8,18 @@ import {
     PanResponder,
     Dimensions,
     BackHandler,
+    Image,
+    TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import FilterDropdown from "./FilterDropdown"
+import DownArrow from "../../../Assets/Images/direction-down.png";
+import { Calendar } from "react-native-calendars";
+import CalenderIcon from "../../../Assets/Images/calendar.png"
+import dayjs from "dayjs";
+
+
 
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -21,16 +29,16 @@ export default function ReportsAllFilterBottomSheet({
     reportType,
     filters,
     selectedFilters,
-    onClose,
-    onApply,
-    onReset,
-    setSelectedSharingValue,
+    onClose, onApply, onReset,
+    setSelectedSharingValue, setSelectedTenantStatus, setSelectedFloorValue,
+    setSelectedRoomValue, tenantList, setTenantValue,
     setSelectedMonth,
-    setSelectedTenantStatus,
-    setSelectedFloorValue,
-    setSelectedRoomValue,
-    tenantList,
-    setTenantValue
+
+    setSelectedBillStatus, setSelectedInvoiceType,
+    setCreatedByValue, setSelectedModeValue,
+    setStartDateValue, setEndDateValue,
+     setMinPaidValue, setMaxPaidValue
+
 }) {
 
     const insets = useSafeAreaInsets();
@@ -40,9 +48,27 @@ export default function ReportsAllFilterBottomSheet({
     const [selectedRoom, setSelectedRoom] = useState(null);
     const [selectedSharing, setSelectedSharing] = useState(null);
     const [selectedStatus, setSelectedStatus] = useState(null);
-    const [selectedPeriod, setSelectedPeriod] = useState(null)
+    const [selectedPeriod, setSelectedPeriod] = useState(null);
+    const [minAmount, setMinAmount] = useState(null)
+    const [maxAmount, setMaxAmount] = useState(null)
+
+    // invoice filter
+
+
+    const [selectedType, setSelectedType] = useState(null)
+    const [selectedCreatedBy, setSelectedCreatedBy] = useState(null)
+    const [selectedMode, setSelectedMode] = useState(null)
+
+    const [startDate, setStartDate] = useState(null);
+    const [endDate, setEndDate] = useState(null);
+    const [showCalendar, setShowCalendar] = useState(false);
+    const [selecting, setSelecting] = useState("start");
+
+    const [showInvoiceSystemFilter, setShowInvoiceSystemFilter] = useState(true)
+    const [showInvoiceMoreFilter, setShowInvoiceMoreFilter] = useState(true)
 
     const [error, setError] = React.useState("");
+    const [errorMsg,setErrorMsg]=useState("")
 
     const openSheet = () => {
         Animated.spring(translateY, {
@@ -105,6 +131,62 @@ export default function ReportsAllFilterBottomSheet({
             )
             : (filters?.room || []);
 
+    console.log("startdate", startDate)
+
+    const getMarkedDates = () => {
+        if (!startDate) {
+            return {};
+        }
+
+        if (!endDate) {
+            return {
+                [startDate]: {
+                    startingDay: true,
+                    endingDay: true,
+                    color: "#2196F3",
+                    textColor: "#fff",
+                },
+            };
+        }
+
+        const marked = {};
+
+        let current = dayjs(startDate);
+        const end = dayjs(endDate);
+
+        while (
+            current.isBefore(end, "day") ||
+            current.isSame(end, "day")
+        ) {
+            const date = current.format("YYYY-MM-DD");
+
+            marked[date] = {
+                color: "#DCEEFF",
+                textColor: "#222",
+            };
+
+            if (date === startDate) {
+                marked[date] = {
+                    startingDay: true,
+                    color: "#2196F3",
+                    textColor: "#fff",
+                };
+            }
+
+            if (date === endDate) {
+                marked[date] = {
+                    endingDay: true,
+                    color: "#2196F3",
+                    textColor: "#fff",
+                };
+            }
+
+            current = current.add(1, "day");
+        }
+
+        return marked;
+    };
+
 
     if (!visible) return null;
 
@@ -159,92 +241,190 @@ export default function ReportsAllFilterBottomSheet({
 
                     {isInvoice && (
                         <>
+                            <TouchableOpacity onPress={() => setShowInvoiceSystemFilter(!showInvoiceSystemFilter)}
+                                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 18, marginBottom: 8, }}>
+                                <Text style={styles.sectionTitle}>
+                                    System Filter
+                                </Text>
 
-                            <Text style={styles.sectionTitle}>
-                                System Filter
-                            </Text>
+                                <Image source={DownArrow} style={{ width: 20, height: 20, marginLeft: 8 }} />
+                            </TouchableOpacity>
 
-                            <FilterDropdown
-                                title="Bill Status"
-                                options={
-                                    filters?.paymentStatus
-                                }
-                                value={
-                                    selectedFilters?.paymentStatus
-                                }
-                                multiple
-                                onChange={(value) =>
-                                    setSelectedFilters(prev => ({
-                                        ...prev,
-                                        paymentStatus: value
-                                    }))
-                                }
-                            />
+                            {showInvoiceSystemFilter && (
+                                <>
 
+                                    <Text style={styles.label}>Bill Status</Text>
 
-                            <FilterDropdown
-                                title="Period"
-                                options={
-                                    filters?.period
-                                }
-                                value={
-                                    selectedFilters?.period
-                                }
-                                onChange={(value) =>
-                                    setSelectedFilters(prev => ({
-                                        ...prev,
-                                        period: value
-                                    }))
-                                }
-                            />
+                                    <FilterDropdown
+                                        options={filters?.paymentStatus}
+                                        value={selectedStatus}
+                                        multiSelect={true}
+                                        onSelect={(value) => {
+                                            console.log("dropdow", value.id)
+                                            setSelectedStatus(value)
+                                            const statusIds = value.map(item => item?.type);
 
+                                            setSelectedBillStatus(statusIds);
 
-                            <FilterDropdown
-                                title="Type"
-                                options={
-                                    filters?.invoiceTypes
-                                }
-                                value={
-                                    selectedFilters?.invoiceTypes
-                                }
-                                multiple
-                                onChange={(value) =>
-                                    setSelectedFilters(prev => ({
-                                        ...prev,
-                                        invoiceTypes: value
-                                    }))
-                                }
-                            />
+                                        }}
+                                        placeholder="Select Status"
+                                    />
 
+                                    <Text style={styles.label}>Period</Text>
 
-                            <FilterDropdown
-                                title="Created By"
-                                options={
-                                    filters?.createdBy
-                                }
-                                value={
-                                    selectedFilters?.createdBy
-                                }
-                                multiple
-                                onChange={(value) =>
-                                    setSelectedFilters(prev => ({
-                                        ...prev,
-                                        createdBy: value
-                                    }))
-                                }
-                            />
+                                    <FilterDropdown
+                                        options={filters?.periods}
+                                        value={selectedPeriod}
+                                        onSelect={(value) => {
+                                            console.log("Perioddropdow", value?.id)
+                                            setSelectedPeriod(value)
+                                            setSelectedMonth(value?.id || value)
+                                        }}
+                                        placeholder="Select "
+                                    />
+
+                                    <Text style={styles.label}>Custom Date</Text>
+
+                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                        <TouchableOpacity
+                                            style={[styles.dateField, { marginRight: 5 }]}
+                                            onPress={() => {
+                                                setSelecting("start");
+                                                setShowCalendar(true);
+                                            }}
+                                        >
+                                            <Text style={{ color: startDate ? "#222" : "#999" }}>
+                                                {startDate
+                                                    ? dayjs(startDate).format("DD MMM YYYY")
+                                                    : "Start"}
+                                            </Text>
+
+                                            <Image source={CalenderIcon} style={{ width: 16.5, height: 17, tintColor: '#28303F' }} />
+                                        </TouchableOpacity>
 
 
-                            <Text style={styles.moreFilter}>
+                                        {/* END */}
+                                        <TouchableOpacity
+                                            style={[styles.dateField, { marginLeft: 5 }]}
+                                            onPress={() => {
+                                                setSelecting("end");
+                                                setShowCalendar(true);
+                                            }}
+                                        >
+                                            <Text style={{ color: endDate ? "#222" : "#999" }}>
+                                                {endDate
+                                                    ? dayjs(endDate).format("DD MMM YYYY")
+                                                    : "End"}
+                                            </Text>
+
+                                            <Image source={CalenderIcon} style={{ width: 16.5, height: 17, tintColor: '#28303F' }} />
+                                        </TouchableOpacity>
+
+
+                                    </View>
+
+
+                                    <Text style={styles.label}>Type</Text>
+
+                                    <FilterDropdown
+                                        options={filters?.invoiceTypes}
+                                        value={selectedType}
+                                        multiSelect={true}
+                                        onSelect={(value) => {
+                                            setSelectedType(value)
+                                            const statusIds = value.map(item => item.type);
+                                            setSelectedInvoiceType(statusIds)
+                                        }}
+                                        placeholder="Select Invoice type"
+                                    />
+
+                                    <Text style={styles.label}>Created By</Text>
+
+                                    <FilterDropdown
+                                        options={filters?.createdBy}
+                                        value={selectedCreatedBy}
+                                        multiSelect={true}
+                                        onSelect={(value) => {
+                                            setSelectedCreatedBy(value)
+
+                                            const statusIds = value.map(item => item?.userId);
+                                            setCreatedByValue(statusIds)
+                                        }}
+                                        placeholder="Select User"
+                                    />
+
+                                    <Text style={styles.label}>Mode</Text>
+                                    <FilterDropdown
+                                        options={filters?.invoiceModes}
+                                        value={selectedMode}
+                                        multiSelect={true}
+                                        onSelect={(value) => {
+                                            setSelectedMode(value)
+
+                                            const statusIds = value.map(item => item.type);
+                                            setSelectedModeValue(statusIds)
+                                        }}
+                                        placeholder="Select Mode"
+                                    />
+                                </>
+                            )}
+
+                            <Text style={[styles.sectionTitle,{marginTop:14}]}>
                                 More Filters
                             </Text>
 
-                            <AmountRange
-                                selectedFilters={selectedFilters}
-                                setSelectedFilters={
-                                    setSelectedFilters
-                                }
-                            />
+                            <Text style={styles.label}>Amount Range</Text>
+
+                            <View style={styles.amountRow}>
+
+                                {/* Minimum Amount */}
+                                <View style={[styles.amountInputContainer,{marginRight:5}]}>
+                                    <Text style={styles.currency}>₹</Text>
+
+                                    <TextInput
+                                        value={minAmount}
+                                        onChangeText={(text) => {
+                                            if(text>maxAmount){
+                                                 setErrorMsg("Min Amount should not be greater than max")
+                                            }else{
+                                                setErrorMsg("")
+                                            }
+                                            const cleanText = text.replace(/[^0-9]/g, "");
+                                            setMinAmount(cleanText)
+                                            setMinPaidValue(cleanText)
+                                        }}
+                                        placeholder="Min"
+                                        placeholderTextColor="#999"
+                                        keyboardType="numeric"
+                                        style={styles.amountInput}
+                                    />
+                                </View>
+
+                                {/* Maximum Amount */}
+                                <View style={[styles.amountInputContainer,{marginLeft:5}, !minAmount && {opacity:0.4}]}>
+                                    <Text style={styles.currency}>₹</Text>
+
+                                    <TextInput
+                                        value={maxAmount}
+                                        editable={minAmount ? true : false}
+                                        onChangeText={(text) => {
+                                            if(minAmount>text){
+                                               setErrorMsg("Min Amount should not be greater than max")
+                                            }else{
+                                                setErrorMsg("")
+                                            }
+                                            const cleanText = text.replace(/[^0-9]/g, "");
+                                            setMaxAmount(cleanText)
+                                            setMaxPaidValue(cleanText)
+                                        }}
+                                        placeholder="Max"
+                                        placeholderTextColor="#999"
+                                        keyboardType="numeric"
+                                        style={styles.amountInput}
+                                    />
+                                </View>
+                            </View>
+                              {errorMsg && <ErrorMessage message={errorMsg} type="error"/>}
 
                         </>
                     )}
@@ -437,7 +617,7 @@ export default function ReportsAllFilterBottomSheet({
 
 
 
-                           
+
 
                         </>
                     )}
@@ -457,6 +637,8 @@ export default function ReportsAllFilterBottomSheet({
                             setSelectedSharing(null)
                             setSelectedStatus(null)
                             setSelectedPeriod(null)
+                            setMaxAmount("")
+                            setMinAmount("")
                             onReset()
                         }}
                     >
@@ -513,6 +695,50 @@ export default function ReportsAllFilterBottomSheet({
                     </TouchableOpacity>
                 </View> */}
             </Animated.View>
+            {showCalendar && (
+                <View style={styles.dateOverlay}>
+                    <TouchableOpacity
+                        style={{ flex: 1 }}
+                        onPress={() => setShowCalendar(false)}
+                    />
+
+                    <View style={styles.datePickerBox}>
+                        <Calendar
+                            markingType="period"
+                            minDate={
+                                selecting === "end" && startDate
+                                    ? startDate
+                                    : undefined
+                            }
+                            markedDates={getMarkedDates()}
+                            onDayPress={(day) => {
+
+                                if (selecting === "start") {
+                                    setStartDate(day.dateString);
+                                    setEndDate(null);
+                                    setStartDateValue(day.dateString)
+
+                                    // Same calendar remains open
+                                    setSelecting("end");
+
+                                } else {
+                                    if (
+                                        startDate &&
+                                        day.dateString >= startDate
+                                    ) {
+                                        setEndDate(day.dateString);
+                                        setEndDateValue((day.dateString))
+
+                                        // Close the ONE calendar
+                                        setShowCalendar(false);
+                                    }
+                                }
+
+                            }}
+                        />
+                    </View>
+                </View>
+            )}
         </>
     );
 }
@@ -579,8 +805,7 @@ const styles = {
         fontSize: 15,
         fontFamily: "Gilroy-Bold",
         color: "#111827",
-        marginTop: 18,
-        marginBottom: 8,
+
     },
 
     /* DROPDOWN */
@@ -678,28 +903,7 @@ const styles = {
         color: "#94A3B8",
     },
 
-    /* AMOUNT */
 
-    amountContainer: {
-        marginTop: 8,
-        marginBottom: 20,
-    },
-
-    amountRow: {
-        flexDirection: "row",
-        gap: 8,
-    },
-
-    amountInput: {
-        flex: 1,
-        height: 42,
-        borderWidth: 1,
-        borderColor: "#D9DEE7",
-        borderRadius: 7,
-        paddingHorizontal: 12,
-        fontSize: 13,
-        fontFamily: "Gilroy-Medium",
-    },
 
     moreFilter: {
         fontSize: 13,
@@ -784,5 +988,54 @@ const styles = {
     },
     label: {
         fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 16, marginBottom: 10
-    }
+    },
+    dateField: {
+        flex: 1, borderColor: "#E5E7EB", borderWidth: 1, borderRadius: 8, flexDirection: 'row',
+        alignItems: 'center', justifyContent: "space-between", paddingVertical: 12,
+        paddingHorizontal: 10
+    },
+    dateOverlay: {
+        position: "absolute",
+        top: 0, left: 0, right: 0, bottom: 0,
+        backgroundColor: "rgba(0,0,0,0.3)",
+        justifyContent: "center", zIndex: 9999
+    },
+
+    datePickerBox: {
+        backgroundColor: "#fff",
+        width: "90%",
+        alignSelf: "center",
+        borderRadius: 20,
+        padding: 10,
+        marginBottom: 120,
+    },
+    amountRow: {
+        flexDirection: "row",
+        marginTop: 8
+    },
+
+    amountInputContainer: {
+        flex: 1,
+        height: 42,
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 9,
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 14,
+    },
+
+    currency: {
+        fontSize: 16,
+        color: "#999",
+        marginRight: 6,
+    },
+
+    amountInput: {
+        flex: 1,
+        fontSize: 16,
+        color: "#222",
+        paddingVertical: 0,
+    },
+
 };

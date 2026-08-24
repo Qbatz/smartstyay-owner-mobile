@@ -1677,7 +1677,7 @@ export default function PGPageFull({ route }) {
       </View>
 
 
-      {canReadPayingGuests && floors.length > 0 && (
+      {canReadPayingGuests && floors.length > 0 && rooms.length !=0 && (
         <TouchableOpacity
           // style={styles.addFab}
           disabled={!canWritePayingGuests}
