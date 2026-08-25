@@ -1020,7 +1020,7 @@ const RetainerDetailsSheet = ({
             </>
 
 
-            {(isPending || isPartial) && (
+            {/* {(isPending || isPartial) && (
               <>
                 <View style={styles.bottomActionItem}>
                   <TouchableOpacity
@@ -1052,7 +1052,7 @@ const RetainerDetailsSheet = ({
                   <Text style={styles.bottomText}>Record</Text>
                 </View>
               </>
-            )}
+            )} */}
           </View>
 
 

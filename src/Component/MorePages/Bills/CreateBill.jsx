@@ -203,22 +203,25 @@ export default function CreateBill({ navigation }) {
   //     ]);
   //   }
   // }, [selectedCustomer]);
-  useEffect(() => {
-    if (!selectedCustomer) return;
-    if (items.length > 0) return;
-    if (!filteredOptions?.length) return;
 
-    const firstOption = filteredOptions[0];
 
-    setItems([
-      {
-        type: firstOption,
-        description: firstOption === "Others" ? "" : firstOption,
-        amount: "",
-        isExisting: false,
-      },
-    ]);
-  }, [selectedCustomer, filteredOptions]);
+
+  // useEffect(() => {
+  //   if (!selectedCustomer) return;
+  //   if (items.length > 0) return;
+  //   if (!filteredOptions?.length) return;
+
+  //   const firstOption = filteredOptions[0];
+
+  //   setItems([
+  //     {
+  //       type: firstOption,
+  //       description: firstOption === "Others" ? "" : firstOption,
+  //       amount: "",
+  //       isExisting: false,
+  //     },
+  //   ]);
+  // }, [selectedCustomer, filteredOptions])
 
 
   const fetchCustomers = async () => {
@@ -773,7 +776,7 @@ const filteredCustomers = customers.filter(
         setModalMessage(res?.message || "Something went wrong");
         setShowSuccessModal(true);
 
-        setTimeout(() => setShowSuccessModal(false), 1500);
+        setTimeout(() => setShowSuccessModal(false), 2000);
         return;
       }
 

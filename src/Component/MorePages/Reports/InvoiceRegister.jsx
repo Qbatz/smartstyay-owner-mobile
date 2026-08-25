@@ -1,15 +1,16 @@
-import React, {useState , useContext , useEffect} from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,Image ,  Modal,
+  TouchableOpacity, Image, Modal,
   Animated,
   PanResponder,
   BackHandler,
+  Dimensions,
 } from "react-native";
-import { StatusBar , Platform } from "react-native";
+import { StatusBar, Platform } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UseSetting } from "../../../Context/SettingContext";
@@ -25,93 +26,113 @@ import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyState from "../../../Assets/Images/Empty_state.png"
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import FilterBottomSheet from "./FilterBottomSheet";
-
-  
-
-
-
-const InvoiceRegister = ({navigation}) => {
-       const { CommonModule } = NativeModules;
-     const {loading,  Reportsdetails , GetInvoiceReports  , invoiceReports , downloadInvoiceReport} = UseSetting();
-    const { activeHostelId } = useContext(CommonContexts);
-      const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-
-      const [billStatus, setBillStatus] = useState([]);
-      const [type, setType] = useState([]);
-      const [mode, setMode] = useState([]);
-        const [filterError, setFilterError] = useState("");
-        const [statusSheetOpen, setStatusSheetOpen] = useState(false);
-const [typeSheetOpen, setTypeSheetOpen] = useState(false);
-
-const [tempStatus, setTempStatus] = useState([]);
-const [tempType, setTempType] = useState([]);
-
-const [monthSheetOpen, setMonthSheetOpen] = useState(false);
-const [selectedMonth, setSelectedMonth] = useState("");
-const [tempMonth, setTempMonth] = useState("");
-
-const slideAnim = useState(new Animated.Value(500))[0];
-
-      const {
-        canWriteModule: canWriteReports,
-        canReadModule: canReadReports,
-        canUpdateModule: canUpdateReports,
-        canDeleteModule: canDeleteReports,
-      } = useHasPermission("Reports")
-
-    
-      
-
-// useEffect(() => {
-//   if (activeHostelId) {
-//     GetInvoiceReports(activeHostelId); 
-//   }
-// }, [activeHostelId]);
+import RupeeIcon from "../../../Assets/Images/Rupees.png";
+import ReceiptsIcon from "../../../Assets/Images/Receipts.png";
+import ReportsAllFilterBottomSheet from "./ReportsAllFilterBottomSheet"
+import dayjs from "dayjs";
 
 
-useEffect(() => {
-  if (!activeHostelId) return;
+
+
+
+
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = width * 0.44
+
+const InvoiceRegister = ({ navigation }) => {
+  const { CommonModule } = NativeModules;
+  const { loading, Reportsdetails, GetInvoiceReports, invoiceReports, downloadInvoiceReport } = UseSetting();
+  const { activeHostelId } = useContext(CommonContexts);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+
+  const [billStatus, setBillStatus] = useState([]);
+  const [type, setType] = useState([]);
+  const [mode, setMode] = useState([]);
+  const [filterError, setFilterError] = useState("");
+  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  const [typeSheetOpen, setTypeSheetOpen] = useState(false);
+
+  const [tempStatus, setTempStatus] = useState([]);
+  const [tempType, setTempType] = useState([]);
+
+  const [monthSheetOpen, setMonthSheetOpen] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [tempMonth, setTempMonth] = useState("");
+  const [allFilterSheet, setAllFilterSheet] = useState(false)
+
+  const [selectedBillStatus, setSelectedBillStatus] = useState(null)
+  const [allSelectedMonth, setAllSelectedMonth] = useState(null)
+  const [selectedInvoiceType, setSelectedInvoiceType] = useState(null)
+  const [selectedCreatedBy, setCreatedByValue] = useState(null)
+  const [selectedInvoiceMode, setSelectedModeValue] = useState(null)
+  const [startDateValue,setStartDateValue]=useState(null)
+  const[endDateValue,setEndDateValue]=useState(null)
+  const [minPaidValue,setMinPaidValue]=useState("")
+  const [maxPaidValue,setMaxPaidValue]=useState("")
+
+  const slideAnim = useState(new Animated.Value(500))[0];
+
+  const {
+    canWriteModule: canWriteReports,
+    canReadModule: canReadReports,
+    canUpdateModule: canUpdateReports,
+    canDeleteModule: canDeleteReports,
+  } = useHasPermission("Reports")
+
+
+
+
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     GetInvoiceReports(activeHostelId); 
+  //   }
+  // }, [activeHostelId]);
+
+
+  useEffect(() => {
+    if (!activeHostelId) return;
     console.log("useEffect running");
     console.log(activeHostelId)
 
 
-  const fetchInvoices = async () => {
-    const filters = {
-    page: 1,
-    size: 10,
-  };
-    const response = await GetInvoiceReports(activeHostelId, filters
-    )
-    console.log("response", response);
-    
-  }
+    const fetchInvoices = async () => {
+      const filters = {
+        page: 1,
+        size: 10,
+      };
+      const response = await GetInvoiceReports(activeHostelId, filters
+      )
+      console.log("response", response);
 
-  fetchInvoices();
-}, [activeHostelId, ])
-
-    useEffect(() => {
-      if (activeHostelId) {
-        getParticularHostelDetails(activeHostelId);
-      }
-    }, [activeHostelId])
-
-
-useEffect(() => {
-  const backAction = () => {
-    if (statusSheetOpen) {
-      closeSheet();
-      return true;
     }
-    return false;
-  };
 
-  const backHandler = BackHandler.addEventListener(
-    "hardwareBackPress",
-    backAction
-  );
+    fetchInvoices();
+  }, [activeHostelId,])
 
-  return () => backHandler.remove();
-}, [statusSheetOpen]);
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId])
+
+
+  useEffect(() => {
+    const backAction = () => {
+      if (statusSheetOpen) {
+        closeSheet();
+        return true;
+      }
+      return false;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, [statusSheetOpen]);
 
   const filterOptions = invoiceReports?.filterOptions;
 
@@ -120,7 +141,7 @@ useEffect(() => {
     value: i?.type,
   }));
 
-    const typeOptions = filterOptions?.invoiceTypes?.map(i => ({
+  const typeOptions = filterOptions?.invoiceTypes?.map(i => ({
     label: i?.name,
     value: i?.type,
   }));
@@ -130,156 +151,273 @@ useEffect(() => {
     value: i?.mode,
   }));
 
-const monthOptions =
-  filterOptions?.periods?.map((item) => ({
-    label: item,
-    value: item,
-  })) || [];
+  const monthOptions =
+    filterOptions?.periods?.map((item) => ({
+      label: item,
+      value: item,
+    })) || [];
 
   const openSheet = () => {
-  setStatusSheetOpen(true);
-  Animated.timing(slideAnim, {
-    toValue: 0,
-    duration: 250,
-    useNativeDriver: true,
-  }).start();
-};
-
-const closeSheet = () => {
-  Animated.timing(slideAnim, {
-    toValue: 300,
-    duration: 200,
-    useNativeDriver: true,
-  }).start(() => setStatusSheetOpen(false));
-}
-
-
-
-
-const panResponder = PanResponder.create({
-  onMoveShouldSetPanResponder: (_, gestureState) => {
-    return gestureState.dy > 10;
-  },
-  onPanResponderMove: (_, gestureState) => {
-    if (gestureState.dy > 0) {
-      slideAnim.setValue(gestureState.dy);
-    }
-  },
-  onPanResponderRelease: (_, gestureState) => {
-    if (gestureState.dy > 120) {
-      closeSheet();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 150,
-        useNativeDriver: true,
-      }).start();
-    }
-  },
-});
-
-// const buildFilters = () => {
-//   return {
-//     period: selectedMonth || undefined,
-//     paymentStatus: billStatus.length > 0 ? billStatus : undefined,
-//     invoiceTypes: type.length > 0 ? type : undefined,
-//   };
-// };
-// const applyFilters = (
-//   newMonth = selectedMonth,
-//   newStatus = billStatus,
-//   newType = type
-// ) => {
-//   const filters = {
-//     period: newMonth ? newMonth : undefined,
-//     paymentStatus: newStatus?.length ? newStatus : undefined,
-//     invoiceTypes: newType?.length ? newType : undefined,
-//   };
-
-//   GetInvoiceReports(activeHostelId, filters);
-// };
-
-const applyFilters = (
-  newMonth = selectedMonth,
-  newStatus = billStatus,
-  newType = type
-) => {
-  const filters = {
-    page: 1,
-    size: 10,
-
-    period: newMonth || undefined,
-
-    paymentStatus:
-      newStatus?.length > 0
-        ? newStatus
-        : undefined,
-
-    invoiceTypes:
-      newType?.length > 0
-        ? newType
-        : undefined,
+    setStatusSheetOpen(true);
+    Animated.timing(slideAnim, {
+      toValue: 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
   };
 
-  console.log("Invoice Filters =>", filters);
-
-  GetInvoiceReports(activeHostelId, filters);
-};
-
-const handleDownloadInvoiceReport = async () => {
-  const res = await downloadInvoiceReport(activeHostelId);
-
-  if (res?.success && res?.url) {
-    await CommonModule.downloadAndViewDocument(res.url);
+  const closeSheet = () => {
+    Animated.timing(slideAnim, {
+      toValue: 300,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => setStatusSheetOpen(false));
   }
+
+
+
+
+  const panResponder = PanResponder.create({
+    onMoveShouldSetPanResponder: (_, gestureState) => {
+      return gestureState.dy > 10;
+    },
+    onPanResponderMove: (_, gestureState) => {
+      if (gestureState.dy > 0) {
+        slideAnim.setValue(gestureState.dy);
+      }
+    },
+    onPanResponderRelease: (_, gestureState) => {
+      if (gestureState.dy > 120) {
+        closeSheet();
+      } else {
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 150,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  });
+
+  // const buildFilters = () => {
+  //   return {
+  //     period: selectedMonth || undefined,
+  //     paymentStatus: billStatus.length > 0 ? billStatus : undefined,
+  //     invoiceTypes: type.length > 0 ? type : undefined,
+  //   };
+  // };
+  // const applyFilters = (
+  //   newMonth = selectedMonth,
+  //   newStatus = billStatus,
+  //   newType = type
+  // ) => {
+  //   const filters = {
+  //     period: newMonth ? newMonth : undefined,
+  //     paymentStatus: newStatus?.length ? newStatus : undefined,
+  //     invoiceTypes: newType?.length ? newType : undefined,
+  //   };
+
+  //   GetInvoiceReports(activeHostelId, filters);
+  // };
+  const formatBackendDate = (date) => {
+  return dayjs(date).format("DD-MM-YYYY");
 };
 
-console.log("invoiceReports", invoiceReports);
+  const applyFilters = (
+    newMonth = selectedMonth ?? allSelectedMonth,
+    newStatus = billStatus ?? selectedBillStatus,
+    newType = type ?? selectedInvoiceType,
+    newCreated=selectedCreatedBy,
+    newMode = selectedInvoiceMode,
+    newStartDate= startDateValue,
+    newEndDate=endDateValue,
+    newMinPaid=minPaidValue,
+    newMaxPaid=maxPaidValue
+  ) => {
+
+
+    const filters = {
+      page: 1,
+      size: 10,
+
+      period: newMonth || undefined,
+
+      paymentStatus:
+        newStatus?.length > 0
+          ? newStatus
+          : undefined,
+
+      invoiceTypes:
+        newType?.length > 0
+          ? newType
+          : undefined,
+
+      createdBy: newCreated?.length > 0 ? newCreated : undefined,
+
+      invoiceModes: newMode?.length >0 ? newMode : undefined,
+      startDate: newStartDate ? formatBackendDate(newStartDate) : undefined,
+      endDate: newEndDate ? formatBackendDate(newEndDate) : undefined,
+      minPaidAmount: newMinPaid ? Number(newMinPaid) : undefined,
+      maxPaidAmount: newMaxPaid ? Number(newMaxPaid) : undefined
+    };
+    
+
+    console.log("Invoice Filters =>", filters);
+
+   const res= GetInvoiceReports(activeHostelId, filters);
+   console.log("karti",res)
+  };
+
+  const handleDownloadInvoiceReport = async () => {
+
+     const finalMonth =
+      allSelectedMonth !== undefined ? allSelectedMonth : selectedMonth ;
+
+    const finalStatus= selectedBillStatus !=undefined ? selectedBillStatus : billStatus;
+
+    const finalType= selectedInvoiceType !=undefined ? selectedInvoiceType : type;
+
+    const filters = {
+      page: 1,
+      size: 10,
+      period: finalMonth || undefined,
+      paymentStatus:
+        finalStatus?.length > 0 ? finalStatus : undefined,
+      invoiceTypes:
+        finalType?.length > 0 ? finalType : undefined,
+      
+      createdBy: selectedCreatedBy?.length > 0 ? selectedCreatedBy : undefined,
+      invoiceModes: selectedInvoiceMode?.length > 0 ? selectedInvoiceMode : undefined,
+      startDate: startDateValue ?  formatBackendDate(startDateValue) : undefined,
+      endDate: endDateValue ? formatBackendDate(endDateValue) : undefined,
+      minPaidAmount: minPaidValue || undefined,
+      maxPaidAmount: maxPaidValue || undefined,
+    };
+
+      
+
+    const res = await downloadInvoiceReport(activeHostelId, filters);
+
+    if (res?.success && res?.url) {
+      await CommonModule.downloadAndViewDocument(res.url);
+    }
+  };
+
+  console.log("invoiceReports", invoiceReports);
 
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
-const isExportAllow = isValidSubscription && canReadReports;
-const insets = useSafeAreaInsets()
+  const isExportAllow = isValidSubscription && canReadReports;
+  const insets = useSafeAreaInsets()
+
+  const AnimatedNumber = ({ value, duration = 800 }) => {
+    const animatedValue = useRef(new Animated.Value(0)).current;
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+      animatedValue.setValue(0);
+
+      Animated.timing(animatedValue, {
+        toValue: Number(value) || 0,
+        duration,
+        useNativeDriver: false,
+      }).start();
+
+      const listener = animatedValue.addListener(({ value }) => {
+        setDisplayValue(Math.floor(value));
+      });
+
+      return () => {
+        animatedValue.removeListener(listener);
+      };
+    }, [value]);
+
+    return <Text>{displayValue}</Text>;
+  };
+
+
+  const SummaryCard = ({
+    icon,
+    title,
+    value,
+    prefix,
+    suffix,
+    valueColor = "#111827",
+    linearcolor
+  }) => (
+    <LinearGradient
+      colors={["#FFFFFF", linearcolor]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.summaryCard}
+    >
+      <View style={styles.cardTopRow}>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>
+            {title}
+          </Text>
+
+          <Text style={[styles.cardValue, { color: valueColor }]}>
+            ₹ {prefix && <Text>{prefix}</Text>}
+
+            <AnimatedNumber value={value} />
+
+            {suffix && <Text>{suffix}</Text>}
+          </Text>
+        </View>
+
+        <View style={styles.iconBox}>
+          <Image
+            source={icon}
+            style={styles.cardIcon}
+          />
+        </View>
+      </View>
+    </LinearGradient>
+  );
+
 
   return (
-         <>
-          {loading && <Loader />}
-<SafeAreaView 
-  style={{ flex: 1, backgroundColor: "#fff" }}
-  edges={["left", "right", "bottom"]}
->
-  {/* <View style={styles.container}> */}
-         <View style={[styles.container, { paddingTop: Platform.OS === "android"
-  ? StatusBar.currentHeight + 10
-  : 20 }]}>
-           
+    <>
+      {loading && <Loader />}
+      <SafeAreaView
+        style={{ flex: 1, backgroundColor: "#fff" }}
+        edges={["left", "right", "bottom"]}
+      >
+        {/* <View style={styles.container}> */}
+        <View style={[styles.container, {
+          paddingTop: Platform.OS === "android"
+            ? StatusBar.currentHeight + 10
+            : 20
+        }]}>
 
 
-                         <View style={styles.headerRow}>
-                   <View style={{ flexDirection: "row", alignItems: "center" }}>
-                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                       <Image source={ArrowLeft} style={styles.backIcon} />
-                     </TouchableOpacity>
-                     <Text style={styles.title}>Invoices</Text>
-                   </View>
-                 
-                <TouchableOpacity
-  style={styles.monthBtn}
-  onPress={() => {
-    setTempMonth(selectedMonth);
-    setMonthSheetOpen(true);
-  }}
->
-  <View style={{ flexDirection: "row", alignItems: "center" }}>
-    <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
-    <Image
-      source={DownArrow}
-      style={{ width: 14, height: 14, marginLeft: 5 }}
-    />
-  </View>
-</TouchableOpacity>
-                 </View>
-           <LinearGradient
+
+          <View style={styles.headerRow}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Image source={ArrowLeft} style={styles.backIcon} />
+              </TouchableOpacity>
+              <Text style={styles.title}>Invoices</Text>
+            </View>
+
+            <TouchableOpacity
+              style={styles.monthBtn}
+              onPress={() => {
+                setTempMonth(selectedMonth);
+                setMonthSheetOpen(true);
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.monthText}>  {selectedMonth || "Select Month"}</Text>
+                <Image
+                  source={DownArrow}
+                  style={{ width: 14, height: 14, marginLeft: 5 }}
+                />
+              </View>
+            </TouchableOpacity>
+          </View>
+          {/* <LinearGradient
   colors={["#E7F1FF", "#FFFFFF"]}
   start={{ x: 1, y: 0 }}
   end={{ x: 0, y: 1 }}
@@ -299,117 +437,180 @@ const insets = useSafeAreaInsets()
     <Text style={styles.label}>Outstanding</Text>
     <Text style={styles.value}>₹ {invoiceReports?.outStandingAmount || 0}</Text>
   </View>
-</LinearGradient>
+</LinearGradient> */}
 
- 
-<View style={styles.filterRow}>
-  {/* ALL BUTTON */}
-  <TouchableOpacity
-    style={[
-      styles.filterBox,
-      billStatus.length > 0 && styles.filterBoxActive,
-    ]}
-    onPress={() => {
-      setTempStatus(billStatus);
-      setStatusSheetOpen(true);
-    }}
-  >
-    <Text
-      style={[
-        styles.filterText,
-        billStatus.length > 0 && styles.filterTextActive,
-      ]}
-    >
-      {billStatus.length === 0
-        ? "All"
-        : `${billStatus[0]} ${
-            billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
-          }`}
-    </Text>
-      <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-  </TouchableOpacity>
+          <View style={{ height: 110 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={{ height: 110 }}
+              contentContainerStyle={styles.cardRow}
+            >
+              <SummaryCard
+                title="Total Invoice"
+                value={invoiceReports?.totalInvoices}
+                icon={ReceiptsIcon}
+                linearcolor="#FFF4F4"
+              />
 
-  <TouchableOpacity
-    style={[
-      styles.filterBox,
-      type.length > 0 && styles.filterBoxActive,
-    ]}
-    onPress={() => {
-      setTempType(type);
-      setTypeSheetOpen(true);
-    }}
-  >
-    <Text
-      style={[
-        styles.filterText,
-        type.length > 0 && styles.filterTextActive,
-      ]}
-    >
-      {type.length === 0
-        ? "Type"
-        : `${type[0]} ${
-            type.length > 1 ? `+${type.length - 1} more` : ""
-          }`}
-    </Text>
-      <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-  </TouchableOpacity>
-</View>
-                        
-                        
-                                       
-                    
+              <SummaryCard
+                title="Total Amount"
+                value={invoiceReports?.totalAmount}
+                icon={RupeeIcon}
+                valueColor="#00A651"
+                linearcolor="#F4FFF7"
+              />
 
+              <SummaryCard
+                title="Paid Amount"
+                value={invoiceReports?.paidAmount}
+                icon={RupeeIcon}
+                linearcolor="#FFF4F4"
+              />
 
-    <ScrollView
-  showsVerticalScrollIndicator={false}
-   contentContainerStyle={{ paddingBottom: 140 }}
-    >
-      {/* SUMMARY CARD */}
-
-
-      {/* FILTER */}
-    
-
-      {/* LIST */}
-     {!loading && invoiceReports?.invoiceList?.map((item, index) => (
-        <View key={item?.invoiceId || index} style={styles.listItem}>
-          <View>
-            <Text style={styles.name}>  {item.fullName?.trim() || item.firstName}</Text>
-            <Text style={styles.sub}>{item.invoiceNumber}</Text>
+              <SummaryCard
+                title="Outstanding"
+                value={invoiceReports?.outStandingAmount}
+                icon={RupeeIcon}
+                linearcolor="#FFF4F4"
+              />
+            </ScrollView>
           </View>
-          <Text style={styles.amount}>₹ {item.invoiceAmount}</Text>
-        </View>
-      ))}
-
-      {!loading && invoiceReports && invoiceReports?.invoiceList?.length === 0 && (
-  <View style={styles.emptyContainer}>
-          <Image source={EmptyState} style={styles.emptyImage} />
-          <Text style={styles.emptyText}>No Invoices are there!</Text>
-        </View>
-)}
 
 
-      {/* EXPORT */}
-    
-    </ScrollView>
-      {/* <TouchableOpacity style={styles.exportBtn}>
+          <View style={styles.filterRow}>
+            {/* ALL BUTTON */}
+
+            <TouchableOpacity
+              style={[
+                styles.filterBox,
+                // billStatus.length > 0 && styles.filterBoxActive,
+              ]}
+              onPress={() => {
+                // setTempStatus(billStatus);
+                setAllFilterSheet(true);
+              }}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  // billStatus.length > 0 && styles.filterTextActive,
+                ]}
+              >
+                {/* {selectedBillStatus.length === 0 || !allSelectedMonth || !startDateValue || !endDateValue || 
+                  ? "All"
+                  : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
+                  }`} */}
+                  All
+              </Text>
+              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+            </TouchableOpacity>
+
+            {/* STATUS BUTTON */}
+            <TouchableOpacity
+              style={[
+                styles.filterBox,
+                billStatus.length > 0 && styles.filterBoxActive,
+              ]}
+              onPress={() => {
+                setTempStatus(billStatus);
+                setStatusSheetOpen(true);
+              }}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  billStatus.length > 0 && styles.filterTextActive,
+                ]}
+              >
+                {billStatus.length === 0
+                  ? "Status"
+                  : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
+                  }`}
+              </Text>
+              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.filterBox,
+                type.length > 0 && styles.filterBoxActive,
+              ]}
+              onPress={() => {
+                setTempType(type);
+                setTypeSheetOpen(true);
+              }}
+            >
+              <Text
+                style={[
+                  styles.filterText,
+                  type.length > 0 && styles.filterTextActive,
+                ]}
+              >
+                {type.length === 0
+                  ? "Type"
+                  : `${type[0]} ${type.length > 1 ? `+${type.length - 1} more` : ""
+                  }`}
+              </Text>
+              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+            </TouchableOpacity>
+          </View>
+
+
+
+
+
+
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 140 }}
+          >
+            {/* SUMMARY CARD */}
+
+
+            {/* FILTER */}
+
+
+            {/* LIST */}
+            {!loading && invoiceReports?.invoiceList?.map((item, index) => (
+              <View key={item?.invoiceId || index} style={styles.listItem}>
+                <View>
+                  <Text style={styles.name}>  {item.fullName?.trim() || item.firstName}</Text>
+                  <Text style={styles.sub}>{item.invoiceNumber}</Text>
+                </View>
+                <Text style={styles.amount}>₹ {item.invoiceAmount}</Text>
+              </View>
+            ))}
+
+            {!loading && invoiceReports && invoiceReports?.invoiceList?.length === 0 && (
+              <View style={styles.emptyContainer}>
+                <Image source={EmptyState} style={styles.emptyImage} />
+                <Text style={styles.emptyText}>No Invoices are there!</Text>
+              </View>
+            )}
+
+
+            {/* EXPORT */}
+
+          </ScrollView>
+          {/* <TouchableOpacity style={styles.exportBtn}>
         <Text style={styles.exportText}>Export PDF</Text>
       </TouchableOpacity> */}
-    </View>
+        </View>
 
-      <View style={styles.exportWrapper}>
-    <TouchableOpacity 
-      style={[styles.exportBtn, !isExportAllow && { opacity: 0.4 }]}
-      disabled={!isExportAllow}
-    // style={styles.exportBtn}
-     onPress={handleDownloadInvoiceReport}>
-      <Text style={styles.exportText}>Export PDF</Text>
-    </TouchableOpacity>
-  </View>
+        <View style={styles.exportWrapper}>
+          <TouchableOpacity
+            style={[styles.exportBtn, !isExportAllow && { opacity: 0.4 }]}
+            disabled={!isExportAllow}
+            // style={styles.exportBtn}
+            onPress={handleDownloadInvoiceReport}>
+            <Text style={styles.exportText}>Export PDF</Text>
+          </TouchableOpacity>
+        </View>
 
-    </SafeAreaView>
+      </SafeAreaView>
 
-{/* 
+      {/* 
     {statusSheetOpen && (
   <View style={styles.sheetOverlay}>
     <View style={styles.sheet}>
@@ -457,87 +658,118 @@ const insets = useSafeAreaInsets()
   </View>
 )} */}
 
-<FilterBottomSheet
-  visible={monthSheetOpen}
-  title="Select Month"
-  options={monthOptions}
-  selectedValues={tempMonth ? [tempMonth] : []}
-  setSelectedValues={(val) => setTempMonth(val[0])}
-  isSingleSelect={true}
+      <FilterBottomSheet
+        visible={monthSheetOpen}
+        title="Select Month"
+        options={monthOptions}
+        selectedValues={tempMonth ? [tempMonth] : []}
+        setSelectedValues={(val) => setTempMonth(val[0])}
+        isSingleSelect={true}
 
-  onReset={() => {
-    setTempMonth("");
-    setSelectedMonth("");
-    setMonthSheetOpen(false);
+        onReset={() => {
+          setTempMonth("");
+          setSelectedMonth("");
+          setMonthSheetOpen(false);
 
-    applyFilters("", billStatus, type);
-  }}
+          applyFilters("", billStatus, type);
+        }}
 
-  onApply={() => {
-    setSelectedMonth(tempMonth);
-    setMonthSheetOpen(false);
+        onApply={() => {
+          setSelectedMonth(tempMonth);
+          setMonthSheetOpen(false);
 
-    applyFilters(tempMonth, billStatus, type);
-  }}
+          applyFilters(tempMonth, billStatus, type);
+        }}
 
-  onClose={() => setMonthSheetOpen(false)}
-/>
-
-
-<FilterBottomSheet
-  visible={statusSheetOpen}
-  title="Payment Status"
-  options={billStatusOptions || []}
-  selectedValues={tempStatus}
-  setSelectedValues={setTempStatus}
-
-  onReset={() => {
-    setTempStatus([]);
-    setBillStatus([]);
-    setStatusSheetOpen(false);
-
-    applyFilters(selectedMonth, [], type);
-  }}
-
-  onApply={() => {
-    setBillStatus(tempStatus);
-    setStatusSheetOpen(false);
-
-    applyFilters(selectedMonth, tempStatus, type);
-  }}
-
-  onClose={() => setStatusSheetOpen(false)}
-/>
-
-<FilterBottomSheet
-  visible={typeSheetOpen}
-  title="Invoice Type"
-  options={typeOptions || []}
-  selectedValues={tempType}
-  setSelectedValues={setTempType}
-
-  onReset={() => {
-    setTempType([]);
-    setType([]);
-    setTypeSheetOpen(false);
-
-    applyFilters(selectedMonth, billStatus, []);
-  }}
-
-  onApply={() => {
-    setType(tempType);
-    setTypeSheetOpen(false);
-
-    applyFilters(selectedMonth, billStatus, tempType);
-  }}
-
-  onClose={() => setTypeSheetOpen(false)}
-/>
+        onClose={() => setMonthSheetOpen(false)}
+      />
 
 
-      </>
+      <FilterBottomSheet
+        visible={statusSheetOpen}
+        title="Payment Status"
+        options={billStatusOptions || []}
+        selectedValues={tempStatus}
+        setSelectedValues={setTempStatus}
 
-      
+        onReset={() => {
+          setTempStatus([]);
+          setBillStatus([]);
+          setStatusSheetOpen(false);
+
+          applyFilters(selectedMonth, [], type);
+        }}
+
+        onApply={() => {
+          setBillStatus(tempStatus);
+          setStatusSheetOpen(false);
+
+          applyFilters(selectedMonth, tempStatus, type);
+        }}
+
+        onClose={() => setStatusSheetOpen(false)}
+      />
+
+      <FilterBottomSheet
+        visible={typeSheetOpen}
+        title="Invoice Type"
+        options={typeOptions || []}
+        selectedValues={tempType}
+        setSelectedValues={setTempType}
+
+        onReset={() => {
+          setTempType([]);
+          setType([]);
+          setTypeSheetOpen(false);
+
+          applyFilters(selectedMonth, billStatus, []);
+        }}
+
+        onApply={() => {
+          setType(tempType);
+          setTypeSheetOpen(false);
+
+          applyFilters(selectedMonth, billStatus, tempType);
+        }}
+
+        onClose={() => setTypeSheetOpen(false)}
+      />
+
+      <ReportsAllFilterBottomSheet
+        visible={allFilterSheet}
+        filters={filterOptions}
+        reportType="invoice"
+        // selectedFilters={ }
+        setSelectedBillStatus={setSelectedBillStatus}
+        setSelectedMonth={setAllSelectedMonth}
+        setSelectedInvoiceType={setSelectedInvoiceType}
+        setCreatedByValue={setCreatedByValue}
+        setSelectedModeValue={setSelectedModeValue}
+        // setTenantValue={setTenantValue}
+        setStartDateValue={setStartDateValue}
+        setEndDateValue={setEndDateValue}
+        setMinPaidValue={setMinPaidValue}
+        setMaxPaidValue={setMaxPaidValue}
+
+        onReset={() => {
+            setSelectedBillStatus(null),setAllSelectedMonth(""),setSelectedInvoiceType(null),
+            setCreatedByValue(null),setSelectedModeValue(null),setStartDateValue(null),
+            setEndDateValue(null),setMaxPaidValue(""),setMinPaidValue("")
+            setAllFilterSheet(false)
+            applyFilters("",[],[],[],[],"","","","")
+        }}
+        onApply={() => {
+          setAllFilterSheet(false)
+          applyFilters(allSelectedMonth,selectedBillStatus,selectedInvoiceType,selectedCreatedBy,
+            selectedInvoiceMode,startDateValue,endDateValue,minPaidValue,maxPaidValue)
+        }}
+        onClose={() => setAllFilterSheet(false)}
+      />
+
+
+    </>
+
+
   );
 };
 
@@ -546,100 +778,100 @@ export default InvoiceRegister;
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
- container: {
-  flex: 1,
-  paddingHorizontal: 16,
-  //  paddingTop: insets.top,
-  // paddingTop: 60,
-  backgroundColor: "#fff",
-},
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    //  paddingTop: insets.top,
+    // paddingTop: 60,
+    backgroundColor: "#fff",
+  },
 
 
-overlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.4)",
-},
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+  },
 
-sheet: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderTopLeftRadius: 24,
-  borderTopRightRadius: 24,
-  padding: 20,
-},
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+  },
 
-dragIndicator: {
-  width: 40,
-  height: 5,
-  backgroundColor: "#ccc",
-  borderRadius: 3,
-  alignSelf: "center",
-  marginBottom: 15,
-},
+  dragIndicator: {
+    width: 40,
+    height: 5,
+    backgroundColor: "#ccc",
+    borderRadius: 3,
+    alignSelf: "center",
+    marginBottom: 15,
+  },
 
 
-headerRow: {
+  headerRow: {
     // height: 50,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent:'space-between',
-    marginBottom:10,
-      // marginTop: 10,
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    // marginTop: 10,
   },
   monthBtn: {
-  paddingHorizontal: 10,
-  paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 10,
-},
+  },
 
-monthText: {
-  fontSize: 13,
-  color: "#374151",
-  fontWeight: "500",
-},
+  monthText: {
+    fontSize: 13,
+    color: "#374151",
+    fontWeight: "500",
+  },
 
   backIcon: { width: 22, height: 22, marginRight: 10 },
 
   title: { fontSize: 18, fontWeight: "700" },
 
   /* SUMMARY */
-//   summaryCard: {
-//     backgroundColor: "#F8FAFC",
-//     borderRadius: 14,
-//     padding: 16,
-//     marginBottom: 14,
-//   },
+  //   summaryCard: {
+  //     backgroundColor: "#F8FAFC",
+  //     borderRadius: 14,
+  //     padding: 16,
+  //     marginBottom: 14,
+  //   },
 
-  summaryCard: {
-  borderRadius: 14,
-  paddingVertical:  Platform.OS === "android"
-    ? 16 : 1,
-  paddingHorizontal:   Platform.OS === "android"
-    ? 16 : 1, 
-  marginBottom: 14,
-},
+  // summaryCard: {
+  //   borderRadius: 14,
+  //   paddingVertical: Platform.OS === "android"
+  //     ? 16 : 1,
+  //   paddingHorizontal: Platform.OS === "android"
+  //     ? 16 : 1,
+  //   marginBottom: 14,
+  // },
 
-divider: {
-  height: 1,
-  backgroundColor: "rgba(0,0,0,0.06)", 
-  marginVertical: 2,
-    marginBottom:4
-},
+  divider: {
+    height: 1,
+    backgroundColor: "rgba(0,0,0,0.06)",
+    marginVertical: 2,
+    marginBottom: 4
+  },
 
-totalValue: {
-  fontSize: 20,      
-  fontWeight: "700",
-  color: "#111827",
-},
+  totalValue: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+  },
 
 
   row: {
@@ -660,10 +892,10 @@ totalValue: {
   },
 
   /* FILTER */
- filterRow: {
-  flexDirection: "row",
-  // marginTop: 10,
-},
+  filterRow: {
+    flexDirection: "row", alignItems: 'center',
+    marginTop: 10,
+  },
 
   filterBtn: {
     borderWidth: 1,
@@ -695,7 +927,7 @@ totalValue: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,   
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: "#F1F5F9",
   },
@@ -710,14 +942,14 @@ totalValue: {
     fontSize: 12,
     color: "#6B7280",
     marginTop: 2,
-    marginLeft:8
+    marginLeft: 8
   },
 
   amount: {
     fontSize: 14,
     fontWeight: "600",
   },
-   emptyContainer: {
+  emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -738,22 +970,22 @@ totalValue: {
 
   /* EXPORT */
 
-exportWrapper: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  paddingHorizontal: 16,
-  paddingBottom: 45, // 🔥 Android navigation bar safe
-  backgroundColor: "#fff",
-},
+  exportWrapper: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 45, // 🔥 Android navigation bar safe
+    backgroundColor: "#fff",
+  },
 
-exportBtn: {
-  backgroundColor: "#1D4ED8",
-  borderRadius: 12,
-  paddingVertical: 14,
-  alignItems: "center",
-},
+  exportBtn: {
+    backgroundColor: "#1D4ED8",
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
 
 
 
@@ -764,101 +996,172 @@ exportBtn: {
   },
 
   filterBox: {
-  flex: 1,
-  padding: 12,
-  borderRadius: 12,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  marginRight: 8,
-  backgroundColor: "#fff",
-  flexDirection: "row", justifyContent: "center", alignItems: "center" 
-},
+    // flex: 1,
+    // padding: 12,width:100,
+    // borderRadius: 12,
+    // borderWidth: 1,
+    // borderColor: "#E5E7EB",
+    // marginRight: 8,
+    // backgroundColor: "#fff",
+    // flexDirection: "row", justifyContent: "center", alignItems: "center"
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    marginRight: 10,
+    backgroundColor: "#fff",
+    flexDirection: "row", justifyContent: "center", alignItems: "center"
+  },
 
-filterBoxActive: {
-  backgroundColor: "#1D4ED8",
-  borderColor: "#1D4ED8",
-},
+  filterBoxActive: {
+    backgroundColor: "#1D4ED8",
+    borderColor: "#1D4ED8",
+  },
 
-filterText: {
-  textAlign: "center",
-  color: "#374151",
-},
+  filterText: {
+    textAlign: "center",
+    color: "#374151",
+  },
 
-filterTextActive: {
-  color: "#fff",
-},
+  filterTextActive: {
+    color: "#fff",
+  },
 
-sheetOverlay: {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(0,0,0,0.3)",
-  justifyContent: "flex-end",
-},
+  sheetOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "flex-end",
+  },
 
-sheet: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderTopLeftRadius: 24,
-  borderTopRightRadius: 24,
-  padding: 20,
-  maxHeight: "75%",
-},
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    padding: 20,
+    maxHeight: "75%",
+  },
 
-sheetTitle: {
-  fontSize: 18,
-  fontWeight: "600",
-  marginBottom: 15,
-},
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 15,
+  },
 
-sheetRow: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  paddingVertical: 12,
-},
+  sheetRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingVertical: 12,
+  },
 
-sheetText: {
-  fontSize: 16,
-},
+  sheetText: {
+    fontSize: 16,
+  },
 
-radio: {
-  width: 20,
-  height: 20,
-  borderRadius: 10,
-  borderWidth: 2,
-  borderColor: "#ccc",
-},
+  radio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#ccc",
+  },
 
-radioActive: {
-  borderColor: "#1D4ED8",
-  backgroundColor: "#1D4ED8",
-},
+  radioActive: {
+    borderColor: "#1D4ED8",
+    backgroundColor: "#1D4ED8",
+  },
 
-sheetButtons: {
-  flexDirection: "row",
-  marginTop: 20,
-},
+  sheetButtons: {
+    flexDirection: "row",
+    marginTop: 20,
+  },
 
-resetBtn: {
-  flex: 1,
-  padding: 14,
-  borderRadius: 12,
-  backgroundColor: "#EEF2FF",
-  marginRight: 10,
-  alignItems: "center",
-},
+  resetBtn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: "#EEF2FF",
+    marginRight: 10,
+    alignItems: "center",
+  },
 
-applyBtn: {
-  flex: 1,
-  padding: 14,
-  borderRadius: 12,
-  backgroundColor: "#1D4ED8",
-  alignItems: "center",
-},
+  applyBtn: {
+    flex: 1,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: "#1D4ED8",
+    alignItems: "center",
+  },
+  summaryCard: {
+    width: CARD_WIDTH,
+    height: 90,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+
+    marginRight: 12, marginTop: 5
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  iconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardIcon: { width: 20, height: 20 },
+
+  cardTitle: {
+    fontSize: 13,
+    color: "#64748B",
+    fontFamily: "Gilroy-Medium",
+  },
+
+  cardValue: {
+    marginTop: 12,
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
+  cardRow: {
+    paddingLeft: 5,
+    paddingTop: 8,
+    // paddingBottom: 0,
+    marginBottom: 5, alignItems: "flex-start",
+  },
 
 });

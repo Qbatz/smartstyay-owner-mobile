@@ -109,11 +109,11 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   const { updateHostelList, hostelList, activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const login = useContext(LoginContexts);
-  const { getDashboard, getParticularHostelDetails, PGDetails  , pgLoading} = useContext(PGContext);
+  const { getDashboard, getParticularHostelDetails, PGDetails, pgLoading } = useContext(PGContext);
   const { getNotificationsByHostel } = useContext(NotificationContext);
   const { expensesList, GetExpenseList, rolePermission, GetRoleBasedPermission, profileDetails, GetProfileDetails, IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext);
   const { GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    GetInitializeRecordPaymentDetails , loading } = useContext(BillContext);
+    GetInitializeRecordPaymentDetails, loading } = useContext(BillContext);
   const [unreadCount, setUnreadCount] = useState(0);
   const [dashboardList, setDashboardList] = useState([])
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -260,8 +260,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
   useEffect(() => {
     const fetchDashboard = async () => {
       if (activeHostelId) {
-    console.log("apicall", activeHostelId);
-    
+        console.log("apicall", activeHostelId);
+
 
         const res = await getDashboard(activeHostelId, {
           billingFilter: "This Month",
@@ -2000,7 +2000,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                 </View>
 
                                 <Text style={styles.shareText}>
-                                  {item?.shareType}: {item?.totalBeds}
+                                  {item?.shareType}: {item?.occupiedBeds}
                                 </Text>
                               </View>
                             ))
@@ -2655,86 +2655,90 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
                     {activeSubTab === "Expenses & Profit" && (
                       <>
-                        {statsCards.map((card, index) => (
-                          <LinearGradient
-                            key={index}
-                            colors={card.bg}
-                            style={styles.revenueCard}
-                          >
-                            <View style={styles.revenueHeader}>
-                              <View style={styles.revenueLeft}>
-                                <View style={styles.revenueIconBox}>
-                                  <Image source={card.icon} style={{ width: 18, height: 18 }} />
+                        <View>
+                          {statsCards.map((card, index) => (
+                            <LinearGradient
+                              key={index}
+                              colors={card.bg}
+                              style={styles.revenueCard}
+                            >
+                              <View style={styles.revenueHeader}>
+                                <View style={styles.revenueLeft}>
+                                  <View style={styles.revenueIconBox}>
+                                    <Image source={card.icon} style={{ width: 18, height: 18 }} />
+                                  </View>
+                                  <Text style={styles.revenueTitle}>{card.title}</Text>
                                 </View>
-                                <Text style={styles.revenueTitle}>{card.title}</Text>
                               </View>
-                            </View>
 
-                            <View style={styles.revenueAmountRow}>
-                              <Text style={styles.revenueAmount}>{card.amount}</Text>
-                              <Text style={styles.revenueMonth}> this month</Text>
-                            </View>
+                              <View style={styles.revenueAmountRow}>
+                                <Text style={styles.revenueAmount}>{card.amount}</Text>
+                                <Text style={styles.revenueMonth}> this month</Text>
+                              </View>
 
-                            <View style={styles.revenueChangeRow}>
-                              <Image
-                                source={card.isPositive ? TrendupImg : TrenddownImg}
-                                style={styles.downupIcons}
-                              />
-                              <Text
-                                style={{
-                                  color: card.isPositive ? "#16A34A" : "#EF4444",
-                                  fontFamily: "Gilroy-Bold",
-                                }}
-                              >
-                                {card.change}
+                              <View style={styles.revenueChangeRow}>
+                                <Image
+                                  source={card.isPositive ? TrendupImg : TrenddownImg}
+                                  style={styles.downupIcons}
+                                />
+                                <Text
+                                  style={{
+                                    color: card.isPositive ? "#16A34A" : "#EF4444",
+                                    fontFamily: "Gilroy-Bold",
+                                  }}
+                                >
+                                  {card.change}
+                                </Text>
+                                <Text style={styles.revenueCompare}> vs last time</Text>
+                              </View>
+
+                              <View style={styles.revenueDivider} />
+
+                              <TouchableOpacity style={styles.reportRow}>
+                                <Text style={styles.reportText}>View Report</Text>
+                                <Image source={RightArrowImg} style={styles.RightArrowIcon} />
+                              </TouchableOpacity>
+                            </LinearGradient>
+                          ))}
+
+
+                          <View style={styles.expenseBreakdownCard}>
+                            <View style={styles.expenseBreakdownHeader}>
+                              <Text style={styles.expenseBreakdownTitle}>
+                                Expense Breakdown
                               </Text>
-                              <Text style={styles.revenueCompare}> vs last time</Text>
                             </View>
 
-                            <View style={styles.revenueDivider} />
+                            {expenseBreakdown.length === 0 ? (
+                              <Text style={{ textAlign: "center", color: "#999", marginTop: 10, fontFamily: "Gilroy-Semibold" }}>
+                                No Data Available
+                              </Text>
+                            ) : (
+                              expenseBreakdown.map((item, index) => (
+                                <View key={index} style={styles.expenseItem}>
+                                  <View style={styles.expenseTopRow}>
+                                    <Text style={styles.expenseLabel}>{item.label}</Text>
 
-                            <TouchableOpacity style={styles.reportRow}>
-                              <Text style={styles.reportText}>View Report</Text>
-                              <Image source={RightArrowImg} style={styles.RightArrowIcon} />
-                            </TouchableOpacity>
-                          </LinearGradient>
-                        ))}
-                        <View style={styles.expenseBreakdownCard}>
-                          <View style={styles.expenseBreakdownHeader}>
-                            <Text style={styles.expenseBreakdownTitle}>
-                              Expense Breakdown
-                            </Text>
+                                    <Text style={styles.expenseAmount}>
+                                      {item.amount} ({item.percentage}%)
+                                    </Text>
+                                  </View>
+
+                                  <View style={styles.expenseProgressTrack}>
+                                    <View
+                                      style={[
+                                        styles.expenseProgressFill,
+                                        {
+                                          width: `${item.percentage}%`,
+                                          backgroundColor: item.color,
+                                        },
+                                      ]}
+                                    />
+                                  </View>
+                                </View>
+                              ))
+                            )}
                           </View>
-
-                          {expenseBreakdown.length === 0 ? (
-                            <Text style={{ textAlign: "center", color: "#999", marginTop: 10, fontFamily: "Gilroy-Semibold" }}>
-                              No Data Available
-                            </Text>
-                          ) : (
-                            expenseBreakdown.map((item, index) => (
-                              <View key={index} style={styles.expenseItem}>
-                                <View style={styles.expenseTopRow}>
-                                  <Text style={styles.expenseLabel}>{item.label}</Text>
-
-                                  <Text style={styles.expenseAmount}>
-                                    {item.amount} ({item.percentage}%)
-                                  </Text>
-                                </View>
-
-                                <View style={styles.expenseProgressTrack}>
-                                  <View
-                                    style={[
-                                      styles.expenseProgressFill,
-                                      {
-                                        width: `${item.percentage}%`,
-                                        backgroundColor: item.color,
-                                      },
-                                    ]}
-                                  />
-                                </View>
-                              </View>
-                            ))
-                          )}
                         </View>
                         {/* <View style={styles.expenseBreakdownCard}>
 
@@ -3922,8 +3926,9 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "ios" ? 10 : 20,
     borderRadius: 16,
     overflow: "hidden",
-    minHeight: Platform.OS === "ios" ? 140 : 120,
+    minHeight: Platform.OS === "ios" ? 180 : 120,
   },
+
   expiryTitle: {
     color: "#fff",
     fontSize: 20,
@@ -4029,7 +4034,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 10,
     maxWidth: 120,
-     opacity: 0.4
+    opacity: 0.4
   },
 
   monthText: {
@@ -4291,8 +4296,8 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 6,
     paddingHorizontal: 6,
-    paddingVertical: 2, 
-     opacity: 0.4
+    paddingVertical: 2,
+    opacity: 0.4
   },
 
   occupancyRow: {
@@ -4707,37 +4712,42 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold"
   },
 
+  revenueCard: {
+    height: Platform.OS === "ios" ? 240 : 200,
+    marginHorizontal: 16,
+    marginTop: 10,
+    paddingTop: Platform.OS === "ios" ? 0 : 5,
+    paddingRight: Platform.OS === "ios" ? 0 : 15,
+    paddingBottom: Platform.OS === "ios" ? 0 : 1,
+    paddingLeft: Platform.OS === "ios" ? 0 : 15,
+    borderRadius: 10,
+    borderWidth: Platform.OS === "ios" ? 0.5 : 1,
+    borderColor: "#E5E7EB",
+    justifyContent: "space-between",
+
+  },
+
   // revenueCard: {
   //   height: 200,
   //   marginHorizontal: 16,
   //   marginTop: 10,
-  //   paddingTop: Platform.OS === "ios" ? 0 : 5,
-  //   paddingRight: Platform.OS === "ios" ? 1 : 15,
-  //   paddingBottom: Platform.OS === "ios" ? 1 : 1,
-  //   paddingLeft: Platform.OS === "ios" ? 2 : 15,
+  //   paddingTop: 5,
+  //   paddingRight: 15,
+  //   paddingBottom: 1,
+  //   paddingLeft: 15,
+
+  //   justifyContent: "space-between",
   //   borderRadius: 10,
   //   borderWidth: 1,
-  //   borderColor: "#E5E7EB",
-  //   justifyContent: "space-between",
-
+  //   borderColor: "#EAEAEA",
   // },
-
-  revenueCard: {
-  minHeight: 200,
-  marginHorizontal: 16,
-  marginTop: 10,
-  padding: 16,         
-  borderRadius: 10,
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  justifyContent: "space-between",
-  overflow: "hidden", 
-},
 
 
   revenueHeader: {
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    paddingLeft: Platform.OS === "ios" ? 15 : 0,
+    paddingTop: Platform.OS === "ios" ? 5 : 0,
   },
 
   revenueLeft: {
@@ -4764,7 +4774,9 @@ const styles = StyleSheet.create({
   revenueAmountRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    marginTop: 10
+    marginTop: 10,
+    paddingLeft: Platform.OS === "ios" ? 15 : 0,
+    paddingTop: Platform.OS === "ios" ? 5 : 0,
   },
 
   revenueAmount: {
@@ -4782,7 +4794,9 @@ const styles = StyleSheet.create({
   revenueChangeRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 6
+    marginTop: 6,
+    paddingLeft: Platform.OS === "ios" ? 15 : 0,
+    paddingTop: Platform.OS === "ios" ? 5 : 0,
   },
 
   revenueLoss: {
@@ -4807,7 +4821,11 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10
+    paddingVertical: 10 ,
+    paddingLeft: Platform.OS === "ios" ? 15 : 0,
+    paddingTop: Platform.OS === "ios" ? 5 : 0,
+     paddingRight: Platform.OS === "ios" ? 15 : 0,
+    paddingBottom: Platform.OS === "ios" ? 15 : 10,
   },
 
   reportText: {

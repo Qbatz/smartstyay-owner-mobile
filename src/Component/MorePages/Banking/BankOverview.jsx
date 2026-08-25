@@ -45,7 +45,8 @@ import InfoIcon from "../../../Assets/Images/InfoIcon.png"
 
 
 const { width } = Dimensions.get("window");
-const CARD_WIDTH = width * 0.42;
+// const CARD_WIDTH = width * 0.42;
+const CARD_WIDTH = width < 360 ? width * 0.40 : width * 0.42;
 // const HEADER_HEIGHT = 120;
 const HEADER_HEIGHT = Platform.OS === "ios" ? 90 : 120;
 
@@ -63,7 +64,7 @@ export default function BankOverview({ expense }) {
       const route = useRoute();
 
   const bankDetails = route?.params?.bankDetails || {};
-  const overview = bankOverview || {};
+  
 
   console.log("bankDetails", bankDetails);
 
@@ -71,6 +72,7 @@ export default function BankOverview({ expense }) {
       bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
             useContext(BankingContext);
         const { activeHostelId } = useContext(CommonContexts);
+        const overview = bankOverview || {};
 
         console.log("bankOverview", bankOverview);
         
@@ -99,6 +101,7 @@ export default function BankOverview({ expense }) {
 
 <>
 
+<View>
 
    <ScrollView
           horizontal
@@ -123,19 +126,19 @@ export default function BankOverview({ expense }) {
 <SummaryCard
   icon={PeopleIcon}
   title="inflow (Income)"
- value={overview?.inflow || 0}
+ value={overview?.depositAmount || 0}
 />
 
 <SummaryCard
   icon={CategoryIcon}
   title="Outflow (Expenses)"
-  value={overview?.outflow || 0}
+  value={overview?.expenseAmount || 0}
   suffix=" %"
 />
 <SummaryCard
   icon={CategoryIcon}
   title="Transfers"
-  value={overview?.transfers || 0}
+  value={overview?.selfTransferAmount || 0}
   suffix=" %"
 />
 
@@ -147,6 +150,7 @@ export default function BankOverview({ expense }) {
         <TouchableOpacity style={styles.swipeBtn} onPress={handleSwipe}>
           <Text style={styles.swipeText}>‹‹ Swipe</Text>
         </TouchableOpacity>
+        </View>
 
  {bankDetails?.accountType === "BANK" && (
         <>
@@ -354,16 +358,18 @@ const styles = StyleSheet.create({
   borderRadius: 10,
   padding: 14,
   marginRight: 12,
-  marginBottom: 5,
-  paddingBottom:28,
-marginTop:10,
+  marginBottom: 18,
+  // paddingBottom:10,
+  marginTop:10,
   elevation: 3,
-
+ height:120,
   shadowColor: "#000",
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.1,
   shadowRadius: 4,
 },
+
+
 
   // iconBox: {
   //   width: 36,

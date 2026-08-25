@@ -358,6 +358,10 @@ import { ExpensesContext } from "../../Context/ExpensesContext"
 import { VendorContext } from "../../Context/VendorContext"          // 👈 add pannunga - missing import
 import SuccessModal from "../../ToastFile/ToastPage";
 
+import { PGContext } from "../../Context/PGContext";
+
+
+
 const { height } = Dimensions.get("window");
 const SHEET_HEIGHT = height * 0.44;
 
@@ -367,6 +371,9 @@ export default function AddComponentSheet({
 }) {
 
   const { activeHostelId } = useContext(CommonContexts);
+  const { PGDetails } = useContext(PGContext);
+
+  const isExpired = PGDetails && !PGDetails.isSubscriptionActive;
 
   const { getCustomersByHostel } = useCustomer();
 
@@ -567,13 +574,13 @@ export default function AddComponentSheet({
         break;
 
       case "Expense":
-        if (!expenseCategoryList || expenseCategoryList.length === 0) {  
+        if (!expenseCategoryList || expenseCategoryList.length === 0) {
           return "Please add a expense category first";
         }
         break;
 
       case "vendors":
-        if (!vendorCategoryList || vendorCategoryList.length === 0) {    
+        if (!vendorCategoryList || vendorCategoryList.length === 0) {
           return "Please add a vendor category first";
         }
         break;
@@ -586,6 +593,9 @@ export default function AddComponentSheet({
   };
 
   const handleItemPress = (item) => {
+    if (isExpired) {
+      return;
+    }
 
     const errorMsg = getValidationError(item);
 
@@ -642,12 +652,22 @@ export default function AddComponentSheet({
           >
             <View style={styles.grid}>
               {DATA.map((item, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.item}
-                  activeOpacity={0.8}
-                  onPress={() => handleItemPress(item)}
-                >
+                // <TouchableOpacity
+                //   key={index}
+                //   style={styles.item}
+                //   activeOpacity={0.8}
+                //   onPress={() => handleItemPress(item)}
+                // >
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      styles.item,
+                      isExpired && { opacity: 0.4 }
+                    ]}
+                    activeOpacity={isExpired ? 1 : 0.8}
+                    disabled={isExpired}
+                    onPress={() => handleItemPress(item)}
+                  >
                   <View style={styles.iconBox}>
                     <Image
                       source={item.icon}
