@@ -217,6 +217,9 @@ const styles = StyleSheet.create({
     bottom: 0, // ✅ 20 remove
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "flex-end",
+       zIndex: 99999,
+    elevation: 99999,
+   
   },
   touchArea: { flex: 1 },
 
@@ -226,6 +229,9 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     padding: 20,
+
+ zIndex: 100000,
+    elevation: 100000,
   
   },
 

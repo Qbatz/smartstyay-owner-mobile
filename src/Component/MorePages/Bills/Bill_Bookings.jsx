@@ -55,6 +55,7 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
   const { activeHostelId,hostelList} = useContext(CommonContexts);
 
   const {
+    canWriteModule: canWriteBooking,
     canReadModule: canReadBooking,
   } = useHasPermission("Booking");
 
@@ -127,9 +128,8 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
   const [amountDropdownVisible, setAmountDropdownVisible] = useState(false)
 
-
-
   const Advancebookingbills = bookingBills?.advanceInvoiceList
+  
 
   console.log("bookingList", bookingBills)
 
@@ -694,10 +694,10 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
 
             <TouchableOpacity
               style={[
-                styles.addButton,
+                styles.addButton, !canWriteBooking && {opacity:0.4}
 
               ]}
-              // disabled={!canWriteInvoice}
+              disabled={!canWriteBooking}
               onPress={() => {
 
                 navigation.navigate("NewRetainerInvoiceSheet")

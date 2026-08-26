@@ -344,7 +344,8 @@ export default function ExpensesDetails({ route, navigation }) {
             </TouchableOpacity> */}
 
             <TouchableOpacity
-              style={styles.menuRow}
+              style={[styles.menuRow, !canDeleteExpense && {opacity:0.4}]}
+              disabled={!canDeleteExpense}
               onPress={() => {
                 setDeleteVendorData(expense);
                 setDeletePopup(true);

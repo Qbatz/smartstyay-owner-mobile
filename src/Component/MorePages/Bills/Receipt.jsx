@@ -560,7 +560,7 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
                 appliedFilters.period ||
                 appliedFilters.type?.length ||
                 appliedFilters.modes?.length ||
-                appliedFilters.collectedBy?.length
+                appliedFilters.collectedBy?.length || appliedFilters?.minAmount ||appliedFilters?.maxAmount
               ) && (
                 <View style={{ marginBottom: 10 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -574,7 +574,7 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
                         {appliedFilters.period ? (
                           <View style={styles.chip}>
                             <Text style={styles.chipText}>
-                              Period : {appliedFilters.period}
+                              Period : {appliedFilters?.period}
                             </Text>
                           </View>
                         ) : null}
@@ -584,6 +584,14 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
                             <Text style={styles.chipText}>Type : {item}</Text>
                           </View>
                         ))}
+
+                         {appliedFilters?.minAmount ? (
+                          <View style={styles.chip}>
+                            <Text style={styles.chipText}>
+                              Amount : {appliedFilters?.minAmount} - {appliedFilters?.maxAmount}
+                            </Text>
+                          </View>
+                        ) : null}
 
                         {/* {appliedFilters.modes?.map((item) => (
           
@@ -611,6 +619,8 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
                             </Text>
                           </View>
                         ) : null}
+
+
 
                       </View>
                     </ScrollView>

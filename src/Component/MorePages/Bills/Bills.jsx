@@ -4480,8 +4480,9 @@ export default function BillsDesign({ route }) {
                           The booking amount isn't applied with any bills yet.
                         </Text>
 
-                        <TouchableOpacity style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem && { opacity: 0.4 }]} onPress={handleApplyBookingToInvoice}
-                          disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}
+                        <TouchableOpacity 
+                        style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem || !canWriteInvoice && { opacity: 0.4 }]} onPress={handleApplyBookingToInvoice}
+                          disabled={!BillPdfdetails?.invoiceInfo?.canRedeem || !canWriteInvoice}
                         >
                           <Text style={{
                             color: "#fff",
@@ -5177,11 +5178,13 @@ export default function BillsDesign({ route }) {
                   </TouchableOpacity>
                 )} */}
 
+{console.log("canwirteShanthi",canWriteInvoice)}
                 {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent") &&
                   !selectedBill?.isDiscounted && (
                     <>
                       <TouchableOpacity
-                        style={styles.popupRow}
+                        style={[styles.popupRow, !canWriteInvoice && styles.popupRowDisabled]}
+                        disabled={!canWriteInvoice}
                         onPress={handlemakeDiscount}
                       >
                         <Image

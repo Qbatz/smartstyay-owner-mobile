@@ -253,6 +253,7 @@ const styles = StyleSheet.create({
         top: 0,
         backgroundColor: "rgba(0,0,0,0.5)",
         justifyContent: "flex-end",
+        zIndex:9999
     },
     touchArea: { flex: 1 },
     sheet: {

@@ -8,7 +8,8 @@ import {
   BackHandler,
   PanResponder,
   StyleSheet,
-  Image, Modal, ScrollView
+  Image, Modal, ScrollView,
+  TextInput
 } from "react-native";
 import dayjs from "dayjs"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -65,6 +66,9 @@ const ReceiptFilterSheet = ({
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
+  const [minAmount, setMinAmount] = useState(null)
+  const [maxAmount, setMaxAmount] = useState(null)
+  const [errorMsg, setErrorMsg] = useState("")
 
   const amountRangeOptions = [
     { label: "₹0 - ₹1,000", value: "0-1000" },
@@ -216,6 +220,8 @@ const ReceiptFilterSheet = ({
       type: type,
       modes: paymentmode,
       collectedBy: collectedBy,
+      minAmount: minAmount,
+      maxAmount: maxAmount,
     };
 
     const hasAnyFilter =
@@ -224,7 +230,9 @@ const ReceiptFilterSheet = ({
       (filters.paymentStatus && filters.paymentStatus.length > 0) ||
       (filters.type && filters.type.length > 0) ||
       (filters.modes && filters.modes.length > 0) ||
-      (filters.collectedBy && filters.collectedBy.length > 0);
+      (filters.collectedBy && filters.collectedBy.length > 0) ||
+      !!filters.minAmount?.toString().trim() ||
+      !!filters.maxAmount?.toString().trim();;
 
     if (!hasAnyFilter) {
       setFilterError("Please select at least one filter");
@@ -236,6 +244,8 @@ const ReceiptFilterSheet = ({
       invoiceType: type,
       bankIds: paymentmode,
       collectedBy,
+      minAmount: minAmount,
+      maxAmount: maxAmount,
     });
 
     setAppliedFilters(filters);
@@ -261,6 +271,8 @@ const ReceiptFilterSheet = ({
     setMode([]);
     // remove chips
     setAppliedFilters(null);
+    setMinAmount(null)
+    setMaxAmount(null)
 
     // call parent reset
     onResetFilter?.();
@@ -408,7 +420,7 @@ const ReceiptFilterSheet = ({
 
 
 
-            <MultiSelectDropdown
+            {/* <MultiSelectDropdown
               label="Period"
               dropdownKey="period"
               placeholder="Select Period"
@@ -420,7 +432,7 @@ const ReceiptFilterSheet = ({
                 setSelectedPeriod(values?.[0] || "");
                 setFilterError("");
               }}
-            />
+            /> */}
 
             {/* <MultiSelectDropdown
             label="Amount Range"
@@ -432,6 +444,58 @@ const ReceiptFilterSheet = ({
             selected={amountRange}
             onChange={setAmountRange}
           /> */}
+
+            <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', marginBottom: 6, marginTop: 14 }}>
+              Amount Range</Text>
+
+            <View style={styles.amountRow}>
+
+              {/* Minimum Amount */}
+              <View style={[styles.amountInputContainer, { marginRight: 5 }]}>
+                <Text style={styles.currency}>₹</Text>
+
+                <TextInput
+                  value={minAmount}
+                  onChangeText={(text) => {
+                    if (text > maxAmount) {
+                      setErrorMsg("Min Amount should not be greater than max")
+                    } else {
+                      setErrorMsg("")
+                    }
+                    const cleanText = text.replace(/[^0-9]/g, "");
+                    setMinAmount(cleanText)
+                  }}
+                  placeholder="Min"
+                  placeholderTextColor="#999"
+                  keyboardType="numeric"
+                  style={styles.amountInput}
+                />
+              </View>
+
+              {/* Maximum Amount */}
+              <View style={[styles.amountInputContainer, { marginLeft: 5 }, !minAmount && { opacity: 0.4 }]}>
+                <Text style={styles.currency}>₹</Text>
+
+                <TextInput
+                  value={maxAmount}
+                  editable={minAmount ? true : false}
+                  onChangeText={(text) => {
+                    if (minAmount > text) {
+                      setErrorMsg("Min Amount should not be greater than max")
+                    } else {
+                      setErrorMsg("")
+                    }
+                    const cleanText = text.replace(/[^0-9]/g, "");
+                    setMaxAmount(cleanText)            
+                  }}
+                  placeholder="Max"
+                  placeholderTextColor="#999"
+                  keyboardType="numeric"
+                  style={styles.amountInput}
+                />
+              </View>
+            </View>
+            {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
 
 
             <MultiSelectDropdown
@@ -793,5 +857,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Gilroy-Medium",
     color: "#374151",
+  },
+
+  amountRow: {
+    flexDirection: "row",
+    marginTop: 8
+  },
+
+  amountInputContainer: {
+    flex: 1,
+    height: 42,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 9,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+  },
+
+  currency: {
+    fontSize: 16,
+    color: "#999",
+    marginRight: 6,
+  },
+
+  amountInput: {
+    flex: 1,
+    fontSize: 16, fontFamily: 'Gilroy-Medium',
+    color: "#222",
+    paddingVertical: 0,
   },
 })
