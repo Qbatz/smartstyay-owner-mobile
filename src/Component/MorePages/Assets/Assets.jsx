@@ -54,6 +54,9 @@ export default function Assets({ navigation }) {
   const [roomOpen, setRoomOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
 
+  console.log("selectedFloor", selectedFloor , selectedRoom);
+  
+
   const {
     canWriteModule: canWriteAssets,
     canReadModule: canReadAssets,
@@ -328,6 +331,61 @@ export default function Assets({ navigation }) {
   { id: 2, name: "Room 102" },]
 
 
+  const handleOpenAssignSheet = async () => {
+  if (!selectedAsset) return;
+
+  // Already assigned asset → existing floor/room/date prefill
+  if (selectedAsset.assignmentStatus === "Assigned") {
+
+    const floor = floors.find(
+      (item) => Number(item.id) === Number(selectedAsset.floorId)
+    );
+
+    if (floor) {
+      setSelectedFloor(floor);
+
+      // Load rooms for selected floor
+      const res = await getAllRoomsByFloor(floor.id);
+
+      if (res?.success) {
+        setRooms(res.data || []);
+
+        const room = (res.data || []).find(
+          (item) => Number(item.id) === Number(selectedAsset.roomId)
+        );
+
+        if (room) {
+          setSelectedRoom(room);
+        }
+      }
+    }
+
+    // assignedAt: "25/08/2026"
+    if (selectedAsset.assignedAt) {
+      const [day, month, year] = selectedAsset.assignedAt.split("/");
+
+      const formattedDate = `${year}-${month}-${day}`;
+
+      setAssignDate(formattedDate);
+    }
+  } else {
+    // Unassigned asset → empty fields
+    setSelectedFloor(null);
+    setSelectedRoom(null);
+    setRooms([]);
+    setAssignDate(null);
+  }
+
+  setFloorOpen(false);
+  setRoomOpen(false);
+  setFloorError("");
+  setRoomError("");
+  setAssignDateError("");
+
+  setShowSheet(false);
+  setShowAssignSheet(true);
+};
+
   const isAssignDateDisabled = (dateString) => {
     const current = dayjs(dateString);
     const today = dayjs().endOf("day");
@@ -387,73 +445,198 @@ export default function Assets({ navigation }) {
     setAssignDateError("")
   };
 
+  const payload = {
+      assetId: selectedAsset?.assetId,
+      hostelId: activeHostelId,
+      floorId: selectedFloor?.id,
+      roomId: selectedRoom?.id,
+      assignedAt: dayjs(assignDate).format("DD/MM/YYYY"),
+
+    }
 
 
-
+    console.log("payload", payload);
 
 const handleAssignAsset = async () => {
   if (!canWriteAssets) {
     setModalType("warning");
     setModalMessage("You do not have permission to assign assets");
     setShowSuccessModal(true);
+
     setTimeout(() => {
       setShowSuccessModal(false);
     }, 1000);
+
     return;
   }
 
-    if (!selectedAsset?.assetId) return;
+  if (!selectedAsset?.assetId) return;
 
-    setFloorError("");
-    setRoomError("");
-    setAssignDateError("")
+  setFloorError("");
+  setRoomError("");
+  setAssignDateError("");
 
-    let valid = true;
+  let valid = true;
 
-    if (!selectedFloor) {
-      setFloorError("Please Select Floor");
-      valid = false;
+  if (!selectedFloor) {
+    setFloorError("Please Select Floor");
+    valid = false;
+  }
+
+  if (!selectedRoom) {
+    setRoomError("Please Select Room");
+    valid = false;
+  }
+
+  if (!assignDate) {
+    setAssignDateError("Please select date");
+    valid = false;
+  }
+
+  if (!valid) return;
+
+
+
+  if (selectedAsset?.assignmentStatus === "Assigned") {
+
+    const originalFloorId = Number(selectedAsset?.floorId);
+    const originalRoomId = Number(selectedAsset?.roomId);
+
+    const selectedFloorId = Number(selectedFloor?.id);
+    const selectedRoomId = Number(selectedRoom?.id);
+
+    const originalDate = selectedAsset?.assignedAt
+      ? dayjs(selectedAsset.assignedAt, "DD/MM/YYYY").format("DD/MM/YYYY")
+      : "";
+
+    const selectedDate = assignDate
+      ? dayjs(assignDate).format("DD/MM/YYYY")
+      : "";
+
+    const isSameFloor =
+      originalFloorId === selectedFloorId;
+
+    const isSameRoom =
+      originalRoomId === selectedRoomId;
+
+    const isSameDate =
+      originalDate === selectedDate;
+
+    if (isSameFloor && isSameRoom && isSameDate) {
+
+      setModalType("warning");
+      setModalMessage("No Changes Deducted");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
+
+      return;
     }
+  }
 
-    if (!selectedRoom) {
-      setRoomError("Please Select Room");
-      valid = false;
-    }
+ 
 
-    if (!assignDate) {
-      setAssignDateError("Please select date");
-      valid = false;
-    }
-
-    if (!valid) return;
-
-    const payload = {
-      assetId: selectedAsset.assetId,
-      hostelId: activeHostelId,
-      floorId: selectedFloor.id,
-      roomId: selectedRoom.id,
-      assignedAt: dayjs(assignDate).format("DD/MM/YYYY"),
-
-    };
-
-    const res = await assignAsset(payload);
-
-    setShowAssignSheet(false);
-
-    if (res?.success) {
-      setModalType("success");
-      setModalMessage(res.message || "Asset assigned successfully");
-    } else {
-      setModalType("error");
-      setModalMessage(res?.message || "Assign failed");
-    }
-
-    setShowSuccessModal(true);
-
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 1500);
+  const payload = {
+    assetId: selectedAsset.assetId,
+    hostelId: activeHostelId,
+    floorId: selectedFloor.id,
+    roomId: selectedRoom.id,
+    assignedAt: dayjs(assignDate).format("DD/MM/YYYY"),
   };
+
+  console.log("payload", payload);
+
+  const res = await assignAsset(payload);
+
+  setShowAssignSheet(false);
+
+  if (res?.success) {
+    setModalType("success");
+    setModalMessage(res.message || "Asset assigned successfully");
+  } else {
+    setModalType("error");
+    setModalMessage(res?.message || "Assign failed");
+  }
+
+  setShowSuccessModal(true);
+
+  setTimeout(() => {
+    setShowSuccessModal(false);
+  }, 1500);
+};
+
+
+
+// const handleAssignAsset = async () => {
+
+
+//   if (!canWriteAssets) {
+//     setModalType("warning");
+//     setModalMessage("You do not have permission to assign assets");
+//     setShowSuccessModal(true);
+//     setTimeout(() => {
+//       setShowSuccessModal(false);
+//     }, 1000);
+//     return;
+//   }
+
+//     if (!selectedAsset?.assetId) return
+
+//     setFloorError("");
+//     setRoomError("");
+//     setAssignDateError("")
+
+//     let valid = true;
+
+//     if (!selectedFloor) {
+//       setFloorError("Please Select Floor");
+//       valid = false;
+//     }
+
+//     if (!selectedRoom) {
+//       setRoomError("Please Select Room");
+//       valid = false;
+//     }
+
+//     if (!assignDate) {
+//       setAssignDateError("Please select date");
+//       valid = false;
+//     }
+
+//     if (!valid) return;
+
+//     const payload = {
+//       assetId: selectedAsset.assetId,
+//       hostelId: activeHostelId,
+//       floorId: selectedFloor.id,
+//       roomId: selectedRoom.id,
+//       assignedAt: dayjs(assignDate).format("DD/MM/YYYY"),
+
+//     };
+
+//     console.log("payload", payload);
+    
+
+//     const res = await assignAsset(payload);
+
+//     setShowAssignSheet(false);
+
+//     if (res?.success) {
+//       setModalType("success");
+//       setModalMessage(res.message || "Asset assigned successfully");
+//     } else {
+//       setModalType("error");
+//       setModalMessage(res?.message || "Assign failed");
+//     }
+
+//     setShowSuccessModal(true);
+
+//     setTimeout(() => {
+//       setShowSuccessModal(false);
+//     }, 1500);
+//   };
 
 
 
@@ -713,7 +896,7 @@ const handleAssignAsset = async () => {
                   </TouchableOpacity>
 
 {console.log(assignmentStatus)}
-{console.log(selectedAsset)}
+{console.log("selectedAsset",selectedAsset)}
 
                   <TouchableOpacity disabled={!canDeleteAssets || assignmentStatus}
                     style={!canDeleteAssets || assignmentStatus && { opacity: 0.4 }}
@@ -785,12 +968,13 @@ const handleAssignAsset = async () => {
   onPress={() => {
     if (!canWriteAssets) return;
 
-                  setShowSheet(false);
-                  setShowAssignSheet(true);
+    handleOpenAssignSheet()
                 }}
               >
                 <Image source={ButtonTag} style={styles.assignIcon} />
-                <Text style={styles.assignText}>Assign Asset</Text>
+                <Text style={styles.assignText}>  {selectedAsset?.assignmentStatus === "Unassigned"
+    ? "Assign Asset"
+    : "ReAssign Asset"}</Text>
               </TouchableOpacity>
 
 
@@ -952,6 +1136,8 @@ const handleAssignAsset = async () => {
             </View>
           </View>
         )}
+
+
         {showAssignSheet && (
           <View style={styles.sheetOverlay}>
             <TouchableWithoutFeedback onPress={() => {
