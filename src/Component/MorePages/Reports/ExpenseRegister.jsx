@@ -23,6 +23,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import FilterBottomSheet from "./FilterBottomSheet";
 import RupeeIcon from "../../../Assets/Images/Rupees.png";
 import ExpensesIcon from "../../../Assets/Images/Expenses.png";
+import ReportsAllFilterBottomSheet from "./ReportsAllFilterBottomSheet";
 
 
 const { width } = Dimensions.get("window");
@@ -53,6 +54,14 @@ const ExpenseRegister = ({ navigation }) => {
   const [tempSubCategory, setTempSubCategory] = useState([]);
   const [subCategorySheetOpen, setSubCategorySheetOpen] = useState(false);
 
+   const [allFilterSheet, setAllFilterSheet] = useState(false)
+   const [vendorValue,setVendorValue]=useState("")
+   const [paymentStatus,setPaymentStatusValue]=useState("")
+   const [categoryValue,setCategoryValue]=useState([])
+   const [subCategoryValue,setSubCategoryValue]=useState([])
+   const [allSelectedMonth,setAllSelectedMonth]=useState("")
+   const [paymentModeValue,setPaymentModeValue]=useState([])
+   const [createdValue,setCreatedByValue]=useState([])
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -151,16 +160,20 @@ const ExpenseRegister = ({ navigation }) => {
   // };
 
   const applyExpenseFilters = (
-    month = selectedMonth,
-    category = selectedCategory,
-    subCategory = selectedSubCategory,
-    payment = selectedPayment
+    month = selectedMonth ?? allSelectedMonth,
+    category = selectedCategory ?? categoryValue,
+    subCategory = selectedSubCategory ?? subCategoryValue,
+    payment = selectedPayment ?? paymentModeValue,
+    createdBy = createdValue,
+    paidTo = vendorValue,
   ) => {
     const filters = {
       period: month || undefined,
       category: category.length ? category : undefined,
       subCategory: subCategory.length ? subCategory : undefined,
       paymentMode: payment.length ? payment : undefined,
+      createdBy: createdBy.length ? createdBy : undefined,
+      paidTo: paidTo || undefined,
       page: 1,
       size: 10,
     };
@@ -299,7 +312,15 @@ const ExpenseRegister = ({ navigation }) => {
       </LinearGradient>
     );
   
-  
+  const hasActiveFilters =
+  (paymentModeValue?.length ?? 0) > 0 ||
+  (categoryValue?.length ?? 0) > 0 ||
+  (subCategoryValue?.length ?? 0) > 0 ||
+  !!allSelectedMonth ||
+  !!vendorValue ||
+  (createdValue?.length ?? 0) > 0;
+
+  console.log(Reportsdetails)
 
 
   return (
@@ -362,7 +383,7 @@ const ExpenseRegister = ({ navigation }) => {
                     >
                       <SummaryCard
                         title="Total Expenses"
-                        value={Reportsdetails?.expense?.totalExpenses}
+                        value={expenseData?.summary?.totalExpenses}
                         icon={ExpensesIcon}
                         tintColor="#1E45E1"
                         linearcolor="#FFF4F4"
@@ -370,7 +391,7 @@ const ExpenseRegister = ({ navigation }) => {
           
                       <SummaryCard
                         title="Total Amount"
-                        value={Reportsdetails?.expense?.totalExpenseAmount || 0}
+                        value={expenseData?.summary?.totalAmount || 0}
                         icon={RupeeIcon}
                         valueColor="#00A651"
                         linearcolor="#F4FFF7"
@@ -381,6 +402,44 @@ const ExpenseRegister = ({ navigation }) => {
                   </View>
 
           <View style={styles.filterRow}>
+
+            {/* All */}
+
+            <TouchableOpacity
+              style={[
+                styles.filterBtn,
+                // selectedPayment.length > 0 && styles.activeFilter
+                 hasActiveFilters && styles.activeFilter
+              ]}
+              onPress={() => {
+                
+                setAllFilterSheet(true);
+              }}
+            >
+              <Text
+                //  style={selectedPayment.length ? styles.activeFilterText : styles.filterText}
+                style={[
+                 hasActiveFilters
+                    ? styles.activeFilterText
+                    : styles.filterText,
+                  {
+                    flex: 1,
+                    marginRight: 6,
+                  },
+                ]}
+
+              >
+                All
+              </Text>
+              <Image
+                source={DownArrow}
+                style={[
+                  styles.arrowIcon,
+                 hasActiveFilters && styles.activeArrow,
+                ]}
+              />
+              {/* <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} /> */}
+            </TouchableOpacity>
 
             {/* Payment */}
             <TouchableOpacity
@@ -488,12 +547,9 @@ const ExpenseRegister = ({ navigation }) => {
     </Text>
           <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} /> */}
             </TouchableOpacity>
-
+{/* 
             <TouchableOpacity
-              // style={[
-              //   styles.filterBtn,
-              //   selectedSubCategory.length > 0 && styles.activeFilter,
-              // ]}
+             
 
               style={[
                 styles.filterBtn,
@@ -534,13 +590,8 @@ const ExpenseRegister = ({ navigation }) => {
                   styles.arrowIcon,
                   selectedSubCategory.length > 0 && styles.activeArrow,
                 ]}
-              />
-
-              {/* <Image
-                source={DownArrow}
-                style={{ width: 16, height: 16, marginLeft: 6 }}
-              /> */}
-            </TouchableOpacity>
+              />         
+            </TouchableOpacity> */}
 
           </View>
 
@@ -687,6 +738,36 @@ const ExpenseRegister = ({ navigation }) => {
         }}
         onClose={() => setPaymentSheetOpen(false)}
       />
+
+       <ReportsAllFilterBottomSheet
+              visible={allFilterSheet}
+              filters={filterOptions}
+              reportType="expense"
+              // selectedFilters={ }
+              setVendorValue={setVendorValue}
+              setSelectedMonth={setAllSelectedMonth}
+              setPaymentStatusValue={setPaymentStatusValue}
+              setCategoryValue={setCategoryValue}
+              setSubCategoryValue={setSubCategoryValue}             
+              setPaymentModeValue={setPaymentModeValue}
+              setCreatedByValue={setCreatedByValue}
+              // setMaxPaidValue={setMaxPaidValue}
+      
+              onReset={() => {
+                  setAllSelectedMonth("")
+                  setCategoryValue([]), setSubCategoryValue([])
+                  setPaymentModeValue([]), setCreatedByValue([])
+                  setVendorValue("")
+                  setAllFilterSheet(false)
+                  applyExpenseFilters("",[],[],[],[],"")
+              }}
+              onApply={() => {
+                setAllFilterSheet(false)
+                applyExpenseFilters(allSelectedMonth,categoryValue,subCategoryValue,paymentModeValue,createdValue,
+                                  vendorValue)
+              }}
+              onClose={() => setAllFilterSheet(false)}
+            />
     </>
   );
 };

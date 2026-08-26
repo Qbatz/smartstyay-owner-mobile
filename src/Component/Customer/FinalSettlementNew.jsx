@@ -76,7 +76,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   const [showRefundableAdvance, setShowRefundableAdvance] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
-   const [showRetainer, setShowRetainer] = useState(false);
+  const [showRetainer, setShowRetainer] = useState(false);
   const [openWallet, setOpenWallet] = useState(false)
 
   const [collectFullRent, setCollectFullRent] = useState(false);
@@ -1217,7 +1217,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         // keyboardVerticalOffset={Platform.OS === "ios" ? "padding" : undefined}
-          keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 20}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 20}
       >
         <SafeAreaView style={styles.safeArea}>
           {/* ✅ HEADER */}
@@ -1853,9 +1853,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     </Text>
                   </View>
 
-                   <View style={styles.rowBetween}>
+                  <View style={styles.rowBetween}>
                     <Text style={styles.label}>Retainer Invoices</Text>
-                    <Text style={{fontSize: 12,fontFamily: "Gilroy-Bold"}}>
+                    <Text style={{ fontSize: 12, fontFamily: "Gilroy-Bold" }}>
                       ₹ {settlementDetails?.settlementInfo?.retainerBalance}
                     </Text>
                   </View>
@@ -1998,7 +1998,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
               )}
             </View>
 
-             <View style={styles.accordionCard}>
+            <View style={styles.accordionCard}>
               <TouchableOpacity
                 style={styles.accordionHeader}
                 onPress={() => setShowRetainer(!showRetainer)}
@@ -2308,6 +2308,10 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
                             if (parts[1]?.length > 2) {
                               cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                            }
+
+                            if (cleaned === "0") {
+                              return;
                             }
                             updateAmount(item?.id, cleaned)
 

@@ -132,7 +132,7 @@ const removeChip = (value) => {
 const styles = StyleSheet.create({
   label: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily:'Gilroy-Medium',
     marginBottom: 6,
   },
 

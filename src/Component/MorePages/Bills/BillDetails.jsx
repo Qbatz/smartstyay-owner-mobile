@@ -74,7 +74,7 @@ const BillDetailsSheet = ({
   const { BillDetails, loading, GetAllBillDetails, RecordPayment, GetInitializeRefundDetails, CreateRefund,
     refundError, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails,
-    GetInitializeAdvanceRedeem, GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails  } = useContext(BillContext);
+    GetInitializeAdvanceRedeem, GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -474,7 +474,7 @@ const BillDetailsSheet = ({
 
   const paymentStatus = invoice?.paymentStatus ?? invoice?.status;
 
-  
+
 
   const BillsStatusStyle = getStatusStyle(paymentStatus)
   // console.log("bill", bill);
@@ -687,7 +687,7 @@ const BillDetailsSheet = ({
     const AdvanceCredits = await GetAdvanceCreditDetails({
       hostelId: activeHostelId,
       invoiceId: selectedBill?.invoiceId,
-      type: "Credit", 
+      type: "Credit",
     })
 
     console.log("AdvanceCredits", AdvanceCredits);
@@ -722,7 +722,7 @@ const BillDetailsSheet = ({
     }
   };
 
-   const handleApplyBookingToInvoice= async () => {
+  const handleApplyBookingToInvoice = async () => {
 
     navigation.navigate("ApplyBookingToInvoice");
 
@@ -2088,7 +2088,8 @@ const BillDetailsSheet = ({
                   The booking amount isn't applied with any bills yet.
                 </Text>
 
-                <TouchableOpacity style={styles.applyBtn}
+                <TouchableOpacity style={[styles.applyBtn, !canWriteInvoice && {opacity:0.4}]}
+                disabled={!canWriteInvoice}
                   onPress={handleApplyBookingToInvoice}
                 >
                   <Text style={{
@@ -2296,23 +2297,24 @@ const BillDetailsSheet = ({
               (invoiceType === "Rent" || invoiceType === "Settlement" || invoiceType === "REASSIGN_RENT") &&
               !isDiscounted &&
               ( */}
-              {BillPdfdetails?.invoiceInfo?.paymentStatus === "Pending" &&
-(
-  BillPdfdetails?.invoiceInfo?.invoiceType === "REASSIGN_RENT" ||
-  BillPdfdetails?.invoiceInfo?.invoiceType === "RENT" ||
-  BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT"
-) &&
-!BillPdfdetails?.invoiceInfo?.isDiscounted && (
+            {BillPdfdetails?.invoiceInfo?.paymentStatus === "Pending" &&
+              (
+                BillPdfdetails?.invoiceInfo?.invoiceType === "REASSIGN_RENT" ||
+                BillPdfdetails?.invoiceInfo?.invoiceType === "RENT" ||
+                BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT"
+              ) &&
+              !BillPdfdetails?.invoiceInfo?.isDiscounted && (
 
                 <TouchableOpacity
-                  style={styles.popupRow}
+                  style={[styles.popupRow, !canWriteInvoice && {opacity:0.4}]}
+                  disabled={!canWriteInvoice}
                   onPress={() => {
                     setShowMenu(false);
                     // setShowBillDetails(false)
-                     const res =  GetInitializeDiscountDetails({
-      hostelId: activeHostelId,
-      invoiceId: BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId || selectedBill?.invoiceId
-    })
+                    const res = GetInitializeDiscountDetails({
+                      hostelId: activeHostelId,
+                      invoiceId: BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId || selectedBill?.invoiceId
+                    })
                     navigation.navigate("DiscountInvoice", {
                       // bill: selectedBill,
                       onSuccess: () => {
