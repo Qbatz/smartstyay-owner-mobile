@@ -1801,13 +1801,22 @@ export default function DashboardNewDesign({ initialParams, route }) {
                             colors={["#10267B", "#1E45E1"]}
                             start={{ x: 0, y: 0 }}
                             end={{ x: 1, y: 0 }}
-                            style={[
-                              styles.expiryCard,
-                              Platform.OS === "ios" && {
-                                flexDirection: "row",
-                                alignItems: "center",
-                              },
-                            ]}
+                              style={[
+    {
+      margin: Platform.OS === "ios" ? 5 : 16,
+      paddingHorizontal: Platform.OS === "ios" ? 10 : 20,
+      // paddingVertical: Platform.OS === "ios" ? -4 : 20,
+      paddingTop: Platform.OS === "ios" ? 5 : 20,
+      borderRadius: 16,
+      overflow: "hidden",
+      minHeight: Platform.OS === "ios" ? 110 : 120,
+    },
+    Platform.OS === "ios" && {
+      flexDirection: "row",
+      alignItems: "center",
+    },
+  ]}
+      
                           >
                             {/* <View style={styles.banner}> */}
                             <View
@@ -3961,10 +3970,10 @@ const styles = StyleSheet.create({
   },
 
   bannerIcon: {
-    width: 140,
-    height: 140,
+    width:  Platform.OS === "ios" ? 120: 140,
+    height:  Platform.OS === "ios" ? 120: 140,
     position: "absolute",
-    right: -10,
+    right:   Platform.OS === "ios" ? 15 :  -10,
     bottom: -10,   // 🔥 IMPORTANT (not top)
     resizeMode: "contain",
   },
