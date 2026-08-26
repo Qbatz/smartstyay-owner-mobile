@@ -8,7 +8,7 @@ import {
   StyleSheet, TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, TextInput, ScrollView, Dimensions
+  BackHandler, TextInput, ScrollView, Dimensions , Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -1582,11 +1582,15 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
         width: CARD_WIDTH,
-        height: 90,
+        height: Platform.OS === "ios" ? 100 :  90,
         backgroundColor: "#fff",
         borderRadius: 16,
-        paddingHorizontal: 14,
-        paddingVertical: 12,
+        // paddingHorizontal: 14,
+        // paddingVertical: 12,
+            paddingTop: Platform.OS === "ios" ? 0 : 5,
+    paddingRight: Platform.OS === "ios" ? 0 : 15,
+    paddingBottom: Platform.OS === "ios" ? 0 : 1,
+    paddingLeft: Platform.OS === "ios" ? 0 : 15,
 
         borderWidth: 1,
         borderColor: "#EEF2F6",
@@ -1605,6 +1609,12 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         flex: 1,
+
+    },
+    cardContent:{
+    paddingLeft: Platform.OS === "ios" ? 12 : 0,
+    paddingTop: Platform.OS === "ios" ? 5 : 0,
+    paddingRight: Platform.OS === "ios" ? 18 : 15,
     },
 
     iconBox: {
@@ -1615,6 +1625,7 @@ const styles = StyleSheet.create({
 
         justifyContent: "center",
         alignItems: "center",
+        marginRight:10,
 
         borderWidth: 1,
         borderColor: "#E5E7EB",
