@@ -1200,7 +1200,8 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
                   {/* ADD CARD */}
 
                   <TouchableOpacity
-                    style={styles.addNewCard}
+                    style={[styles.addNewCard, !canWriteBanking && {opacity:0.4}]}
+                    disabled={!canWriteBanking}
                     onPress={handleAddBanking}
                   >
 

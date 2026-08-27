@@ -298,7 +298,7 @@ export default function AdditionalContactBottomSheet({
         setIsSubmitClicked(false)
       }, 1200);
     } else {
-      setMessage("Contact Add Failed");
+      setMessage(res?.message || "Contact Add Failed");
       setModalType("error");
       setShowSuccess(true);
 

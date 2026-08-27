@@ -9,7 +9,7 @@ import {
   TouchableWithoutFeedback,
   TextInput,
   Image,
-  ScrollView, Keyboard, BackHandler
+  ScrollView, Keyboard, BackHandler, Platform
 } from "react-native";
 import EyeOpen from "../../../Assets/Images/Eye.png";
 import EyeClose from "../../../Assets/Images/EyeIcon.png";
@@ -43,22 +43,25 @@ export default function AddUserBottomSheet({ visible, onClose, editData, onSucce
   const [message, setMessage] = useState("");
 
   const [countryOpen, setCountryOpen] = useState(false);
-const [selectedCountry, setSelectedCountry] = useState({
-  code: "+91",
-  label: "India",
-});
+  const [selectedCountry, setSelectedCountry] = useState({
+    code: "+91",
+    label: "India",
+  });
 
- const isSubmittingRef = useRef(false);
+  const scrollViewRef = useRef(null);
+  const descriptionInputRef = useRef(null);
+
+  const isSubmittingRef = useRef(false);
 
 
 
-const countryList = [
-  { label: "India", code: "+91" },
-  { label: "United States", code: "+1" },
-  { label: "United Kingdom", code: "+44" },
-  { label: "Australia", code: "+61" },
-  { label: "Singapore", code: "+65" },
-];
+  const countryList = [
+    { label: "India", code: "+91" },
+    { label: "United States", code: "+1" },
+    { label: "United Kingdom", code: "+44" },
+    { label: "Australia", code: "+61" },
+    { label: "Singapore", code: "+65" },
+  ];
 
 
   useEffect(() => {
@@ -163,7 +166,7 @@ const countryList = [
     else if (!mobileRegex.test(mobile)) {
       setMobileError("Enter valid mobile number");
       valid = false;
-    } 
+    }
 
     if (!selectedRole) {
       setRoleError("Please Select Role");
@@ -196,24 +199,57 @@ const countryList = [
 
     }
 
-     if (isSubmittingRef.current) return;
-        isSubmittingRef.current = true;
+    if (isSubmittingRef.current) return;
+    isSubmittingRef.current = true;
 
-        try {
+    try {
 
 
-    if (!editData) {
+      if (!editData) {
+        const payload = {
+          name: name.trim(),
+          emailId: email.trim(),
+          mobile: String(mobile),
+          password,
+          roleId: selectedRole.id,
+          description: description.trim(),
+        };
+
+
+        const res = await addUser(activeHostelId, payload);
+
+        if (res.success) {
+
+          setModalType("success");
+          setMessage(res.data);
+          setShowSuccess(true);
+          setTimeout(() => {
+            setShowSuccess(false)
+            onClose();
+            onSuccess && onSuccess();
+          }, 800);
+
+        } else {
+          setEmailError(res.data?.emailStatus);
+          setMobileError(res.data?.mobileStatus);
+        }
+        return;
+      }
+
+
       const payload = {
         name: name.trim(),
         emailId: email.trim(),
         mobile: String(mobile),
-        password,
-        roleId: selectedRole.id,
+        role: selectedRole.id,
         description: description.trim(),
       };
 
-
-      const res = await addUser(activeHostelId, payload);
+      const res = await updateUser(
+        activeHostelId,
+        editData.userId,
+        payload
+      );
 
       if (res.success) {
 
@@ -225,49 +261,16 @@ const countryList = [
           onClose();
           onSuccess && onSuccess();
         }, 800);
-
       } else {
+
         setEmailError(res.data?.emailStatus);
         setMobileError(res.data?.mobileStatus);
       }
-      return;
+
     }
-
-
-    const payload = {
-      name: name.trim(),
-      emailId: email.trim(),
-      mobile: String(mobile),
-      role: selectedRole.id,
-      description: description.trim(),
-    };
-
-    const res = await updateUser(
-      activeHostelId,
-      editData.userId,
-      payload
-    );
-
-    if (res.success) {
-
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false)
-        onClose();
-        onSuccess && onSuccess();
-      }, 800);
-    } else {
-
-      setEmailError(res.data?.emailStatus);
-      setMobileError(res.data?.mobileStatus);
+    finally {
+      isSubmittingRef.current = false;
     }
-
-  }
-   finally {
-            isSubmittingRef.current = false;
-        }
 
   };
 
@@ -296,8 +299,8 @@ const countryList = [
     return () => handler.remove();
   }, [visible]);
 
-  useEffect(()=>{
-    if(!visible){
+  useEffect(() => {
+    if (!visible) {
       setNameError("");
       setEmailError("");
       setMobileError("");
@@ -305,7 +308,7 @@ const countryList = [
       setRoleError("");
       setRoleOpen(false)
     }
-  },[visible])
+  }, [visible])
 
   useEffect(() => {
     Animated.timing(translateY, {
@@ -339,10 +342,27 @@ const countryList = [
       }
     },
 
-  });
+  })
+
+
+  // useEffect(() => {
+  //   const show = Keyboard.addListener("keyboardDidShow", (e) => {
+  //     setKeyboardHeight(e.endCoordinates.height - 40);
+  //   });
+
+  //   const hide = Keyboard.addListener("keyboardDidHide", () => {
+  //     setKeyboardHeight(0);
+  //   });
+
+  //   return () => {
+  //     show.remove();
+  //     hide.remove();
+  //   };
+  // }, [])
+
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", (e) => {
-      setKeyboardHeight(e.endCoordinates.height - 40);
+      setKeyboardHeight(e.endCoordinates.height);
     });
 
     const hide = Keyboard.addListener("keyboardDidHide", () => {
@@ -354,7 +374,6 @@ const countryList = [
       hide.remove();
     };
   }, []);
-
 
 
   if (!visible) return null;
@@ -375,16 +394,21 @@ const countryList = [
         <Animated.View
           style={[
             styles.sheet,
-            { transform: [{ translateY }], paddingBottom: keyboardHeight }
+            { transform: [{ translateY }], paddingBottom:  keyboardHeight > 0 ? 8 : 0, }
           ]}
           {...panResponder.panHandlers}
         >
           <View style={styles.handle} />
 
           <ScrollView
+            ref={scrollViewRef}
             style={{ paddingHorizontal: 20 }}
-            contentContainerStyle={{ paddingBottom: 50 }}
+            contentContainerStyle={{
+              paddingBottom: keyboardHeight > 0 ? keyboardHeight + 80 : 50,
+            }}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
           >
 
             <Text style={styles.title}>{editData ? "Edit Staff" : "Add Staff"}</Text>
@@ -423,65 +447,65 @@ const countryList = [
               }}
             /> */}
             <View style={styles.mobileWrapper}>
-  
-  {/* COUNTRY DROPDOWN */}
-  <View style={{ position: "relative" }}>
-    <TouchableOpacity
-      style={styles.countryDropdown}
-      onPress={() => setCountryOpen(!countryOpen)}
-      activeOpacity={0.7}
-    >
-      <Text style={styles.countryCodeText}>
-        {selectedCountry.code}
-      </Text>
-      <Image
-        source={require("../../../Assets/Images/direction-down.png")}
-        style={styles.countryArrow}
-      />
-    </TouchableOpacity>
 
-    {countryOpen && (
-      <>
-        <TouchableWithoutFeedback onPress={() => setCountryOpen(false)}>
-          <View style={styles.dropdownOverlay} />
-        </TouchableWithoutFeedback>
+              {/* COUNTRY DROPDOWN */}
+              <View style={{ position: "relative" }}>
+                <TouchableOpacity
+                  style={styles.countryDropdown}
+                  onPress={() => setCountryOpen(!countryOpen)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.countryCodeText}>
+                    {selectedCountry.code}
+                  </Text>
+                  <Image
+                    source={require("../../../Assets/Images/direction-down.png")}
+                    style={styles.countryArrow}
+                  />
+                </TouchableOpacity>
 
-        <View style={styles.countryDropdownMenu}>
-          <ScrollView>
-            {countryList.map((item, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.countryOption}
-                onPress={() => {
-                  setSelectedCountry(item);
-                  setCountryOpen(false);
+                {countryOpen && (
+                  <>
+                    <TouchableWithoutFeedback onPress={() => setCountryOpen(false)}>
+                      <View style={styles.dropdownOverlay} />
+                    </TouchableWithoutFeedback>
+
+                    <View style={styles.countryDropdownMenu}>
+                      <ScrollView>
+                        {countryList.map((item, index) => (
+                          <TouchableOpacity
+                            key={index}
+                            style={styles.countryOption}
+                            onPress={() => {
+                              setSelectedCountry(item);
+                              setCountryOpen(false);
+                            }}
+                          >
+                            <Text style={styles.countryOptionText}>
+                              {item.label} ({item.code})
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </ScrollView>
+                    </View>
+                  </>
+                )}
+              </View>
+
+              {/* MOBILE INPUT */}
+              <TextInput
+                style={styles.mobileInput}
+                placeholder="9876543210"
+                keyboardType="numeric"
+                maxLength={10}
+                value={mobile}
+                onChangeText={(text) => {
+                  const filtered = text.replace(/[^0-9]/g, "");
+                  setMobile(filtered);
+                  setMobileError("");
                 }}
-              >
-                <Text style={styles.countryOptionText}>
-                  {item.label} ({item.code})
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </>
-    )}
-  </View>
-
-  {/* MOBILE INPUT */}
-  <TextInput
-    style={styles.mobileInput}
-    placeholder="9876543210"
-    keyboardType="numeric"
-    maxLength={10}
-    value={mobile}
-    onChangeText={(text) => {
-      const filtered = text.replace(/[^0-9]/g, "");
-      setMobile(filtered);
-      setMobileError("");
-    }}
-  />
-</View>
+              />
+            </View>
 
             {mobilError && (
               <ErrorMessage message={mobilError} type="error" />
@@ -569,15 +593,22 @@ const countryList = [
 
             <Text style={styles.label}>Description </Text>
             <TextInput
+              ref={descriptionInputRef}
               style={styles.textarea}
               placeholder="Enter Description"
               multiline
               value={description}
-              onChangeText={(t)=>{
-                 const filtered = t.replace(/[^A-Za-z0-9@#./]/g, "");
-                 setDescription(filtered)
-              }
-                }
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollToEnd({
+                    animated: true,
+                  });
+                }, Platform.OS === "ios" ? 250 : 150);
+              }}
+              onChangeText={(t) => {
+                const filtered = t.replace(/[^A-Za-z0-9@#./]/g, "");
+                setDescription(filtered);
+              }}
             />
 
             {/* Buttons */}
@@ -587,13 +618,13 @@ const countryList = [
               </TouchableOpacity>
 
               <TouchableOpacity
-               style={[
-                            styles.addBtn,
-                            isSubmittingRef.current && {
-                                opacity: 0.5,
-                            },
-                        ]}
-              onPress={handleAddUser}>
+                style={[
+                  styles.addBtn,
+                  isSubmittingRef.current && {
+                    opacity: 0.5,
+                  },
+                ]}
+                onPress={handleAddUser}>
                 <Text style={styles.addText}>{editData ? "Update" : "Add"}</Text>
               </TouchableOpacity>
             </View>
@@ -618,6 +649,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     paddingTop: 10,
+      overflow: "hidden",
   },
 
   handle: {
@@ -650,74 +682,74 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   mobileWrapper: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#D4D4D4",
-  borderRadius: 10,
-  marginTop: 6,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#D4D4D4",
+    borderRadius: 10,
+    marginTop: 6,
+  },
 
-countryDropdown: {
-  flexDirection: "row",
-  alignItems: "center",
-  paddingHorizontal: 10,
-  borderRightWidth: 1,
-  borderRightColor: "#E5E7EB",
-  height: 50,
-},
+  countryDropdown: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    borderRightWidth: 1,
+    borderRightColor: "#E5E7EB",
+    height: 50,
+  },
 
-countryCodeText: {
-  fontSize: 14,
-  fontWeight: "500",
-  color: "#111",
-  marginRight: 4,
-},
+  countryCodeText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#111",
+    marginRight: 4,
+  },
 
-countryArrow: {
-  width: 14,
-  height: 14,
-  tintColor: "#6A6A6A",
-},
+  countryArrow: {
+    width: 14,
+    height: 14,
+    tintColor: "#6A6A6A",
+  },
 
-mobileInput: {
-  flex: 1,
-  paddingHorizontal: 12,
-  fontSize: 15,
-  height: 50,
-},
+  mobileInput: {
+    flex: 1,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    height: 50,
+  },
 
-countryDropdownMenu: {
-  position: "absolute",
-  top: 52,
-  left: 0,
-  width: 180,
-  backgroundColor: "#fff",
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-  borderRadius: 10,
-  elevation: 10,
-  zIndex: 9999,
-  maxHeight: 200,
-},
+  countryDropdownMenu: {
+    position: "absolute",
+    top: 52,
+    left: 0,
+    width: 180,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    elevation: 10,
+    zIndex: 9999,
+    maxHeight: 200,
+  },
 
-countryOption: {
-  paddingVertical: 12,
-  paddingHorizontal: 12,
-},
+  countryOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+  },
 
-countryOptionText: {
-  fontSize: 14,
-  color: "#111",
-},
+  countryOptionText: {
+    fontSize: 14,
+    color: "#111",
+  },
 
-dropdownOverlay: {
-  position: "absolute",
-  top: -1000,
-  left: -1000,
-  right: -1000,
-  bottom: -1000,
-},
+  dropdownOverlay: {
+    position: "absolute",
+    top: -1000,
+    left: -1000,
+    right: -1000,
+    bottom: -1000,
+  },
 
 
 

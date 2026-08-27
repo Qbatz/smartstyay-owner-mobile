@@ -13,7 +13,7 @@ import {
   PanResponder,
   BackHandler, Keyboard, Platform
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigationState } from "@react-navigation/native";
 import { useCallback } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -50,6 +50,7 @@ import PlusIcon from "../../../Assets/Images/add.png";
 import ShareIcon from "../../../Assets/Images/share.png";
 import QuestionIcon from "../../../Assets/Images/help.png";
 import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
+import DirectionImage from "../../../Assets/Images/direction-down.png"
 // import TenAntAdd from "../../../Assets/Images/TenantAdd.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import Dots from "../../../Assets/Images/3dots.png";
@@ -113,9 +114,14 @@ export default function BillsDesign({ route }) {
   const detailDotsRef = useRef(null);
 
   const { setShowTabBar } = route.params;
+    const isTabBarVisible = useRef(true);
 
   const { handleScroll } =
     useHideTabbarOnScroll(setShowTabBar);
+
+  const currentRouteName = useNavigationState(
+      (state) => state.routes[state.index]?.name
+    );
 
   const { BillDetails, loading, GetAllBillDetails,setBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
@@ -263,6 +269,7 @@ export default function BillsDesign({ route }) {
   const [showRefundMode, setShowRefundMode] = useState(false);
 
   const [showWallet, setShowWallet] = useState(false);
+    const [morefilters, setMoreFilters] = useState(false)
 
 
   const bankOptions = ["SBI-IMMAN", "HDFC-JOBIN", "ICICI-KUMAR"];
@@ -279,9 +286,17 @@ export default function BillsDesign({ route }) {
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
   const [modesheetOpen, setModeSheetOpen] = useState(false);
 
+//   const [tempStatus, setTempStatus] = useState([]);
+// const [tempType, setTempType] = useState([]);
+// const [tempmode, setTempmode] = useState([]);
+
+// const [billStatus, setBillStatus] = useState([]);
+// const [type, setType] = useState([]);
+// const [mode, setMode] = useState([]);
+
   const [tempStatus, setTempStatus] = useState([]);
   const [tempType, setTempType] = useState([]);
-  const [tempmode, setTempMode] = useState([]);
+  const [tempmode, setTempmode] = useState([]);
   const [createdBy, setCreatedBy] = useState([]);
   const [appliedFilters, setAppliedFilters] = useState(null);
   const [receiptAppliedFilters, setReceiptAppliedFilters] = useState(null);
@@ -442,6 +457,38 @@ export default function BillsDesign({ route }) {
       getParticularHostelDetails(activeHostelId);
     }
   }, [activeHostelId])
+
+
+
+   useLayoutEffect(() => {
+    if (
+      showBillDetails ||
+      showFilter ||
+      showReceiptDetails ||
+      showRecordPayment ||
+      showRefundPayment ||
+      showRecuringBillDetail
+    ) {
+      setShowTabBar(false)
+    } else {
+      setShowTabBar(isTabBarVisible.current);
+    }
+  }, [showBillDetails,
+    showFilter,
+    showReceiptDetails,
+    showRecordPayment,
+    showRefundPayment,
+    showRecuringBillDetail])
+
+
+    useLayoutEffect(() => {
+    setShowTabBar(!showBillDetails && !showFilter && !showReceiptDetails && !showRecordPayment && !showRefundPayment,!showRecuringBillDetail);
+   }, [showBillDetails,
+    showFilter,
+    showReceiptDetails,
+    showRecordPayment,
+    showRefundPayment,
+    showRecuringBillDetail])
 
   useLayoutEffect(() => {
     const backAction = () => {
@@ -1745,6 +1792,9 @@ export default function BillsDesign({ route }) {
       return;
     }
 
+
+    
+
     const filters = {
       startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
       endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
@@ -1753,6 +1803,8 @@ export default function BillsDesign({ route }) {
       modes: mode,
       createdBy: createdBy,
     };
+
+        console.log("filterdate", filters);
 
     const hasAnyFilter =
       filters.startDate ||
@@ -1774,6 +1826,27 @@ export default function BillsDesign({ route }) {
     setShowFilter(false);
   };
 
+  const applyTopFilters = async ({
+  paymentStatus = billStatus,
+  selectedType = type,
+  selectedMode = mode,
+  selectedCreatedBy = createdBy,
+} = {}) => {
+  if (!canReadInvoice) return;
+
+  const filters = {
+    startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+    endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+    paymentStatus,
+    type: selectedType,
+    modes: selectedMode,
+    createdBy: selectedCreatedBy,
+  };
+
+  await GetAllBillDetails(activeHostelId, filters);
+
+  setAppliedFilters(filters);
+};
 
 
   const handleResetFilters = async () => {
@@ -2418,15 +2491,22 @@ export default function BillsDesign({ route }) {
     setSearchText("");
   };
 
-  useFocusEffect(
-  useCallback(() => {
+//   useFocusEffect(
+//   useCallback(() => {
 
-    return () => {
+//     return () => {
+//       clearBillFilters();      
+//       setActiveTab("Invoices"); 
+//     };
+//   }, [])
+// );
+
+  useEffect(()=>{
+      return () => {
       clearBillFilters();      
       setActiveTab("Invoices"); 
     };
-  }, [])
-);
+  },[currentRouteName])
 
   const handleTabChange = (tab) => {
     if (activeTab === "Invoices" && tab !== "Invoices") {
@@ -2734,7 +2814,7 @@ export default function BillsDesign({ route }) {
 
               {canReadInvoice && !loading && (
                 <>
-                  {/* <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
+                  <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
                     style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
                     <>
                       {BillDetails?.listInvoices?.length > 0 && (
@@ -2792,22 +2872,22 @@ export default function BillsDesign({ route }) {
                           <TouchableOpacity
                             style={[
                               styles.filterBox,
-                              billStatus.length > 0 && styles.filterBoxActive,
+                              tempmode.length > 0 && styles.filterBoxActive,
                             ]}
                             onPress={() => {
-                              setTempStatus(billStatus);
-                              setStatusSheetOpen(true);
+                              setTempmode(tempmode);
+                              setModeSheetOpen(true);
                             }}
                           >
                             <Text
                               style={[
                                 styles.filterText,
-                                billStatus.length > 0 && styles.filterTextActive,
+                                tempmode.length > 0 && styles.filterTextActive,
                               ]}
                             >
-                              {billStatus.length === 0
+                              {tempmode.length === 0
                                 ? "Mode"
-                                : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
+                                : `${tempmode[0]} ${tempmode.length > 1 ? `+${tempmode.length - 1} more` : ""
                                 }`}
                             </Text>
                             <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
@@ -2828,7 +2908,7 @@ export default function BillsDesign({ route }) {
                       )
                       }
                     </>
-                  </ScrollView> */}
+                  </ScrollView>
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
@@ -4480,8 +4560,9 @@ export default function BillsDesign({ route }) {
                           The booking amount isn't applied with any bills yet.
                         </Text>
 
-                        <TouchableOpacity style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem && { opacity: 0.4 }]} onPress={handleApplyBookingToInvoice}
-                          disabled={!BillPdfdetails?.invoiceInfo?.canRedeem}
+                        <TouchableOpacity 
+                        style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem || !canWriteInvoice && { opacity: 0.4 }]} onPress={handleApplyBookingToInvoice}
+                          disabled={!BillPdfdetails?.invoiceInfo?.canRedeem || !canWriteInvoice}
                         >
                           <Text style={{
                             color: "#fff",
@@ -5177,11 +5258,13 @@ export default function BillsDesign({ route }) {
                   </TouchableOpacity>
                 )} */}
 
+{console.log("canwirteShanthi",canWriteInvoice)}
                 {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent") &&
                   !selectedBill?.isDiscounted && (
                     <>
                       <TouchableOpacity
-                        style={styles.popupRow}
+                        style={[styles.popupRow, !canWriteInvoice && styles.popupRowDisabled]}
+                        disabled={!canWriteInvoice}
                         onPress={handlemakeDiscount}
                       >
                         <Image
@@ -6232,33 +6315,42 @@ export default function BillsDesign({ route }) {
                   </View>
                 </View>
 
-                <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                  <Text style={styles.label}>Date Range</Text>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setFromDate(null);
-                      setToDate(null);
-                      setFilterError("")
-                    }}
-                  >
-                    <Text style={styles.resetTextSmall}>Reset</Text>
-                  </TouchableOpacity>
-                </View>
+               
 
-                {/* <View style={styles.dateRow}>
-                  <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-                    <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-                    <Image source={CalendarIcon} style={styles.calIcon} />
-                  </TouchableOpacity>
+             
 
-                  <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-                    <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-                    <Image source={CalendarIcon} style={styles.calIcon} />
-                  </TouchableOpacity>
-                </View> */}
+                    <MultiSelectDropdown
+                  label="Bill Status"
+                  dropdownKey="billStatus"
+                  placeholder="Select Bill Status"
+                  activeDropdown={activeDropdown}
+                  setActiveDropdown={setActiveDropdown}
+                  options={billStatusOptions}
+                  selected={billStatus}
+                  onChange={(values) => {
+                    setBillStatus(values);
+                    setFilterError("");
+                  }}
+                />
+
+                <MultiSelectDropdown
+                  label="Type"
+                  dropdownKey="type"
+                  placeholder="Select Type"
+                  activeDropdown={activeDropdown}
+                  setActiveDropdown={setActiveDropdown}
+                  options={typeOptions}
+                  selected={type}
+                  onChange={(values) => {
+                    setType(values);
+                    setFilterError("");
+                  }}
+                />
+
+                
 
                 <View style={styles.dateRow}>
-
+                  
                   <TouchableOpacity
                     style={styles.dateBox}
                     onPress={() => setOpenFrom(true)}
@@ -6289,7 +6381,7 @@ export default function BillsDesign({ route }) {
                 </View>
 
 
-                <View style={styles.quickRow}>
+                {/* <View style={styles.quickRow}>
                   <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
                     <Text style={styles.quickText}>Today</Text>
                   </TouchableOpacity>
@@ -6301,37 +6393,11 @@ export default function BillsDesign({ route }) {
                   <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
                     <Text style={styles.quickText}>This Month</Text>
                   </TouchableOpacity>
-                </View>
+                </View> */}
 
 
 
-                <MultiSelectDropdown
-                  label="Bill Status"
-                  dropdownKey="billStatus"
-                  placeholder="Select Bill Status"
-                  activeDropdown={activeDropdown}
-                  setActiveDropdown={setActiveDropdown}
-                  options={billStatusOptions}
-                  selected={billStatus}
-                  onChange={(values) => {
-                    setBillStatus(values);
-                    setFilterError("");
-                  }}
-                />
-
-                <MultiSelectDropdown
-                  label="Type"
-                  dropdownKey="type"
-                  placeholder="Select Type"
-                  activeDropdown={activeDropdown}
-                  setActiveDropdown={setActiveDropdown}
-                  options={typeOptions}
-                  selected={type}
-                  onChange={(values) => {
-                    setType(values);
-                    setFilterError("");
-                  }}
-                />
+            
 
 
 
@@ -6350,9 +6416,17 @@ export default function BillsDesign({ route }) {
                 />
 
 
-
-
-                <MultiSelectDropdown
+                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }} onPress={() => setMoreFilters(!morefilters)}>
+                                <Text style={{ fontFamily: "Gilroy-Semibold", fontSize: 16 }}>More Filters</Text>
+                                <Image
+                                  source={DirectionImage}
+                                  style={{ width: 18, height: 18, marginLeft: 6, transform: morefilters ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                                  resizeMode="contain"
+                                />
+                              </TouchableOpacity>
+                              {morefilters && (<>
+                              <View style={{marginBottom:80}}>
+                               <MultiSelectDropdown
                   label="Created By"
                   dropdownKey="createdBy"
                   placeholder="Select User"
@@ -6365,6 +6439,14 @@ export default function BillsDesign({ route }) {
                     setFilterError("");
                   }}
                 />
+                </View>
+                              
+                              </>)}
+
+
+
+
+               
 
 
 
@@ -6792,8 +6874,117 @@ export default function BillsDesign({ route }) {
             </View>
           </Modal>
 
-
           <FilterBottomSheet
+  visible={statusSheetOpen}
+  title="Bill Status"
+  options={billStatusOptions || []}
+  selectedValues={tempStatus}
+  setSelectedValues={setTempStatus}
+
+  onReset={async () => {
+    setTempStatus([]);
+    setBillStatus([]);
+    setStatusSheetOpen(false);
+
+    await applyTopFilters({
+      paymentStatus: [],
+      selectedType: type,
+      selectedMode: mode,
+      selectedCreatedBy: createdBy,
+    });
+  }}
+
+  onApply={async () => {
+    setBillStatus(tempStatus);
+    setStatusSheetOpen(false);
+
+    await applyTopFilters({
+      paymentStatus: tempStatus,
+      selectedType: type,
+      selectedMode: mode,
+      selectedCreatedBy: createdBy,
+    });
+  }}
+
+  onClose={() => setStatusSheetOpen(false)}
+/>
+
+
+<FilterBottomSheet
+  visible={typeSheetOpen}
+  title="Stay Type"
+  options={typeOptions || []}
+  selectedValues={tempType}
+  setSelectedValues={setTempType}
+
+  onReset={async () => {
+    setTempType([]);
+    setType([]);
+    setTypeSheetOpen(false);
+
+    await applyTopFilters({
+      paymentStatus: billStatus,
+      selectedType: [],
+      selectedMode: mode,
+      selectedCreatedBy: createdBy,
+    });
+  }}
+
+  onApply={async () => {
+    setType(tempType);
+    setTypeSheetOpen(false);
+
+    await applyTopFilters({
+      paymentStatus: billStatus,
+      selectedType: tempType,
+      selectedMode: mode,
+      selectedCreatedBy: createdBy,
+    });
+  }}
+
+  onClose={() => setTypeSheetOpen(false)}
+/>
+
+
+
+
+<FilterBottomSheet
+
+  visible={modesheetOpen}
+  title="Mode"
+  options={modeOptions || []}
+  selectedValues={tempmode}
+  setSelectedValues={setTempmode}
+
+  onReset={async () => {
+    setTempmode([]);
+    setMode([]);
+    setModeSheetOpen(false);
+
+    await applyTopFilters({
+      paymentStatus: billStatus,
+      selectedType: type,
+      selectedMode: [],
+      selectedCreatedBy: createdBy,
+    });
+  }}
+
+  onApply={async () => {
+    setMode(tempmode);
+    setModeSheetOpen(false);
+
+    await applyTopFilters({
+      paymentStatus: billStatus,
+      selectedType: type,
+      selectedMode: tempmode,
+      selectedCreatedBy: createdBy,
+    });
+  }}
+
+  onClose={() => setModeSheetOpen(false)}
+/>
+
+          {/* <FilterBottomSheet
             visible={statusSheetOpen}
             title="Bill Status"
             options={billStatusOptions || []}
@@ -6805,18 +6996,20 @@ export default function BillsDesign({ route }) {
               setBillStatus([]);
               setStatusSheetOpen(false);
 
-              // applyFilters(selectedMonth, [], type);
+              applyFilters(selectedMonth, [], type);
             }}
 
             onApply={() => {
               setBillStatus(tempStatus);
               setStatusSheetOpen(false);
 
-              // applyFilters(selectedMonth, tempStatus, type);
+              applyFilters(selectedMonth, tempStatus, type);
             }}
 
             onClose={() => setStatusSheetOpen(false)}
           />
+
+
 
           <FilterBottomSheet
             visible={modesheetOpen}
@@ -6829,14 +7022,14 @@ export default function BillsDesign({ route }) {
               setTempMode([]);
               setSheetMode([]);
               setModeSheetOpen(false);
-              // applyFilters(selectedMonth, [], type);
+              applyFilters(selectedMonth, [], type);
             }}
 
             onApply={() => {
               setSheetMode(tempmode);
               setModeSheetOpen(false);
 
-              // applyFilters(selectedMonth, tempStatus, type);
+              applyFilters(selectedMonth, tempStatus, type);
             }}
 
             onClose={() => setModeSheetOpen(false)}
@@ -6854,18 +7047,18 @@ export default function BillsDesign({ route }) {
               setType([]);
               setTypeSheetOpen(false);
 
-              // applyFilters(selectedMonth, billStatus, []);
+              applyFilters(selectedMonth, billStatus, []);
             }}
 
             onApply={() => {
               setType(tempType);
               setTypeSheetOpen(false);
 
-              // applyFilters(selectedMonth, billStatus, tempType);
+              applyFilters(selectedMonth, billStatus, tempType);
             }}
 
             onClose={() => setTypeSheetOpen(false)}
-          />
+          /> */}
 
 
           {billbookingDetailsShow && (
@@ -7530,7 +7723,7 @@ const styles = StyleSheet.create({
   bottomButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 25,
+    marginTop: 70,
     marginBottom: 5
   },
 

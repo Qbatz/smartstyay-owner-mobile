@@ -1849,6 +1849,68 @@ export const CustomerProvider = ({ children }) => {
     }
   }
 
+  const DeleteTenantDraft = async (hostelId, customerId) => {
+
+
+  if (!hostelId || !customerId) {
+    return {
+      success: false,
+      message: "Missing hostelId or customerId",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const res = await axios.delete(
+      `/v3/customers/draft/${hostelId}/${customerId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (res?.status === 204) {
+      setDraftDetails(null);
+
+      return {
+        success: true,
+        data: res?.data,
+        message: "Draft tenant deleted successfully",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Unable to delete draft tenant",
+    };
+  } catch (error) {
+    console.log(
+      "DELETE TENANT DRAFT ERROR",
+      error?.response?.data
+    );
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Unable to delete draft tenant",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const SearchCustomer = async (hostelId, search) => {
     if (!hostelId || !search) {
@@ -2389,7 +2451,7 @@ const cancelUpcomingRent = async (hostelId, customerId) => {
         addVendor, updateVendor, vendorList,
         getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,
-        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn, UpdateAdditionalDraftDetails, UpdateJobDetails, retainerCustomerList, createPaymentMethod, cancelUpcomingRent ,
+        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn, UpdateAdditionalDraftDetails, UpdateJobDetails, retainerCustomerList, createPaymentMethod, cancelUpcomingRent , DeleteTenantDraft ,
         retainerList, retainerBankList, customersList
       }}
     >

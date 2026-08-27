@@ -430,7 +430,7 @@ export default function CreateBill({ navigation }) {
 
 
 const filteredCustomers = customers.filter(
-  (item) => !["Booked","Draft"].includes(item.currentStatus)
+  (item) => !["Booked","Draft", "Settlement Generated"].includes(item.currentStatus)
 );
 
   console.log("customers", customers);
@@ -1318,7 +1318,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 35,
+    paddingTop: 55,
     backgroundColor: 'white'
     // marginBottom: 8,
   },

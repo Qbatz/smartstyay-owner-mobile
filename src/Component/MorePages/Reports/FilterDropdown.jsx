@@ -13,7 +13,7 @@ const FilterDropdown = ({
 }) => {
     const [open, setOpen] = useState(false);
 
-    console.log("srithai",value)
+    console.log("AllFilter",value)
 
     // const handleSelect = (item) => {
     //     if (multiSelect) {
@@ -41,6 +41,14 @@ const FilterDropdown = ({
     //         setOpen(false);
     //     }
     // };
+
+     const getItemId = (item) => {
+    return item?.id ?? item?.tenantId ?? item?.type ?? item?.categoryId ?? item?.subCategoryId ?? item?.userId
+};
+const getLabel=(item)=>{
+    return item?.label ?? item?.name ?? item?.categoryName ?? item?.subCategoryName ?? item?.userName ?? item
+}
+
 
     const handleSelect = (item) => {
     if (multiSelect) {
@@ -88,13 +96,7 @@ const FilterDropdown = ({
     //     return Array.isArray(value) &&
     //         value.some(selected => selected?.id === item?.id);
     // };
-    const getItemId = (item) => {
-    return item?.id ?? item?.tenantId ?? item?.type ;
-};
-const getLabel=(item)=>{
-    return item?.label ?? item?.name
-}
-
+   
 const isSelected = (item) => {
     const itemId = getItemId(item);
 
@@ -131,9 +133,9 @@ const isSelected = (item) => {
                 <Text style={{fontSize:14,fontFamily:'Gilroy-Medium'}}>
                     {multiSelect
                         ? value?.length
-                            ?  value.map(i => i?.label || i?.name).join("  ")
+                            ?  value.map(i => getLabel(i)).join("  ")
                             : placeholder || "Select"
-                        : value?.label || value?.name || value || placeholder || "Select"
+                        : getLabel(value) || value || placeholder || "Select"
                     } 
                 </Text>
                 <Image source={DownArrow} style={{width:18,height:18}}/>
@@ -161,7 +163,7 @@ const isSelected = (item) => {
                                     }}
                                 >
                                     <Text style={styles.dropdownItemText}>
-                                        {item?.label || item?.name || item}
+                                        {getLabel(item) || item}
                                     </Text>
 
                                     {isSelected(item) && (

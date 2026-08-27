@@ -19,7 +19,7 @@ export default function MultiSelectDropdown({
   placeholder = "Select",
   activeDropdown,
   setActiveDropdown,
-  dropdownKey,  
+  dropdownKey,
 }) {
 
 
@@ -27,99 +27,99 @@ export default function MultiSelectDropdown({
 
   const isOpen = activeDropdown === dropdownKey;
 
-const toggleDropdown = () => {
-  if (isOpen) {
-    setActiveDropdown(null);
-  } else {
-    setActiveDropdown(dropdownKey);
-  }
-};
+  const toggleDropdown = () => {
+    if (isOpen) {
+      setActiveDropdown(null);
+    } else {
+      setActiveDropdown(dropdownKey);
+    }
+  };
 
- const toggleItem = (item) => {
-  if (selected.includes(item.value)) {
-    onChange(selected.filter((v) => v !== item.value));
-  } else {
-    onChange([...selected, item.value]);
-  }
-};
+  const toggleItem = (item) => {
+    if (selected.includes(item.value)) {
+      onChange(selected.filter((v) => v !== item.value));
+    } else {
+      onChange([...selected, item.value]);
+    }
+  };
 
-const removeChip = (value) => {
-  onChange(selected.filter((v) => v !== value));
-};
+  const removeChip = (value) => {
+    onChange(selected.filter((v) => v !== value));
+  };
 
 
   return (
     <View style={{ marginTop: 16 }}>
       <Text style={styles.label}>{label}</Text>
 
-    <TouchableOpacity
-  style={[
-    styles.selectBox,
-    selected.length > 0 && styles.selectBoxActive
-  ]}
-  // onPress={() => setOpen(!open)}
-  onPress={toggleDropdown}
->
-      <View style={styles.chipWrap}>
-  {selected.length === 0 ? (
-    <Text style={styles.placeholder}>{placeholder}</Text>
-  ) : selected.length === 1 ? (
-   <Text
-  style={[
-    styles.singleText,
-    selected.length > 0 && { color: "#fff" }
-  ]}
->
-      {options.find(o => o.value === selected[0])?.label}
-    </Text>
-  ) : (
-     <Text
-  style={[
-    styles.singleText,
-    selected.length > 0 && { color: "#fff" }
-  ]}
->
-      {options.find(o => o.value === selected[0])?.label} +{selected.length - 1} more
-    </Text>
-  )}
-</View>
+      <TouchableOpacity
+        style={[
+          styles.selectBox,
+          selected.length > 0 && styles.selectBoxActive
+        ]}
+        // onPress={() => setOpen(!open)}
+        onPress={toggleDropdown}
+      >
+        <View style={styles.chipWrap}>
+          {selected.length === 0 ? (
+            <Text style={styles.placeholder}>{placeholder}</Text>
+          ) : selected.length === 1 ? (
+            <Text
+              style={[
+                styles.singleText,
+                selected.length > 0 && { color: "#fff" }
+              ]}
+            >
+              {options.find(o => o.value === selected[0])?.label}
+            </Text>
+          ) : (
+            <Text
+              style={[
+                styles.singleText,
+                selected.length > 0 && { color: "#fff" }
+              ]}
+            >
+              {options.find(o => o.value === selected[0])?.label} +{selected.length - 1} more
+            </Text>
+          )}
+        </View>
 
-     <Image
-  source={DownArrow}
-  style={[
-    styles.arrow,
-    selected.length > 0 && { tintColor: "#fff" }
-  ]}
-/>
+        <Image
+          source={DownArrow}
+          style={[
+            styles.arrow,
+            selected.length > 0 && { tintColor: "#fff" }
+          ]}
+        />
       </TouchableOpacity>
 
       {/* DROPDOWN */}
       {isOpen && (
         <View style={styles.dropdown}>
-          <ScrollView 
-           nestedScrollEnabled
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator={false}
-  style={{ maxHeight: 220 }}
+          <ScrollView
+            nestedScrollEnabled
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            style={{ maxHeight: 220 }}
           >
-   {options.map((item) => {
-  const checked = selected.includes(item.value);
-  return (
-    <TouchableOpacity
-      key={item.value}
-      style={styles.optionRow}
-     onPress={() => {
-  toggleItem(item);
-  setActiveDropdown(null)
-}}
-    >
-      <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-        {checked && <Text style={styles.tick}>✓</Text>}
-      </View>
-      <Text style={styles.optionText}>{item.label}</Text>
-    </TouchableOpacity>
-  );
-})}
+            {options.map((item) => {
+              const checked = selected.includes(item.value);
+              return (
+                <TouchableOpacity
+                  key={item.value}
+                  style={styles.optionRow}
+                  onPress={() => {
+                    toggleItem(item);
+                    setActiveDropdown(null)
+                  }}
+                >
+                  <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+                    {checked && <Text style={styles.tick}>✓</Text>}
+                  </View>
+                  <Text style={styles.optionText}>{item.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
 
 
           </ScrollView>
@@ -132,7 +132,7 @@ const removeChip = (value) => {
 const styles = StyleSheet.create({
   label: {
     fontSize: 14,
-    fontWeight: "600",
+    fontFamily: 'Gilroy-Medium',
     marginBottom: 6,
   },
 
@@ -211,51 +211,51 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   checkbox: {
-  width: 20,
-  height: 20,
-  borderWidth: 1.5,
-  borderColor: "#A0A0A0",
-  borderRadius: 4,
-  alignItems: "center",
-  justifyContent: "center",
-},
+    width: 20,
+    height: 20,
+    borderWidth: 1.5,
+    borderColor: "#A0A0A0",
+    borderRadius: 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-checkboxChecked: {
-  backgroundColor: "#16a34a",
-  borderColor: "#16a34a",
-},
+  checkboxChecked: {
+    backgroundColor: "#16a34a",
+    borderColor: "#16a34a",
+  },
 
-tick: {
-  color: "#fff",
-  fontSize: 14,
-  fontWeight: "700",
-},
-optionText: {
-  fontSize: 15,
-  marginLeft: 8,
-},
-singleText: {
-  fontSize: 14,
-  fontWeight: "500",
-  color: "#111827",
-},
-dropdown: {
-  position: "absolute",
-  top: 70,
-  left: 0,
-  right: 0,
-  zIndex: 999,
-  elevation: 10,
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  borderRadius: 12,
-  maxHeight: 200,
-  backgroundColor: "#fff",
-},
-selectBoxActive: {
-  backgroundColor: "#1D4ED8",
-  borderColor: "#1D4ED8",
-},
+  tick: {
+    color: "#fff",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  optionText: {
+    fontSize: 15,
+    marginLeft: 8,
+  },
+  singleText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#111827",
+  },
+  dropdown: {
+    // position: "absolute",
+    top: 5,
+    left: 0,
+    right: 0,
+    zIndex: 999,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 12,
+    maxHeight: 200,
+    backgroundColor: "#fff",
+  },
+  selectBoxActive: {
+    backgroundColor: "#1D4ED8",
+    borderColor: "#1D4ED8",
+  },
 
 });
 

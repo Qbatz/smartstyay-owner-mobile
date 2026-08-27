@@ -37,7 +37,11 @@ export default function ReportsAllFilterBottomSheet({
     setSelectedBillStatus, setSelectedInvoiceType,
     setCreatedByValue, setSelectedModeValue,
     setStartDateValue, setEndDateValue,
-     setMinPaidValue, setMaxPaidValue
+    setMinPaidValue, setMaxPaidValue,
+
+    setVendorValue, setAllSelectedMonth,
+    setPaymentStatusValue, setCategoryValue, setSubCategoryValue,
+    setPaymentModeValue
 
 }) {
 
@@ -67,8 +71,14 @@ export default function ReportsAllFilterBottomSheet({
     const [showInvoiceSystemFilter, setShowInvoiceSystemFilter] = useState(true)
     const [showInvoiceMoreFilter, setShowInvoiceMoreFilter] = useState(true)
 
+    // const [paymentStatus, setPaymentStatus] = useState("")
+    const [category, setCategory] = useState([])
+    const [subCategory, setSubcategory] = useState([])
+    const [vendor, setVendor] = useState("")
+
+
     const [error, setError] = React.useState("");
-    const [errorMsg,setErrorMsg]=useState("")
+    const [errorMsg, setErrorMsg] = useState("")
 
     const openSheet = () => {
         Animated.spring(translateY, {
@@ -118,6 +128,7 @@ export default function ReportsAllFilterBottomSheet({
     const isInvoice = reportType === "invoice";
     const isReceipt = reportType === "receipt";
     const isTenant = reportType === "tenant";
+    const isExpense = reportType === "expense"
 
     //     const filteredRooms = (filters?.room || []).filter(room =>
     //     selectedFloor?.some(floor => floor.id === room.floorId)
@@ -130,6 +141,17 @@ export default function ReportsAllFilterBottomSheet({
                 )
             )
             : (filters?.room || []);
+
+    const filteredSubCategory =
+        category?.length > 0
+            ? (filters?.subCategory || []).filter(subCat =>
+                category.some(
+                    item =>
+                        String(item?.categoryId) ===
+                        String(subCat?.categoryId)
+                )
+            )
+            : (filters?.subCategory || []);
 
     console.log("startdate", startDate)
 
@@ -369,7 +391,7 @@ export default function ReportsAllFilterBottomSheet({
                                 </>
                             )}
 
-                            <Text style={[styles.sectionTitle,{marginTop:14}]}>
+                            <Text style={[styles.sectionTitle, { marginTop: 14 }]}>
                                 More Filters
                             </Text>
 
@@ -378,15 +400,15 @@ export default function ReportsAllFilterBottomSheet({
                             <View style={styles.amountRow}>
 
                                 {/* Minimum Amount */}
-                                <View style={[styles.amountInputContainer,{marginRight:5}]}>
+                                <View style={[styles.amountInputContainer, { marginRight: 5 }]}>
                                     <Text style={styles.currency}>₹</Text>
 
                                     <TextInput
                                         value={minAmount}
                                         onChangeText={(text) => {
-                                            if(text>maxAmount){
-                                                 setErrorMsg("Min Amount should not be greater than max")
-                                            }else{
+                                            if (text > maxAmount) {
+                                                setErrorMsg("Min Amount should not be greater than max")
+                                            } else {
                                                 setErrorMsg("")
                                             }
                                             const cleanText = text.replace(/[^0-9]/g, "");
@@ -401,16 +423,16 @@ export default function ReportsAllFilterBottomSheet({
                                 </View>
 
                                 {/* Maximum Amount */}
-                                <View style={[styles.amountInputContainer,{marginLeft:5}, !minAmount && {opacity:0.4}]}>
+                                <View style={[styles.amountInputContainer, { marginLeft: 5 }, !minAmount && { opacity: 0.4 }]}>
                                     <Text style={styles.currency}>₹</Text>
 
                                     <TextInput
                                         value={maxAmount}
                                         editable={minAmount ? true : false}
                                         onChangeText={(text) => {
-                                            if(minAmount>text){
-                                               setErrorMsg("Min Amount should not be greater than max")
-                                            }else{
+                                            if (minAmount > text) {
+                                                setErrorMsg("Min Amount should not be greater than max")
+                                            } else {
                                                 setErrorMsg("")
                                             }
                                             const cleanText = text.replace(/[^0-9]/g, "");
@@ -424,7 +446,7 @@ export default function ReportsAllFilterBottomSheet({
                                     />
                                 </View>
                             </View>
-                              {errorMsg && <ErrorMessage message={errorMsg} type="error"/>}
+                            {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
 
                         </>
                     )}
@@ -529,7 +551,7 @@ export default function ReportsAllFilterBottomSheet({
                                 placeholder="Select Tenants"
                             />
 
-                            <Text style={styles.sectionTitle}>
+                            <Text style={[styles.sectionTitle, { marginTop: 14 }]}>
                                 System Filter
                             </Text>
 
@@ -622,6 +644,110 @@ export default function ReportsAllFilterBottomSheet({
                         </>
                     )}
 
+                    {isExpense && (
+                        <>
+
+
+                            <Text style={styles.sectionTitle}>
+                                System Filter
+                            </Text>
+
+                            <Text style={styles.label}>Category</Text>
+
+                            <FilterDropdown
+                                options={filters?.category}
+                                value={category}
+                                multiSelect={true}
+                                onSelect={(value) => {
+                                    console.log("dropdow", value.categoryId)
+                                    setCategory(value)
+                                    const statusIds = value.map(item => item?.categoryId);
+
+                                    setCategoryValue(statusIds);
+
+                                }}
+                                placeholder="Select Category"
+                            />
+
+                            <Text style={styles.label}>SubCategory</Text>
+
+                            <FilterDropdown
+                                options={filteredSubCategory}
+                                value={subCategory}
+                                multiSelect={true}
+                                onSelect={(value) => {
+                                    setSubcategory(value)
+                                    const statusIds = value.map(item => item?.subCategoryId);
+                                    setSubCategoryValue(statusIds)
+                                }}
+                                placeholder="Select subcategory type"
+                            />
+
+                            <Text style={styles.label}>Period</Text>
+
+                            <FilterDropdown
+                                options={filters?.period}
+                                value={selectedPeriod}
+                                onSelect={(value) => {
+                                    console.log("Perioddropdow", value.id)
+                                    setSelectedPeriod(value)
+                                    setSelectedMonth(value?.id)
+                                }}
+                                placeholder="Select "
+                            />
+
+                            <Text style={styles.label}>Payment Mode</Text>
+
+                            <FilterDropdown
+                                options={filters?.paymentMode}
+                                value={selectedMode}
+                                multiSelect={true}
+                                onSelect={(value) => {
+                                    setSelectedMode(value)
+                                    const statusIds = value.map(item => item.id);
+                                    setPaymentModeValue(value)
+                                }}
+                                placeholder="Select mode"
+                            />
+
+                            <Text style={styles.label}>Paid to</Text>
+
+                            <FilterDropdown
+                                options={filters?.vendors}
+                                value={vendor}
+                                onSelect={(value) => {
+                                    setVendor(value)
+                                    // const statusIds = value.map(item => item.id);
+                                    setVendorValue(value)
+
+                                    // const floorIds = value.map(item => item.id);
+
+                                    // setSelectedRoom(prev =>
+                                    //     prev?.filter(room => floorIds.includes(room.floorId))
+                                    // );
+                                    // const statusIds = value.map(item => item.id);
+                                    // setSelectedFloorValue(statusIds)
+                                }}
+                                placeholder="Select vendor"
+                            />
+
+                            <Text style={styles.label}>Created by</Text>
+
+                            <FilterDropdown
+                                options={filters?.createdBy}
+                                value={selectedCreatedBy}
+                                multiSelect={true}
+                                onSelect={(value) => {
+                                    setSelectedCreatedBy(value)
+                                    const statusIds = value.map(item => item?.userId);
+                                    setCreatedByValue(statusIds)
+                                }}
+                                placeholder="Select createdby"
+                            />
+
+                        </>
+                    )}
+
                 </ScrollView>
 
 
@@ -639,6 +765,10 @@ export default function ReportsAllFilterBottomSheet({
                             setSelectedPeriod(null)
                             setMaxAmount("")
                             setMinAmount("")
+                            setCategory([])
+                            setSubcategory([])
+                            setVendor("")
+                            setSelectedMode(null)
                             onReset()
                         }}
                     >

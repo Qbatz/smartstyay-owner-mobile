@@ -65,7 +65,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [activeMenu, setActiveMenu] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [showPasswordSheet, setShowPasswordSheet] = useState(false);
-  const [showMasterDetails,setMasterDetails]=useState(false);
+  const [showMasterDetails, setMasterDetails] = useState(false);
   const { deleteGeneral, getAdminList } = useGeneral();
   const { profileDetails, GetProfileDetails } = useContext(ExpensesContext);
   const [getData, setGetData] = useState([])
@@ -79,7 +79,7 @@ export default function GeneralDetailsScreen({ navigation }) {
   const SCREEN_WIDTH = Dimensions.get("window").width;
   const [selectedUser, setSelectedUser] = useState(null);
   const [activeMenuProfile, setActiveMenuProfile] = useState(null)
-  const { activeHostelId,setActiveHostelId } = useContext(CommonContexts);
+  const { activeHostelId, setActiveHostelId } = useContext(CommonContexts);
   const { getUsersByHostel, deleteUser } = UseSetting();
   const [users, setUsers] = useState([])
   const [openMenuId, setOpenMenuId] = useState(null);
@@ -92,13 +92,16 @@ export default function GeneralDetailsScreen({ navigation }) {
   const [message, setMessage] = useState("");
   const [showSuccess, setShowSuccess] = useState(false);
   const [editProfileBottomSheet, setEditProfileSheet] = useState(false)
-  const [showResetSheet,setShowResetSheet] = useState(false);
-  const [selectedMasterDetail,setSelectedMasterDetail]=useState("")
+  const [showResetSheet, setShowResetSheet] = useState(false);
+  const [selectedMasterDetail, setSelectedMasterDetail] = useState("")
 
   const loginContext = useContext(LoginContexts)
-  const {setPgDetails}=useContext(PGContext)
+  const { setPgDetails } = useContext(PGContext)
 
   const { logout } = useContext(LoginContexts)
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [showHeader, setShowHeader] = useState(false);
 
   console.log(users)
 
@@ -106,6 +109,20 @@ export default function GeneralDetailsScreen({ navigation }) {
 
   const [activeTab, setActiveTab] = useState("Masters");
   const SCREEN_HEIGHT = Dimensions.get("window").height;
+
+  const opacity = scrollY.interpolate({
+    inputRange: [0, 120],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+
+
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [0, 120],
+    outputRange: [-60, 0], // header slide down
+    extrapolate: "clamp",
+  });
+
 
 
   const tabs = ["Masters", "Your Activity", "Users Activity", "Managed Users"];
@@ -120,7 +137,7 @@ export default function GeneralDetailsScreen({ navigation }) {
     canUpdateModule: canUpdateProfile,
     canDeleteModule: canDeleteProfile,
   } = useHasPermission("Profile");
-  console.log(canWriteProfile,canReadProfile,canUpdateProfile,)
+  console.log(canWriteProfile, canReadProfile, canUpdateProfile,)
 
   console.log(profileDetails)
 
@@ -132,7 +149,7 @@ export default function GeneralDetailsScreen({ navigation }) {
           return true;
         }
 
-         if (showResetSheet) {
+        if (showResetSheet) {
           setShowResetSheet(false);
           return true;
         }
@@ -153,7 +170,7 @@ export default function GeneralDetailsScreen({ navigation }) {
       );
 
       return () => subscription.remove();
-    }, [showPasswordSheet, navigation , showResetSheet])
+    }, [showPasswordSheet, navigation, showResetSheet])
   );
 
   useFocusEffect(
@@ -267,7 +284,7 @@ export default function GeneralDetailsScreen({ navigation }) {
     setModalType("success");
     setShowSuccessModal(true);
     setShowDeletePopup(false);
-    
+
 
     await loadAdmins();
 
@@ -334,17 +351,18 @@ export default function GeneralDetailsScreen({ navigation }) {
 
   const renderUserCard = (u, index) => (
 
-    <TouchableOpacity key={u.userId} style={styles.card} onPress={()=>{
+    <TouchableOpacity key={u.userId} style={styles.card} onPress={() => {
       setMasterDetails(true)
       setSelectedMasterDetail(u)
-      setSelectedUserId(u?.userId)}}>
+      setSelectedUserId(u?.userId)
+    }}>
       <View style={styles.cardHeader}>
         {u.profilePic ? <Image
           source={{ uri: u.profilePic }}
           style={styles.profileImage}
         /> :
           <View style={[styles.profileImage, { backgroundColor: "#EFF2FF", alignItems: 'center', justifyContent: 'center' }]}>
-            <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold"}}>{u.initials}</Text>
+            <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold" }}>{u.initials}</Text>
           </View>}
 
 
@@ -378,66 +396,9 @@ export default function GeneralDetailsScreen({ navigation }) {
 
       </View>
 
-      {/* <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Contact Details</Text>
 
-        <View style={styles.infoRow}>
-          <Image source={Sms} style={styles.infoIcon} />
-          <Text style={styles.infoText}>{u.mailId}</Text>
-        </View>
 
-        <View style={styles.infoRow}>
-          <Image source={Call} style={styles.infoIcon} />
-          <Text style={styles.infoText}>{"+91 " + u.mobileNo}</Text>
-        </View>
 
-        <View style={styles.infoRow}>
-          <Image source={Buildings} style={styles.infoIcon} />
-          <Text style={styles.infoText}>
-            {u.houseNo}, {u.street}, {u.city} - {u.pincode}
-          </Text>
-        </View>
-      </View> */}
-
-      {/* {activeMenu === u.userId && (
-        <View style={styles.menuBox}>
-          <TouchableOpacity
-            // style={styles.menuRow}
-            style={[styles.menuRow, !canWriteProfile && { opacity: 0.4 },]}
-            disabled={!canWriteProfile}
-            onPress={() => {
-              setSelectedUserId(u.userId);
-              setShowPasswordSheet(true);
-              setActiveMenu(null);
-            }}
-
-          >
-            <Image source={Edit} style={styles.menuIcon} />
-            <Text style={styles.menuText}>Change Password</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            // style={styles.menuRow}
-            style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
-            disabled={!canUpdateProfile}
-            onPress={() => {
-              setActiveMenu(null);
-              navigation.navigate("AddGeneralScreen", { editData: u });
-            }}
-          >
-            <Image source={Edit} style={styles.menuIcon} />
-            <Text style={styles.menuText}>Edit</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
-            disabled={!canDeleteProfile}
-            onPress={() => handleDelete(u.userId)}>
-            <Image source={Delete} style={[styles.menuIcon, { tintColor: "red" }]} />
-            <Text style={[styles.menuText, { color: "red" }]}>Delete</Text>
-          </TouchableOpacity>
-        </View>
-      )} */}
     </TouchableOpacity>
   );
 
@@ -476,7 +437,7 @@ export default function GeneralDetailsScreen({ navigation }) {
         </View>
 
         <View style={{ flex: 1, backgroundColor: '#fff', paddingLeft: 12, }}>
-          <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>{item.title}</Text>
+          <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>{item.title}</Text>
           <Text style={{ fontSize: 14, fontWeight: 400, lineHeight: 20, marginTop: 10 }}>{item?.description}</Text>
           <Text style={{ fontSize: 12, fontWeight: 400, color: '#475569', marginTop: 10 }}>
             Added at {item?.date}, {item?.time}</Text>
@@ -501,7 +462,7 @@ export default function GeneralDetailsScreen({ navigation }) {
 
           {item?.profilePic ? <Image source={{ uri: item?.profilePic }} style={{ width: 50, height: 50, borderRadius: 25, resizeMode: 'contain' }} />
             : <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: '#F0F7FF', alignItems: 'center', justifyContent: 'center' }}>
-              <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>
+              <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>
                 {(item.firstName?.charAt(0).toUpperCase() || "") + (item.lastName?.charAt(0).toUpperCase() || "")}
               </Text>
             </View>
@@ -587,34 +548,32 @@ export default function GeneralDetailsScreen({ navigation }) {
       case "Masters":
         return (
           <View style={{ flex: 1 }}>
+
             <FlatList
-              data={getData} style={{ marginTop: 18, marginHorizontal: 10 }}
-              contentContainerStyle={{ paddingBottom: 65 }}
+              data={getData}
+              style={{ flex: 1, marginTop: 18, marginHorizontal: 10, }}
+              contentContainerStyle={{ paddingBottom: 100 }}
+              scrollEnabled={false}
               keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item, index }) => renderUserCard(item, index)}
+              renderItem={({ item, index }) =>
+                renderUserCard(item, index)
+              }
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
-                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>No Profile</Text>
+                  <Image
+                    source={NoResultFound}
+                    style={{ width: 200, height: 180, resizeMode: "contain" }}
+                  />
+
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }} >
+                    No Profile
+                  </Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
-
             />
 
-             <TouchableOpacity
-                style={[
-                  styles.masterButton,
-                  !canWriteProfile && { opacity: 0.4 },
-                ]}
-                disabled={!canWriteProfile}
-                onPress={() =>
-                  navigation.navigate("AddGeneralScreen")
-                }
-              >
-                <Image source={AddCircleIcon} style={{width:20,height:20,marginRight:3}}/>
-                <Text style={styles.masterText}> Master</Text>
-              </TouchableOpacity>
+
           </View>
         );
 
@@ -625,11 +584,12 @@ export default function GeneralDetailsScreen({ navigation }) {
               data={!yourActivity} style={{ marginTop: 18, marginHorizontal: 10 }}
               contentContainerStyle={{ paddingBottom: 65 }}
               keyExtractor={(item, index) => index.toString()}
+              scrollEnabled={false}
               renderItem={renderItem}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
-                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>No Profile</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -646,11 +606,12 @@ export default function GeneralDetailsScreen({ navigation }) {
               data={!yourActivity} style={{ marginTop: 18, marginHorizontal: 10 }}
               contentContainerStyle={{ paddingBottom: 65 }}
               keyExtractor={(item, index) => index.toString()}
+              scrollEnabled={false}
               renderItem={renderItem}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
-                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>No Profile</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -666,11 +627,12 @@ export default function GeneralDetailsScreen({ navigation }) {
               data={users} style={{ marginTop: 18, marginHorizontal: 10 }}
               contentContainerStyle={{ paddingBottom: 65 }}
               keyExtractor={(u, index) => index.toString()}
+              scrollEnabled={false}
               renderItem={renderManagedUser}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
                   <Image source={NoResultFound} style={{ width: 200, height: 180, resizeMode: 'contain' }} />
-                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>No Profile</Text>
+                  <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>No Profile</Text>
                 </View>
               }
               showsVerticalScrollIndicator={false}
@@ -697,7 +659,7 @@ export default function GeneralDetailsScreen({ navigation }) {
         removeData(ACTIVEHOSTELID)
       ])
 
-      
+
 
       loginContext.logoutf("false")
       setActiveHostelId(null)
@@ -757,38 +719,204 @@ export default function GeneralDetailsScreen({ navigation }) {
         />
 
         <View style={styles.container}>
-          <LinearGradient 
-          colors={["#E2E8FF", "#FFFFFF"]}
+          {showHeader && (
+            <Animated.View
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 110,
+                zIndex: 100,
+                elevation: 10,
+                transform: [{ translateY: headerTranslateY }],
+              }}
+            >
+              <LinearGradient
+                colors={["#E2E8FF", "#FFFFFF"]}
+                start={{ x: 0.5, y: 0 }}
+                end={{ x: 0.5, y: 0.8 }}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  paddingTop: 50,
+                  paddingHorizontal: Platform.OS === "android" ? 16 : 3,
+                }}
+              >
+
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    width: "100%",
+                    height: 45,
+                  }}
+                >
+
+                  {/* Back */}
+                  <TouchableOpacity
+                    onPress={() => navigation.goBack()}
+                    style={{
+                      backgroundColor: "#FFFFFF9E",
+                      width: 35,
+                      height: 35,
+                      borderRadius: 10,
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Image
+                      source={ArrowLeft}
+                      style={styles.backIcon}
+                    />
+                  </TouchableOpacity>
+
+
+                  {/* CENTER - Name + Role */}
+                  <View
+                    style={{
+                      flex: 1,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginLeft: 10,
+                      marginRight: 10,
+                    }}
+                  >
+                    <Text
+                      numberOfLines={1}
+                      style={[
+                        styles.name,
+                        {
+                          marginTop: 0,
+                        },
+                      ]}
+                    >
+                      {getFullName(profileDetails)}
+                    </Text>
+
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginTop: 4,
+                        paddingHorizontal: 6,
+                        paddingVertical: 2,
+                        backgroundColor: "#FFFAF1",
+                        borderRadius: 4,
+                      }}
+                    >
+                      <Image
+                        source={CrownIcon}
+                        style={{
+                          width: 14,
+                          height: 14,
+                          marginRight: 4,
+                        }}
+                      />
+
+                      <Text style={styles.changePwdText}>
+                        {profileDetails?.roleName}
+                      </Text>
+                    </View>
+                  </View>
+
+
+                  {/* Three dots */}
+                  {profileDetails && (
+                    <TouchableOpacity
+                      ref={DotsTopRef}
+                      style={{
+                        width: 35,
+                        height: 35,
+                        justifyContent: "center",
+                        alignItems: "center",
+                      }}
+                      onPress={() => {
+                        if (showHeader) {
+                          setPopupPo({
+                            top: 90,
+                            right: 15,
+                          });
+                        } else {
+                          DotsTopRef.current?.measureInWindow(
+                            (x, y, width, height) => {
+                              setPopupPo({
+                                top: y + height + 5,
+                                right: SCREEN_WIDTH - (x + width),
+                              });
+                            }
+                          );
+                        }
+
+                        setActiveMenuProfile("box");
+                      }}
+
+                    >
+                      <Image
+                        source={ThreeDots}
+                        style={styles.menuDotsIcon}
+                      />
+                    </TouchableOpacity>
+                  )}
+
+                </View>
+
+              </LinearGradient>
+            </Animated.View>
+          )}
+          <Animated.ScrollView
+            onScroll={(event) => {
+              const y = event.nativeEvent.contentOffset.y;
+
+              if (y > 80 && !showHeader) {
+                setShowHeader(true);
+              } else if (y <= 80 && showHeader) {
+                setShowHeader(false);
+              }
+
+              scrollY.setValue(y);
+            }}
+            scrollEventThrottle={16}
+            stickyHeaderIndices={[2]}
+            contentContainerStyle={{ paddingBottom: 100 }}
+            stickyHeaderHiddenOnScroll={false}
+            showsVerticalScrollIndicator={false}>
+            <LinearGradient
+              colors={["#E2E8FF", "#FFFFFF"]}
               start={{ x: 0.5, y: 0 }}
               end={{ x: 0.5, y: 0.8 }}
-              style={{ paddingHorizontal: Platform.OS === "android" ? 16 : 3, paddingTop: 50,}}>
-            
-          
+              style={{ paddingHorizontal: Platform.OS === "android" ? 16 : 3, paddingTop: 50, }}>
 
-          {/* Header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}
-              style={{backgroundColor:'#FFFFFF9E',width:35,height:35,borderRadius:10,
-                      justifyContent:'center',alignItems:'center'}}>
-              <Image source={ArrowLeft} style={styles.backIcon} />
-            </TouchableOpacity>
 
-            {/* <Text style={styles.headerTitle}>General</Text> */}
 
-            {profileDetails && (
-              // <TouchableOpacity
-              //   style={[
-              //     styles.masterButton,
-              //     !canWriteProfile && { opacity: 0.4 },
-              //   ]}
-              //   disabled={!canWriteProfile}
-              //   onPress={() =>
-              //     navigation.navigate("AddGeneralScreen")
-              //   }
-              // >
-              //   <Text style={styles.masterText}>+ Master</Text>
-              // </TouchableOpacity>
-               <TouchableOpacity style={{marginTop:3}}
+              {/* Header */}
+
+
+              <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()}
+                  style={{
+                    backgroundColor: '#FFFFFF9E', width: 35, height: 35, borderRadius: 10,
+                    justifyContent: 'center', alignItems: 'center'
+                  }}>
+                  <Image source={ArrowLeft} style={styles.backIcon} />
+                </TouchableOpacity>
+
+                {/* <Text style={styles.headerTitle}>General</Text> */}
+
+                {profileDetails && (
+                  // <TouchableOpacity
+                  //   style={[
+                  //     styles.masterButton,
+                  //     !canWriteProfile && { opacity: 0.4 },
+                  //   ]}
+                  //   disabled={!canWriteProfile}
+                  //   onPress={() =>
+                  //     navigation.navigate("AddGeneralScreen")
+                  //   }
+                  // >
+                  //   <Text style={styles.masterText}>+ Master</Text>
+                  // </TouchableOpacity>
+                  <TouchableOpacity style={{ marginTop: 3 }}
                     ref={DotsTopRef}
                     onPress={() => {
                       DotsTopRef.current.measureInWindow(
@@ -807,153 +935,143 @@ export default function GeneralDetailsScreen({ navigation }) {
                       style={styles.menuDotsIcon}
                     />
                   </TouchableOpacity>
-            )}
-          </View>
-
-          {!canReadProfile && (
-            <View style={styles.emptyContainer}>
-              <Image
-                source={EmptyState}
-                style={styles.emptyImage}
-              />
-              <Text style={styles.emptyText}>
-                You do not have access to view General
-              </Text>
-            </View>
-          )}
-
-          {/* ----Main profile-- */}
-
-          {canReadProfile && (
-            <View style={styles.cards}>
-              <View style={{  flexDirection: 'row',width:'100%'}}>
-                <View style={{flex: 1, alignItems: 'center', paddingLeft: 10}}>
-                  <View style={styles.avatar}>
-                    {profileDetails?.profilePic ? (
-                      <Image
-                        source={{ uri: profileDetails.profilePic }}
-                        style={styles.profileImg}
-                      />
-                    ) : (
-                      <Text style={styles.avatarText}>
-                        {getInitials(profileDetails)}
-                      </Text>
-                    )}
-                    <Image source={YellowCrownIcon} style={{width:30,height:30,position:'absolute',top:-8,right:-5,}}/>
-                  </View>
-
-                 
-                  <Text style={[styles.name,{marginTop:16}]}>
-                    {getFullName(profileDetails)}
-                  </Text>
-
-                <View
-                  style={[styles.changePwdRow,{marginTop:10,paddingHorizontal:4,backgroundColor:'#FFFAF1',borderRadius:4,paddingVertical:2}]}
-                  // onPress={() => setShowPasswordSheet(true)}
-                >
-                  <Image
-                    source={CrownIcon}
-                    style={styles.eyeIcon}
-                  />
-                  <Text style={styles.changePwdText}>
-                    {profileDetails.roleName}
-                  </Text>
-                </View>
-                </View>
-
-                {/* <View style={{ flex: 1, marginLeft: 7 }}>
-                <View style={styles.nameWrapper}>
-                  <Text style={styles.name}>
-                    {getFullName(profileDetails)}
-                  </Text>
-                </View>
-
-                <TouchableOpacity
-                  style={styles.changePwdRow}
-                  onPress={() => setShowPasswordSheet(true)}
-                >
-                  <Image
-                    source={require("../../../Assets/Images/Eye.png")}
-                    style={styles.eyeIcon}
-                  />
-                  <Text style={styles.changePwdText}>
-                    {profileDetails.roleName}
-                  </Text>
-                </TouchableOpacity>
-              </View> */}
-            
-                 
-                </View>
-
-                 
-               {/* <View style={{borderWidth:0.8,marginTop:15,marginBottom:5,borderColor:'#E5E5E5'}}/>  */}
-              
-
-              <View style={styles.infoRow}>
-                <Image
-                  source={require("../../../Assets/Images/call.png")}
-                  style={styles.infoIcon}
-                />
-                <Text style={[styles.infoText,{fontFamily:'Gilroy-Semibold'}]}>
-                  +91 {profileDetails?.mobileNo || "N/A"}
-                </Text>
+                )}
               </View>
 
-              {/* <View style={styles.infoRow}>
-                <Image
-                  source={require("../../../Assets/Images/sms.png")}
-                  style={styles.infoIcon}
-                />
-                <Text style={[styles.infoText,{fontFamily:'Gilroy-Medium',}]}>
-                  {profileDetails?.mailId || "N/A"}
+              {!canReadProfile && (
+                <View style={styles.emptyContainer}>
+                  <Image
+                    source={EmptyState}
+                    style={styles.emptyImage}
+                  />
+                  <Text style={styles.emptyText}>
+                    You do not have access to view General
+                  </Text>
+                </View>
+              )}
+
+              {/* ----Main profile-- */}
+
+
+
+
+              {canReadProfile && (
+                <View style={styles.cards}>
+                  <View style={{ flexDirection: 'row', width: '100%' }}>
+                    <View style={{ flex: 1, alignItems: 'center', paddingLeft: 10 }}>
+                      <View style={styles.avatar}>
+                        {profileDetails?.profilePic ? (
+                          <Image
+                            source={{ uri: profileDetails.profilePic }}
+                            style={styles.profileImg}
+                          />
+                        ) : (
+                          <Text style={styles.avatarText}>
+                            {getInitials(profileDetails)}
+                          </Text>
+                        )}
+                        <Image source={YellowCrownIcon} style={{ width: 30, height: 30, position: 'absolute', top: -8, right: -5, }} />
+                      </View>
+
+
+                      <Text style={[styles.name, { marginTop: 16 }]}>
+                        {getFullName(profileDetails)}
+                      </Text>
+
+                      <View
+                        style={[styles.changePwdRow, { marginTop: 10, paddingHorizontal: 4, backgroundColor: '#FFFAF1', borderRadius: 4, paddingVertical: 2 }]}
+                      // onPress={() => setShowPasswordSheet(true)}
+                      >
+                        <Image
+                          source={CrownIcon}
+                          style={styles.eyeIcon}
+                        />
+                        <Text style={styles.changePwdText}>
+                          {profileDetails.roleName}
+                        </Text>
+                      </View>
+                    </View>
+
+
+
+
+                  </View>
+
+
+                  {/* <View style={{borderWidth:0.8,marginTop:15,marginBottom:5,borderColor:'#E5E5E5'}}/>  */}
+
+
+                  <View style={styles.infoRow}>
                     <Image
-                  source={EmailLinkIcon}
-                  style={{    width: 14,
-    height: 14,
-    marginRight: 10,
-    marginLeft:15,
+                      source={require("../../../Assets/Images/call.png")}
+                      style={styles.infoIcon}
+                    />
+                    <Text style={[styles.infoText, { fontFamily: 'Gilroy-Semibold' }]}>
+                      +91 {profileDetails?.mobileNo || "N/A"}
+                    </Text>
+                  </View>
 
-    tintColor: "#222222",}}
-                />
-                </Text>
-              
-              </View> */}
+                  <View style={styles.infoRow}>
+                    <Image
+                      source={require("../../../Assets/Images/sms.png")}
+                      style={styles.infoIcon}
+                    />
 
-              <View style={styles.infoRow}>
-  <Image
-    source={require("../../../Assets/Images/sms.png")}
-    style={styles.infoIcon}
-  />
+                    <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                      <Text style={[styles.infoText, { fontFamily: "Gilroy-Medium" }]}>
+                        {profileDetails?.mailId || "N/A"}
+                      </Text>
 
-  <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-    <Text style={[styles.infoText, { fontFamily: "Gilroy-Medium" }]}>
-      {profileDetails?.mailId || "N/A"}
-    </Text>
-
-    <Image
-      source={EmailLinkIcon}
-      style={{
-        width: 14,
-        height: 14,
-        marginLeft: 8, // 👈 margin will work now
-        tintColor: "#1E45E1",
-      }}
-    />
-  </View>
-</View>
-{/* <Text style={styles.lastUpdatedText}>
+                      <Image
+                        source={EmailLinkIcon}
+                        style={{
+                          width: 14,
+                          height: 14,
+                          marginLeft: 8, // 👈 margin will work now
+                          tintColor: "#1E45E1",
+                        }}
+                      />
+                    </View>
+                  </View>
+                  {/* <Text style={styles.lastUpdatedText}>
   Profile last updated - 
   <Text style={{color:'#222222', fontFamily: "Gilroy-Semibold",}}>{profileDetails?.lastUpdated || "-"}</Text> 
 </Text> */}
 
-            </View>
-          )}
-          </LinearGradient>
+                </View>
+              )}
 
-          {canReadProfile && (
-            <View style={{ flex: 1, marginTop: 8,marginHorizontal:14 }}>
-              {/* Tabs */}
-              <View style={{ backgroundColor: "#fff" }}>
+            </LinearGradient>
+
+
+
+            <View
+              style={{
+                height: 8,
+                backgroundColor: "#fff",
+              }}
+            />
+
+
+            {/* =====================================================
+          INDEX 2
+          STICKY TABS
+         ===================================================== */}
+
+            <View style={{
+                  backgroundColor: "#fff",
+                  zIndex: 5,
+                  paddingTop: showHeader ? 110 : 0,
+                }} >
+
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  height: 45,
+                  justifyContent: "center",
+                }}
+              >
+
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -961,17 +1079,17 @@ export default function GeneralDetailsScreen({ navigation }) {
                     paddingHorizontal: 16,
                   }}
                 >
+
                   {tabs.map((tab, index) => (
                     <TouchableOpacity
                       key={index}
-                      onPress={() =>
-                        setActiveTab(tab)
-                      }
+                      onPress={() => setActiveTab(tab)}
                       style={{
                         marginRight: 24,
                         alignItems: "center",
                       }}
                     >
+
                       <Text
                         style={[
                           styles.tabText,
@@ -982,96 +1100,156 @@ export default function GeneralDetailsScreen({ navigation }) {
                         {tab}
                       </Text>
 
+
                       {activeTab === tab && (
                         <View
                           style={{
                             marginTop: 6,
                             height: 2,
                             width: "100%",
-                            backgroundColor:
-                              "#2962FF",
+                            backgroundColor: "#2962FF",
                           }}
                         />
                       )}
+
                     </TouchableOpacity>
                   ))}
+
                 </ScrollView>
+
               </View>
 
-              {/* Content */}
-              <View style={{ flex: 1 }}>
-                {renderContent()}
-              </View>
             </View>
+
+
+            <View
+              style={{
+                marginHorizontal: 14,
+                marginTop: 8,
+              }}
+            >
+
+              {canReadProfile ? (
+                renderContent()
+              ) : (
+                <View
+                  style={{
+                    minHeight: 300,
+                  }}
+                />
+              )}
+
+            </View>
+
+          </Animated.ScrollView>
+
+          {
+            activeTab === "Masters" && (
+              <View
+                style={{
+                  position: "absolute",
+                  bottom: 20,
+                  right: 20,
+                  zIndex: 999,
+                  elevation: 10,
+                }}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.masterButton,
+                    !canWriteProfile && { opacity: 0.4 },
+                  ]}
+                  disabled={!canWriteProfile}
+                  onPress={() =>
+                    navigation.navigate("AddGeneralScreen")
+                  }
+                >
+                  <Image
+                    source={AddCircleIcon}
+                    style={{
+                      width: 20,
+                      height: 20,
+                      marginRight: 3,
+                    }}
+                  />
+
+                  <Text style={styles.masterText}>
+                    Master
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )
+          }
+          {activeMenuProfile && (
+            <TouchableWithoutFeedback
+              onPress={() => setActiveMenuProfile(null)}
+            >
+              <View style={styles.menuOverlay}>
+                <View style={[styles.menuBox, { top: popupPo.top, right: popupPo.right }]}>
+
+                  {/* {ChangePassword} */}
+
+                  <TouchableOpacity
+                    // style={styles.menuRow}
+                    style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
+                    disabled={!canUpdateProfile}
+                    onPress={() => {
+                      setActiveMenuProfile(null);
+                      setShowResetSheet(true)
+                    }}
+                  // onPress={()=>setShowResetSheet(true)}
+                  >
+                    <Image source={ChangePasswordIcon} style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Change Password</Text>
+                  </TouchableOpacity>
+
+                  {/* EDIT */}
+                  <TouchableOpacity
+                    // style={styles.menuRow}
+                    style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
+                    disabled={!canUpdateProfile}
+                    onPress={() => {
+                      console.log(activeMenu + " EDIT");
+                      setActiveMenuProfile(null);
+                      // setEditProfileSheet(true)
+                      navigation.navigate("EditProfileSheet", { profileDetails: profileDetails })
+                    }}
+                  >
+                    <Image source={Edit} style={styles.menuIcon} />
+                    <Text style={styles.menuText}>Edit</Text>
+                  </TouchableOpacity>
+
+                  {/* DELETE */}
+                  <TouchableOpacity
+                    // style={styles.menuRow}
+                    style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
+                    disabled={!canDeleteProfile}
+                    onPress={
+                      handleLogout
+                      // console.log(activeMenu + " DELETE");
+                      // setActiveMenuProfile(null);
+                    }
+                  >
+                    <Image
+                      source={LogoutIcon}
+                      style={[styles.menuIcon, { tintColor: "red" }]}
+                    />
+                    <Text style={[styles.menuText, { color: "red" }]}>Logout</Text>
+                  </TouchableOpacity>
+
+                </View>
+
+              </View>
+
+            </TouchableWithoutFeedback>
           )}
         </View>
 
 
       </View>
 
-      {activeMenuProfile && (
-        <TouchableWithoutFeedback
-          onPress={() => setActiveMenuProfile(null)}
-        >
-          <View style={styles.menuOverlay}>
-            <View style={[styles.menuBox, { top: popupPo.top, right: popupPo.right }]}>
 
-              {/* {ChangePassword} */}
 
-              <TouchableOpacity
-                // style={styles.menuRow}
-                style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
-                disabled={!canUpdateProfile}
-                onPress={() => {
-                  setActiveMenuProfile(null);
-                  setShowResetSheet(true)
-                }}
-                // onPress={()=>setShowResetSheet(true)}
-              >
-                <Image source={ChangePasswordIcon} style={styles.menuIcon} />
-                <Text style={styles.menuText}>Change Password</Text>
-              </TouchableOpacity>
-
-              {/* EDIT */}
-              <TouchableOpacity
-                // style={styles.menuRow}
-                style={[styles.menuRow, !canUpdateProfile && { opacity: 0.4 },]}
-                disabled={!canUpdateProfile}
-                onPress={() => {
-                  console.log(activeMenu + " EDIT");
-                  setActiveMenuProfile(null);
-                  // setEditProfileSheet(true)
-                  navigation.navigate("EditProfileSheet",{profileDetails:profileDetails})
-                }}
-              >
-                <Image source={Edit} style={styles.menuIcon} />
-                <Text style={styles.menuText}>Edit</Text>
-              </TouchableOpacity>
-
-              {/* DELETE */}
-              <TouchableOpacity
-                // style={styles.menuRow}
-                style={[styles.menuRow, !canDeleteProfile && { opacity: 0.4 },]}
-                disabled={!canDeleteProfile}
-                onPress={
-                  handleLogout
-                  // console.log(activeMenu + " DELETE");
-                  // setActiveMenuProfile(null);
-                }
-              >
-                <Image
-                  source={LogoutIcon}
-                  style={[styles.menuIcon, { tintColor: "red" }]}
-                />
-                <Text style={[styles.menuText, { color: "red" }]}>Logout</Text>
-              </TouchableOpacity>
-
-            </View>
-
-          </View>
-
-        </TouchableWithoutFeedback>
-      )}
 
 
       <Modal
@@ -1191,11 +1369,11 @@ export default function GeneralDetailsScreen({ navigation }) {
       />
 
       <MastersDetails
-      visible={showMasterDetails}
-      onClose={()=>setMasterDetails(false)}
-      masterDetail={selectedMasterDetail}
-      passwordSheetOpen={()=>setShowPasswordSheet(true)}
-      deletemaster={handleDelete}/>
+        visible={showMasterDetails}
+        onClose={() => setMasterDetails(false)}
+        masterDetail={selectedMasterDetail}
+        passwordSheetOpen={() => setShowPasswordSheet(true)}
+        deletemaster={handleDelete} />
 
       {managedUserBottomShet && (
         <View style={styles.overlay}>
@@ -1216,7 +1394,7 @@ export default function GeneralDetailsScreen({ navigation }) {
 
                 {selectedManageUser.profilePic ? <Image source={{ uri: selectedManageUser.profilePic }} style={{ width: 55, height: 55, borderRadius: 27, resizeMode: 'contain' }} />
                   : <View style={{ width: 55, height: 55, borderRadius: 27, backgroundColor: '#F0F7FF', alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>
+                    <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>
                       {(selectedManageUser.firstName?.charAt(0).toUpperCase() || "") + (selectedManageUser.lastName?.charAt(0).toUpperCase() || "")}
                     </Text>
                   </View>}
@@ -1349,9 +1527,9 @@ export default function GeneralDetailsScreen({ navigation }) {
       </Modal>
 
       <AdminResetPasswordSheet
- visible={showResetSheet}
- onClose={()=>setShowResetSheet(false)}
-/>
+        visible={showResetSheet}
+        onClose={() => setShowResetSheet(false)}
+      />
     </>
   );
 
@@ -1367,7 +1545,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    height: 20,justifyContent:'space-between'
+    height: 20, justifyContent: 'space-between'
   },
 
   backIcon: { width: 20, height: 20, tintColor: "#000" },
@@ -1377,25 +1555,25 @@ const styles = StyleSheet.create({
     textAlign: "left",
     marginLeft: 10,
     fontSize: 20,
-  fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#000",
   },
 
   masterButton: {
-    position:'absolute',
-    borderWidth:1,
+    position: 'absolute',
+    borderWidth: 1,
     backgroundColor: "#F2F5FA",
-    borderColor:'#1E45E1',
+    borderColor: '#1E45E1',
     paddingVertical: 10,
     paddingHorizontal: 26,
     borderRadius: 8,
-    justifyContent:'flex-end',
-    bottom:55,
-    right:18,
-    flexDirection:'row',alignItems:'center'
+    justifyContent: 'flex-end',
+    bottom: 45,
+    right: 18,
+    flexDirection: 'row', alignItems: 'center'
   },
 
-  masterText: { color: "#1E45E1",fontFamily: "Gilroy-Semibold",fontSize:16 },
+  masterText: { color: "#1E45E1", fontFamily: "Gilroy-Semibold", fontSize: 16 },
 
   card: {
     backgroundColor: "#FFF",
@@ -1439,20 +1617,20 @@ const styles = StyleSheet.create({
   },
 
   // dotsIcon: { width: 18, height: 18 },
-  menuDotsIcon:{width:23,height:28.59},
+  menuDotsIcon: { width: 23, height: 28.59 },
 
   section: { marginTop: 10 },
 
-  sectionTitle: { fontSize: 14,fontFamily: "Gilroy-Semibold", color: "#666" },
+  sectionTitle: { fontSize: 14, fontFamily: "Gilroy-Semibold", color: "#666" },
 
   infoRow: { flexDirection: "row", alignItems: "center", marginTop: 15 },
 
   // infoIcon: { width: 18, height: 18, marginRight: 8,tintColor:'#7C7C7C' },
 
-  
+
   menuOverlay: {
     position: "absolute",
-    top: 0, left: 0, right: 0, bottom: 0,
+    top: 0, left: 0, right: 0, bottom: 0, zIndex: 999
   },
   menuBox: {
     position: "absolute",
@@ -1492,7 +1670,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 25,zIndex:9999
+    paddingHorizontal: 25, zIndex: 9999
   },
 
   popupBox: {
@@ -1551,7 +1729,7 @@ const styles = StyleSheet.create({
   deleteText: {
     color: "#fff",
     fontSize: 16,
-  fontFamily: "Gilroy-Bold"
+    fontFamily: "Gilroy-Bold"
   },
   emptyContainer: {
     alignItems: "center",
@@ -1573,15 +1751,38 @@ const styles = StyleSheet.create({
     color: "#777",
   },
 
+  profileCard: {
+    flexDirection: "column",
+    backgroundColor: "#fff",
+    // borderRadius: 16,
+    padding: 16,
+    marginBottom: 14,
+    alignItems: "center",
+    // backgroundColor:'#f1f4ff'
+
+    // ✅ Border
+    // borderWidth: 1,
+    // borderColor: "#E5E7EB",
+
+    // ✅ Shadow (iOS)
+    // shadowColor: "#000",
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.05,
+    // shadowRadius: 8,
+
+    // ✅ Shadow (Android)
+    // elevation: 3,
+  },
+
   // -----
   cards: {
     // backgroundColor: "#fff",
     // padding: 18,
-    paddingBottom: 10, 
+    paddingBottom: 10,
     marginHorizontal: 10,
     // borderRadius: 14,
     // elevation: 2,
-    marginBottom: 12,marginTop:15,
+    marginBottom: 12, marginTop: 15,
     // borderWidth: 1,
     // borderColor: "#EEE",
     position: "relative",
@@ -1599,7 +1800,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#E5E7EB",
     justifyContent: "center",
     alignItems: "center",
-    position:'relative'
+    position: 'relative'
   },
 
   avatarText: {
@@ -1627,7 +1828,7 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 16,
-    fontFamily:'Gilroy-Semibold',
+    fontFamily: 'Gilroy-Semibold',
     color: "#111",
     flexShrink: 1,
     flexWrap: "wrap",
@@ -1650,7 +1851,7 @@ const styles = StyleSheet.create({
   changePwdText: {
     color: "#FF9900",
     fontSize: 13,
-    fontFamily:'Gilroy-Medium',
+    fontFamily: 'Gilroy-Medium',
   },
 
   dotsIcon: {
@@ -1683,7 +1884,7 @@ const styles = StyleSheet.create({
   addressTitle: {
     marginTop: 20,
     fontSize: 14,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
     color: "#444",
 
   },
@@ -1713,11 +1914,11 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 14,
     color: "#888",
-    fontFamily: "Gilroy-Medium" ,
+    fontFamily: "Gilroy-Medium",
   },
   activeText: {
     color: "#2962FF", // blue like screenshot
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
   overlay: {
     position: "absolute",
@@ -1783,7 +1984,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 14,
     color: "#000",
-    fontFamily: "Gilroy-Medium" ,
+    fontFamily: "Gilroy-Medium",
   },
 
   divider: {
@@ -1838,7 +2039,7 @@ const styles = StyleSheet.create({
   cancelText: {
     color: '#444',
     fontSize: 16,
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   deleteBtn: {
@@ -1856,19 +2057,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: "Gilroy-Bold",
   },
-lastUpdatedText: {
-  position: "absolute",
-  bottom: 10,
-  right: 15,
-  fontSize: 12,
-  color: "#9CA3AF",
-  fontFamily: "Gilroy-Semibold",
-},
-infoText: {
-  fontSize: 14,
-  color: "#333",
-  lineHeight: 20,
-  flexShrink: 1, // 👈 important
-}
+  lastUpdatedText: {
+    position: "absolute",
+    bottom: 10,
+    right: 15,
+    fontSize: 12,
+    color: "#9CA3AF",
+    fontFamily: "Gilroy-Semibold",
+  },
+  infoText: {
+    fontSize: 14,
+    color: "#333",
+    lineHeight: 20,
+    flexShrink: 1, // 👈 important
+  }
 
 });
