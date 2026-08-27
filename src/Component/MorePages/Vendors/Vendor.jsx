@@ -652,14 +652,14 @@ export default function Vendors({ navigation }) {
                                                     prefix="₹ "
                                                 />
 
-                                                <SummaryCard
-                                                    icon={GreenRupees}
-                                                    title="Total Paid"
-                                                    value={vendorList?.vendorSummary?.totalPaid || 0}
-                                                    prefix="₹ "
-                                                />
-                                            </ScrollView>
-                                            {/* 
+                                        <SummaryCard
+                                            icon={GreenRupees}
+                                            title="Total Paid"
+                                            value={vendorList?.vendorSummary?.totalPaid || 0}
+                                            prefix="₹ "
+                                        />
+                                    </ScrollView>
+
                                     <View style={styles.filterRow}>
                                         <TouchableOpacity style={styles.filterChipActive}>
                                             <Text style={styles.filterChipTextActive}>All</Text>
@@ -682,7 +682,7 @@ export default function Vendors({ navigation }) {
                                         >
                                             <Image source={Filter} style={{ width: 18, height: 18 }} />
                                         </TouchableOpacity>
-                                    </View> */}
+                                    </View>
 
                                         </>
                                     )}

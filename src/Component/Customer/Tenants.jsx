@@ -80,7 +80,7 @@ export default function TenantsScreen({ route }) {
   // const { setShowTabBar } = route.params;
   const screenWidth = Dimensions.get("window").width;
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, GetParticularCustomerDetails } = useCustomer();
+  const { getCustomersByHostel, loading, GetParticularCustomerDetails, DeleteTenantDraft } = useCustomer();
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -376,6 +376,10 @@ export default function TenantsScreen({ route }) {
   const CloseDelete = () => {
     setDeleteTenants(false)
   }
+
+
+
+  
 
   const [fromDate, setFromDate] = useState(dayjs());
   const [toDate, setToDate] = useState(dayjs());
@@ -795,6 +799,36 @@ export default function TenantsScreen({ route }) {
       selectedItem: selectedItem,
     });
   };
+
+  const handleDeleteDraft = async () => {
+    const result = await DeleteTenantDraft(activeHostelId, selectedCustomer?.customerId,);
+
+    console.log("draftdelete", result , activeHostelId, selectedCustomer?.customerId,);
+    
+
+    if (result?.success) {
+      await fetchCustomers()
+      setModalType("success");
+      setModalMessage("Draft deleted successfully");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 2000)
+
+      setDeleteTenants(false)
+      setShowDetailsMenu(false)
+      setShowDetailModal(false)
+      setMenuVisible(false)
+
+    } else {
+      setModalType("error")
+      setModalMessage(result?.message)
+      setShowSuccessModal(true)
+
+      setTimeout(() => setShowSuccessModal(false), 1500)
+      // console.log("Delete draft failed:", result?.message)
+
+    }
+  };
+
   const filteredTenants = customers?.listCustomers?.filter((item) => {
     const search = searchText.trim().toLowerCase();
 
@@ -997,7 +1031,7 @@ export default function TenantsScreen({ route }) {
                   </View>
                 )}
 
-                {/* <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
+                <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
                   style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
@@ -1090,22 +1124,22 @@ export default function TenantsScreen({ route }) {
                     )
                     }
                   </>
-                </ScrollView> */}
+                </ScrollView>
 
 
 
-    {!loading &&
-      (customers?.listCustomers?.length ?? 0) > 0 &&
-      searchText.trim() !== "" &&
-      filteredTenants?.length === 0 && (
-        <View style={styles.emptyContainer}>
-          <Image source={EmptyState} style={styles.emptyImage} />
-          <Text style={styles.emptyText}>
-            No tenants found{"\n"}
-            Try searching with a different name
-          </Text>
-        </View>
-      )}
+                {!loading &&
+                  (customers?.listCustomers?.length ?? 0) > 0 &&
+                  searchText.trim() !== "" &&
+                  filteredTenants?.length === 0 && (
+                    <View style={styles.emptyContainer}>
+                      <Image source={EmptyState} style={styles.emptyImage} />
+                      <Text style={styles.emptyText}>
+                        No tenants found{"\n"}
+                        Try searching with a different name
+                      </Text>
+                    </View>
+                  )}
 
                 {filteredTenants?.length > 0 && (
                   <FlatList
@@ -1819,6 +1853,20 @@ export default function TenantsScreen({ route }) {
                     <Text style={styles.popupText}>Draft Continue</Text>
                   </TouchableOpacity>
 
+                  <TouchableOpacity
+                    style={styles.popupRow}
+                    onPress={() => {
+                      setShowMenu(false);
+                      setDeleteTenants(true);
+                    }}
+                  >
+                    <Image
+                      source={require("../../Assets/Images/trash.png")}
+                      style={styles.popupIcon}
+                    />
+                    <Text style={styles.popupText}>Delete</Text>
+                  </TouchableOpacity>
+
 
                 </>
 
@@ -2496,10 +2544,7 @@ export default function TenantsScreen({ route }) {
 
                   <TouchableOpacity
                     style={styles.deleteBtn}
-                    onPress={() => {
-
-                      setDeleteTenants(false);
-                    }}
+                    onPress={handleDeleteDraft}
                   >
                     <Text style={styles.deleteBtnText}>Delete</Text>
                   </TouchableOpacity>
