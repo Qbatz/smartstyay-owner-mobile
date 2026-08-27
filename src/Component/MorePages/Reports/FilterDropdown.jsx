@@ -13,7 +13,7 @@ const FilterDropdown = ({
 }) => {
     const [open, setOpen] = useState(false);
 
-    console.log("srithai",value)
+    console.log("AllFilter",value)
 
     // const handleSelect = (item) => {
     //     if (multiSelect) {

@@ -48,7 +48,7 @@ const CARD_WIDTH = width * 0.44
 export default function Vendors({ navigation }) {
 
     const {
-        getVendorDetails, vendorDetails, clearVendorDetails ,  vendorCategories,
+        getVendorDetails, vendorDetails, clearVendorDetails, vendorCategories,
         getVendorCategories,
     } = useContext(VendorContext);
 
@@ -120,10 +120,10 @@ export default function Vendors({ navigation }) {
         }, [activeHostelId])
     );
 
-     useEffect(() => {
-      if(activeHostelId){
-    getVendorCategories(activeHostelId);
-      }
+    useEffect(() => {
+        if (activeHostelId) {
+            getVendorCategories(activeHostelId);
+        }
     }, [activeHostelId]);
 
 
@@ -270,13 +270,13 @@ export default function Vendors({ navigation }) {
             return;
         }
 
-             if (vendorCategories?.length === 0 ) {
-    setModalType("warning");
-    setModalMessage("Please add a Vendor Category option in Settings");
-    setShowSuccessModal(true);
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
+        if (vendorCategories?.length === 0) {
+            setModalType("warning");
+            setModalMessage("Please add a Vendor Category option in Settings");
+            setShowSuccessModal(true);
+            setTimeout(() => setShowSuccessModal(false), 1500);
+            return;
+        }
         clearVendorDetails();
         navigation.navigate("AddVendorPage", {
             //   vendor: item,
@@ -369,7 +369,7 @@ export default function Vendors({ navigation }) {
                     activeOpacity={0.8}
                     onPress={() => handlevendorDetails(item)}
                 >
-                   {/*   <View style={styles.vendorCard}>
+                    {/*   <View style={styles.vendorCard}>
                         <View style={styles.vendorLeft}>
                             <View style={{ flex: 1 }}>
                                 <Text style={styles.vendorTitle}>
@@ -405,31 +405,31 @@ export default function Vendors({ navigation }) {
 
                     </View>*/}
                     <View style={styles.vendorCard}>
-  <View style={styles.vendorLeft}>
-    <Text style={styles.vendorTitle}>{fullName}</Text>
+                        <View style={styles.vendorLeft}>
+                            <Text style={styles.vendorTitle}>{fullName}</Text>
 
-    <View style={styles.infoRow}>
-      <Text style={styles.vendorCode}>VEN-{item.id}</Text>
+                            <View style={styles.infoRow}>
+                                <Text style={styles.vendorCode}>VEN-{item.id}</Text>
 
-      {!!item.businessName && (
-        <View style={styles.tag}>
-          <Text
-            style={styles.tagText}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {item.businessName}
-          </Text>
-        </View>
-      )}
-    </View>
-  </View>
+                                {!!item.businessName && (
+                                    <View style={styles.tag}>
+                                        <Text
+                                            style={styles.tagText}
+                                            numberOfLines={1}
+                                            ellipsizeMode="tail"
+                                        >
+                                            {item.businessName}
+                                        </Text>
+                                    </View>
+                                )}
+                            </View>
+                        </View>
 
-  <View style={styles.amountContainer}>
-    <Text style={styles.amountText}>₹ {item.totalBalance}</Text>
-    <Text style={styles.outstandingText}>Outstanding</Text>
-  </View>
-</View>
+                        <View style={styles.amountContainer}>
+                            <Text style={styles.amountText}>₹ {item.totalBalance}</Text>
+                            <Text style={styles.outstandingText}>Outstanding</Text>
+                        </View>
+                    </View>
 
                 </TouchableOpacity>
 
@@ -516,22 +516,28 @@ export default function Vendors({ navigation }) {
 
                     {vendorList?.vendors?.length > 0 ? (
 
-                    <View style={styles.searchWrapper}>
-                        <Image source={SearchIcon} style={styles.searchIcon} />
-                        <TextInput
-                            placeholder="Search Vendors"
-                            value={searchText}
-                            onChangeText={(text) => {
-                                setSearchText(text);
-                                handleSearch(text);
-                            }}
-                            style={styles.searchInput}
-                            placeholderTextColor="#9CA3AF"
-                        />
-                    </View>
+                        <View style={styles.searchWrapper}>
+                            <Image source={SearchIcon} style={styles.searchIcon} />
+                            <TextInput
+                                placeholder="Search Vendors"
+                                value={searchText}
+                                onChangeText={(text) => {
+                                    const cleanText = text.replace(/[^a-zA-Z]/g, "")
+                                    if (text !== cleanText) {
+                                        setSearchText(cleanText);
+                                        return;
+                                    }
+                                    setSearchText(cleanText);
+                                    handleSearch(cleanText);
+                                }}
+                                style={styles.searchInput}
+                                placeholderTextColor="#9CA3AF"
+                                autoFocus
+                            />
+                        </View>
                     ) : (
                         <View>
-                            <Text style={{fontSize: 22,color: "#111827",fontFamily: "Gilroy-Semibold",}}>
+                            <Text style={{ fontSize: 22, color: "#111827", fontFamily: "Gilroy-Semibold", }}>
                                 Vendors</Text>
                         </View>
                     )}
@@ -618,42 +624,42 @@ export default function Vendors({ navigation }) {
                             renderItem={renderVendor}
                             ListHeaderComponent={() => (
                                 <>
-                                     {!loading && vendorList?.vendors?.length > 0 && (
-                <>
-                                    <ScrollView
-                                        horizontal
-                                        showsHorizontalScrollIndicator={false}
-                                        contentContainerStyle={styles.cardRow}
-                                    >
-                                        <SummaryCard
-                                            icon={PeopleIcon}
-                                            title="Total Vendors"
-                                            value={vendorList?.vendorSummary?.totalVendors || 0}
-                                        />
+                                    {!loading && vendorList?.vendors?.length > 0 && (
+                                        <>
+                                            <ScrollView
+                                                horizontal
+                                                showsHorizontalScrollIndicator={false}
+                                                contentContainerStyle={styles.cardRow}
+                                            >
+                                                <SummaryCard
+                                                    icon={PeopleIcon}
+                                                    title="Total Vendors"
+                                                    value={vendorList?.vendorSummary?.totalVendors || 0}
+                                                />
 
-                                        <SummaryCard
-                                            icon={GreenRupees}
-                                            title="Total Purchase"
-                                            value={vendorList?.vendorSummary?.totalPurchase || 0}
-                                            prefix="₹ "
-                                            valueColor="#16A34A"
-                                        />
+                                                <SummaryCard
+                                                    icon={GreenRupees}
+                                                    title="Total Purchase"
+                                                    value={vendorList?.vendorSummary?.totalPurchase || 0}
+                                                    prefix="₹ "
+                                                    valueColor="#16A34A"
+                                                />
 
-                                        <SummaryCard
-                                            icon={OutstandingIcon}
-                                            title="Outstanding"
-                                            value={vendorList?.vendorSummary?.outstandingAmount || 0}
-                                            prefix="₹ "
-                                        />
+                                                <SummaryCard
+                                                    icon={OutstandingIcon}
+                                                    title="Outstanding"
+                                                    value={vendorList?.vendorSummary?.outstandingAmount || 0}
+                                                    prefix="₹ "
+                                                />
 
-                                        <SummaryCard
-                                            icon={GreenRupees}
-                                            title="Total Paid"
-                                            value={vendorList?.vendorSummary?.totalPaid || 0}
-                                            prefix="₹ "
-                                        />
-                                    </ScrollView>
-{/* 
+                                                <SummaryCard
+                                                    icon={GreenRupees}
+                                                    title="Total Paid"
+                                                    value={vendorList?.vendorSummary?.totalPaid || 0}
+                                                    prefix="₹ "
+                                                />
+                                            </ScrollView>
+                                            {/* 
                                     <View style={styles.filterRow}>
                                         <TouchableOpacity style={styles.filterChipActive}>
                                             <Text style={styles.filterChipTextActive}>All</Text>
@@ -678,8 +684,8 @@ export default function Vendors({ navigation }) {
                                         </TouchableOpacity>
                                     </View> */}
 
-</>
-                                     )}
+                                        </>
+                                    )}
                                 </>
                             )}
                             contentContainerStyle={{
@@ -693,21 +699,21 @@ export default function Vendors({ navigation }) {
 
 
                 {!loading && vendorList?.vendors?.length > 0 && (
-                <>
+                    <>
 
 
-                    <TouchableOpacity
-                        style={[
-                            styles.addFab,
-                            !canWriteVendor && { opacity: 0.7 }
-                        ]}
-                        disabled={!canWriteVendor}
-                        onPress={handleAddVendorClick}
-                    >
-                        <Image source={AddIcon} style={styles.addIcon} />
-                    </TouchableOpacity>
-                </>
-              )}
+                        <TouchableOpacity
+                            style={[
+                                styles.addFab,
+                                !canWriteVendor && { opacity: 0.7 }
+                            ]}
+                            disabled={!canWriteVendor}
+                            onPress={handleAddVendorClick}
+                        >
+                            <Image source={AddIcon} style={styles.addIcon} />
+                        </TouchableOpacity>
+                    </>
+                )}
 
 
             </View>
@@ -1330,35 +1336,35 @@ const styles = StyleSheet.create({
     },
 
     vendorLeft: {
-  flex: 1,
-  marginRight: 12,
-},
+        flex: 1,
+        marginRight: 12,
+    },
 
-infoRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  flex: 1,
-},
+    infoRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        flex: 1,
+    },
 
-tag: {
-  marginLeft: 8,
-  backgroundColor: "#FEF3C7",
-  borderRadius: 20,
-  paddingHorizontal: 10,
-  paddingVertical: 4,
-  maxWidth: "65%",
-},
+    tag: {
+        marginLeft: 8,
+        backgroundColor: "#FEF3C7",
+        borderRadius: 20,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        maxWidth: "65%",
+    },
 
-tagText: {
-  color: "#B45309",
-  fontSize: 12,
-},
+    tagText: {
+        color: "#B45309",
+        fontSize: 12,
+    },
 
-amountContainer: {
-  width: 90,
-  alignItems: "flex-end",
-  flexShrink: 0,
-},
+    amountContainer: {
+        width: 90,
+        alignItems: "flex-end",
+        flexShrink: 0,
+    },
 
     vendorAvatar: {
         width: 54,

@@ -13,7 +13,7 @@ import {
   PanResponder,
   BackHandler, Keyboard, Platform
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigationState } from "@react-navigation/native";
 import { useCallback } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
@@ -112,10 +112,14 @@ export default function BillsDesign({ route }) {
 
   const detailDotsRef = useRef(null);
 
-  const { setShowTabBar } = route.params;
+  const { setShowTabBar,showTab } = route.params;
 
   const { handleScroll } =
     useHideTabbarOnScroll(setShowTabBar);
+
+  const currentRouteName = useNavigationState(
+      (state) => state.routes[state.index]?.name
+    );
 
   const { BillDetails, loading, GetAllBillDetails,setBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
@@ -2418,15 +2422,22 @@ export default function BillsDesign({ route }) {
     setSearchText("");
   };
 
-  useFocusEffect(
-  useCallback(() => {
+//   useFocusEffect(
+//   useCallback(() => {
 
-    return () => {
+//     return () => {
+//       clearBillFilters();      
+//       setActiveTab("Invoices"); 
+//     };
+//   }, [])
+// );
+
+  useEffect(()=>{
+      return () => {
       clearBillFilters();      
       setActiveTab("Invoices"); 
     };
-  }, [])
-);
+  },[currentRouteName])
 
   const handleTabChange = (tab) => {
     if (activeTab === "Invoices" && tab !== "Invoices") {

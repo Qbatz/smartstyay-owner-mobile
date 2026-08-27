@@ -699,7 +699,6 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
               ]}
               disabled={!canWriteBooking}
               onPress={() => {
-
                 navigation.navigate("NewRetainerInvoiceSheet")
               }}
             >
@@ -709,12 +708,8 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
           </>
         )
         }
-        {/*
 
-
-
-
-        {!loading && Advancebookingbills && Advancebookingbills?.length > 0 && (
+         {/* {!loading && Advancebookingbills && Advancebookingbills?.length > 0 && (
           <TouchableOpacity
             style={[styles.filterButton, !canReadBooking && { opacity: 0.4 }]}
             disabled={!canReadBooking}
@@ -722,8 +717,14 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
           >
             <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
           </TouchableOpacity>
-        )}
+        )} */}
 
+        {/*
+
+
+
+
+       
 
 
         {showMenu && (

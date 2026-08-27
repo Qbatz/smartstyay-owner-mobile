@@ -414,7 +414,8 @@ export default function vendorSettings({ navigation }) {
             <View style={styles.card}>
                 <View style={styles.cardLeft}>
                     <Image source={ComplaintIcon} style={styles.icon} />
-                    <Text style={styles.cardText}>{item?.categoryName}</Text>
+                    <Text style={styles.cardText} numberOfLines={1}>
+                        {item?.categoryName}</Text>
                 </View>
 
 
@@ -686,6 +687,7 @@ const styles = StyleSheet.create({
     addBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
 
     card: {
+        flex:1,
         backgroundColor: "#F9FAFB",
         borderRadius: 12,
         padding: 15,
@@ -697,7 +699,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
 
-    cardLeft: { flexDirection: "row", alignItems: "center" },
+    cardLeft: { flexDirection: "row", alignItems: "center",flexShrink:1,marginRight:30},
     icon: { width: 20, height: 20, marginRight: 12 },
     dots: { width: 24, height: 24 },
     cardText: { fontSize: 15, color: "#111", fontWeight: "600" },
