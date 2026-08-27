@@ -1,5 +1,5 @@
-import React, { createContext, useContext,useState } from "react";
-import {getAxios} from "../Config/AxiosConfig";
+import React, { createContext, useContext, useState } from "react";
+import { getAxios } from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 import qs from "qs";
 
@@ -8,39 +8,39 @@ export const UseSetting = () => useContext(ElectricityContext);
 
 
 export const SettingProvider = ({ children }) => {
-const [loading, setLoading] = useState(false);
-  const [Reportsdetails , setReportsDetails] = useState(null)
+  const [loading, setLoading] = useState(false);
+  const [Reportsdetails, setReportsDetails] = useState(null)
   const [invoiceReports, setInvoiceReports] = useState(null);
   const [currentPlan, setCurrentPlan] = useState(null);
-const getElectricity = async (hostelId) => {
-  try {
-    setLoading(true)
-    const token = await retriveData("token");
-console.log("token",token , hostelId)
-const axios = getAxios();
-    const res = await axios.get(
-      `/v2/hostel/electricity/${hostelId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
+  const getElectricity = async (hostelId) => {
+    try {
+      setLoading(true)
+      const token = await retriveData("token");
+      console.log("token", token, hostelId)
+      const axios = getAxios();
+      const res = await axios.get(
+        `/v2/hostel/electricity/${hostelId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
-    console.log("res", res);
-    
-    
-    return { success: true, data: res.data }; 
-
-  } catch (err) {
-    return { success: false, data: err.response?.data || err.message };
-  }
-  finally{
-     setLoading(false)
-  }
-};
+      console.log("res", res);
 
 
+      return { success: true, data: res.data };
 
-const updateElectricity = async (hostelId, unitPrice) => {
+    } catch (err) {
+      return { success: false, data: err.response?.data || err.message };
+    }
+    finally {
+      setLoading(false)
+    }
+  };
+
+
+
+  const updateElectricity = async (hostelId, unitPrice) => {
     try {
       const token = await retriveData("token");
 
@@ -58,7 +58,7 @@ const updateElectricity = async (hostelId, unitPrice) => {
       );
 
       console.log("res", res);
-      
+
 
       console.log("UPDATE EB SUCCESS →", res.data);
       return { success: true, data: res.data };
@@ -69,67 +69,67 @@ const updateElectricity = async (hostelId, unitPrice) => {
     }
   };
 
-const NewupdateElectricityRule = async (hostelId, payload) => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
+  const NewupdateElectricityRule = async (hostelId, payload) => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
 
-const query = new URLSearchParams({
-  typeofReading: payload.typeOfReading,   // ✅ FIX
-  charge: payload.charge ?? 0,
-  shouldIncludeInRent: payload.shouldIncludeInRent,
-  frequent: payload.frequent || "MONTHLY",
-}).toString();;
+      const query = new URLSearchParams({
+        typeofReading: payload.typeOfReading,   // ✅ FIX
+        charge: payload.charge ?? 0,
+        shouldIncludeInRent: payload.shouldIncludeInRent,
+        frequent: payload.frequent || "MONTHLY",
+      }).toString();;
 
-    const url = `/v2/hostel/electricity/config/${hostelId}?${query}`;
+      const url = `/v2/hostel/electricity/config/${hostelId}?${query}`;
 
-    console.log("EB CONFIG URL →", url);
+      console.log("EB CONFIG URL →", url);
 
-    const res = await axios.put(url, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      const res = await axios.put(url, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    return { success: true, data: res.data };
+      return { success: true, data: res.data };
 
-  } catch (err) {
-    console.log("EB CONFIG ERROR →", err?.response?.data);
-    return { success: false, data: err?.response?.data };
-  }
-};
+    } catch (err) {
+      console.log("EB CONFIG ERROR →", err?.response?.data);
+      return { success: false, data: err?.response?.data };
+    }
+  };
 
-const changeRoomHostelElectricity = async (payload) => {
-  try {
-    const token = await retriveData("token");
+  const changeRoomHostelElectricity = async (payload) => {
+    try {
+      const token = await retriveData("token");
 
-    const query = new URLSearchParams({
-      isRoomBased: payload.isRoomBased,
-      isHostelBased: payload.isHostelBased,
-      isProRate: payload.isProRate ?? true,
-      calculationStartingDate:
-        payload.calculationStartingDate ?? Math.floor(Date.now() / 1000), // FIXED!!
-      frequent: payload.frequent ?? "monthly",
-      shouldIncludeInRent: payload.shouldIncludeInRent ?? true,
-    }).toString();
+      const query = new URLSearchParams({
+        isRoomBased: payload.isRoomBased,
+        isHostelBased: payload.isHostelBased,
+        isProRate: payload.isProRate ?? true,
+        calculationStartingDate:
+          payload.calculationStartingDate ?? Math.floor(Date.now() / 1000), // FIXED!!
+        frequent: payload.frequent ?? "monthly",
+        shouldIncludeInRent: payload.shouldIncludeInRent ?? true,
+      }).toString();
 
-    const url = `/v2/hostel/electricity/config/${payload.hostelId}?${query}`;
+      const url = `/v2/hostel/electricity/config/${payload.hostelId}?${query}`;
 
-    console.log("🔵 FINAL EB CONFIG URL →", url);
-    const axios = getAxios();
-    const res = await axios.put(url, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+      console.log("🔵 FINAL EB CONFIG URL →", url);
+      const axios = getAxios();
+      const res = await axios.put(url, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    console.log("🟢 EB CONFIG SUCCESS →", res.data);
-    return { success: true, data: res.data };
+      console.log("🟢 EB CONFIG SUCCESS →", res.data);
+      return { success: true, data: res.data };
 
-  } catch (err) {
-    console.log("🔴 EB CONFIG ERROR →", err.response?.data || err.message);
-    return { success: false, data: err.response?.data || err.message };
-  }
-};
+    } catch (err) {
+      console.log("🔴 EB CONFIG ERROR →", err.response?.data || err.message);
+      return { success: false, data: err.response?.data || err.message };
+    }
+  };
 
 
-const getBillingConfig = async (hostelId) => {
+  const getBillingConfig = async (hostelId) => {
     try {
       setLoading(true);
       const token = await retriveData("token");
@@ -144,948 +144,977 @@ const getBillingConfig = async (hostelId) => {
     } catch (err) {
       return { success: false, data: err.response?.data || err.message };
     }
-    finally{
+    finally {
       setLoading(false);
     }
   };
 
-const addBillingRecurring = async (payload) => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.put(
-      `/v2/hostel/config/billing/${payload.hostelId}`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+  const addBillingRecurring = async (payload) => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.put(
+        `/v2/hostel/config/billing/${payload.hostelId}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
         }
-      }
-    );
-
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    return { success: false, data: err?.response?.data || err?.messag};
-  }
-};
-
-const getRoleByHostel = async (hostelId) => {
-  try {
-    setLoading(true);   // 🔵 START LOADER
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.get(
-      `/v2/role/hostel/${hostelId}`,
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
-
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);  // 🟢 STOP LOADER
-  }
-};
-
-// const getRoleByHostel = async (hostelId) => {
-//    const [loading, setLoading] = useState(false);
-//   try {
-//     const token = await retriveData("token");
-
-//     const res = await AxiosConfig.get(
-//       `/v2/role/hostel/${hostelId}`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       }
-//     );
-
-//     return { success: true, data: res.data };
-
-//   } catch (err) {
-//     return {
-//       success: false,
-//       data: err.response?.data || err.message,
-//     };
-//   }
-// };
-
-const getRoleModules = async () => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.get(
-      "/v2/role/modules",
-      {
-        headers: { Authorization: `Bearer ${token}` }
-      }
-    );
-
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    return { success: false, data: err.response?.data || err.message };
-  }
-};
-const addRole = async (payload) => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.post(
-      "/v2/role",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  }
-};
-
-const updateRole = async (id, payload) => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.put(
-      `/v2/role/${id}`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return { success: true, data: res.data };
-  } catch (err) {
-    return { success: false, data: err.response?.data || err.message };
-  }
-};
-// SettingContext.js
-
-const deleteRole = async (roleId) => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.delete(
-      `/v2/role/${roleId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  }
-};
-const getUsersByHostel = async (hostelId) => {
-  try {
-    setLoading(true); 
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.get(
-      `/v2/profile/users-list/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-const addUser = async (hostelId, payload) => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.post(
-      `/v2/profile/add-user/${hostelId}`, // ✅ IMPORTANT
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    console.log("ADD USER ERROR →", err.response?.data);
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const updateUser = async (hostelId, userId, payload) => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.put(
-      `/v2/profile/users/${hostelId}/${userId}`,
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return { success: true, data: res.data };
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  }
-};
-// const deleteUser = async (userId) => {
-//   try {
-//     const res = await api.delete(`/v2/profile/delete-user/${userId}`);
-//     return res.data;
-//   } catch (err) {
-//     return {
-//       success: false,
-//       message: err?.response?.data?.message || "Delete failed",
-//     };
-//   }
-// };
-
-const deleteUser = async (userId) => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
-    const res = await axios.delete(
-      `/v2/profile/delete-user/${userId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  }
-};
-
-const getReportsByHostel = async (hostelId) => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/reports/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-    setReportsDetails(res?.data)
-    console.log("REPORTS SUCCESS →", res.data);
-    return { success: true, data: res.data };
-
-  } catch (err) {
-    console.log("REPORTS ERROR →", err.response?.data || err.message);
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-// const GetInvoiceReports = async (hostelId, filters = {}) => {
-//   try {
-//     setLoading(true);
-
-//     const token = await retriveData("token");
-//     const axios = getAxios();
-
-//     const res = await axios.get(
-//       `/v2/reports/invoice/${hostelId}`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//         params: {
-//           startDate: filters?.startDate,
-//           endDate: filters?.endDate,
-//           search: filters?.search,
-//           paymentStatus: filters?.paymentStatus,
-//           invoiceModes: filters?.invoiceModes,
-//           invoiceTypes: filters?.invoiceTypes,
-//           createdBy: filters?.createdBy,
-//           period: filters?.period,
-//           minPaidAmount: filters?.minPaidAmount,
-//           maxPaidAmount: filters?.maxPaidAmount,
-//           minOutstandingAmount: filters?.minOutstandingAmount,
-//           maxOutstandingAmount: filters?.maxOutstandingAmount,
-//           page: filters?.page ?? 0,
-//           size: filters?.size ?? 10,
-//         },
-//       }
-//     );
-
-//     setInvoiceReports(res?.data);
-
-//     return {
-//       success: true,
-//       data: res.data,
-//     };
-
-//   } catch (err) {
-//     return {
-//       success: false,
-//       data: err.response?.data || err.message,
-//     };
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-
-
-
-const GetInvoiceReports = async (hostelId, filters = {}) => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const params = {
-      search: filters?.search,
-      paymentStatus: filters?.paymentStatus,
-      invoiceModes: filters?.invoiceModes,
-      invoiceTypes: filters?.invoiceTypes,
-      createdBy: filters?.createdBy,
-      period: filters?.period,
-
-      minPaidAmount: filters?.minPaidAmount,
-      maxPaidAmount: filters?.maxPaidAmount,
-      minOutstandingAmount: filters?.minOutstandingAmount,
-      maxOutstandingAmount: filters?.maxOutstandingAmount,
-
-      startDate: filters?.startDate,
-      endDate: filters?.endDate,
-
-      page: filters?.page ?? 1,
-      size: filters?.size ?? 10,
-    };
-
-    // remove undefined / null / empty values
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(
-        ([_, value]) =>
-          value !== undefined &&
-          value !== null &&
-          value !== ""
-      )
-    );
-
-    const res = await axios.get(
-      `/v2/reports/invoice/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: cleanParams,
-        paramsSerializer: (params) =>
-          qs.stringify(params, { arrayFormat: "repeat" }),
-      }
-    );
-
-    setInvoiceReports(res.data);
-
-    return {
-      success: true,
-      data: res.data,
-    };
-  } catch (err) {
-    console.log(
-      "INVOICE REPORT ERROR →",
-      err.response?.data || err.message
-    );
-
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-const getReceiptRegisterReport = async (hostelId, filters = {}) => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const params = {
-      startDate: filters?.startDate,
-      endDate: filters?.endDate,
-      invoiceType: filters?.invoiceType,
-      collectedBy: filters?.collectedBy,
-      period: filters?.period,
-      paymentMode: filters?.paymentMode,
-      page: filters?.page ?? 1,
-      size: filters?.size ?? 10,
-    };
-
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(
-        ([_, value]) =>
-          value !== undefined &&
-          value !== null &&
-          value !== ""
-      )
-    );
-
-    const res = await axios.get(
-      `/v2/reports/transaction/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: cleanParams,
-        paramsSerializer: (params) =>
-          qs.stringify(params, {
-            arrayFormat: "repeat",
-          }),
-      }
-    );
-
-    return {
-      success: true,
-      data: res.data,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-const getTenantRegisterReport = async (hostelId, filters = {}) => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const params = {
-      startDate: filters?.startDate,
-      endDate: filters?.endDate,
-      period: filters?.period,
-      status: filters?.status,
-      floor: filters?.floor,
-      room: filters?.room,
-      search: filters?.search,
-      sharingType: filters?.sharingType,
-      page: filters?.page ?? 1,
-      size: filters?.size ?? 10,
-    };
-
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(
-        ([_, value]) =>
-          value !== undefined &&
-          value !== null &&
-          value !== ""
-      )
-    );
-
-    const res = await axios.get(
-      `/v2/reports/tenants/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: cleanParams,
-        paramsSerializer: (params) =>
-          qs.stringify(params, {
-            arrayFormat: "repeat",
-          }),
-      }
-    );
-
-    return {
-      success: true,
-      data: res.data,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-const GetExpenseRegisterReport = async (hostelId, filters = {}) => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const params = {
-      startDate: filters?.startDate,
-      endDate: filters?.endDate,
-      period: filters?.period,
-      categoryId: filters?.category,
-      paymentMode: filters?.paymentMode,
-      createdBy: filters?.createdBy,
-      paidTo: filters?.paidTo,
-      page: filters?.page ?? 1,
-      size: filters?.size ?? 10,
-    };
-
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(
-        ([_, value]) =>
-          value !== undefined &&
-          value !== null &&
-          value !== ""
-      )
-    );
-
-    const res = await axios.get(
-      `/v2/reports/expense/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: cleanParams,
-        paramsSerializer: (params) =>
-          qs.stringify(params, {
-            arrayFormat: "repeat",
-          }),
-      }
-    );
-
-    return {
-      success: true,
-      data: res.data,
-    };
-  } catch (err) {
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const downloadReceiptReport = async (hostelId,filters) => {
-  if (!hostelId) {
-    return { success: false, message: "Invalid hostelId" };
-  }
-
-  try {
-    setLoading(true);
-
-    const params = {
-      startDate: filters?.startDate,
-      endDate: filters?.endDate,
-      invoiceType: filters?.invoiceType,
-      collectedBy: filters?.collectedBy,
-      period: filters?.period,
-      paymentMode: filters?.paymentMode,
-      page: filters?.page ?? 1,
-      size: filters?.size ?? 10,
-    };
-
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(
-        ([_, value]) =>
-          value !== undefined &&
-          value !== null &&
-          value !== ""
-      )
-    );
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/reports/download/receipts/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: cleanParams,
-        paramsSerializer: (params) =>
-          qs.stringify(params, {
-            arrayFormat: "repeat",
-          }),
-        
-      }
-    );
-
-    if (res.status === 200) {
+      );
+
+      return { success: true, data: res.data };
+
+    } catch (err) {
+      return { success: false, data: err?.response?.data || err?.messag };
+    }
+  };
+
+  const getRoleByHostel = async (hostelId) => {
+    try {
+      setLoading(true);   // 🔵 START LOADER
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.get(
+        `/v2/role/hostel/${hostelId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      return { success: true, data: res.data };
+
+    } catch (err) {
       return {
-        success: true,
-        url: res.data, 
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);  // 🟢 STOP LOADER
+    }
+  };
+
+  // const getRoleByHostel = async (hostelId) => {
+  //    const [loading, setLoading] = useState(false);
+  //   try {
+  //     const token = await retriveData("token");
+
+  //     const res = await AxiosConfig.get(
+  //       `/v2/role/hostel/${hostelId}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+
+  //     return { success: true, data: res.data };
+
+  //   } catch (err) {
+  //     return {
+  //       success: false,
+  //       data: err.response?.data || err.message,
+  //     };
+  //   }
+  // };
+
+  const getRoleModules = async () => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.get(
+        "/v2/role/modules",
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      return { success: true, data: res.data };
+
+    } catch (err) {
+      return { success: false, data: err.response?.data || err.message };
+    }
+  };
+  const addRole = async (payload) => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.post(
+        "/v2/role",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return { success: true, data: res.data };
+
+    } catch (err) {
+      return {
+        success: false,
+        data: err.response?.data || err.message,
       };
     }
+  };
 
-    return { success: false, message: "Download failed" };
+  const updateRole = async (id, payload) => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.put(
+        `/v2/role/${id}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-  } catch (err) {
-    return {
-      success: false,
-      message: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      return { success: true, data: res.data };
+    } catch (err) {
+      return { success: false, data: err.response?.data || err.message };
+    }
+  };
+  // SettingContext.js
 
-const downloadExpenseReport = async (hostelId) => {
-  if (!hostelId) {
-    return { success: false, message: "Invalid hostelId" };
-  }
+  const deleteRole = async (roleId) => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.delete(
+        `/v2/role/${roleId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-  try {
-    setLoading(true);
+      return { success: true, data: res.data };
 
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/reports/download/expense/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (res.status === 200) {
+    } catch (err) {
       return {
-        success: true,
-        url: res.data, 
+        success: false,
+        data: err.response?.data || err.message,
       };
     }
+  };
+  const getUsersByHostel = async (hostelId) => {
+    try {
+      setLoading(true);
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.get(
+        `/v2/profile/users-list/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    return { success: false, message: "Download failed" };
+      return { success: true, data: res.data };
 
-  } catch (err) {
-    return {
-      success: false,
-      message: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-}
+    } catch (err) {
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+  const addUser = async (hostelId, payload) => {
+    try {
+      setLoading(true);
 
-const downloadInvoiceReport = async (hostelId,filters) => {
-  if (!hostelId) {
-    return { success: false, message: "Invalid hostelId" };
-  }
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.post(
+        `/v2/profile/add-user/${hostelId}`, // ✅ IMPORTANT
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-  try {
-    setLoading(true);
+      return { success: true, data: res.data };
 
-    const token = await retriveData("token");
-    const axios = getAxios();
+    } catch (err) {
+      console.log("ADD USER ERROR →", err.response?.data);
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const params = {
-            search: filters.search || undefined,
-            paymentStatus: filters.paymentStatus?.length
-                ? filters.paymentStatus
-                : undefined,
+  const updateUser = async (hostelId, userId, payload) => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.put(
+        `/v2/profile/users/${hostelId}/${userId}`,
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-            invoiceModes: filters.invoiceModes?.length
-                ? filters.invoiceModes
-                : undefined,
+      return { success: true, data: res.data };
+    } catch (err) {
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    }
+  };
+  // const deleteUser = async (userId) => {
+  //   try {
+  //     const res = await api.delete(`/v2/profile/delete-user/${userId}`);
+  //     return res.data;
+  //   } catch (err) {
+  //     return {
+  //       success: false,
+  //       message: err?.response?.data?.message || "Delete failed",
+  //     };
+  //   }
+  // };
 
-            invoiceTypes: filters.invoiceTypes?.length
-                ? filters.invoiceTypes
-                : undefined,
+  const deleteUser = async (userId) => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.delete(
+        `/v2/profile/delete-user/${userId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-            createdBy: filters.createdBy?.length
-                ? filters.createdBy
-                : undefined,
+      return { success: true, data: res.data };
 
-            period: filters.period || undefined,
+    } catch (err) {
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    }
+  };
 
-            minPaidAmount: filters.minPaidAmount || undefined,
-            maxPaidAmount: filters.maxPaidAmount || undefined,
+  const getReportsByHostel = async (hostelId) => {
+    try {
+      setLoading(true);
 
-            minOutstandingAmount:
-                filters.minOutstandingAmount || undefined,
+      const token = await retriveData("token");
+      const axios = getAxios();
 
-            maxOutstandingAmount:
-                filters.maxOutstandingAmount || undefined,
+      const res = await axios.get(
+        `/v2/reports/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setReportsDetails(res?.data)
+      console.log("REPORTS SUCCESS →", res.data);
+      return { success: true, data: res.data };
 
-            startDate: filters.startDate || undefined,
-            endDate: filters.endDate || undefined,
+    } catch (err) {
+      console.log("REPORTS ERROR →", err.response?.data || err.message);
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            page: filters.page ?? 1,
-            size: filters.size ?? 10,
+  // const GetInvoiceReports = async (hostelId, filters = {}) => {
+  //   try {
+  //     setLoading(true);
+
+  //     const token = await retriveData("token");
+  //     const axios = getAxios();
+
+  //     const res = await axios.get(
+  //       `/v2/reports/invoice/${hostelId}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         params: {
+  //           startDate: filters?.startDate,
+  //           endDate: filters?.endDate,
+  //           search: filters?.search,
+  //           paymentStatus: filters?.paymentStatus,
+  //           invoiceModes: filters?.invoiceModes,
+  //           invoiceTypes: filters?.invoiceTypes,
+  //           createdBy: filters?.createdBy,
+  //           period: filters?.period,
+  //           minPaidAmount: filters?.minPaidAmount,
+  //           maxPaidAmount: filters?.maxPaidAmount,
+  //           minOutstandingAmount: filters?.minOutstandingAmount,
+  //           maxOutstandingAmount: filters?.maxOutstandingAmount,
+  //           page: filters?.page ?? 0,
+  //           size: filters?.size ?? 10,
+  //         },
+  //       }
+  //     );
+
+  //     setInvoiceReports(res?.data);
+
+  //     return {
+  //       success: true,
+  //       data: res.data,
+  //     };
+
+  //   } catch (err) {
+  //     return {
+  //       success: false,
+  //       data: err.response?.data || err.message,
+  //     };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+
+  const GetInvoiceReports = async (hostelId, filters = {}) => {
+    try {
+      setLoading(true);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const params = {
+        search: filters?.search,
+        paymentStatus: filters?.paymentStatus,
+        invoiceModes: filters?.invoiceModes,
+        invoiceTypes: filters?.invoiceTypes,
+        createdBy: filters?.createdBy,
+        period: filters?.period,
+
+        minPaidAmount: filters?.minPaidAmount,
+        maxPaidAmount: filters?.maxPaidAmount,
+        minOutstandingAmount: filters?.minOutstandingAmount,
+        maxOutstandingAmount: filters?.maxOutstandingAmount,
+
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+
+        page: filters?.page ?? 1,
+        size: filters?.size ?? 10,
+      };
+
+      // remove undefined / null / empty values
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        )
+      );
+
+      const res = await axios.get(
+        `/v2/reports/invoice/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: cleanParams,
+          paramsSerializer: (params) =>
+            qs.stringify(params, { arrayFormat: "repeat" }),
+        }
+      );
+
+      setInvoiceReports(res.data);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    } catch (err) {
+      console.log(
+        "INVOICE REPORT ERROR →",
+        err.response?.data || err.message
+      );
+
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+  const getReceiptRegisterReport = async (hostelId, filters = {}) => {
+    try {
+      setLoading(true);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const params = {
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        invoiceType: filters?.invoiceType,
+        collectedBy: filters?.collectedBy,
+        period: filters?.period,
+        paymentMode: filters?.paymentMode,
+        page: filters?.page ?? 1,
+        size: filters?.size ?? 10,
+      };
+
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        )
+      );
+
+      const res = await axios.get(
+        `/v2/reports/transaction/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: cleanParams,
+          paramsSerializer: (params) =>
+            qs.stringify(params, {
+              arrayFormat: "repeat",
+            }),
+        }
+      );
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const getTenantRegisterReport = async (hostelId, filters = {}) => {
+    try {
+      setLoading(true);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const params = {
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        period: filters?.period,
+        status: filters?.status,
+        floor: filters?.floor,
+        room: filters?.room,
+        search: filters?.search,
+        sharingType: filters?.sharingType,
+        page: filters?.page ?? 1,
+        size: filters?.size ?? 10,
+      };
+
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        )
+      );
+
+      const res = await axios.get(
+        `/v2/reports/tenants/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: cleanParams,
+          paramsSerializer: (params) =>
+            qs.stringify(params, {
+              arrayFormat: "repeat",
+            }),
+        }
+      );
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const GetExpenseRegisterReport = async (hostelId, filters = {}) => {
+    try {
+      setLoading(true);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const params = {
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        period: filters?.period,
+        categoryId: filters?.category,
+        paymentMode: filters?.paymentMode,
+        createdBy: filters?.createdBy,
+        paidTo: filters?.paidTo,
+        page: filters?.page ?? 1,
+        size: filters?.size ?? 10,
+      };
+
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        )
+      );
+
+      const res = await axios.get(
+        `/v2/reports/expense/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: cleanParams,
+          paramsSerializer: (params) =>
+            qs.stringify(params, {
+              arrayFormat: "repeat",
+            }),
+        }
+      );
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadReceiptReport = async (hostelId, filters) => {
+    if (!hostelId) {
+      return { success: false, message: "Invalid hostelId" };
+    }
+
+    try {
+      setLoading(true);
+
+      const params = {
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        invoiceType: filters?.invoiceType,
+        collectedBy: filters?.collectedBy,
+        period: filters?.period,
+        paymentMode: filters?.paymentMode,
+        page: filters?.page ?? 1,
+        size: filters?.size ?? 10,
+      };
+
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        )
+      );
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/reports/download/receipts/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: cleanParams,
+          paramsSerializer: (params) =>
+            qs.stringify(params, {
+              arrayFormat: "repeat",
+            }),
+
+        }
+      );
+
+      if (res.status === 200) {
+        return {
+          success: true,
+          url: res.data,
         };
-
-        const cleanParams = Object.fromEntries(
-            Object.entries(params).filter(
-                ([_, value]) =>
-                    value !== undefined &&
-                    value !== null &&
-                    value !== ""
-            )
-        );
-
-    const res = await axios.get(
-      `/v2/reports/download/invoice/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: cleanParams,
-        paramsSerializer: (params) =>
-          qs.stringify(params, { arrayFormat: "repeat" }),
       }
-    );
 
-    if (res?.status === 200) {
+      return { success: false, message: "Download failed" };
+
+    } catch (err) {
       return {
-        success: true,
-        url: res.data, 
+        success: false,
+        message: err.response?.data || err.message,
       };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const downloadExpenseReport = async (hostelId, filters) => {
+    if (!hostelId) {
+      return { success: false, message: "Invalid hostelId" };
     }
 
-    return { success: false, message: "Download failed" };
+    try {
+      setLoading(true);
 
-  } catch (err) {
-    return {
-      success: false,
-      message: err.response?.data || err?.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const getHostelPlans = async () => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/plans`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    console.log("PLANS RESPONSE →", res.data);
-
-    return {
-      success: true,
-      data: res.data,
-    };
-
-  } catch (err) {
-    console.log("PLANS ERROR →", err.response?.data || err.message);
-
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const getCurrentHostelPlan = async (hostelId) => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/plans/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    console.log("CURRENT PLAN →", res.data);
-     setCurrentPlan(res.data);
-    return {
-      success: true,
-      data: res.data,
-     
-    };
-
-  } catch (err) {
-    console.log("CURRENT PLAN ERROR →", err.response?.data || err.message);
-
-    return {
-      success: false,
-      data: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const postSubscription = async(hostelId,payload)=>{
-  console.log(hostelId)
-
-  try{
-    const token =await retriveData("token");
-    console.log(token)
-    const axios=await getAxios();
-
-    const response =await axios.post( `/v2/subscription/mobile/subscribe/${hostelId}`, payload,{
-     headers: {
-          Authorization: `Bearer ${token}`,
-        },
-    })
-    return response;
-  }catch(error){
-    return {status: error.response.status, message: error.response.data}
-  }
-
-}
-
-const verfiyPayment=async(hostelId,paymentId)=>{
-  try{
-    const token =await retriveData("token");
-    console.log(token)
-    const axios=await getAxios();
-
-    const response=await axios.get(`/v2/subscription/payment/verify/${hostelId}/${paymentId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      }
-    })
-    console.log(response)
-    return response;
-  }catch(error){
-    return {status: error.response.status, message: error.response.data}
-  }
-}
-
-const downloadSubscriptionBill = async (hostelId, subscriptionId) => {
-  if (!hostelId || !subscriptionId) {
-    return { success: false, message: "Invalid hostelId or subscriptionId" };
-  }
-
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/subscription/download/${hostelId}/${subscriptionId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (res?.status === 200) {
-      return {
-        success: true,
-        url: res.data,
+      const params = {
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        period: filters?.period,
+        categoryId: filters?.category,
+        subCategoryId: filters?.subCategory,
+        paymentMode: filters?.paymentMode,
+        createdBy: filters?.createdBy,
+        paidTo: filters?.paidTo,
+        page: filters?.page ?? 1,
+        size: filters?.size ?? 10,
       };
+
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        )
+      );
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/reports/download/expense/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: cleanParams,
+          paramsSerializer: (params) =>
+            qs.stringify(params, {
+              arrayFormat: "repeat",
+            }),
+        }
+      );
+
+      if (res.status === 200) {
+        return {
+          success: true,
+          url: res.data,
+        };
+      }
+
+      return { success: false, message: "Download failed" };
+
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const downloadInvoiceReport = async (hostelId, filters) => {
+    if (!hostelId) {
+      return { success: false, message: "Invalid hostelId" };
     }
 
-    return { success: false, message: "Download failed" };
+    try {
+      setLoading(true);
 
-  } catch (err) {
-    return {
-      success: false,
-      message: err.response?.data || err.message,
-    };
-  } finally {
-    setLoading(false);
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const params = {
+        search: filters.search || undefined,
+        paymentStatus: filters.paymentStatus?.length
+          ? filters.paymentStatus
+          : undefined,
+
+        invoiceModes: filters.invoiceModes?.length
+          ? filters.invoiceModes
+          : undefined,
+
+        invoiceTypes: filters.invoiceTypes?.length
+          ? filters.invoiceTypes
+          : undefined,
+
+        createdBy: filters.createdBy?.length
+          ? filters.createdBy
+          : undefined,
+
+        period: filters.period || undefined,
+
+        minPaidAmount: filters.minPaidAmount || undefined,
+        maxPaidAmount: filters.maxPaidAmount || undefined,
+
+        minOutstandingAmount:
+          filters.minOutstandingAmount || undefined,
+
+        maxOutstandingAmount:
+          filters.maxOutstandingAmount || undefined,
+
+        startDate: filters.startDate || undefined,
+        endDate: filters.endDate || undefined,
+
+        page: filters.page ?? 1,
+        size: filters.size ?? 10,
+      };
+
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== ""
+        )
+      );
+
+      const res = await axios.get(
+        `/v2/reports/download/invoice/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: cleanParams,
+          paramsSerializer: (params) =>
+            qs.stringify(params, { arrayFormat: "repeat" }),
+        }
+      );
+
+      if (res?.status === 200) {
+        return {
+          success: true,
+          url: res.data,
+        };
+      }
+
+      return { success: false, message: "Download failed" };
+
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data || err?.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getHostelPlans = async () => {
+    try {
+      setLoading(true);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/plans`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("PLANS RESPONSE →", res.data);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+
+    } catch (err) {
+      console.log("PLANS ERROR →", err.response?.data || err.message);
+
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getCurrentHostelPlan = async (hostelId) => {
+    try {
+      setLoading(true);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/plans/${hostelId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("CURRENT PLAN →", res.data);
+      setCurrentPlan(res.data);
+      return {
+        success: true,
+        data: res.data,
+
+      };
+
+    } catch (err) {
+      console.log("CURRENT PLAN ERROR →", err.response?.data || err.message);
+
+      return {
+        success: false,
+        data: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const postSubscription = async (hostelId, payload) => {
+    console.log(hostelId)
+
+    try {
+      const token = await retriveData("token");
+      console.log(token)
+      const axios = await getAxios();
+
+      const response = await axios.post(`/v2/subscription/mobile/subscribe/${hostelId}`, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      return response;
+    } catch (error) {
+      return { status: error.response.status, message: error.response.data }
+    }
+
   }
-};
+
+  const verfiyPayment = async (hostelId, paymentId) => {
+    try {
+      const token = await retriveData("token");
+      console.log(token)
+      const axios = await getAxios();
+
+      const response = await axios.get(`/v2/subscription/payment/verify/${hostelId}/${paymentId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        }
+      })
+      console.log(response)
+      return response;
+    } catch (error) {
+      return { status: error.response.status, message: error.response.data }
+    }
+  }
+
+  const downloadSubscriptionBill = async (hostelId, subscriptionId) => {
+    if (!hostelId || !subscriptionId) {
+      return { success: false, message: "Invalid hostelId or subscriptionId" };
+    }
+
+    try {
+      setLoading(true);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/subscription/download/${hostelId}/${subscriptionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res?.status === 200) {
+        return {
+          success: true,
+          url: res.data,
+        };
+      }
+
+      return { success: false, message: "Download failed" };
+
+    } catch (err) {
+      return {
+        success: false,
+        message: err.response?.data || err.message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
-    <ElectricityContext.Provider value={{ getElectricity,updateElectricity,changeRoomHostelElectricity ,getBillingConfig,addBillingRecurring,getRoleByHostel,
-    getRoleModules,addRole,updateRole,deleteRole,loading,setLoading,getUsersByHostel,addUser,updateUser,deleteUser , getReportsByHostel , Reportsdetails , GetInvoiceReports , invoiceReports , getTenantRegisterReport , GetExpenseRegisterReport , getReceiptRegisterReport , downloadReceiptReport ,
-     downloadExpenseReport, downloadInvoiceReport , getHostelPlans , getCurrentHostelPlan , NewupdateElectricityRule,postSubscription,verfiyPayment,currentPlan  , downloadSubscriptionBill}}>
+    <ElectricityContext.Provider value={{
+      getElectricity, updateElectricity, changeRoomHostelElectricity, getBillingConfig, addBillingRecurring, getRoleByHostel,
+      getRoleModules, addRole, updateRole, deleteRole, loading, setLoading, getUsersByHostel, addUser, updateUser, deleteUser, getReportsByHostel, Reportsdetails, GetInvoiceReports, invoiceReports, getTenantRegisterReport, GetExpenseRegisterReport, getReceiptRegisterReport, downloadReceiptReport,
+      downloadExpenseReport, downloadInvoiceReport, getHostelPlans, getCurrentHostelPlan, NewupdateElectricityRule, postSubscription, verfiyPayment, currentPlan, downloadSubscriptionBill
+    }}>
       {children}
     </ElectricityContext.Provider>
   );
