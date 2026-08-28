@@ -114,21 +114,21 @@ export default function BillsDesign({ route }) {
   const detailDotsRef = useRef(null);
 
   const { setShowTabBar } = route.params;
-    const isTabBarVisible = useRef(true);
+  const isTabBarVisible = useRef(true);
 
   const { handleScroll } =
     useHideTabbarOnScroll(setShowTabBar);
 
   const currentRouteName = useNavigationState(
-      (state) => state.routes[state.index]?.name
-    );
+    (state) => state.routes[state.index]?.name
+  );
 
-  const { BillDetails, loading, GetAllBillDetails,setBillDetails,
+  const { BillDetails, loading, GetAllBillDetails, setBillDetails,
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
     GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter,
-    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails,GetAdvanceBookingBills } = useContext(BillContext)
+    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills } = useContext(BillContext)
 
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
@@ -269,7 +269,7 @@ export default function BillsDesign({ route }) {
   const [showRefundMode, setShowRefundMode] = useState(false);
 
   const [showWallet, setShowWallet] = useState(false);
-    const [morefilters, setMoreFilters] = useState(false)
+  const [morefilters, setMoreFilters] = useState(false)
 
 
   const bankOptions = ["SBI-IMMAN", "HDFC-JOBIN", "ICICI-KUMAR"];
@@ -286,13 +286,13 @@ export default function BillsDesign({ route }) {
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
   const [modesheetOpen, setModeSheetOpen] = useState(false);
 
-//   const [tempStatus, setTempStatus] = useState([]);
-// const [tempType, setTempType] = useState([]);
-// const [tempmode, setTempmode] = useState([]);
+  //   const [tempStatus, setTempStatus] = useState([]);
+  // const [tempType, setTempType] = useState([]);
+  // const [tempmode, setTempmode] = useState([]);
 
-// const [billStatus, setBillStatus] = useState([]);
-// const [type, setType] = useState([]);
-// const [mode, setMode] = useState([]);
+  // const [billStatus, setBillStatus] = useState([]);
+  // const [type, setType] = useState([]);
+  // const [mode, setMode] = useState([]);
 
   const [tempStatus, setTempStatus] = useState([]);
   const [tempType, setTempType] = useState([]);
@@ -343,7 +343,7 @@ export default function BillsDesign({ route }) {
   const rentRotate = useRef(new Animated.Value(openRefundRent ? 1 : 0)).current;
   const ebRotate = useRef(new Animated.Value(openEBill ? 1 : 0)).current;
 
-  const [showRetainer,setShowRetainer]=useState(false)
+  const [showRetainer, setShowRetainer] = useState(false)
 
   useEffect(() => {
     Animated.timing(unpaidRotate, {
@@ -403,10 +403,10 @@ export default function BillsDesign({ route }) {
   useEffect(() => {
     if (activeHostelId && canReadInvoice) {
       GetAllBillDetails(activeHostelId);
-    }else{
+    } else {
       setBillDetails([])
     }
-  }, [activeHostelId, canReadInvoice]);
+  }, [activeHostelId, canReadInvoice, currentRouteName]);
 
   //  useFocusEffect(
   //   useCallback(() => {
@@ -460,7 +460,7 @@ export default function BillsDesign({ route }) {
 
 
 
-   useLayoutEffect(() => {
+  useLayoutEffect(() => {
     if (
       showBillDetails ||
       showFilter ||
@@ -481,9 +481,9 @@ export default function BillsDesign({ route }) {
     showRecuringBillDetail])
 
 
-    useLayoutEffect(() => {
-    setShowTabBar(!showBillDetails && !showFilter && !showReceiptDetails && !showRecordPayment && !showRefundPayment,!showRecuringBillDetail);
-   }, [showBillDetails,
+  useLayoutEffect(() => {
+    setShowTabBar(!showBillDetails && !showFilter && !showReceiptDetails && !showRecordPayment && !showRefundPayment, !showRecuringBillDetail);
+  }, [showBillDetails,
     showFilter,
     showReceiptDetails,
     showRecordPayment,
@@ -1488,8 +1488,8 @@ export default function BillsDesign({ route }) {
     setShowBillDetails(false)
 
   }
-  
-  const handleApplyBookingToInvoice= async () => {
+
+  const handleApplyBookingToInvoice = async () => {
 
     navigation.navigate("ApplyBookingToInvoice");
 
@@ -1676,47 +1676,84 @@ export default function BillsDesign({ route }) {
 
 
 
+  useEffect(() => {
+    return () => {
+      if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current);
+      }
+    };
+  }, []);
 
+  const searchTimeout = useRef(null);
 
 
 
 
   const handleSearch = async (text) => {
     if (!canReadInvoice) return;
-    const filters = {
-      startDate: appliedFilters?.startDate || null,
-      endDate: appliedFilters?.endDate || null,
-      paymentStatus: appliedFilters?.paymentStatus || [],
-      type: appliedFilters?.type || [],
-      modes: appliedFilters?.modes || [],
-      createdBy: appliedFilters?.createdBy || [],
-      search: text || "",
-    };
 
-    await GetAllBillDetails(activeHostelId, filters);
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+
+    searchTimeout.current = setTimeout(() => {
+      const filters = {
+        startDate: appliedFilters?.startDate || null,
+        endDate: appliedFilters?.endDate || null,
+        paymentStatus: appliedFilters?.paymentStatus || [],
+        type: appliedFilters?.type || [],
+        modes: appliedFilters?.modes || [],
+        createdBy: appliedFilters?.createdBy || [],
+        search: text || "",
+      };
+
+      GetAllBillDetails(activeHostelId, filters);
+    }, 10);
+
   };
 
   console.log("text", searchText);
 
 
-  const handleReceiptSearch = async (text) => {
+  // const handleReceiptSearch = async (text) => {
+  //   console.log("text", text);
+
+  //   setSearchText(text);
+
+  //   if (!canReadReceipt) return;
+
+  //   await ReceiptFilter({
+  //     hostelId: activeHostelId,
+  //     keyword: text || "",
+  //     page: 1,
+  //     size: 10,
+  //   });
+  // };
+
+
+  const handleReceiptSearch = (text) => {
     console.log("text", text);
 
     setSearchText(text);
 
     if (!canReadReceipt) return;
 
-    await ReceiptFilter({
-      hostelId: activeHostelId,
-      keyword: text || null,
-      page: 1,
-      size: 10,
-    });
+    if (searchTimeout.current) {
+      clearTimeout(searchTimeout.current);
+    }
+    searchTimeout.current = setTimeout(() => {
+      ReceiptFilter({
+        hostelId: activeHostelId,
+        keyword: text || undefined,
+        page: 1,
+        size: 10,
+      });
+    }, 10);
   };
 
   const handleRetainerSearch = async (text) => {
-    
-    if(!canReadBooking) return;
+
+    if (!canReadBooking) return;
 
     const filters = {
       name: text || "",
@@ -1793,7 +1830,7 @@ export default function BillsDesign({ route }) {
     }
 
 
-    
+
 
     const filters = {
       startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
@@ -1804,7 +1841,7 @@ export default function BillsDesign({ route }) {
       createdBy: createdBy,
     };
 
-        console.log("filterdate", filters);
+    console.log("filterdate", filters);
 
     const hasAnyFilter =
       filters.startDate ||
@@ -1827,26 +1864,26 @@ export default function BillsDesign({ route }) {
   };
 
   const applyTopFilters = async ({
-  paymentStatus = billStatus,
-  selectedType = type,
-  selectedMode = mode,
-  selectedCreatedBy = createdBy,
-} = {}) => {
-  if (!canReadInvoice) return;
+    paymentStatus = billStatus,
+    selectedType = type,
+    selectedMode = mode,
+    selectedCreatedBy = createdBy,
+  } = {}) => {
+    if (!canReadInvoice) return;
 
-  const filters = {
-    startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
-    endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
-    paymentStatus,
-    type: selectedType,
-    modes: selectedMode,
-    createdBy: selectedCreatedBy,
+    const filters = {
+      startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+      endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+      paymentStatus,
+      type: selectedType,
+      modes: selectedMode,
+      createdBy: selectedCreatedBy,
+    };
+
+    await GetAllBillDetails(activeHostelId, filters);
+
+    setAppliedFilters(filters);
   };
-
-  await GetAllBillDetails(activeHostelId, filters);
-
-  setAppliedFilters(filters);
-};
 
 
   const handleResetFilters = async () => {
@@ -2265,7 +2302,7 @@ export default function BillsDesign({ route }) {
       activeHostelId,
       item.transactionId
     );
-    console.log("receipturl",response)
+    console.log("receipturl", response)
 
     CommonModule.downloadAndShareFile(response?.url);
   };
@@ -2491,22 +2528,22 @@ export default function BillsDesign({ route }) {
     setSearchText("");
   };
 
-//   useFocusEffect(
-//   useCallback(() => {
+  //   useFocusEffect(
+  //   useCallback(() => {
 
-//     return () => {
-//       clearBillFilters();      
-//       setActiveTab("Invoices"); 
-//     };
-//   }, [])
-// );
+  //     return () => {
+  //       clearBillFilters();      
+  //       setActiveTab("Invoices"); 
+  //     };
+  //   }, [])
+  // );
 
-  useEffect(()=>{
-      return () => {
-      clearBillFilters();      
-      setActiveTab("Invoices"); 
+  useEffect(() => {
+    return () => {
+      clearBillFilters();
+      setActiveTab("Invoices");
     };
-  },[currentRouteName])
+  }, [currentRouteName])
 
   const handleTabChange = (tab) => {
     if (activeTab === "Invoices" && tab !== "Invoices") {
@@ -2742,15 +2779,16 @@ export default function BillsDesign({ route }) {
                     setSearchText(filtered);
 
                     if (activeTab === "Receipt") {
-                      if (filtered.trim() === "") {
-                        GetReceiptsList(activeHostelId)
-                      } else {
-                        handleReceiptSearch(filtered)
-                      }
+                      // if (filtered.trim() === "") {
+                      //   GetReceiptsList(activeHostelId)
+                      // } else {
+                      //   handleReceiptSearch(filtered)
+                      // }
+                      handleReceiptSearch(filtered)
                     } else if (activeTab === "Retainer") {
                       if (filtered.trim() === "") {
-                           GetAdvanceBookingBills(activeHostelId);
-                      }else{
+                        GetAdvanceBookingBills(activeHostelId);
+                      } else {
                         handleRetainerSearch(filtered)
                       }
                     }
@@ -4134,81 +4172,81 @@ export default function BillsDesign({ route }) {
                         )}
 
 
-                          {showSettlementRedeem && (
-                                          <View style={styles.accordionCard}>
-                                            <TouchableOpacity
-                                              style={styles.accordionHeader}
-                                              onPress={() => setShowRetainer(!showRetainer)}
-                                              activeOpacity={0.8}
-                                            >
-                                              <Animated.Image
-                                                source={DownArrow}
-                                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
-                                              />
-                                              <Text style={styles.cardTitle}>Retainer Invoices</Text>
-                                              <Text style={styles.amountText}>
-                                                ₹  {BillPdfdetails?.retainerInfo?.totalRetainerAmount || 0}
-                                              </Text>
-                                            </TouchableOpacity>
-                        
-                        {/* Retainer */}
-                                            {showRetainer && (
-                        
-                                              <View style={styles.accordionBody}>
-                        
-                                                <View style={styles.tableHeader}>
-                                                  <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
-                                                  {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
-                                                  <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
-                                                    Invoice Amount
-                                                  </Text>
-                                                </View>
-                        
-                        
-                                                {Array.isArray(BillPdfdetails?.retainerInfo?.retainerItems) &&
-                                                  BillPdfdetails?.retainerInfo?.retainerItems.length > 0 ? (
-                                                  <>
-                                                    {BillPdfdetails?.retainerInfo?.retainerItems?.map((item, index) => (
-                                                      <View key={index} style={styles.invoiceRow}>
-                                                        <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
-                                                          {item?.invoiceNo}
-                                                        </Text>
-                                                        {/* <Text style={[styles.invText, { flex: 1 }]}>
+                        {showSettlementRedeem && (
+                          <View style={styles.accordionCard}>
+                            <TouchableOpacity
+                              style={styles.accordionHeader}
+                              onPress={() => setShowRetainer(!showRetainer)}
+                              activeOpacity={0.8}
+                            >
+                              <Animated.Image
+                                source={DownArrow}
+                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                              />
+                              <Text style={styles.cardTitle}>Retainer Invoices</Text>
+                              <Text style={styles.amountText}>
+                                ₹  {BillPdfdetails?.retainerInfo?.totalRetainerAmount || 0}
+                              </Text>
+                            </TouchableOpacity>
+
+                            {/* Retainer */}
+                            {showRetainer && (
+
+                              <View style={styles.accordionBody}>
+
+                                <View style={styles.tableHeader}>
+                                  <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+                                  {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
+                                  <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                                    Invoice Amount
+                                  </Text>
+                                </View>
+
+
+                                {Array.isArray(BillPdfdetails?.retainerInfo?.retainerItems) &&
+                                  BillPdfdetails?.retainerInfo?.retainerItems.length > 0 ? (
+                                  <>
+                                    {BillPdfdetails?.retainerInfo?.retainerItems?.map((item, index) => (
+                                      <View key={index} style={styles.invoiceRow}>
+                                        <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
+                                          {item?.invoiceNo}
+                                        </Text>
+                                        {/* <Text style={[styles.invText, { flex: 1 }]}>
                                                                               {item?.type}
                                                                             </Text> */}
-                                                        <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
-                                                          ₹ {item?.appliedAmount}
-                                                        </Text>
-                                                      </View>
-                                                    ))}
-                                                  </>
-                                                ) : (
-                                                  <View style={styles.emptyWallet}>
-                                                    <View style={styles.emptyState}>
-                                                      <Text style={styles.emptyWalletText}>No pending invoices</Text>
-                                                    </View>
-                                                  </View>
-                                                )}
-                        
-                                                <View style={styles.totalInvoiceRow}>
-                                                  <Text style={styles.totalText}>Total</Text>
-                                                  <Text style={styles.totalAmount}>
-                                                    {BillPdfdetails?.retainerInfo?.totalRetainerAmount}
-                                                    {/* ₹{" "}
+                                        <Text style={[styles.invText, { flex: 1, textAlign: "right" }]}>
+                                          ₹ {item?.appliedAmount}
+                                        </Text>
+                                      </View>
+                                    ))}
+                                  </>
+                                ) : (
+                                  <View style={styles.emptyWallet}>
+                                    <View style={styles.emptyState}>
+                                      <Text style={styles.emptyWalletText}>No pending invoices</Text>
+                                    </View>
+                                  </View>
+                                )}
+
+                                <View style={styles.totalInvoiceRow}>
+                                  <Text style={styles.totalText}>Total</Text>
+                                  <Text style={styles.totalAmount}>
+                                    {BillPdfdetails?.retainerInfo?.totalRetainerAmount}
+                                    {/* ₹{" "}
                                                                                 {Array.isArray(settlementDetails?.unpaidInvoices)
                                                                                   ? settlementDetails.unpaidInvoices.reduce(
                                                                                     (sum, i) => sum + Number(i.payableAmount || 0),
                                                                                     0
                                                                                   )
                                                                                   : 0} */}
-                                                  </Text>
-                                                </View>
-                                              </View>
-                        
-                                            )}
-                                          </View>
-                                        )}
-                        
+                                  </Text>
+                                </View>
+                              </View>
+
+                            )}
+                          </View>
+                        )}
+
 
 
                         {showSettlementRedeem && (
@@ -4560,8 +4598,8 @@ export default function BillsDesign({ route }) {
                           The booking amount isn't applied with any bills yet.
                         </Text>
 
-                        <TouchableOpacity 
-                        style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem || !canWriteInvoice && { opacity: 0.4 }]} onPress={handleApplyBookingToInvoice}
+                        <TouchableOpacity
+                          style={[styles.applyBtn, !BillPdfdetails?.invoiceInfo?.canRedeem || !canWriteInvoice && { opacity: 0.4 }]} onPress={handleApplyBookingToInvoice}
                           disabled={!BillPdfdetails?.invoiceInfo?.canRedeem || !canWriteInvoice}
                         >
                           <Text style={{
@@ -5258,7 +5296,7 @@ export default function BillsDesign({ route }) {
                   </TouchableOpacity>
                 )} */}
 
-{console.log("canwirteShanthi",canWriteInvoice)}
+                {console.log("canwirteShanthi", canWriteInvoice)}
                 {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent") &&
                   !selectedBill?.isDiscounted && (
                     <>
@@ -5302,7 +5340,7 @@ export default function BillsDesign({ route }) {
                 )}
 
 
-                {showAdjustWithAdvance && (
+                {/* {showAdjustWithAdvance && (
                   <>
                     <TouchableOpacity
                       style={[
@@ -5332,7 +5370,7 @@ export default function BillsDesign({ route }) {
                     </TouchableOpacity>
                     <View style={styles.menuDivider} />
                   </>
-                )}
+                )} */}
 
                 {/* <TouchableOpacity
   style={[
@@ -6315,11 +6353,11 @@ export default function BillsDesign({ route }) {
                   </View>
                 </View>
 
-               
 
-             
 
-                    <MultiSelectDropdown
+
+
+                <MultiSelectDropdown
                   label="Bill Status"
                   dropdownKey="billStatus"
                   placeholder="Select Bill Status"
@@ -6347,10 +6385,10 @@ export default function BillsDesign({ route }) {
                   }}
                 />
 
-                
+
 
                 <View style={styles.dateRow}>
-                  
+
                   <TouchableOpacity
                     style={styles.dateBox}
                     onPress={() => setOpenFrom(true)}
@@ -6397,7 +6435,7 @@ export default function BillsDesign({ route }) {
 
 
 
-            
+
 
 
 
@@ -6417,36 +6455,36 @@ export default function BillsDesign({ route }) {
 
 
                 <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }} onPress={() => setMoreFilters(!morefilters)}>
-                                <Text style={{ fontFamily: "Gilroy-Semibold", fontSize: 16 }}>More Filters</Text>
-                                <Image
-                                  source={DirectionImage}
-                                  style={{ width: 18, height: 18, marginLeft: 6, transform: morefilters ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                                  resizeMode="contain"
-                                />
-                              </TouchableOpacity>
-                              {morefilters && (<>
-                              <View style={{marginBottom:80}}>
-                               <MultiSelectDropdown
-                  label="Created By"
-                  dropdownKey="createdBy"
-                  placeholder="Select User"
-                  activeDropdown={activeDropdown}
-                  setActiveDropdown={setActiveDropdown}
-                  options={createdByOptions}
-                  selected={createdBy}
-                  onChange={(values) => {
-                    setCreatedBy(values);
-                    setFilterError("");
-                  }}
-                />
-                </View>
-                              
-                              </>)}
+                  <Text style={{ fontFamily: "Gilroy-Semibold", fontSize: 16 }}>More Filters</Text>
+                  <Image
+                    source={DirectionImage}
+                    style={{ width: 18, height: 18, marginLeft: 6, transform: morefilters ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                    resizeMode="contain"
+                  />
+                </TouchableOpacity>
+                {morefilters && (<>
+                  <View style={{ marginBottom: 80 }}>
+                    <MultiSelectDropdown
+                      label="Created By"
+                      dropdownKey="createdBy"
+                      placeholder="Select User"
+                      activeDropdown={activeDropdown}
+                      setActiveDropdown={setActiveDropdown}
+                      options={createdByOptions}
+                      selected={createdBy}
+                      onChange={(values) => {
+                        setCreatedBy(values);
+                        setFilterError("");
+                      }}
+                    />
+                  </View>
+
+                </>)}
 
 
 
 
-               
+
 
 
 
@@ -6875,114 +6913,114 @@ export default function BillsDesign({ route }) {
           </Modal>
 
           <FilterBottomSheet
-  visible={statusSheetOpen}
-  title="Bill Status"
-  options={billStatusOptions || []}
-  selectedValues={tempStatus}
-  setSelectedValues={setTempStatus}
+            visible={statusSheetOpen}
+            title="Bill Status"
+            options={billStatusOptions || []}
+            selectedValues={tempStatus}
+            setSelectedValues={setTempStatus}
 
-  onReset={async () => {
-    setTempStatus([]);
-    setBillStatus([]);
-    setStatusSheetOpen(false);
+            onReset={async () => {
+              setTempStatus([]);
+              setBillStatus([]);
+              setStatusSheetOpen(false);
 
-    await applyTopFilters({
-      paymentStatus: [],
-      selectedType: type,
-      selectedMode: mode,
-      selectedCreatedBy: createdBy,
-    });
-  }}
+              await applyTopFilters({
+                paymentStatus: [],
+                selectedType: type,
+                selectedMode: mode,
+                selectedCreatedBy: createdBy,
+              });
+            }}
 
-  onApply={async () => {
-    setBillStatus(tempStatus);
-    setStatusSheetOpen(false);
+            onApply={async () => {
+              setBillStatus(tempStatus);
+              setStatusSheetOpen(false);
 
-    await applyTopFilters({
-      paymentStatus: tempStatus,
-      selectedType: type,
-      selectedMode: mode,
-      selectedCreatedBy: createdBy,
-    });
-  }}
+              await applyTopFilters({
+                paymentStatus: tempStatus,
+                selectedType: type,
+                selectedMode: mode,
+                selectedCreatedBy: createdBy,
+              });
+            }}
 
-  onClose={() => setStatusSheetOpen(false)}
-/>
-
-
-<FilterBottomSheet
-  visible={typeSheetOpen}
-  title="Stay Type"
-  options={typeOptions || []}
-  selectedValues={tempType}
-  setSelectedValues={setTempType}
-
-  onReset={async () => {
-    setTempType([]);
-    setType([]);
-    setTypeSheetOpen(false);
-
-    await applyTopFilters({
-      paymentStatus: billStatus,
-      selectedType: [],
-      selectedMode: mode,
-      selectedCreatedBy: createdBy,
-    });
-  }}
-
-  onApply={async () => {
-    setType(tempType);
-    setTypeSheetOpen(false);
-
-    await applyTopFilters({
-      paymentStatus: billStatus,
-      selectedType: tempType,
-      selectedMode: mode,
-      selectedCreatedBy: createdBy,
-    });
-  }}
-
-  onClose={() => setTypeSheetOpen(false)}
-/>
+            onClose={() => setStatusSheetOpen(false)}
+          />
 
 
+          <FilterBottomSheet
+            visible={typeSheetOpen}
+            title="Stay Type"
+            options={typeOptions || []}
+            selectedValues={tempType}
+            setSelectedValues={setTempType}
+
+            onReset={async () => {
+              setTempType([]);
+              setType([]);
+              setTypeSheetOpen(false);
+
+              await applyTopFilters({
+                paymentStatus: billStatus,
+                selectedType: [],
+                selectedMode: mode,
+                selectedCreatedBy: createdBy,
+              });
+            }}
+
+            onApply={async () => {
+              setType(tempType);
+              setTypeSheetOpen(false);
+
+              await applyTopFilters({
+                paymentStatus: billStatus,
+                selectedType: tempType,
+                selectedMode: mode,
+                selectedCreatedBy: createdBy,
+              });
+            }}
+
+            onClose={() => setTypeSheetOpen(false)}
+          />
 
 
-<FilterBottomSheet
 
-  visible={modesheetOpen}
-  title="Mode"
-  options={modeOptions || []}
-  selectedValues={tempmode}
-  setSelectedValues={setTempmode}
 
-  onReset={async () => {
-    setTempmode([]);
-    setMode([]);
-    setModeSheetOpen(false);
+          <FilterBottomSheet
 
-    await applyTopFilters({
-      paymentStatus: billStatus,
-      selectedType: type,
-      selectedMode: [],
-      selectedCreatedBy: createdBy,
-    });
-  }}
+            visible={modesheetOpen}
+            title="Mode"
+            options={modeOptions || []}
+            selectedValues={tempmode}
+            setSelectedValues={setTempmode}
 
-  onApply={async () => {
-    setMode(tempmode);
-    setModeSheetOpen(false);
+            onReset={async () => {
+              setTempmode([]);
+              setMode([]);
+              setModeSheetOpen(false);
 
-    await applyTopFilters({
-      paymentStatus: billStatus,
-      selectedType: type,
-      selectedMode: tempmode,
-      selectedCreatedBy: createdBy,
-    });
-  }}
+              await applyTopFilters({
+                paymentStatus: billStatus,
+                selectedType: type,
+                selectedMode: [],
+                selectedCreatedBy: createdBy,
+              });
+            }}
 
-  onClose={() => setModeSheetOpen(false)}
-/>
+            onApply={async () => {
+              setMode(tempmode);
+              setModeSheetOpen(false);
+
+              await applyTopFilters({
+                paymentStatus: billStatus,
+                selectedType: type,
+                selectedMode: tempmode,
+                selectedCreatedBy: createdBy,
+              });
+            }}
+
+            onClose={() => setModeSheetOpen(false)}
+          />
 
           {/* <FilterBottomSheet
             visible={statusSheetOpen}

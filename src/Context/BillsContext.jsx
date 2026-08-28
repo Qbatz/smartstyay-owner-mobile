@@ -451,6 +451,7 @@ export default function BillsProvider({ children }) {
     minAmount,
     maxAmount,
   }) => {
+    console.log("wordsSearch",keyword)
     if (!hostelId) {
       return { success: false, message: "Invalid hostelId" };
     }
