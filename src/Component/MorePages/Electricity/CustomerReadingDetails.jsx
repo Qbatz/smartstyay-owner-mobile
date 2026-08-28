@@ -95,7 +95,14 @@ const formatDateRange = (start, end) => {
         
         <View style={styles.cardRow}>
 
-          <Image source={ProfileIcon} style={styles.avatar} />
+           {
+                      tenant?.profilePic ? <Image source={{uri: tenant?.profilePic }} style={styles.profileImg} /> : 
+                      <View style={[styles.profileImg,{backgroundColor:"#E5E7EB",alignItems:'center',justifyContent:'center'}]}>
+                          <Text style={{fontSize:16,fontFamily:'Gilroy-Semibold',color: "#374151"}}>{tenant?.initials}</Text>
+                      </View>
+                    }
+
+          {/* <Image source={ProfileIcon} style={styles.avatar} /> */}
 
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>{tenant?.fullName}</Text>
@@ -287,4 +294,5 @@ const styles = StyleSheet.create({
   amount: { fontSize: 16, fontWeight: "700" },
 
   dateSmall: { fontSize: 12, color: "#777", marginTop: 4 },
+   profileImg: { width: 48, height: 48, borderRadius: 24, marginRight: 12 },
 });
