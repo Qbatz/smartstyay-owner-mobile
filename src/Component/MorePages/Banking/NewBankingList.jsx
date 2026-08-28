@@ -54,6 +54,8 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import SearchIcon from "../../../Assets/Images/SearchIcon.png";
 import BackIcon from "../../../Assets/Images/Arrow_left.png";
 
+import FilterBottomSheet from "../Reports/FilterBottomSheet"
+
 
 
 export default function NewBankingList() {
@@ -61,13 +63,13 @@ export default function NewBankingList() {
   dayjs.extend(customParseFormat)
 
   const { activeHostelId } = useContext(CommonContexts);
-  const {getBankOverview ,  NewgetBankList, bankList, getAllTransactions , newtransactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+  const { getBankOverview, NewgetBankList, bankList, getAllTransactions, newtransactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
     useContext(BankingContext);
 
 
 
-    console.log("bankinglist", bankList,);
-    console.log("transactionList", newtransactionList,);
+  console.log("bankinglist", bankList,);
+  console.log("transactionList", newtransactionList,);
 
 
   const [showAddBalance, setShowAddBalance] = useState(false);
@@ -93,6 +95,45 @@ export default function NewBankingList() {
   const [searchText, setSearchText] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
 
+  const filterOptions = newtransactionList?.filterOptions;
+
+  const dateFilterOptions =
+    filterOptions?.dateFilter?.map((item) => ({
+      label: item?.name,
+      value: item?.type,
+    })) || [];
+
+  const sourceOptions =
+    filterOptions?.source?.map((item) => ({
+      label: item?.name,
+      value: item?.type,
+    })) || [];
+
+  const [selectedDateFilter, setSelectedDateFilter] = useState([]);
+  const [selectedSource, setSelectedSource] = useState([]);
+
+  const [tempDateFilter, setTempDateFilter] = useState([]);
+  const [tempSource, setTempSource] = useState([]);
+
+  const [dateSheetOpen, setDateSheetOpen] = useState(false);
+  const [sourceSheetOpen, setSourceSheetOpen] = useState(false);
+
+
+  const [billStatus, setBillStatus] = useState([]);
+  const [type, setType] = useState([]);
+  const [mode, setMode] = useState([]);
+  const [sharingtype, setSharingTypes] = useState([]);
+  const [filterError, setFilterError] = useState("");
+  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  const [typeSheetOpen, setTypeSheetOpen] = useState(false);
+  const [sharingtypeOpen, setSharingTypeOpen] = useState(false);
+
+  const [tempStatus, setTempStatus] = useState([]);
+  const [tempType, setTempType] = useState([]);
+  const [tempsharingType, setTempSharingype] = useState([]);
+
+
+
   const {
     canWriteModule: canWriteBanking,
     canReadModule: canReadBanking,
@@ -110,13 +151,13 @@ export default function NewBankingList() {
 
         <View style={styles.headerRow}>
 
-            <TouchableOpacity
-              style={styles.backBtn}
-              onPress={() => navigation.goBack()}
-            >
-              <Image source={BackIcon} style={styles.backArrow} />
-            </TouchableOpacity>
-            </View>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+          >
+            <Image source={BackIcon} style={styles.backArrow} />
+          </TouchableOpacity>
+        </View>
         <View style={styles.emptyContainer}>
           <Image source={EmptyStateImage} style={styles.emptyImage} />
           <Text style={{ fontSize: 16, color: "#888", marginTop: 20 }}>
@@ -229,10 +270,10 @@ export default function NewBankingList() {
 
 
   useEffect(() => {
-  if (activeHostelId) {
-    getAllTransactions(activeHostelId);
-  }
-}, [activeHostelId]);
+    if (activeHostelId) {
+      getAllTransactions(activeHostelId);
+    }
+  }, [activeHostelId]);
 
 
   useLayoutEffect(() => {
@@ -394,6 +435,52 @@ export default function NewBankingList() {
     },
   ];
 
+  const applyTransactionFilters = async ({
+    dateFilter = selectedDateFilter,
+    source = selectedSource,
+    fromDate,
+    toDate,
+  } = {}) => {
+    if (!activeHostelId) return;
+
+    console.log("Applying Banking Filters:", {
+      dateFilter,
+      source,
+      fromDate,
+      toDate,
+    });
+
+    await getAllTransactions(
+      activeHostelId,
+      1,
+      20,
+      {
+        dateFilter,
+        source,
+        ...(fromDate && { fromDate }),
+        ...(toDate && { toDate }),
+      }
+    );
+  };
+
+  const handleApplyFilter = async () => {
+    if (!canReadBanking || !activeHostelId) return;
+
+    const filters = {
+      dateFilter: tempDateFilter,
+      source: tempSource,
+    };
+
+    console.log("FULL BANKING FILTER:", filters);
+
+    setSelectedDateFilter(tempDateFilter);
+    setSelectedSource(tempSource);
+
+    await getAllTransactions(activeHostelId, filters);
+
+    setShowFilter(false);
+  };
+
 
   // const mappedBankList = (bankList || []).map((item) => {
   //   const type = item.accountType;
@@ -463,88 +550,88 @@ export default function NewBankingList() {
   //   };
   // });
 
-const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
-  const type = item.accountType;
+  const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
+    const type = item.accountType;
 
-  return {
-    id: item.bankId,
+    return {
+      id: item.bankId,
 
-    title:
-      type === "BANK"
-        ? item.bankName || "Bank"
-        : type === "CASH"
-        ? "Cash"
-        : type === "CARD"
-        ? "Card"
-        : "UPI",
+      title:
+        type === "BANK"
+          ? item.bankName || "Bank"
+          : type === "CASH"
+            ? "Cash"
+            : type === "CARD"
+              ? "Card"
+              : "UPI",
 
-    subtitle:
-      type === "BANK"
-        ? "Bank Account"
-        : type === "CASH"
-        ? "Cash Account"
-        : type === "CARD"
-        ? "Card"
-        : "UPI",
+      subtitle:
+        type === "BANK"
+          ? "Bank Account"
+          : type === "CASH"
+            ? "Cash Account"
+            : type === "CARD"
+              ? "Card"
+              : "UPI",
 
-    name: item.accountHolderName,
+      name: item.accountHolderName,
 
-    acc:
-      type === "BANK"
-        ? item.accountNumber
-        : type === "CARD"
-        ? item.cardNumber
-        : type === "UPI"
-        ? item.upiId
-        : "",
+      acc:
+        type === "BANK"
+          ? item.accountNumber
+          : type === "CARD"
+            ? item.cardNumber
+            : type === "UPI"
+              ? item.upiId
+              : "",
 
-    balance: Number(item.balance ?? 0),
+      balance: Number(item.balance ?? 0),
 
-    branch: item.branchName || "",
+      branch: item.branchName || "",
 
-    isDefaultAccount: item.isDefaultAccount,
+      isDefaultAccount: item.isDefaultAccount,
 
-    Icon:
-      type === "BANK"
-        ? BankIcon
-        : type === "CASH"
-        ? CashIcon
-        : type === "CARD"
-        ? CardIcon
-        : UpiIcon,
+      Icon:
+        type === "BANK"
+          ? BankIcon
+          : type === "CASH"
+            ? CashIcon
+            : type === "CARD"
+              ? CardIcon
+              : UpiIcon,
 
-    raw: item,
-  };
-});
+      raw: item,
+    };
+  });
 
- const mappedTransactions = (newtransactionList?.transactions || []).map((t) => {
-  const isCredit = t.type === "CREDIT";
+  const mappedTransactions = (newtransactionList?.transactions || []).map((t) => {
+    const isCredit = t.type === "CREDIT";
 
-  return {
-    id: t.transactionId,
+    return {
+      id: t.transactionId,
 
-    type: isCredit ? "income" : "expense",
+      type: isCredit ? "income" : "expense",
 
-    title: t.source || "Transaction",
+      title: t.source || "Transaction",
 
-    amount: `₹${Number(
-      t.transactionAmount ?? 0
-    ).toLocaleString("en-IN")}`,
+      amount: `₹${Number(
+        t.transactionAmount ?? 0
+      ).toLocaleString("en-IN")}`,
 
-    date: dayjs(t.createdAt).format("DD MMM YYYY, hh:mm A"),
+      date: dayjs(t.createdAt).format("DD MMM YYYY, hh:mm A"),
 
-    icon: isCredit ? ArrowUp : ArrowDown,
+      icon: isCredit ? ArrowUp : ArrowDown,
 
-    account:
-      t.bankAccountType
-        ? BankIcon
-        : t.cashAccountType
-        ? CashIcon
-        : CardIcon,
+      account:
+        t.bankAccountType
+          ? BankIcon
+          : t.cashAccountType
+            ? CashIcon
+            : CardIcon,
 
-    raw: t,
-  };
-});
+      raw: t,
+    };
+  });
 
 
 
@@ -958,7 +1045,7 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
           </View> */}
         </View>
 
-{console.log("sillana",mappedBankList)}
+        {console.log("sillana", mappedBankList)}
 
         {!loading && (
 
@@ -1009,15 +1096,15 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
 
                       <TouchableOpacity
                         // key={item.id}
-                          key={`${item.id}-${index}`}
+                        key={`${item.id}-${index}`}
                         onPress={() => {
                           navigation.navigate("BankingDetails", {
                             bankDetails: item?.raw,
                             bankId: item?.id,
                           })
-                          console.log("item" , item?.raw,);
-                          
-                            getBankOverview(activeHostelId, item?.id);
+                          console.log("item", item?.raw,);
+
+                          getBankOverview(activeHostelId, item?.id);
                         }
 
                         }
@@ -1148,7 +1235,7 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
 )} */}
 
 
-{/* {item.raw.accountType === "CASH" && (
+                          {/* {item.raw.accountType === "CASH" && (
   <View style={styles.upiChip}>
     <Text numberOfLines={1}>
       Cash Account
@@ -1175,11 +1262,11 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
                             )
                           }
 
-                         {item?.isDefaultAccount && (
-  <View style={styles.defaultChip}>
-    <Text style={styles.defaultChipText}>Default A/C</Text>
-  </View>
-)}
+                          {item?.isDefaultAccount && (
+                            <View style={styles.defaultChip}>
+                              <Text style={styles.defaultChipText}>Default A/C</Text>
+                            </View>
+                          )}
 
                         </View>
 
@@ -1200,7 +1287,7 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
                   {/* ADD CARD */}
 
                   <TouchableOpacity
-                    style={[styles.addNewCard, !canWriteBanking && {opacity:0.4}]}
+                    style={[styles.addNewCard, !canWriteBanking && { opacity: 0.4 }]}
                     disabled={!canWriteBanking}
                     onPress={handleAddBanking}
                   >
@@ -1228,87 +1315,192 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
                 <Text style={styles.sectionTitle}>All Transactions</Text>
               </View> */}
 
-              {/* <View style={styles.filterRow}>
-                <View style={{ display: 'flex', flexDirection: 'row' }}>
-                  <TouchableOpacity style={styles.filterChipActive}>
-                    <Text style={styles.filterChipTextActive}>All</Text>
+              <ScrollView
+                horizontal
+                persistentScrollbar={false}
+                showsHorizontalScrollIndicator={false}
+                style={{ flexGrow: 0 }}
+                contentContainerStyle={{
+                  paddingLeft: 16,
+                  paddingRight: 12,
+                }}
+              >
+                <View style={styles.filterRow}>
+
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                  >
+
+                    {/* DATE FILTER */}
+                    <TouchableOpacity
+                      style={[
+                        styles.filterBox,
+                        selectedDateFilter.length > 0 &&
+                        selectedDateFilter[0] !== "ALL" &&
+                        styles.filterBoxActive,
+                      ]}
+                      onPress={() => {
+                        setTempDateFilter(selectedDateFilter);
+                        setDateSheetOpen(true);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.filterText,
+                          selectedDateFilter.length > 0 &&
+                          selectedDateFilter[0] !== "ALL" &&
+                          styles.filterTextActive,
+                        ]}
+                      >
+                        {selectedDateFilter.length === 0 ||
+                          selectedDateFilter[0] === "ALL"
+                          ? "All"
+                          : dateFilterOptions.find(
+                            (item) => item.value === selectedDateFilter[0]
+                          )?.label || "All"}
+                      </Text>
+
+                      <Image
+                        source={DownArrow}
+                        style={{
+                          width: 16,
+                          height: 16,
+                          marginLeft: 6,
+                        }}
+                      />
+                    </TouchableOpacity>
+
+
+                    {/* SOURCE FILTER */}
+                    <TouchableOpacity
+                      style={[
+                        styles.filterBox,
+                        selectedSource.length > 0 &&
+                        styles.filterBoxActive,
+                      ]}
+                      onPress={() => {
+                        setTempSource(selectedSource);
+                        setSourceSheetOpen(true);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.filterText,
+                          selectedSource.length > 0 &&
+                          styles.filterTextActive,
+                        ]}
+                      >
+                        {selectedSource.length === 0
+                          ? "Source"
+                          : `${sourceOptions.find(
+                            (item) => item.value === selectedSource[0]
+                          )?.label || selectedSource[0]}${selectedSource.length > 1
+                            ? ` +${selectedSource.length - 1} more`
+                            : ""
+                          }`}
+                      </Text>
+
+                      <Image
+                        source={DownArrow}
+                        style={{
+                          width: 16,
+                          height: 16,
+                          marginLeft: 6,
+                        }}
+                      />
+                    </TouchableOpacity>
+
+                  </View>
+
+
+                  {/* FULL FILTER */}
+                  <TouchableOpacity
+                    style={[
+                      styles.filterIconBtn,
+                      { marginLeft: 5 },
+                    ]}
+                    disabled={!canReadBanking}
+                    onPress={() => setShowFilter(true)}
+                  >
+                    <Image
+                      source={FilterIcon}
+                      style={{
+                        width: 18,
+                        height: 18,
+                      }}
+                    />
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={styles.filterChip}>
-                    <Text style={styles.filterChipText}>Category</Text>
-                  </TouchableOpacity>
                 </View>
+              </ScrollView>
 
-                <TouchableOpacity
-                  style={styles.filterIconBtn}
-                  onPress={() => setShowFilter(true)}
-                >
-                  <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
-                </TouchableOpacity>
-              </View> */}
 
-<View style={{ paddingHorizontal: 20 }}>
-  {/* <Text style={styles.todayText}>Today</Text> */}
 
-  {mappedTransactions.map((item,index) => (
-    <TouchableOpacity
-      key={item?.id || index}
-      // key={item?.transactionId}
-      style={styles.transactionCard}
-      // onPress={() => handleshowTransaction(item)}
-    >
-      <View style={styles.leftSection}>
-        <View
-          style={[
-            styles.iconContainer,
-            {
-              backgroundColor:
-                item.type === "income"
-                  ? "#05964B"
-                  : "#EB2D2D",
-            },
-          ]}
-        >
-          <Image
-            source={item.icon}
-            style={styles.transactionIcon}
-          />
-        </View>
+              <View style={{ paddingHorizontal: 20 }}>
+                {/* <Text style={styles.todayText}>Today</Text> */}
 
-        <View style={{ marginLeft: 18 }}>
-          <Text style={styles.transactionTitle}>
-            {item.title}
-          </Text>
+                {mappedTransactions.map((item, index) => (
+                  <TouchableOpacity
+                    key={item?.id || index}
+                    // key={item?.transactionId}
+                    style={styles.transactionCard}
+                  // onPress={() => handleshowTransaction(item)}
+                  >
+                    <View style={styles.leftSection}>
+                      <View
+                        style={[
+                          styles.iconContainer,
+                          {
+                            backgroundColor:
+                              item.type === "income"
+                                ? "#05964B"
+                                : "#EB2D2D",
+                          },
+                        ]}
+                      >
+                        <Image
+                          source={item.icon}
+                          style={styles.transactionIcon}
+                        />
+                      </View>
 
-          <Text style={styles.transactionDate}>
-            {item.date}
-          </Text>
-        </View>
-      </View>
+                      <View style={{ marginLeft: 18 }}>
+                        <Text style={styles.transactionTitle}>
+                          {item.title}
+                        </Text>
 
-      <View style={styles.rightSection}>
-        <Text
-          style={[
-            styles.transactionAmount,
-            {
-              color:
-                item.type === "income"
-                  ? "#05964B"
-                  : "#EB2D2D",
-            },
-          ]}
-        >
-          {item.type === "income" ? "+" : "-"} {item.amount}
-        </Text>
+                        <Text style={styles.transactionDate}>
+                          {item.date}
+                        </Text>
+                      </View>
+                    </View>
 
-        <Image
-          source={item.account}
-          style={styles.smallIcon}
-        />
-      </View>
-    </TouchableOpacity>
-  ))}
-</View>
+                    <View style={styles.rightSection}>
+                      <Text
+                        style={[
+                          styles.transactionAmount,
+                          {
+                            color:
+                              item.type === "income"
+                                ? "#05964B"
+                                : "#EB2D2D",
+                          },
+                        ]}
+                      >
+                        {item.type === "income" ? "+" : "-"} {item.amount}
+                      </Text>
+
+                      <Image
+                        source={item.account}
+                        style={styles.smallIcon}
+                      />
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
 
 
@@ -1523,6 +1715,68 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
         </View>
       )}
 
+      <FilterBottomSheet
+        visible={dateSheetOpen}
+        title="Date"
+        options={dateFilterOptions}
+        selectedValues={tempDateFilter}
+        setSelectedValues={setTempDateFilter}
+
+        onReset={async () => {
+          setTempDateFilter([]);
+          setSelectedDateFilter([]);
+          setDateSheetOpen(false);
+
+          await applyTransactionFilters({
+            dateFilter: [],
+            source: selectedSource,
+          });
+        }}
+
+        onApply={async () => {
+          setSelectedDateFilter(tempDateFilter);
+          setDateSheetOpen(false);
+
+          await applyTransactionFilters({
+            dateFilter: tempDateFilter,
+            source: selectedSource,
+          });
+        }}
+
+        onClose={() => setDateSheetOpen(false)}
+      />
+
+      <FilterBottomSheet
+        visible={sourceSheetOpen}
+        title="Source"
+        options={sourceOptions}
+        selectedValues={tempSource}
+        setSelectedValues={setTempSource}
+
+        onReset={async () => {
+          setTempSource([]);
+          setSelectedSource([]);
+          setSourceSheetOpen(false);
+
+          await applyTransactionFilters({
+            dateFilter: selectedDateFilter,
+            source: [],
+          });
+        }}
+
+        onApply={async () => {
+          setSelectedSource(tempSource);
+          setSourceSheetOpen(false);
+
+          await applyTransactionFilters({
+            dateFilter: selectedDateFilter,
+            source: tempSource,
+          });
+        }}
+
+        onClose={() => setSourceSheetOpen(false)}
+      />
+
 
 
       {showFilter && (
@@ -1619,14 +1873,28 @@ const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
             </View>
 
             <View style={styles.bottomButtons}>
-              <TouchableOpacity style={styles.resetBtn}
-                onPress={() => {
-                  setFromDate(dayjs());
-                  setToDate(dayjs());
-                  setAmountSelected(amountOptions[0]);
+              <TouchableOpacity
+                style={styles.resetBtn}
+                onPress={async () => {
+                  setSelectedDateFilter([]);
+                  setSelectedSource([]);
+
+                  setTempDateFilter([]);
+                  setTempSource([]);
+
+                  await getAllTransactions(
+                    activeHostelId,
+                    1,
+                    20,
+                    {}
+                  );
+
+                  setShowFilter(false);
                 }}
               >
-                <Text style={styles.resetBtnText}>Reset All</Text>
+                <Text style={styles.resetBtnText}>
+                  Reset All
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
@@ -1903,7 +2171,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginHorizontal: 16,
     padding: 14,
-overflow: "visible",
+    overflow: "visible",
     shadowColor: "#000",
     shadowOpacity: 0.3,
     shadowRadius: 4,
@@ -1912,7 +2180,7 @@ overflow: "visible",
       height: 0,
     },
     borderWidth: 1,
-  borderColor: "#E8E8E8",
+    borderColor: "#E8E8E8",
     elevation: 4,
   },
 
@@ -2728,8 +2996,15 @@ overflow: "visible",
     justifyContent: "space-between",
     marginTop: 10,
     marginBottom: 14,
-    paddingHorizontal: 2,
+    paddingHorizontal: 14,
   },
+  //  filterRow: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   justifyContent: "space-between",
+  //   marginTop: 12,
+  //   marginBottom: 8,
+  // },
 
   filterChip: {
     flexDirection: "row",
@@ -2858,5 +3133,35 @@ overflow: "visible",
     marginHorizontal: 8,
     fontSize: 18,
     color: "#777",
+  },
+  filterBox: {
+    // flex: 1,
+    // paddingVertical: 4,
+    // paddingHorizontal: 14,
+
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    // borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginRight: 8,
+    marginLeft: 8,
+    backgroundColor: "#fff",
+    flexDirection: "row", justifyContent: "center", alignItems: "center"
+  },
+
+  filterBoxActive: {
+    backgroundColor: "#1D4ED8",
+    borderColor: "#1D4ED8",
+  },
+
+  filterText: {
+    textAlign: "center",
+    color: "#374151",
+  },
+
+  filterTextActive: {
+    color: "#fff",
   },
 });
