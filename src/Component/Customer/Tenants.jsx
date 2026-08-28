@@ -1031,7 +1031,7 @@ export default function TenantsScreen({ route }) {
                   </View>
                 )}
 
-                <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
+                {/* <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
                   style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
@@ -1124,7 +1124,7 @@ export default function TenantsScreen({ route }) {
                     )
                     }
                   </>
-                </ScrollView>
+                </ScrollView> */}
 
 
 

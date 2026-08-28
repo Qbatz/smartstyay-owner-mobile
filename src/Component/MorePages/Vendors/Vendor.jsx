@@ -660,7 +660,7 @@ export default function Vendors({ navigation }) {
                                         />
                                     </ScrollView>
 
-                                    <View style={styles.filterRow}>
+                                    {/* <View style={styles.filterRow}>
                                         <TouchableOpacity style={styles.filterChipActive}>
                                             <Text style={styles.filterChipTextActive}>All</Text>
                                             <Image source={DirectionImage} style={styles.chipArrow} />
@@ -682,7 +682,7 @@ export default function Vendors({ navigation }) {
                                         >
                                             <Image source={Filter} style={{ width: 18, height: 18 }} />
                                         </TouchableOpacity>
-                                    </View>
+                                    </View> */}
 
                                         </>
                                     )}

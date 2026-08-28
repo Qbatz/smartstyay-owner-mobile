@@ -359,6 +359,7 @@ import { VendorContext } from "../../Context/VendorContext"          // 👈 add
 import SuccessModal from "../../ToastFile/ToastPage";
 
 import { PGContext } from "../../Context/PGContext";
+import { ComplaintContext } from "../../Context/ComplaintContext";
 
 
 
@@ -376,6 +377,9 @@ export default function AddComponentSheet({
   const isExpired = PGDetails && !PGDetails.isSubscriptionActive;
 
   const { getCustomersByHostel } = useCustomer();
+
+    const { complaintsList, complaintListOtherDetails, GetComplaintListDetails,
+      complaintTypes, fetchComplaintTypes, getParticularComplaint } = useContext(ComplaintContext);
 
   const { IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext)
 
@@ -436,7 +440,13 @@ export default function AddComponentSheet({
     if (activeHostelId) {
       getVendorCategories(activeHostelId);
     }
-  }, [activeHostelId]);
+  }, [activeHostelId])
+
+    useEffect(() => {
+      if (activeHostelId) {
+        fetchComplaintTypes(activeHostelId);
+      }
+    }, [activeHostelId])
 
   // 👇 Expense category, Vendor category — rendum vera vera source
   const expenseCategoryList = IntializeexpensesList?.listExpenses || [];
@@ -566,12 +576,21 @@ export default function AddComponentSheet({
       //   }
       //   break;
 
-      case "Invoice":
-      case "Complaint":
-        if (!customers || customers.length === 0) {
-          return "Please add a tenant first";
-        }
-        break;
+     case "Invoice":
+      if (!customers || customers.length === 0) {
+        return "Please add a tenant first";
+      }
+      break;
+
+    case "Complaint":
+      if (!customers || customers.length === 0) {
+        return "Please add a tenant first";
+      }
+
+      if (!complaintTypes || complaintTypes.length === 0) {
+        return "Please Create Complaint Type in Settings-Complaint";
+      }
+      break;
 
       case "Expense":
         if (!expenseCategoryList || expenseCategoryList.length === 0) {

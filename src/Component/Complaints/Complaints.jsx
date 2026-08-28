@@ -85,7 +85,7 @@ export default function Complaints({ route }) {
     if (activeHostelId) {
       fetchComplaintTypes(activeHostelId);
     }
-  }, [activeHostelId]);
+  }, [activeHostelId])
 
 
   useEffect(() => {
