@@ -1149,8 +1149,8 @@ const styles = StyleSheet.create({
 
   filterButton: {
     position: "absolute",
-    bottom: 124,
-    right: 50,
+    right: 20,
+    bottom: 30,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,

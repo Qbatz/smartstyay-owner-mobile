@@ -186,7 +186,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
       // BILLING
       totalInvoiceGenerated: data?.billingSummary?.totalInvoiceGenerated || 0,
       totalAmount: data?.billingSummary?.totalAmount || 0,
-      totalPaid: data?.billingSummary?.totalPaid || 0,
+      totalPaid: data?.billingSummary?.paidThisMonth,
       totalPending: data?.billingSummary?.totalPending || 0,
       refundedAmount: data?.billingSummary?.refundedAmount || 0,
       collectionRate: data?.billingSummary?.collectionRate || "0%",
