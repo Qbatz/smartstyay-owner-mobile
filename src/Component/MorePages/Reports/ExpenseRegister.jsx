@@ -24,6 +24,7 @@ import FilterBottomSheet from "./FilterBottomSheet";
 import RupeeIcon from "../../../Assets/Images/Rupees.png";
 import ExpensesIcon from "../../../Assets/Images/Expenses.png";
 import ReportsAllFilterBottomSheet from "./ReportsAllFilterBottomSheet";
+import FilterIcon from "../../../Assets/Images/filter.png";
 
 
 const { width } = Dimensions.get("window");
@@ -297,6 +298,7 @@ const ExpenseRegister = ({ navigation }) => {
     icon,
     title,
     value,
+    showRupee = true,
     prefix,
     suffix,
     valueColor = "#111827",
@@ -316,7 +318,8 @@ const ExpenseRegister = ({ navigation }) => {
           </Text>
 
           <Text style={[styles.cardValue, { color: valueColor }]}>
-            ₹ {prefix && <Text>{prefix}</Text>}
+              {showRupee && "₹ "}
+             {prefix && <Text>{prefix}</Text>}
 
             <AnimatedNumber value={value} />
 
@@ -409,6 +412,7 @@ const ExpenseRegister = ({ navigation }) => {
                 icon={ExpensesIcon}
                 tintColor="#1E45E1"
                 linearcolor="#FFF4F4"
+                 showRupee={false}
               />
 
               <SummaryCard
@@ -427,42 +431,8 @@ const ExpenseRegister = ({ navigation }) => {
 
             {/* All */}
 
-            <TouchableOpacity
-              style={[
-                styles.filterBtn,
-                // selectedPayment.length > 0 && styles.activeFilter
-                hasActiveFilters && styles.activeFilter
-              ]}
-              onPress={() => {
-
-                setAllFilterSheet(true);
-              }}
-            >
-              <Text
-                //  style={selectedPayment.length ? styles.activeFilterText : styles.filterText}
-                style={[
-                  hasActiveFilters
-                    ? styles.activeFilterText
-                    : styles.filterText,
-                  {
-                    flex: 1,
-                    marginRight: 6,
-                  },
-                ]}
-
-              >
-                All
-              </Text>
-              <Image
-                source={DownArrow}
-                style={[
-                  styles.arrowIcon,
-                  hasActiveFilters && styles.activeArrow,
-                ]}
-              />
-              {/* <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} /> */}
-            </TouchableOpacity>
-
+       
+  {/* <View style={{flexDirection:'row'}}> */}
             {/* Payment */}
             <TouchableOpacity
               style={[
@@ -569,6 +539,12 @@ const ExpenseRegister = ({ navigation }) => {
     </Text>
           <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} /> */}
             </TouchableOpacity>
+              <TouchableOpacity
+                                                        style={styles.filterIconBtn}
+                                                        onPress={() => setAllFilterSheet(true)}
+                                                    >
+                                                        <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
+                                                    </TouchableOpacity>
             {/* 
             <TouchableOpacity
              
@@ -895,12 +871,17 @@ const styles = StyleSheet.create({
   },
 
   /* FILTER */
-  filterRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12, marginTop: 12,
-    gap: 8,
+  // filterRow: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   justifyContent: "space-between",
+  //   marginBottom: 12, marginTop: 12,
+  //   gap: 8,
+  // },
+
+   filterRow: {
+    flexDirection: "row", alignItems: 'center', justifyContent:'space-between',
+    marginTop: 10,
   },
 
 
@@ -923,13 +904,15 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 10,
 
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     backgroundColor: "#fff",
 
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    // gap:10
   },
+  
 
   activeFilter: {
     backgroundColor: "#1D4ED8",
@@ -1121,4 +1104,14 @@ const styles = StyleSheet.create({
     // paddingBottom: 0,
     marginBottom: 5, alignItems: "flex-start",
   },
+   filterIconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        // backgroundColor: "#F3F4F6",
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#F3F4F6",
+    },
 });

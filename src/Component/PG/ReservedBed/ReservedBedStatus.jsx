@@ -72,11 +72,11 @@ export default function ReservedBedBottomSheet({ visible, onClose, selectTap, ha
   }, [showInactiveSheet, menuOpen]);
 
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     getParticularHostelDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
   useEffect(() => {
     if (visible) {

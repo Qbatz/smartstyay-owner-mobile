@@ -48,11 +48,11 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
   const [modalType, setModalType] = useState("success");
 
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     getParticularHostelDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
 
   const handleMoveClick = () => {

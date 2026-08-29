@@ -32,14 +32,14 @@ export default function ReportsAllFilterBottomSheet({
     onClose, onApply, onReset,
     setSelectedSharingValue, setSelectedTenantStatus, setSelectedFloorValue,
     setSelectedRoomValue, tenantList, setTenantValue,
-    setSelectedMonth,
+    setSelectedMonth, setHeaderSelectedMonth,
 
     setSelectedBillStatus, setSelectedInvoiceType,
     setCreatedByValue, setSelectedModeValue,
     setStartDateValue, setEndDateValue,
     setMinPaidValue, setMaxPaidValue,
 
-    setVendorValue, setAllSelectedMonth,
+    setVendorValue,
     setPaymentStatusValue, setCategoryValue, setSubCategoryValue,
     setPaymentModeValue
 
@@ -108,9 +108,55 @@ export default function ReportsAllFilterBottomSheet({
         })
     ).current;
 
+    // useEffect(() => {
+    //     if (visible) {
+    //         setError("");
+    //         openSheet();
+
+    //         const backHandler = BackHandler.addEventListener(
+    //             "hardwareBackPress",
+    //             () => {
+    //                 closeSheet();
+    //                 return true;
+    //             }
+    //         );
+
+    //         return () => backHandler.remove();
+    //     }
+    // }, [visible]);
+
     useEffect(() => {
         if (visible) {
+            // Clear local filter states whenever sheet opens
+            setSelectedTenants("");
+            setSelectedFloor(null);
+            setSelectedRoom(null);
+            setSelectedSharing(null);
+            setSelectedStatus(null);
+            setSelectedPeriod(null);
+
+            setSelectedType(null);
+            setSelectedCreatedBy(null);
+            setSelectedMode(null);
+
+            // Clear custom dates
+            setStartDate(null);
+            setEndDate(null);
+            setSelecting("start");
+
+            // Clear amount
+            setMinAmount("");
+            setMaxAmount("");
+
+            // Clear other filters
+            setCategory([]);
+            setSubcategory([]);
+            setVendor("");
+
+            // Clear errors
             setError("");
+            setErrorMsg("");
+
             openSheet();
 
             const backHandler = BackHandler.addEventListener(
@@ -297,10 +343,27 @@ export default function ReportsAllFilterBottomSheet({
                                     <FilterDropdown
                                         options={filters?.periods}
                                         value={selectedPeriod}
+                                        // onSelect={(value) => {
+                                        //     console.log("Perioddropdow", value?.id)
+                                        //     setSelectedPeriod(value)
+                                        //     setSelectedMonth(value?.id || value)
+                                        // }}
                                         onSelect={(value) => {
-                                            console.log("Perioddropdow", value?.id)
-                                            setSelectedPeriod(value)
-                                            setSelectedMonth(value?.id || value)
+                                            console.log("Perioddropdow", value?.id);
+
+                                            setSelectedPeriod(value);
+                                            setSelectedMonth(value?.id || value);
+
+                                            setStartDate(null);
+                                            setEndDate(null);
+                                            setStartDateValue(null);
+                                            setEndDateValue(null);
+
+                                            if (setHeaderSelectedMonth) {
+                                                setHeaderSelectedMonth(value?.id || value);
+                                            }
+
+                                            setSelecting("start");
                                         }}
                                         placeholder="Select "
                                     />
@@ -754,7 +817,7 @@ export default function ReportsAllFilterBottomSheet({
 
                 <View style={styles.bottomButtons}>
 
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         style={styles.resetButton}
                         onPress={() => {
                             setSelectedTenants("")
@@ -770,6 +833,68 @@ export default function ReportsAllFilterBottomSheet({
                             setVendor("")
                             setSelectedMode(null)
                             onReset()
+                        }}
+                    >
+                        <Text style={styles.resetText}>
+                            Reset
+                        </Text>
+                    </TouchableOpacity> */}
+
+                    <TouchableOpacity
+                        style={styles.resetButton}
+                        onPress={() => {
+                            // Local dropdown states
+                            setSelectedTenants("");
+                            setSelectedFloor(null);
+                            setSelectedRoom(null);
+                            setSelectedSharing(null);
+                            setSelectedStatus(null);
+                            setSelectedPeriod(null);
+
+                            setSelectedType(null);
+                            setSelectedCreatedBy(null);
+                            setSelectedMode(null);
+
+                            // Custom Date
+                            // setStartDate(null);
+                            // setEndDate(null);
+                            // setStartDateValue(null);
+                            // setEndDateValue(null);
+
+                            // Amount
+                            setMaxAmount("");
+                            setMinAmount("");
+
+                            // Other filters
+                            setCategory([]);
+                            setSubcategory([]);
+                            setVendor("");
+
+                            // Clear parent filter values
+                            // setSelectedBillStatus([]);
+                            // setSelectedInvoiceType([]);
+                            // setCreatedByValue([]);
+                            // setSelectedModeValue([]);
+
+                            // Other parent filters
+                            // setSelectedSharingValue([]);
+                            // setSelectedTenantStatus([]);
+                            // setSelectedFloorValue([]);
+                            // setSelectedRoomValue([]);
+
+                            // setSelectedMonth(null);
+
+                            // setMinPaidValue("");
+                            // setMaxPaidValue("");
+
+
+
+                            // Clear errors
+                            setError("");
+                            setErrorMsg("");
+
+                            // Parent reset / API reset
+                            onReset();
                         }}
                     >
                         <Text style={styles.resetText}>
@@ -824,6 +949,8 @@ export default function ReportsAllFilterBottomSheet({
                         <Text style={{ color: "#fff" }}>Apply</Text>
                     </TouchableOpacity>
                 </View> */}
+
+
             </Animated.View>
             {showCalendar && (
                 <View style={styles.dateOverlay}>
@@ -848,6 +975,11 @@ export default function ReportsAllFilterBottomSheet({
                                     setEndDate(null);
                                     setStartDateValue(day.dateString)
 
+                                    setSelectedPeriod(null);
+                                    setSelectedMonth("");
+                                    // setAllSelectedMonth("");
+                                    setHeaderSelectedMonth("");
+
                                     // Same calendar remains open
                                     setSelecting("end");
 
@@ -858,6 +990,11 @@ export default function ReportsAllFilterBottomSheet({
                                     ) {
                                         setEndDate(day.dateString);
                                         setEndDateValue((day.dateString))
+
+                                        setSelectedPeriod(null);
+                                        setSelectedMonth("");
+                                        // setAllSelectedMonth("");
+                                        setHeaderSelectedMonth("");
 
                                         // Close the ONE calendar
                                         setShowCalendar(false);
