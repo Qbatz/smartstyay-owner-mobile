@@ -215,6 +215,7 @@ const isExportAllow = isValidSubscription && canReadReports;
     icon,
     title,
     value,
+      showRupee = true,
     prefix,
     suffix,
     valueColor = "#111827",
@@ -233,7 +234,8 @@ const isExportAllow = isValidSubscription && canReadReports;
           </Text>
 
           <Text style={[styles.cardValue, { color: valueColor }]}>
-            ₹ {prefix && <Text>{prefix}</Text>}
+               {showRupee && "₹ "}
+             {prefix && <Text>{prefix}</Text>}
 
             <AnimatedNumber value={value} />
 
@@ -324,6 +326,7 @@ const isExportAllow = isValidSubscription && canReadReports;
               value={receiptData?.totalItems}
               icon={ReceiptsIcon}
               linearcolor="#FFF4F4"
+               showRupee={false}
             />
 
             <SummaryCard

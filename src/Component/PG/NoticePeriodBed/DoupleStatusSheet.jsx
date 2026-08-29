@@ -162,11 +162,11 @@ export default function DoubleStatusSheet({
     }
   };
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     getParticularHostelDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
   console.log("customers123", customers)
   const matchedCustomer = customers.find(

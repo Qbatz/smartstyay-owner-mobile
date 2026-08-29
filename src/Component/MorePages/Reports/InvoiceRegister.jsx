@@ -30,7 +30,7 @@ import RupeeIcon from "../../../Assets/Images/Rupees.png";
 import ReceiptsIcon from "../../../Assets/Images/Receipts.png";
 import ReportsAllFilterBottomSheet from "./ReportsAllFilterBottomSheet"
 import dayjs from "dayjs";
-
+import FilterIcon from "../../../Assets/Images/filter.png";
 
 
 
@@ -66,10 +66,10 @@ const InvoiceRegister = ({ navigation }) => {
   const [selectedInvoiceType, setSelectedInvoiceType] = useState(null)
   const [selectedCreatedBy, setCreatedByValue] = useState(null)
   const [selectedInvoiceMode, setSelectedModeValue] = useState(null)
-  const [startDateValue,setStartDateValue]=useState(null)
-  const[endDateValue,setEndDateValue]=useState(null)
-  const [minPaidValue,setMinPaidValue]=useState("")
-  const [maxPaidValue,setMaxPaidValue]=useState("")
+  const [startDateValue, setStartDateValue] = useState(null)
+  const [endDateValue, setEndDateValue] = useState(null)
+  const [minPaidValue, setMinPaidValue] = useState("")
+  const [maxPaidValue, setMaxPaidValue] = useState("")
 
   const slideAnim = useState(new Animated.Value(500))[0];
 
@@ -110,11 +110,11 @@ const InvoiceRegister = ({ navigation }) => {
     fetchInvoices();
   }, [activeHostelId,])
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     getParticularHostelDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
 
   useEffect(() => {
@@ -220,27 +220,76 @@ const InvoiceRegister = ({ navigation }) => {
   //   GetInvoiceReports(activeHostelId, filters);
   // };
   const formatBackendDate = (date) => {
-  return dayjs(date).format("DD-MM-YYYY");
-};
+    return dayjs(date).format("DD-MM-YYYY");
+  };
 
   const applyFilters = (
     newMonth = selectedMonth ?? allSelectedMonth,
     newStatus = billStatus ?? selectedBillStatus,
     newType = type ?? selectedInvoiceType,
-    newCreated=selectedCreatedBy,
+    newCreated = selectedCreatedBy,
     newMode = selectedInvoiceMode,
-    newStartDate= startDateValue,
-    newEndDate=endDateValue,
-    newMinPaid=minPaidValue,
-    newMaxPaid=maxPaidValue
+    newStartDate = startDateValue,
+    newEndDate = endDateValue,
+    newMinPaid = minPaidValue,
+    newMaxPaid = maxPaidValue
   ) => {
 
+    let finalStartDate = newStartDate;
+    let finalEndDate = newEndDate;
 
+    const hasCustomDate =
+      !!newStartDate && !!newEndDate;
+
+    // Period based date calculation
+    // Only calculate dates when Custom Date is NOT selected
+    if (!hasCustomDate && newMonth === "Last 3 Months") {
+      finalStartDate = dayjs()
+        .subtract(2, "month")
+        .startOf("month");
+
+      finalEndDate = dayjs()
+        .endOf("month");
+    }
+
+    if (!hasCustomDate && newMonth === "Last 6 Months") {
+      finalStartDate = dayjs()
+        .subtract(5, "month")
+        .startOf("month");
+
+      finalEndDate = dayjs()
+        .endOf("month");
+    }
+
+    if (!hasCustomDate && newMonth === "Last Month") {
+      finalStartDate = dayjs()
+        .subtract(1, "month")
+        .startOf("month");
+
+      finalEndDate = dayjs()
+        .subtract(1, "month")
+        .endOf("month");
+    }
+
+    if (!hasCustomDate && newMonth === "This Month") {
+      finalStartDate = dayjs()
+        .startOf("month");
+
+      finalEndDate = dayjs()
+        .endOf("month");
+    }
+
+    if (newMonth === "All") {
+      finalStartDate = undefined;
+      finalEndDate = undefined;
+    }
     const filters = {
       page: 1,
       size: 10,
 
-      period: newMonth || undefined,
+      period: hasCustomDate
+        ? undefined
+        : newMonth || undefined,
 
       paymentStatus:
         newStatus?.length > 0
@@ -252,57 +301,259 @@ const InvoiceRegister = ({ navigation }) => {
           ? newType
           : undefined,
 
-      createdBy: newCreated?.length > 0 ? newCreated : undefined,
+      createdBy:
+        newCreated?.length > 0
+          ? newCreated
+          : undefined,
 
-      invoiceModes: newMode?.length >0 ? newMode : undefined,
-      startDate: newStartDate ? formatBackendDate(newStartDate) : undefined,
-      endDate: newEndDate ? formatBackendDate(newEndDate) : undefined,
-      minPaidAmount: newMinPaid ? Number(newMinPaid) : undefined,
-      maxPaidAmount: newMaxPaid ? Number(newMaxPaid) : undefined
+      invoiceModes:
+        newMode?.length > 0
+          ? newMode
+          : undefined,
+
+      startDate: finalStartDate
+        ? formatBackendDate(finalStartDate)
+        : undefined,
+
+      endDate: finalEndDate
+        ? formatBackendDate(finalEndDate)
+        : undefined,
+
+      minPaidAmount:
+        newMinPaid
+          ? Number(newMinPaid)
+          : undefined,
+
+      maxPaidAmount:
+        newMaxPaid
+          ? Number(newMaxPaid)
+          : undefined,
     };
-    
 
     console.log("Invoice Filters =>", filters);
 
-   const res= GetInvoiceReports(activeHostelId, filters);
-   console.log("karti",res)
+    GetInvoiceReports(activeHostelId, filters);
   };
 
+  // const applyFilters = (
+  //   newMonth = selectedMonth ?? allSelectedMonth,
+  //   newStatus = billStatus ?? selectedBillStatus,
+  //   newType = type ?? selectedInvoiceType,
+  //   newCreated=selectedCreatedBy,
+  //   newMode = selectedInvoiceMode,
+  //   newStartDate= startDateValue,
+  //   newEndDate=endDateValue,
+  //   newMinPaid=minPaidValue,
+  //   newMaxPaid=maxPaidValue
+  // ) => {
+
+
+  //   const filters = {
+  //     page: 1,
+  //     size: 10,
+
+  //     period: newMonth || undefined,
+
+  //     paymentStatus:
+  //       newStatus?.length > 0
+  //         ? newStatus
+  //         : undefined,
+
+  //     invoiceTypes:
+  //       newType?.length > 0
+  //         ? newType
+  //         : undefined,
+
+  //     createdBy: newCreated?.length > 0 ? newCreated : undefined,
+
+  //     invoiceModes: newMode?.length >0 ? newMode : undefined,
+  //     startDate: newStartDate ? formatBackendDate(newStartDate) : undefined,
+  //     endDate: newEndDate ? formatBackendDate(newEndDate) : undefined,
+  //     minPaidAmount: newMinPaid ? Number(newMinPaid) : undefined,
+  //     maxPaidAmount: newMaxPaid ? Number(newMaxPaid) : undefined
+  //   };
+
+
+  //   console.log("Invoice Filters =>", filters);
+
+  //  const res= GetInvoiceReports(activeHostelId, filters);
+  //  console.log("karti",res)
+  // };
+
+  // const handleDownloadInvoiceReport = async () => {
+
+  //    const finalMonth =
+  //     allSelectedMonth !== undefined ? allSelectedMonth : selectedMonth ;
+
+  //   const finalStatus= selectedBillStatus !=undefined ? selectedBillStatus : billStatus;
+
+  //   const finalType= selectedInvoiceType !=undefined ? selectedInvoiceType : type;
+
+  //   const filters = {
+  //     page: 1,
+  //     size: 10,
+  //     period: finalMonth || undefined,
+  //     paymentStatus:
+  //       finalStatus?.length > 0 ? finalStatus : undefined,
+  //     invoiceTypes:
+  //       finalType?.length > 0 ? finalType : undefined,
+
+  //     createdBy: selectedCreatedBy?.length > 0 ? selectedCreatedBy : undefined,
+  //     invoiceModes: selectedInvoiceMode?.length > 0 ? selectedInvoiceMode : undefined,
+  //     startDate: startDateValue ?  formatBackendDate(startDateValue) : undefined,
+  //     endDate: endDateValue ? formatBackendDate(endDateValue) : undefined,
+  //     minPaidAmount: minPaidValue || undefined,
+  //     maxPaidAmount: maxPaidValue || undefined,
+  //   };
+
+
+
+  //   const res = await downloadInvoiceReport(activeHostelId, filters);
+
+  //   if (res?.success && res?.url) {
+  //     await CommonModule.downloadAndViewDocument(res.url);
+  //   }
+  // };
+
   const handleDownloadInvoiceReport = async () => {
+    const finalMonth =
+      allSelectedMonth !== undefined && allSelectedMonth !== null
+        ? allSelectedMonth
+        : selectedMonth;
 
-     const finalMonth =
-      allSelectedMonth !== undefined ? allSelectedMonth : selectedMonth ;
+    const finalStatus =
+      selectedBillStatus !== undefined && selectedBillStatus !== null
+        ? selectedBillStatus
+        : billStatus;
 
-    const finalStatus= selectedBillStatus !=undefined ? selectedBillStatus : billStatus;
+    const finalType =
+      selectedInvoiceType !== undefined && selectedInvoiceType !== null
+        ? selectedInvoiceType
+        : type;
 
-    const finalType= selectedInvoiceType !=undefined ? selectedInvoiceType : type;
+    const finalCreatedBy =
+      selectedCreatedBy?.length > 0
+        ? selectedCreatedBy
+        : undefined;
+
+    const finalMode =
+      selectedInvoiceMode?.length > 0
+        ? selectedInvoiceMode
+        : undefined;
+
+    // -----------------------------------
+    // Custom Date check
+    // -----------------------------------
+
+    const hasCustomDate =
+      !!startDateValue && !!endDateValue;
+
+    let finalStartDate = startDateValue;
+    let finalEndDate = endDateValue;
+
+    // -----------------------------------
+    // Period dates
+    // Only calculate when custom date
+    // is NOT selected
+    // -----------------------------------
+
+    if (!hasCustomDate && finalMonth === "Last 3 Months") {
+      finalStartDate = dayjs()
+        .subtract(2, "month")
+        .startOf("month");
+
+      finalEndDate = dayjs()
+        .endOf("month");
+    }
+
+    if (!hasCustomDate && finalMonth === "Last 6 Months") {
+      finalStartDate = dayjs()
+        .subtract(5, "month")
+        .startOf("month");
+
+      finalEndDate = dayjs()
+        .endOf("month");
+    }
+
+    if (!hasCustomDate && finalMonth === "Last Month") {
+      finalStartDate = dayjs()
+        .subtract(1, "month")
+        .startOf("month");
+
+      finalEndDate = dayjs()
+        .subtract(1, "month")
+        .endOf("month");
+    }
+
+    if (!hasCustomDate && finalMonth === "This Month") {
+      finalStartDate = dayjs()
+        .startOf("month");
+
+      finalEndDate = dayjs()
+        .endOf("month");
+    }
+
+    // -----------------------------------
+    // Build export filters
+    // -----------------------------------
 
     const filters = {
       page: 1,
       size: 10,
-      period: finalMonth || undefined,
+
+      // IMPORTANT:
+      // Custom date -> don't send period
+      period: hasCustomDate
+        ? undefined
+        : finalMonth || undefined,
+
       paymentStatus:
-        finalStatus?.length > 0 ? finalStatus : undefined,
+        finalStatus?.length > 0
+          ? finalStatus
+          : undefined,
+
       invoiceTypes:
-        finalType?.length > 0 ? finalType : undefined,
-      
-      createdBy: selectedCreatedBy?.length > 0 ? selectedCreatedBy : undefined,
-      invoiceModes: selectedInvoiceMode?.length > 0 ? selectedInvoiceMode : undefined,
-      startDate: startDateValue ?  formatBackendDate(startDateValue) : undefined,
-      endDate: endDateValue ? formatBackendDate(endDateValue) : undefined,
-      minPaidAmount: minPaidValue || undefined,
-      maxPaidAmount: maxPaidValue || undefined,
+        finalType?.length > 0
+          ? finalType
+          : undefined,
+
+      createdBy: finalCreatedBy,
+
+      invoiceModes: finalMode,
+
+      startDate: finalStartDate
+        ? formatBackendDate(finalStartDate)
+        : undefined,
+
+      endDate: finalEndDate
+        ? formatBackendDate(finalEndDate)
+        : undefined,
+
+      minPaidAmount:
+        minPaidValue
+          ? Number(minPaidValue)
+          : undefined,
+
+      maxPaidAmount:
+        maxPaidValue
+          ? Number(maxPaidValue)
+          : undefined,
     };
 
-      
+    console.log(
+      "EXPORT INVOICE FILTERS =>",
+      filters
+    );
 
-    const res = await downloadInvoiceReport(activeHostelId, filters);
+    const res = await downloadInvoiceReport(
+      activeHostelId,
+      filters
+    );
 
     if (res?.success && res?.url) {
       await CommonModule.downloadAndViewDocument(res.url);
     }
   };
-
   console.log("invoiceReports", invoiceReports);
 
 
@@ -335,46 +586,88 @@ const InvoiceRegister = ({ navigation }) => {
     return <Text>{displayValue}</Text>;
   };
 
-
   const SummaryCard = ({
-    icon,
-    title,
-    value,
-    prefix,
-    suffix,
-    valueColor = "#111827",
-    linearcolor
-  }) => (
-    <LinearGradient
-      colors={["#FFFFFF", linearcolor]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.summaryCard}
-    >
-      <View style={styles.cardTopRow}>
-        <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>
-            {title}
-          </Text>
+  icon,
+  title,
+  value,
+  prefix,
+  suffix,
+  showRupee = true,
+  valueColor = "#111827",
+  linearcolor
+}) => (
+  <LinearGradient
+    colors={["#FFFFFF", linearcolor]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.summaryCard}
+  >
+    <View style={styles.cardTopRow}>
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>
+          {title}
+        </Text>
 
-          <Text style={[styles.cardValue, { color: valueColor }]}>
-            ₹ {prefix && <Text>{prefix}</Text>}
+        <Text style={[styles.cardValue, { color: valueColor }]}>
+          {showRupee && "₹ "}
+          {prefix && <Text>{prefix}</Text>}
 
-            <AnimatedNumber value={value} />
+          <AnimatedNumber value={value} />
 
-            {suffix && <Text>{suffix}</Text>}
-          </Text>
-        </View>
-
-        <View style={styles.iconBox}>
-          <Image
-            source={icon}
-            style={styles.cardIcon}
-          />
-        </View>
+          {suffix && <Text>{suffix}</Text>}
+        </Text>
       </View>
-    </LinearGradient>
-  );
+
+      <View style={styles.iconBox}>
+        <Image
+          source={icon}
+          style={styles.cardIcon}
+        />
+      </View>
+    </View>
+  </LinearGradient>
+);
+
+
+  // const SummaryCard = ({
+  //   icon,
+  //   title,
+  //   value,
+  //   prefix,
+  //   suffix,
+  //   valueColor = "#111827",
+  //   linearcolor
+  // }) => (
+  //   <LinearGradient
+  //     colors={["#FFFFFF", linearcolor]}
+  //     start={{ x: 0, y: 0 }}
+  //     end={{ x: 1, y: 1 }}
+  //     style={styles.summaryCard}
+  //   >
+  //     <View style={styles.cardTopRow}>
+  //       <View style={styles.cardContent}>
+  //         <Text style={styles.cardTitle}>
+  //           {title}
+  //         </Text>
+
+  //         <Text style={[styles.cardValue, { color: valueColor }]}>
+  //           ₹ {prefix && <Text>{prefix}</Text>}
+
+  //           <AnimatedNumber value={value} />
+
+  //           {suffix && <Text>{suffix}</Text>}
+  //         </Text>
+  //       </View>
+
+  //       <View style={styles.iconBox}>
+  //         <Image
+  //           source={icon}
+  //           style={styles.cardIcon}
+  //         />
+  //       </View>
+  //     </View>
+  //   </LinearGradient>
+  // );
 
 
   return (
@@ -451,6 +744,7 @@ const InvoiceRegister = ({ navigation }) => {
                 value={invoiceReports?.totalInvoices}
                 icon={ReceiptsIcon}
                 linearcolor="#FFF4F4"
+                 showRupee={false}
               />
 
               <SummaryCard
@@ -479,80 +773,84 @@ const InvoiceRegister = ({ navigation }) => {
 
 
           <View style={styles.filterRow}>
-            {/* ALL BUTTON */}
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={[
                 styles.filterBox,
-                // billStatus.length > 0 && styles.filterBoxActive,
               ]}
               onPress={() => {
-                // setTempStatus(billStatus);
-                setAllFilterSheet(true);
+                setAllFilterSheet(true)
               }}
             >
               <Text
                 style={[
                   styles.filterText,
-                  // billStatus.length > 0 && styles.filterTextActive,
                 ]}
-              >
-                {/* {selectedBillStatus.length === 0 || !allSelectedMonth || !startDateValue || !endDateValue || 
-                  ? "All"
-                  : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
-                  }`} */}
+              > 
                   All
               </Text>
               <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* STATUS BUTTON */}
-            <TouchableOpacity
-              style={[
-                styles.filterBox,
-                billStatus.length > 0 && styles.filterBoxActive,
-              ]}
-              onPress={() => {
-                setTempStatus(billStatus);
-                setStatusSheetOpen(true);
-              }}
-            >
-              <Text
+
+            <View style={{ flexDirection: 'row' }}>
+              <TouchableOpacity
                 style={[
-                  styles.filterText,
-                  billStatus.length > 0 && styles.filterTextActive,
+                  styles.filterBox,
+                  billStatus.length > 0 && styles.filterBoxActive,
                 ]}
+                onPress={() => {
+                  setTempStatus(billStatus);
+                  setStatusSheetOpen(true);
+                }}
               >
-                {billStatus.length === 0
-                  ? "Status"
-                  : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
-                  }`}
-              </Text>
-              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-            </TouchableOpacity>
+                <Text
+                  style={[
+                    styles.filterText,
+                    billStatus.length > 0 && styles.filterTextActive,
+                  ]}
+                >
+                  {billStatus.length === 0
+                    ? "Status"
+                    : `${billStatus[0]} ${billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
+                    }`}
+                </Text>
+                <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.filterBox,
+                  type.length > 0 && styles.filterBoxActive,
+                ]}
+                onPress={() => {
+                  setTempType(type);
+                  setTypeSheetOpen(true);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    type.length > 0 && styles.filterTextActive,
+                  ]}
+                >
+                  {type.length === 0
+                    ? "Type"
+                    : `${type[0]} ${type.length > 1 ? `+${type.length - 1} more` : ""
+                    }`}
+                </Text>
+                <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+              </TouchableOpacity>
+
+            </View>
+
 
             <TouchableOpacity
-              style={[
-                styles.filterBox,
-                type.length > 0 && styles.filterBoxActive,
-              ]}
-              onPress={() => {
-                setTempType(type);
-                setTypeSheetOpen(true);
-              }}
+              style={styles.filterIconBtn}
+              onPress={() => setAllFilterSheet(true)}
             >
-              <Text
-                style={[
-                  styles.filterText,
-                  type.length > 0 && styles.filterTextActive,
-                ]}
-              >
-                {type.length === 0
-                  ? "Type"
-                  : `${type[0]} ${type.length > 1 ? `+${type.length - 1} more` : ""
-                  }`}
-              </Text>
-              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+              <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
             </TouchableOpacity>
           </View>
 
@@ -674,11 +972,34 @@ const InvoiceRegister = ({ navigation }) => {
           applyFilters("", billStatus, type);
         }}
 
+        // onApply={() => {
+        //   setSelectedMonth(tempMonth);
+        //   setMonthSheetOpen(false);
+
+        //   applyFilters(tempMonth, billStatus, type);
+        // }}
+
         onApply={() => {
           setSelectedMonth(tempMonth);
+
+          setStartDateValue(null);
+          setEndDateValue(null);
+
+          setAllSelectedMonth(tempMonth);
+
           setMonthSheetOpen(false);
 
-          applyFilters(tempMonth, billStatus, type);
+          applyFilters(
+            tempMonth,
+            billStatus,
+            type,
+            selectedCreatedBy,
+            selectedInvoiceMode,
+            null,
+            null,
+            minPaidValue,
+            maxPaidValue
+          );
         }}
 
         onClose={() => setMonthSheetOpen(false)}
@@ -745,6 +1066,7 @@ const InvoiceRegister = ({ navigation }) => {
         setSelectedInvoiceType={setSelectedInvoiceType}
         setCreatedByValue={setCreatedByValue}
         setSelectedModeValue={setSelectedModeValue}
+        setHeaderSelectedMonth={setSelectedMonth}
         // setTenantValue={setTenantValue}
         setStartDateValue={setStartDateValue}
         setEndDateValue={setEndDateValue}
@@ -752,16 +1074,16 @@ const InvoiceRegister = ({ navigation }) => {
         setMaxPaidValue={setMaxPaidValue}
 
         onReset={() => {
-            setSelectedBillStatus(null),setAllSelectedMonth(""),setSelectedInvoiceType(null),
-            setCreatedByValue(null),setSelectedModeValue(null),setStartDateValue(null),
-            setEndDateValue(null),setMaxPaidValue(""),setMinPaidValue("")
-            setAllFilterSheet(false)
-            applyFilters("",[],[],[],[],"","","","")
+          setSelectedBillStatus(null), setAllSelectedMonth(""), setSelectedInvoiceType(null),
+            setCreatedByValue(null), setSelectedModeValue(null), setStartDateValue(null),
+            setEndDateValue(null), setMaxPaidValue(""), setMinPaidValue("")
+          // setAllFilterSheet(false)
+          applyFilters("", [], [], [], [], "", "", "", "")
         }}
         onApply={() => {
           setAllFilterSheet(false)
-          applyFilters(allSelectedMonth,selectedBillStatus,selectedInvoiceType,selectedCreatedBy,
-            selectedInvoiceMode,startDateValue,endDateValue,minPaidValue,maxPaidValue)
+          applyFilters(allSelectedMonth, selectedBillStatus, selectedInvoiceType, selectedCreatedBy,
+            selectedInvoiceMode, startDateValue, endDateValue, minPaidValue, maxPaidValue)
         }}
         onClose={() => setAllFilterSheet(false)}
       />
@@ -893,7 +1215,7 @@ const styles = StyleSheet.create({
 
   /* FILTER */
   filterRow: {
-    flexDirection: "row", alignItems: 'center',
+    flexDirection: "row", alignItems: 'center', justifyContent: 'space-between',
     marginTop: 10,
   },
 
@@ -1026,6 +1348,16 @@ const styles = StyleSheet.create({
 
   filterTextActive: {
     color: "#fff",
+  },
+  filterIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    // backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
   },
 
   sheetOverlay: {

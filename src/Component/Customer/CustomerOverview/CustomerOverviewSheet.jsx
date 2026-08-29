@@ -155,11 +155,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     getParticularHostelDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
 
 
