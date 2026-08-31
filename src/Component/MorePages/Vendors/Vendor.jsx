@@ -57,7 +57,7 @@ export default function Vendors({ navigation }) {
     //     getVendorCategories,
     //   } = useContext(VendorContext);
 
-    const { vendorList, loading, getVendorList, deleteVendor, } = useContext(CustomerContext);;
+    const { vendorList, loading, getVendorList, deleteVendor,setVendorList} = useContext(CustomerContext);;
 
     const { activeHostelId } = useContext(CommonContexts)
 
@@ -116,6 +116,8 @@ export default function Vendors({ navigation }) {
         useCallback(() => {
             if (activeHostelId) {
                 getVendorList(activeHostelId);
+            }else{
+                setVendorList([])
             }
         }, [activeHostelId])
     );
