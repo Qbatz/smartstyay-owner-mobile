@@ -46,7 +46,7 @@ import DiscountActionSheet from "./DiscountActionSheet"
 import QuestionIcon from "../../../Assets/Images/help.png";
 import BillIcon from "../../../Assets/Images/bill.png";
 import RefundedIcon from "../../../Assets/Images/Repeat.png";
-
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 
 const BillDetailsSheet = ({
@@ -78,6 +78,8 @@ const BillDetailsSheet = ({
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+
+   const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;

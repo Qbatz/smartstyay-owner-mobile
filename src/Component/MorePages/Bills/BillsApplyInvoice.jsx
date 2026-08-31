@@ -28,6 +28,7 @@ import Loader from "../../Loader/Loader";
 import ValidatedInput from "../ValidatedInput"
 import MessageQuestion from "../../../Assets/Images/MessageQuestion.png"
 import TickGreenIcon from "../../../Assets/Images/tickgreen.png"
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 export default function BillsApplyInvoices() {
 
@@ -47,6 +48,8 @@ export default function BillsApplyInvoices() {
 
     const isApplyTriggeredRef = useRef(false);
      const instructionSheetRef = useRef(new Animated.Value(0)).current;
+
+       const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");

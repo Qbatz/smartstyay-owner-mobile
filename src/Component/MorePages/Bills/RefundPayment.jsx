@@ -24,7 +24,7 @@ import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import ProfileImage from "../../../Assets/Images/Avatar.png";
 import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png"
-
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 
 const RefundPaymentSheet = ({
@@ -40,6 +40,7 @@ const RefundPaymentSheet = ({
 
   const [refundInitDetails, setRefundInitDetails] = useState(null);
   const [refundLoading, setRefundLoading] = useState(false);
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const [refundAmount, setRefundAmount] = useState("");
   const [refundBalance, setRefundBalance] = useState(0);
@@ -441,6 +442,20 @@ const RefundPaymentSheet = ({
   }
 
 
+  const handleLeaveScreen = () => {
+  if (
+    refundAmount.trim() ||
+    refundDate ||
+    refundFrom ||
+    transactionId.trim()
+  ) {
+    setShowLeavePageScreen(true);
+  } else {
+    onClose();
+  }
+}
+
+
   const handleSaveRefund = async () => {
     setRefundAmountError("");
     setRefundDateError("");
@@ -560,7 +575,7 @@ const RefundPaymentSheet = ({
       }}>
 
         {/* overlay */}
-        <TouchableWithoutFeedback onPress={onClose}>
+        <TouchableWithoutFeedback onPress={handleLeaveScreen}>
           <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
         </TouchableWithoutFeedback>
 
@@ -830,7 +845,10 @@ const RefundPaymentSheet = ({
 
             {/* BUTTON ROW */}
             <View style={styles.btnRow}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={resetRefundForm}>
+              <TouchableOpacity style={styles.cancelBtn}
+              //  onPress={resetRefundForm}
+                 onPress={handleLeaveScreen}
+               >
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
@@ -881,6 +899,18 @@ const RefundPaymentSheet = ({
           </View>
         </View>
       )}
+
+      <LeavePageScreen
+  visible={showLeavePageScreen}
+  onClose={() => setShowLeavePageScreen(false)}
+  discardClose={() => {
+    setShowLeavePageScreen(false);
+
+    setTimeout(() => {
+      resetRefundForm();
+    }, 300);
+  }}
+/>
 
     </>
 

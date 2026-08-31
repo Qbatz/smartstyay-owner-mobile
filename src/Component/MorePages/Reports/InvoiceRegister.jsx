@@ -587,46 +587,46 @@ const InvoiceRegister = ({ navigation }) => {
   };
 
   const SummaryCard = ({
-  icon,
-  title,
-  value,
-  prefix,
-  suffix,
-  showRupee = true,
-  valueColor = "#111827",
-  linearcolor
-}) => (
-  <LinearGradient
-    colors={["#FFFFFF", linearcolor]}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    style={styles.summaryCard}
-  >
-    <View style={styles.cardTopRow}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>
-          {title}
-        </Text>
+    icon,
+    title,
+    value,
+    prefix,
+    suffix,
+    showRupee = true,
+    valueColor = "#111827",
+    linearcolor
+  }) => (
+    <LinearGradient
+      colors={["#FFFFFF", linearcolor]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.summaryCard}
+    >
+      <View style={styles.cardTopRow}>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>
+            {title}
+          </Text>
 
-        <Text style={[styles.cardValue, { color: valueColor }]}>
-          {showRupee && "₹ "}
-          {prefix && <Text>{prefix}</Text>}
+          <Text style={[styles.cardValue, { color: valueColor }]}>
+            {showRupee && "₹ "}
+            {prefix && <Text>{prefix}</Text>}
 
-          <AnimatedNumber value={value} />
+            <AnimatedNumber value={value} />
 
-          {suffix && <Text>{suffix}</Text>}
-        </Text>
+            {suffix && <Text>{suffix}</Text>}
+          </Text>
+        </View>
+
+        <View style={styles.iconBox}>
+          <Image
+            source={icon}
+            style={styles.cardIcon}
+          />
+        </View>
       </View>
-
-      <View style={styles.iconBox}>
-        <Image
-          source={icon}
-          style={styles.cardIcon}
-        />
-      </View>
-    </View>
-  </LinearGradient>
-);
+    </LinearGradient>
+  );
 
 
   // const SummaryCard = ({
@@ -744,7 +744,7 @@ const InvoiceRegister = ({ navigation }) => {
                 value={invoiceReports?.totalInvoices}
                 icon={ReceiptsIcon}
                 linearcolor="#FFF4F4"
-                 showRupee={false}
+                showRupee={false}
               />
 
               <SummaryCard
@@ -765,6 +765,24 @@ const InvoiceRegister = ({ navigation }) => {
               <SummaryCard
                 title="Outstanding"
                 value={invoiceReports?.outStandingAmount}
+                icon={RupeeIcon}
+                linearcolor="#FFF4F4"
+              />
+              <SummaryCard
+                title="Booking Amount"
+                value={invoiceReports?.totalBookingAmount}
+                icon={RupeeIcon}
+                linearcolor="#FFF4F4"
+              />
+              <SummaryCard
+                title="Refunded Booking Amount"
+                value={invoiceReports?.refundAmount}
+                icon={RupeeIcon}
+                linearcolor="#FFF4F4"
+              />
+              <SummaryCard
+                title="Cancelled Amount"
+                value={invoiceReports?.cancelledAmount}
                 icon={RupeeIcon}
                 linearcolor="#FFF4F4"
               />
@@ -1457,6 +1475,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
   },
+  cardContent: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 10,
+  },
 
   iconBox: {
     width: 42,
@@ -1474,21 +1497,43 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 4,
     elevation: 2,
-  },
-  cardIcon: { width: 20, height: 20 },
 
+    flexShrink: 0,
+  },
+
+  // iconBox: {
+  //   width: 42,
+  //   height: 42,
+  //   borderRadius: 12,
+  //   backgroundColor: "#fff",
+
+  //   justifyContent: "center",
+  //   alignItems: "center",
+
+  //   borderWidth: 1,
+  //   borderColor: "#E5E7EB",
+
+  //   shadowColor: "#000",
+  //   shadowOpacity: 0.05,
+  //   shadowRadius: 4,
+  //   elevation: 2,
+  // },
+  cardIcon: { width: 20, height: 20 },
   cardTitle: {
     fontSize: 13,
     color: "#64748B",
     fontFamily: "Gilroy-Medium",
+    flexShrink: 1,
   },
 
   cardValue: {
-    marginTop: 12,
+    marginTop: 8,
     fontSize: 18,
     color: "#111827",
     fontFamily: "Gilroy-Bold",
+    flexShrink: 1,
   },
+
   cardRow: {
     paddingLeft: 5,
     paddingTop: 8,
@@ -1496,4 +1541,4 @@ const styles = StyleSheet.create({
     marginBottom: 5, alignItems: "flex-start",
   },
 
-});
+})

@@ -195,19 +195,19 @@ export default function FinalSettlementScreen({ navigation, route }) {
   );
 
   useEffect(() => {
-  const show = Keyboard.addListener("keyboardDidShow", () => {
-    setKeyboardVisible(true);
-  });
+    const show = Keyboard.addListener("keyboardDidShow", () => {
+      setKeyboardVisible(true);
+    });
 
-  const hide = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardVisible(false);
-  });
+    const hide = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardVisible(false);
+    });
 
-  return () => {
-    show.remove();
-    hide.remove();
-  };
-}, []);
+    return () => {
+      show.remove();
+      hide.remove();
+    };
+  }, []);
 
 
   // useEffect(() => {
@@ -1230,10 +1230,10 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
           <ScrollView
             ref={scrollRef}
-         contentContainerStyle={{
-  paddingBottom: 
-   keyboardVisible ? 200 : 160,
-}}
+            contentContainerStyle={{
+              paddingBottom:
+                keyboardVisible ? 200 : 160,
+            }}
             keyboardShouldPersistTaps="handled"
             onScroll={(e) => {
               currentScrollY.current = e.nativeEvent.contentOffset.y;
@@ -2439,8 +2439,26 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     ref={discountRef}
                     value={discountValue}
 
-                    onChangeText={(t) => {
-                      let cleaned = t.replace(/[^0-9.]/g, "");
+                    // onChangeText={(t) => {
+                    //   let cleaned = t.replace(/[^0-9.]/g, "");
+
+                    //   const parts = cleaned.split(".");
+
+                    //   if (parts.length > 2) {
+                    //     cleaned = parts[0] + "." + parts[1];
+                    //   }
+
+                    //   if (parts[1]?.length > 2) {
+                    //     cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                    //   }
+                    //   setDiscountValue(cleaned)
+                    // }
+                    // }
+
+                    onChangeText={(text) => {
+                      let cleaned = text.replace(/[^0-9.]/g, "");
+
+                      cleaned = cleaned.replace(/^0+(?=\d)/, "");
 
                       const parts = cleaned.split(".");
 
@@ -2451,9 +2469,9 @@ export default function FinalSettlementScreen({ navigation, route }) {
                       if (parts[1]?.length > 2) {
                         cleaned = parts[0] + "." + parts[1].slice(0, 2);
                       }
-                      setDiscountValue(cleaned)
-                    }
-                    }
+
+                      setDiscountValue(cleaned);
+                    }}
 
                     keyboardType="numeric"
                     placeholder="Enter discount"
@@ -2525,24 +2543,24 @@ export default function FinalSettlementScreen({ navigation, route }) {
           </ScrollView>
 
 
-{!keyboardVisible && (
-          <View style={[styles.bottomFixed]}>
+          {!keyboardVisible && (
+            <View style={[styles.bottomFixed]}>
 
-            <View style={styles.totalContainer}>
-              <Text style={styles.totalLabel}>{isRefundable ? "Total Refund Payable" : "Outstanding Amount Payable"}</Text>
-              <Text
-                style={[
-                  styles.totalAmount,
-                  { color: isNegative ? "#D70000" : "#16A34A" },
-                ]}
-              >
-                {isNegative ? "-" : ""}₹{" "}
-                {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
-                {/* {Math.round(Math.abs(Number(ReturnAmount))).toLocaleString("en-IN")} */}
-              </Text>
-            </View>
+              <View style={styles.totalContainer}>
+                <Text style={styles.totalLabel}>{isRefundable ? "Total Refund Payable" : "Outstanding Amount Payable"}</Text>
+                <Text
+                  style={[
+                    styles.totalAmount,
+                    { color: isNegative ? "#D70000" : "#16A34A" },
+                  ]}
+                >
+                  {isNegative ? "-" : ""}₹{" "}
+                  {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
+                  {/* {Math.round(Math.abs(Number(ReturnAmount))).toLocaleString("en-IN")} */}
+                </Text>
+              </View>
 
-            {/* {Number(ReturnAmount) > 0 && (
+              {/* {Number(ReturnAmount) > 0 && (
   discountApplied ? (
     <View style={styles.discountAppliedCard}>
       
@@ -2587,24 +2605,24 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
 
 
-            {/* Buttons */}
-            <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
-                <Text style={styles.cancelTxt}>Cancel</Text>
-              </TouchableOpacity>
+              {/* Buttons */}
+              <View style={styles.buttonRow}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
+                  <Text style={styles.cancelTxt}>Cancel</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[
-                  styles.generateBtn,
-                  isGenerateTriggeredRef.current && { opacity: 0.6 }
-                ]}
-                disabled={isGenerateTriggeredRef.current}
-                onPress={handleGenerate}>
-                <Text style={styles.generateTxt}>Generate Bill</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.generateBtn,
+                    isGenerateTriggeredRef.current && { opacity: 0.6 }
+                  ]}
+                  disabled={isGenerateTriggeredRef.current}
+                  onPress={handleGenerate}>
+                  <Text style={styles.generateTxt}>Generate Bill</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-)}
+          )}
 
 
           <AddRoomReadingSheet

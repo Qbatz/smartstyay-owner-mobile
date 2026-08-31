@@ -28,6 +28,7 @@ import Loader from "../../Loader/Loader";
 import ValidatedInput from "../ValidatedInput"
 import NotesIcon from "../../../Assets/Images/invoice.png"
 import DirectionDownIcon from "../../../Assets/Images/direction_down.png"
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 
 export default function BookingToInvoice() {
@@ -46,6 +47,8 @@ export default function BookingToInvoice() {
         UpdateBillDiscount,
         ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
+
+     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const isApplyTriggeredRef = useRef(false);
     const retainerSheetRef = useRef(new Animated.Value(0)).current;
