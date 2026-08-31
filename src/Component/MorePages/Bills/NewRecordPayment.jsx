@@ -601,7 +601,7 @@ const NewRecordPayment = ({ route }) => {
                     </View>
 
                     <View style={{ marginTop: 20, alignItems: 'center', alignSelf: 'flex-end', flexDirection: 'row' }}>
-                        <TouchableOpacity style={{ marginRight: 8 }}>
+                        <TouchableOpacity onPress={handleLeaveScreen} style={{ marginRight: 8 }}>
                             <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium' }}>Cancel</Text>
                         </TouchableOpacity>
 
