@@ -28,6 +28,7 @@ import Loader from "../../Loader/Loader";
 import ValidatedInput from "../ValidatedInput"
 import MessageQuestion from "../../../Assets/Images/MessageQuestion.png"
 import TickGreenIcon from "../../../Assets/Images/tickgreen.png"
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 
 export default function ApplyBookingToInvoice({ route }) {
@@ -45,6 +46,8 @@ export default function ApplyBookingToInvoice({ route }) {
         downloadReceipt, downloadBill, GetReceiptsList, receiptsList, MarkBillAsUnpaid, UpdateBillDiscount, ApplyBillDiscount, InitializebookingBills, ApplyAdvanceToInvoices,
         advanceCreditDetails, getRetainerInvoiceDetail, retainerInvoiceDetail, ApplyRetainerToInvoices } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
+
+     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const isApplyTriggeredRef = useRef(false);
     const instructionSheetRef = useRef(new Animated.Value(0)).current;

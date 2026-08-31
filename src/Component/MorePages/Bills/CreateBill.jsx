@@ -23,6 +23,9 @@ import CalendarIcon from "../../../Assets/Images/calendar.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import RemoveIcon from "../../../Assets/Images/remove-circle.png";
 import Loader from "../../Loader/Loader";
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+
+
 
 
 
@@ -93,6 +96,10 @@ export default function CreateBill({ navigation }) {
 
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+
+
+
   const removeEmojis = (text) =>
     text.replace(
       /([\u2700-\u27BF]|[\uE000-\uF8FF]|\uD83C[\uDC00-\uDFFF]|\uD83D[\uDC00-\uDFFF]|\uD83E[\uDD00-\uDDFF])/g,
@@ -162,11 +169,11 @@ export default function CreateBill({ navigation }) {
   const filteredOptions = itemOptions.filter((op) => {
     console.log(op)
     if (op === "Others") return true;
-    const normalizedOption = op?.toLowerCase() .replace(/\s/g, "");
+    const normalizedOption = op?.toLowerCase().replace(/\s/g, "");
     console.log(normalizedOption)
-     return !selectedTypes.some((type) =>
-    normalizedOption.includes(type?.toLowerCase().replace(/\s/g, ""))
-  );
+    return !selectedTypes.some((type) =>
+      normalizedOption.includes(type?.toLowerCase().replace(/\s/g, ""))
+    );
 
     // return !selectedTypes.includes(
     //   op.toLowerCase().replace(/\s/g, "")
@@ -181,7 +188,7 @@ export default function CreateBill({ navigation }) {
 
   console.log(items)
   console.log(selectedTypes)
-  console.log("filerOP",filteredOptions)
+  console.log("filerOP", filteredOptions)
   const CustomerOptions = ["Suresh", "Kumar", "Ruban", "Rajesh"];
 
 
@@ -285,7 +292,7 @@ export default function CreateBill({ navigation }) {
 
           // 🔥 FIX
           if (type?.toLowerCase() === "rent") {
-            type = "Rent" ;
+            type = "Rent";
           }
           if (type?.toLowerCase() === "electricity" || type?.toLowerCase() === "eb") {
             type = "EB";
@@ -429,23 +436,33 @@ export default function CreateBill({ navigation }) {
   }
 
 
-const filteredCustomers = customers.filter(
-  (item) => !["Booked","Draft", "Settlement Generated"].includes(item.currentStatus)
-);
+  const filteredCustomers = customers.filter(
+    (item) => !["Booked", "Draft", "Settlement Generated"].includes(item.currentStatus)
+  );
 
   console.log("customers", customers);
 
+  // useEffect(() => {
+  //   const backHandler = BackHandler.addEventListener(
+  //     "hardwareBackPress",
+  //     () => {
+  //       navigation.goBack();
+  //       return true;
+  //     }
+  //   );
+
+  //   return () => backHandler.remove();
+  // }, [])
+
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      () => {
-        navigation.goBack();
-        return true;
-      }
-    );
+      "hardwareBackPress", () => {
+      handleLeaveScreen();
+      return true
+    })
 
     return () => backHandler.remove();
-  }, []);
+  }, [selectedCustomer, invoiceNo, invoiceDate, dueDate, items,]);
 
   //  this is dummy data store for edit 
   //  useEffect(() => {
@@ -658,6 +675,25 @@ const filteredCustomers = customers.filter(
   };
 
   console.log(items,)
+
+  const handleLeaveScreen = () => {
+    const hasChanges =
+      selectedCustomer ||
+      invoiceNo.trim() ||
+      invoiceDate ||
+      dueDate ||
+      items.length > 0;
+
+    if (hasChanges) {
+      setShowLeavePageScreen(true);
+    } else {
+      navigation.goBack();
+    }
+  };
+
+
+
+
   const validateAndSubmit = async () => {
     if (isSubmitted) return;
     setIsSubmitted(true)
@@ -724,7 +760,7 @@ const filteredCustomers = customers.filter(
 
       if (mode === "edit") {
 
-          const changedItems = items.map((i) => ({
+        const changedItems = items.map((i) => ({
           type: i.description,
           amount: Number(i.amount),
         }));
@@ -735,7 +771,7 @@ const filteredCustomers = customers.filter(
         //     type: i.description,
         //     amount: Number(i.amount),
         //   }));
-        
+
 
         console.log("changesitems", changedItems);
 
@@ -812,7 +848,7 @@ const filteredCustomers = customers.filter(
   };
 
 
-console.log("modey",mode)
+  console.log("modey", mode)
 
   return (
     <>
@@ -829,7 +865,7 @@ console.log("modey",mode)
         keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
       >
         <View style={styles.topHeader}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={handleLeaveScreen}>
             <Image source={ArrowLeft} style={styles.backIcon} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>  {mode === "edit" ? "Edit Bill" : " Create New Bill"} </Text>
@@ -915,7 +951,7 @@ console.log("modey",mode)
             style={styles.customerdropdownBox}
             onPress={() => {
               if (mode === "edit") return;
-              if(mode == "addBill") return;
+              if (mode == "addBill") return;
               setCustomerOpen((v) => !v);
             }}
           // onPress={() => setCustomerOpen((v) => !v)}
@@ -1207,7 +1243,7 @@ console.log("modey",mode)
 
 
           <View style={styles.btnRow}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={handleLeaveScreen}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
 
@@ -1292,6 +1328,21 @@ console.log("modey",mode)
           </View>
         )}
       </KeyboardAvoidingView>
+
+
+      <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
+
+
 
       {/* <TouchableOpacity
   style={[
