@@ -206,11 +206,11 @@ export default function TenantsScreen({ route }) {
     }, [activeHostelId])
   );
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     getParticularHostelDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
   useFocusEffect(
     useCallback(() => {

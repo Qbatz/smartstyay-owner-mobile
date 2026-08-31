@@ -117,11 +117,11 @@ export default function SettingsElecticity({ navigation }) {
 
 
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     getParticularHostelDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
   useEffect(() => {
     if (!ebunitList) return;

@@ -28,6 +28,9 @@ import InactiveIcon from "../../../Assets/Images/inActiveuser.png";
 import NoticePeriodIcon from "../../../Assets/Images/Noticeperiodimg.png";
 import TenantsIcon from "../../../Assets/Images/Tenants.png";
 import ReportsAllFilterBottomSheet from "./ReportsAllFilterBottomSheet"
+import FilterIcon from "../../../Assets/Images/filter.png";
+
+
 
 
 const { width } = Dimensions.get("window");
@@ -276,6 +279,7 @@ const TenantRegister = ({ navigation }) => {
     icon,
     title,
     value,
+      showRupee = true,
     prefix,
     suffix,
     valueColor,
@@ -294,7 +298,8 @@ const TenantRegister = ({ navigation }) => {
           </Text>
 
           <Text style={[styles.cardValue, { color: valueColor }]}>
-            ₹ {prefix && <Text>{prefix}</Text>}
+             {/* {showRupee && "₹ "} */}
+             {prefix && <Text>{prefix}</Text>}
 
             <AnimatedNumber value={value} />
 
@@ -392,6 +397,7 @@ const TenantRegister = ({ navigation }) => {
                 value={tenantData?.summary?.totalTenants}
                 icon={TenantsIcon}
                 linearcolor="#FFF4F4"
+                showRupee={false}
               />
 
               <SummaryCard
@@ -428,15 +434,14 @@ const TenantRegister = ({ navigation }) => {
           <View style={styles.filterRow}>
 
             {/* All */}
-
+{/* 
             <TouchableOpacity
               style={[
                 styles.filterBtn,
                 selectedStatus.length > 0 && styles.activeFilter
               ]}
               onPress={() => {
-                // setTempStatus(selectedStatus);
-                // setStatusSheetOpen(true);
+
                 setAllFilterSheet(true)
               }}
             >
@@ -449,9 +454,9 @@ const TenantRegister = ({ navigation }) => {
               </Text>
 
               <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
-
+          <View style={{flexDirection:'row'}}>
             {/* STATUS */}
             <TouchableOpacity
               style={[
@@ -496,6 +501,15 @@ const TenantRegister = ({ navigation }) => {
 
               <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
             </TouchableOpacity>
+            </View>
+
+
+                           <TouchableOpacity
+                                                        style={styles.filterIconBtn}
+                                                        onPress={() => setAllFilterSheet(true)}
+                                                    >
+                                                        <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
+                                                    </TouchableOpacity>
 
           </View>
 
@@ -719,9 +733,14 @@ const styles = StyleSheet.create({
     color: "#111827",
   },
 
-  filterRow: {
-    flexDirection: "row",
-    marginBottom: 10, marginTop: 12
+  // filterRow: {
+  //   flexDirection: "row",
+  //   marginBottom: 10, marginTop: 12
+  // },
+  
+   filterRow: {
+    flexDirection: "row", alignItems: 'center', justifyContent:'space-between',
+    marginTop: 10,
   },
 
   filterBtn: {
@@ -881,4 +900,14 @@ const styles = StyleSheet.create({
     // paddingBottom: 0,
     marginBottom: 5, alignItems: "flex-start",
   },
+   filterIconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        // backgroundColor: "#F3F4F6",
+        justifyContent: "center",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#F3F4F6",
+    },
 });

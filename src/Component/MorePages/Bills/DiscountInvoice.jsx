@@ -21,6 +21,7 @@ import DownArrow from "../../../Assets/Images/direction-down.png";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import Loader from "../../Loader/Loader";
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 export default function DiscountInvoiceScreen() {
   const navigation = useNavigation();
@@ -36,6 +37,8 @@ export default function DiscountInvoiceScreen() {
     ApplyBillDiscount, InitializeDiscountDetails } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
+
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
@@ -181,19 +184,43 @@ export default function DiscountInvoiceScreen() {
     }
   }, [discountAmountParam, discountPercentageParam, reasonParam]);
 
-  useEffect(() => {
-    const backAction = () => {
-      navigation.goBack();
-      return true;
-    };
+  // useEffect(() => {
+  //   const backAction = () => {
+  //     navigation.goBack();
+  //     return true;
+  //   };
 
-    const backHandler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+  //   const backHandler = BackHandler.addEventListener(
+  //     "hardwareBackPress",
+  //     backAction
+  //   );
 
-    return () => backHandler.remove();
-  }, [])
+  //   return () => backHandler.remove();
+  // }, [])
+
+  
+useEffect(() => {
+  const backAction = () => {
+    handleLeaveScreen();
+    return true;
+  };
+
+  const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => backHandler.remove();
+}, [
+  isEdit,
+  discount,
+  reason,
+  discountType,
+  initialDiscount,
+  initialReason,
+  initialType,
+]);
+
 
 
   const isValidNumber = (val) => {
@@ -282,6 +309,45 @@ export default function DiscountInvoiceScreen() {
   console.log("sendpayload", sendpayload);
 
   const isEdit = route?.params?.isEdit;
+
+
+
+const handleLeaveScreen = () => {
+  let hasChanges = false;
+
+  if (isEdit) {
+    const currentDiscount = String(
+      Number(discount || 0).toFixed(2)
+    );
+
+    const initial = String(
+      Number(initialDiscount || 0).toFixed(2)
+    );
+
+    const isSameDiscount = currentDiscount === initial;
+    const isSameReason = (reason || "") === (initialReason || "");
+    const isSameType = discountType === initialType;
+
+    hasChanges =
+      !isSameDiscount ||
+      !isSameReason ||
+      !isSameType;
+  } else {
+    // Add mode
+    hasChanges =
+      discount.trim() !== "" ||
+      reason.trim() !== "" ||
+      discountType !== "Amount";
+  }
+
+  if (hasChanges) {
+    setShowLeavePageScreen(true);
+  } else {
+    navigation.goBack();
+  }
+}
+
+
 
   const handleDiscountApply = async () => {
     let hasError = false;
@@ -458,7 +524,7 @@ export default function DiscountInvoiceScreen() {
 
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={handleLeaveScreen}>
             <Image source={ArrowLeft} style={styles.backIcon} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{isEdit ? "Edit Discount Invoice" : "Discount Invoice"}</Text>
@@ -848,7 +914,7 @@ export default function DiscountInvoiceScreen() {
             <View style={styles.bottomBar}>
               <TouchableOpacity
                 style={styles.cancelBtn}
-                onPress={() => navigation.goBack()}
+               onPress={handleLeaveScreen}
               >
                 <Text style={{ fontFamily: "Gilroy-Medium" }}>Cancel</Text>
               </TouchableOpacity>
@@ -862,6 +928,18 @@ export default function DiscountInvoiceScreen() {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
+
+        <LeavePageScreen
+          visible={showLeavePageScreen}
+          onClose={() => setShowLeavePageScreen(false)}
+          discardClose={() => {
+            setShowLeavePageScreen(false);
+
+            setTimeout(() => {
+              navigation.goBack();
+            }, 300);
+          }}
+        />
       </SafeAreaView>
     </>
   );

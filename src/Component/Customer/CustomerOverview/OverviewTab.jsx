@@ -129,11 +129,11 @@ export default function OverviewTab({ customerDetails,
     }
   }, [customerDetails])
 
-  useEffect(() => {
-    if (activeHostelId) {
-      getParticularHostelDetails(activeHostelId);
-    }
-  }, [activeHostelId])
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     getParticularHostelDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId])
 
   console.log("customerDetails", customerDetails);
 
