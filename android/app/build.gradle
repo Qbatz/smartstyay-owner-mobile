@@ -84,8 +84,8 @@ android {
         applicationId "com.qbatz.smartstay"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 20
-        versionName "1.0.20"
+        versionCode 22
+        versionName "1.0.22"
 
         ndk {
             abiFilters "arm64-v8a", "armeabi-v7a", "x86_64",  "x86"
