@@ -6,7 +6,7 @@ import {
   TextInput,
   Image,
   StyleSheet,
-  ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard
+  ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard, BackHandler
 } from "react-native";
 import Delete from "../../Assets/Images/remove.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
@@ -23,6 +23,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../ToastFile/ToastPage";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png"
 import { Switch } from "react-native";
+import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 
 
 export default function AssignTenant({ navigation, route }) {
@@ -88,6 +89,8 @@ export default function AssignTenant({ navigation, route }) {
   const [isCustomRentSaved, setIsCustomRentSaved] = useState(false);
   const [customRentError, setCustomRentError] = useState("");
   const [refuseAdvanceAmount, setRefuseAdvanceAmount] = useState(false);
+
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -600,12 +603,12 @@ export default function AssignTenant({ navigation, route }) {
       hasError = true;
     }
 
-       if (!refuseAdvanceAmount) {
-    if (advanceAmount === "" || advanceAmount === null || advanceAmount === undefined) {
+    if (!refuseAdvanceAmount) {
+      if (advanceAmount === "" || advanceAmount === null || advanceAmount === undefined) {
         setAdvanceError("Please Enter Advance Amount");
         hasError = true;
+      }
     }
-}
 
     // if (!refuseAdvanceAmount) {
     //   if (!advanceAmount) {
@@ -704,7 +707,7 @@ export default function AssignTenant({ navigation, route }) {
       };
 
       console.log("payload", payload);
-      
+
 
       const res = await TenantCheckIn(
         activeHostelId,
@@ -799,19 +802,19 @@ export default function AssignTenant({ navigation, route }) {
   // }, [checkJoiningDate])
 
   useEffect(() => {
-  if (!checkJoiningDate) return;
+    if (!checkJoiningDate) return;
 
-  const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+    const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
 
-  if (!currentMonth) {
-    setCollectFullRent(false);
-    setShowCustomRentEditor(false);
-    setCustomRentAmount("");
-    setSavedCustomRent("");
-    setIsCustomRentSaved(false);
-    setCustomRentError("");
-  }
-}, [checkJoiningDate]);
+    if (!currentMonth) {
+      setCollectFullRent(false);
+      setShowCustomRentEditor(false);
+      setCustomRentAmount("");
+      setSavedCustomRent("");
+      setIsCustomRentSaved(false);
+      setCustomRentError("");
+    }
+  }, [checkJoiningDate]);
 
   const isBookingDateDisabled = (d) => {
     if (!d) return false;
@@ -917,6 +920,62 @@ export default function AssignTenant({ navigation, route }) {
     setOpenDropdownId(null);
   };
 
+  const handleLeavePage = useCallback(() => {
+    let hasMandatoryValue = false;
+
+
+    if (activeTab === "Booking") {
+      hasMandatoryValue =
+        !!CheckinTenantSelected ||
+        !!purchaseDate ||
+        !!joiningDate ||
+        !!bookingAmount ||
+        !!accountSelected;
+    }
+
+
+    if (activeTab === "CheckIn") {
+      hasMandatoryValue =
+        !!CheckinTenantSelected ||
+        (StayTypeSelected && StayTypeSelected !== "Stay Type") ||
+        !!rentalAmount ||
+        (!refuseAdvanceAmount && !!advanceAmount);
+    }
+
+    if (hasMandatoryValue) {
+      setShowLeavePageScreen(true);
+    } else {
+      navigation.goBack();
+    }
+  }, [
+    activeTab,
+    CheckinTenantSelected,
+    purchaseDate,
+    joiningDate,
+    bookingAmount,
+    accountSelected,
+    StayTypeSelected,
+    rentalAmount,
+    advanceAmount,
+    refuseAdvanceAmount,
+    navigation,
+  ]);
+
+  useFocusEffect(
+  useCallback(() => {
+    const backAction = () => {
+      handleLeavePage();
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => subscription.remove();
+  }, [handleLeavePage])
+);
 
   return (
     <>
@@ -924,7 +983,7 @@ export default function AssignTenant({ navigation, route }) {
       <View style={styles.container}>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={handleLeavePage}>
             <Image source={ArrowLeft} style={{ width: 20, height: 20 }} />
           </TouchableOpacity>
 
@@ -1967,7 +2026,7 @@ export default function AssignTenant({ navigation, route }) {
 
 
             <View style={styles.footer}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={handleLeavePage}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
@@ -2148,6 +2207,18 @@ export default function AssignTenant({ navigation, route }) {
         )}
 
       </View>
+
+      <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false)
+
+          setTimeout(() => {
+            navigation.goBack()
+          }, 300)
+        }}
+      />
     </>
   );
 }

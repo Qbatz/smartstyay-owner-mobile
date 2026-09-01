@@ -14,7 +14,7 @@ import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
 import Loader from "../Loader/Loader";
-
+import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 
 
 export default function AddTenant() {
@@ -38,6 +38,24 @@ export default function AddTenant() {
     const [isSubmitClicked, setIsSubmitClicked] = useState(false)
     const [walkinDate, setWalkinDate] = useState(null)
     const [showCalendar, setShowCalendar] = useState(false)
+
+        const [basicDetails, setBasicDetails] = useState({
+        firstName: "",
+        lastName: "",
+        mobile: "",
+        email: "",
+    });
+    console.log("basicDetails", basicDetails)
+    const [addressDetails, setAddressDetails] = useState({
+        flat: "",
+        area: "",
+        landmark: "",
+        pincode: "",
+        city: "",
+        state: "",
+    });
+
+      const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const countryList = [
         { label: "India", code: "+91" },
@@ -106,44 +124,69 @@ export default function AddTenant() {
         );
     };
 
+    const handleLeaveScreen = () => {
+    const hasMandatoryValue =
+       basicDetails.firstName.trim() !== "" ||
+        basicDetails.mobile.trim() !== "";
+
+    if (hasMandatoryValue) {
+        setShowLeavePageScreen(true);
+        return;
+    }
+
+    navigation.goBack();
+};
+
+
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         const onBackPress = () => {
+    //             if (step === 2) {
+    //                 setStep(1);
+    //                 return true;
+    //             } else if (navigation.canGoBack()) {
+    //                 navigation.goBack();
+    //                 return true;
+    //             }
+    //             return false;
+    //         };
+
+    //         const subscription = BackHandler.addEventListener(
+    //             "hardwareBackPress",
+    //             onBackPress
+    //         );
+
+    //         return () => subscription.remove();
+    //     }, [navigation, step])
+    // );
 
     useFocusEffect(
-        useCallback(() => {
-            const onBackPress = () => {
-                if (step === 2) {
-                    setStep(1);
-                    return true;
-                } else if (navigation.canGoBack()) {
-                    navigation.goBack();
-                    return true;
-                }
-                return false;
-            };
+    useCallback(() => {
+        const onBackPress = () => {
+            if (step === 2) {
+                setStep(1);
+                return true;
+            }
 
-            const subscription = BackHandler.addEventListener(
-                "hardwareBackPress",
-                onBackPress
-            );
+            handleLeaveScreen();
+            return true;
+        };
 
-            return () => subscription.remove();
-        }, [navigation, step])
-    );
+        const subscription = BackHandler.addEventListener(
+            "hardwareBackPress",
+            onBackPress
+        );
 
-    const [basicDetails, setBasicDetails] = useState({
-        firstName: "",
-        lastName: "",
-        mobile: "",
-        email: "",
-    });
-    console.log("basicDetails", basicDetails)
-    const [addressDetails, setAddressDetails] = useState({
-        flat: "",
-        area: "",
-        landmark: "",
-        pincode: "",
-        city: "",
-        state: "",
-    });
+        return () => subscription.remove();
+    }, [
+        navigation,
+        step,
+        basicDetails.firstName,
+        basicDetails.mobile,
+    ])
+);
+
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     const mobileRegex = /^[1-9][0-9]{9}$/;
 
@@ -406,13 +449,14 @@ export default function AddTenant() {
 
 
 
+
     return (
         <>
         {loading && <Loader/>}
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <TouchableOpacity onPress={handleLeaveScreen}>
                         <Image source={ArrowLeft} style={styles.backIcon} />
                     </TouchableOpacity>
                     <Text style={styles.headerTitle}>Add Walkin</Text>
@@ -680,15 +724,16 @@ export default function AddTenant() {
                             <TouchableOpacity
                                 style={[
                                     styles.primaryBtn,
-                                    !isBasicValid && styles.primaryBtnDisabled
+                                    // !isBasicValid && styles.primaryBtnDisabled
                                 ]}
                                 // disabled={!isBasicValid}
-                                onPress={() => navigation.goBack()}
+                                // onPress={() => navigation.goBack()}
+                                onPress={handleLeaveScreen}
                             >
                                 <Text
                                     style={[
                                         styles.primaryText,
-                                        !isBasicValid && styles.primaryTextDisabled
+                                        // !isBasicValid && styles.primaryTextDisabled
                                     ]}
                                 >
                                     Cancel
@@ -1009,6 +1054,19 @@ export default function AddTenant() {
                     </View>
                 )}
             </SafeAreaView>
+
+
+              <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
         </>
     );
 }

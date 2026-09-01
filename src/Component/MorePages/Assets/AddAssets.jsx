@@ -24,6 +24,7 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { BankingContext } from "../../../Context/BankingContext";
 import { VendorContext } from "../../../Context/VendorContext";
 import { useFocusEffect } from '@react-navigation/native';
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 export default function AddAssetSheet({ onClose, title = "Add Assets", asset: currentItem, }) {
 
@@ -43,6 +44,7 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
   const isEdit = !!currentItem;
 
   const [initialState, setInitialState] = useState(null);
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
 
 
@@ -228,19 +230,19 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
     }, [activeHostelId])
   );
 
-  useEffect(() => {
-    const backAction = () => {
-      onClose();
-      return true;
-    };
+  // useEffect(() => {
+  //   const backAction = () => {
+  //     onClose();
+  //     return true;
+  //   };
 
-    const handler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+  //   const handler = BackHandler.addEventListener(
+  //     "hardwareBackPress",
+  //     backAction
+  //   );
 
-    return () => handler.remove();
-  }, [onClose]);
+  //   return () => handler.remove();
+  // }, [onClose]);
 
   const vendorOptions = (vendorList?.vendors || [])?.map((v) => ({
     label: v?.fullName,
@@ -259,6 +261,46 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
       setErrors((prev) => ({ ...prev, api: "" }));
     }
   };
+
+
+  const handleLeavePage = useCallback(() => {
+    const hasMandatoryValue =
+      !!assetName?.trim() ||
+      !!productName?.trim() ||
+      !!purchaseDate ||
+      !!price?.trim() ||
+      (!isEdit && !!selectedMode);
+
+    if (hasMandatoryValue) {
+      setShowLeavePageScreen(true);
+    } else {
+      onClose();
+    }
+  }, [
+    assetName,
+    productName,
+    purchaseDate,
+    price,
+    selectedMode,
+    isEdit,
+    onClose,
+  ]);
+
+  useFocusEffect(
+  useCallback(() => {
+    const backAction = () => {
+      handleLeavePage();
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => subscription.remove();
+  }, [handleLeavePage])
+);
 
 
   const validateForm = () => {
@@ -303,7 +345,7 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
       return;
     }
 
-    if(isSubmitClicked) return;
+    if (isSubmitClicked) return;
     setIsSubmitClicked(true)
 
     const payload = {
@@ -326,59 +368,59 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
     }
 
 
-    try{
-    if (isEdit) {
-      const res = await handleUpdateAsset(payload);
+    try {
+      if (isEdit) {
+        const res = await handleUpdateAsset(payload);
 
-      if (res?.success) {
-        setModalType("success");
-        setModalMessage("Asset updated successfully");
+        if (res?.success) {
+          setModalType("success");
+          setModalMessage("Asset updated successfully");
+          setShowSuccessModal(true);
+
+          setTimeout(() => {
+            setShowSuccessModal(false);
+            onClose();
+            setIsSubmitClicked(false)
+          }, 1500);
+
+          return;
+        }
+
+        setModalType("warning");
+        setModalMessage(res?.message || "Something went wrong");
         setShowSuccessModal(true);
 
         setTimeout(() => {
           setShowSuccessModal(false);
-          onClose();
-           setIsSubmitClicked(false)
+          setIsSubmitClicked(false)
         }, 1500);
 
         return;
       }
-
-      setModalType("warning");
-      setModalMessage(res?.message || "Something went wrong");
-      setShowSuccessModal(true);
-
-      setTimeout(() => {
-        setShowSuccessModal(false);
-         setIsSubmitClicked(false)
-      }, 1500);
-
-      return;
-    }
-    }catch(error){
+    } catch (error) {
       console.log(error)
       setIsSubmitClicked(false)
     }
 
     // ✅ ADD FLOW
-    try{
-    const res = await addAsset(payload);
+    try {
+      const res = await addAsset(payload);
 
-    if (res?.success) {
-      setModalType("success");
-      setModalMessage(res?.message || "Asset added successfully");
-      setShowSuccessModal(true);
+      if (res?.success) {
+        setModalType("success");
+        setModalMessage(res?.message || "Asset added successfully");
+        setShowSuccessModal(true);
 
-      setTimeout(() => {
-        setShowSuccessModal(false);
-        onClose();
+        setTimeout(() => {
+          setShowSuccessModal(false);
+          onClose();
+          setIsSubmitClicked(false)
+        }, 1500);
+      } else {
+        setErrors({ api: res?.message });
         setIsSubmitClicked(false)
-      }, 1500);
-    } else {
-      setErrors({ api: res?.message });
-      setIsSubmitClicked(false)
-    }
-    }catch(error){
+      }
+    } catch (error) {
       setIsSubmitClicked(false)
     }
   };
@@ -829,12 +871,12 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
 
 
             <View style={styles.footerBtnRow}>
-              <TouchableOpacity onPress={onClose}>
+              <TouchableOpacity onPress={handleLeavePage}>
                 <Text style={styles.cancel}>Cancel</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={[styles.addBtn, isSubmitClicked && {opacity:0.4}]} onPress={handleSubmit} 
-              disabled={isSubmitClicked}>
+              <TouchableOpacity style={[styles.addBtn, isSubmitClicked && { opacity: 0.4 }]} onPress={handleSubmit}
+                disabled={isSubmitClicked}>
                 <Text style={styles.addBtnText}>Save</Text>
               </TouchableOpacity>
             </View>
@@ -888,6 +930,18 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
           </View>
         )}
       </View>
+
+      <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            onClose()
+          }, 300);
+        }}
+      />
 
     </>
   );
