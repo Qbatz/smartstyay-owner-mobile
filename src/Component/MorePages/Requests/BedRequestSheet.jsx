@@ -1,0 +1,750 @@
+import React, { useEffect, useState, useRef, useContext } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    Image,
+    TouchableOpacity,
+    TextInput,
+    Animated,
+    PanResponder,
+    Dimensions,
+    BackHandler, Keyboard,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { ComplaintContext } from "../../../Context/ComplaintContext";
+import { CommonContexts } from "../../../Context/CommonContext";
+// import DeleteComplaint from "./DeleteComplaint";
+import { useHasPermission } from "../../../Utils/useHasPermission";
+import Profile from "../../../Assets/Images/Avatar.png";
+import Edit from "../../../Assets/Images/editIcon.png";
+import Delete from "../../../Assets/Images/trash.png";
+import CommentIcon from "../../../Assets/Images/message.png";
+import userImg from "../../../Assets/Images/userImg.png";
+import Exchange from "../../../Assets/Images/exchange.png";
+import room from "../../../Assets/Images/Room_Icon.png";
+import Bed from "../../../Assets/Images/bed.png";
+import DotsIcon from "../../../Assets/Images/3dots.png";
+import Complaint_InprogressIcon from "../../../Assets/Images/Complaint_Inprogress.png";
+import NotifyTenantDetails from "./NotifyTenant"
+import CheckAvailableBedSheet from "./CheckAvailableBedSheet"
+
+
+const SCREEN_HEIGHT = Dimensions.get("window").height;
+
+export default function BedRequestDetails({
+    visible,
+    onClose,
+    complaint,
+    onOpenAssignSheet,
+    onOpenCommentSheet,
+    onOpenStatusSheet,
+}) {
+
+        const { getParticularComplaint, selectedComplaint, complaintsViewUpdates } = useContext(ComplaintContext);
+    const { activeHostelId } = useContext(CommonContexts);
+    const navigation = useNavigation();
+    const [deleteshow, setDeleteShow] = useState(false);
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+    const [notifytenantshow , setNotifyTenantShow] = useState(false)
+      const [showBedSheet, setShowBedSheet] = useState(false);
+
+    const {
+        canWriteModule: canWriteComplaints,
+        canReadModule: canReadComplaints,
+        canUpdateModule: canUpdateComplaints,
+        canDeleteModule: canDeleteComplaints,
+    } = useHasPermission("Complaints");
+
+    const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+
+    console.log("complaint", complaint);
+
+
+
+    console.log("selectedComplaint", selectedComplaint);
+
+    const getInitialsFromName = (name = "") => {
+        if (!name) return "";
+
+        const words = name.trim().split(" ").filter(Boolean);
+
+        if (words.length === 1) {
+            return words[0].charAt(0).toUpperCase();
+        }
+
+        return (
+            words[0].charAt(0).toUpperCase() +
+            words[words.length - 1].charAt(0).toUpperCase()
+        );
+    };
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (_, gesture) =>
+                gesture.dy > 6, // detect swipe down
+            onPanResponderMove: (_, gesture) => {
+                if (gesture.dy > 0) translateY.setValue(gesture.dy);
+            },
+            onPanResponderRelease: (_, gesture) => {
+                if (gesture.dy > 120) handleCloseSheet(); // close if swipe enough
+                else animateOpen(); // reset to open
+            },
+        })
+    ).current;
+
+    // open animation
+    const animateOpen = () => {
+        Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    // close animation
+    const handleCloseSheet = () => {
+        Animated.timing(translateY, {
+            toValue: SCREEN_HEIGHT,
+            duration: 200,
+            useNativeDriver: true,
+        }).start(() => onClose());
+    };
+    useEffect(() => {
+        if (!visible) return;
+
+        const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+            setKeyboardHeight(e.endCoordinates.height - 60);
+        });
+
+        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+            setKeyboardHeight(0);
+        });
+
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, [visible]);
+
+    // open when visible changes
+    useEffect(() => {
+        if (visible) {
+            animateOpen();
+
+            const backHandler = BackHandler.addEventListener(
+                "hardwareBackPress",
+                () => {
+                    handleCloseSheet();
+                    return true;
+                }
+            );
+
+            return () => backHandler.remove();
+        }
+    }, [visible]);
+
+    if (!visible) return null;
+
+
+    const openComments = async () => {
+        const res = await getParticularComplaint(
+            activeHostelId,
+            complaint?.complaintId
+        )
+
+        if (res?.success) {
+            handleCloseSheet();
+            onOpenCommentSheet(complaint);
+        }
+    };
+
+    const isAssigned = !!complaint?.assigneeName?.trim();
+
+
+    console.log("comments", complaint);
+
+
+    const openUpdates = async () => {
+
+        await complaintsViewUpdates({
+            hostelId: activeHostelId,
+            complaintsId: complaint?.complaintId,
+        });
+        handleCloseSheet();
+        navigation.navigate("ComplaintUpdates", {
+            selectedComplaint,
+        });
+    }
+
+    const handleNotifyTenantShow = () => {
+        setNotifyTenantShow(true)
+    }
+
+
+
+
+    return (
+        <>
+            {/* BACKDROP */}
+            <TouchableOpacity
+                style={styles.overlay}
+                activeOpacity={1}
+                onPress={handleCloseSheet}
+            />
+
+            {/* BOTTOM SHEET */}
+            <Animated.View
+                {...panResponder.panHandlers}
+                style={[
+                    styles.sheet,
+
+                    { marginBottom: keyboardHeight, transform: [{ translateY }] },
+                ]}
+            >
+                {/* drag handle */}
+                <View style={styles.headerLine} />
+
+                {/* Header */}
+                <View style={styles.headerRow}>
+                    <View>
+                        <Text style={styles.title}>{complaint?.complaintTypeName || "Bed change request"}</Text>
+                        <Text style={styles.time}>{complaint?.complaintDate || "27 Oct 2026, 8:32 AM"}</Text>
+                    </View>
+
+                    <View style={styles.iconRow}>
+
+
+                        <View
+                            style={[
+                                styles.statusBadge,
+                                { backgroundColor: "#FFF5E8" },
+                            ]}
+                        >
+                            <View
+                                style={[
+                                    styles.statusDot,
+                                    { backgroundColor: "#F5A623" },
+                                ]}
+                            />
+                            <Text style={styles.statusText}>
+                                New
+                            </Text>
+                        </View>
+                        {/* <TouchableOpacity disabled={!canUpdateComplaints}
+                            style={!canUpdateComplaints && { opacity: 0.4 }}
+                          
+                            onPress={() => {
+                                if (!canUpdateComplaints) return;
+
+                                navigation.navigate("AddComplaint", {
+                                    mode: "edit",
+                                    data: complaint,
+                                });
+                            }}
+
+                        >
+                            <Image source={Edit} style={styles.icon} />
+                        </TouchableOpacity> */}
+
+                        <TouchableOpacity disabled={!canDeleteComplaints}
+                            style={[
+                                { marginLeft: 12 },
+                                !canDeleteComplaints && { opacity: 0.4 }
+                            ]}
+                            // onPress={() => {
+                            //     if (!canDeleteComplaints) return;
+                            //     setDeleteShow(true);
+                            // }}
+                            >
+                            <Image
+                                source={DotsIcon}
+                                style={[styles.icon, { marginLeft: 12 }]}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Complaint from */}
+                <Text style={styles.sectionTitle}>Request from</Text>
+
+                <View style={styles.userRow}>
+
+                    {complaint?.customerProfile ? (
+                        <Image
+                            source={{ uri: complaint.customerProfile }}
+                            style={styles.avatar}
+                        />
+                    ) : (
+                        <View style={styles.initialCircle}>
+                            <Text style={styles.initialText}>
+                                {complaint?.initials
+                                    ? complaint.initials
+                                    : getInitialsFromName(complaint?.customerName)}
+                            </Text>
+                        </View>
+                    )}
+
+                    <View>
+                           <View style={{flexDirection:'row'}}>
+                        <Text style={styles.userName}>
+                            {complaint?.customerName || "Selvin"}
+                        </Text>
+                                         <Image
+                                source={require("../../../Assets/Images/verify.png")}
+                                style={{ width: 20,
+                          height: 20,marginLeft:5,
+                          resizeMode: "contain",}}
+                              />
+                              </View>
+
+                        <View style={styles.infoRow}>
+                            <Text style={styles.floorTag}>{complaint?.floorName || "Ground Floor"}</Text>
+
+                            <Image source={room} style={styles.roomIcon} />
+                            <Text style={styles.roomValue}>
+                                {complaint?.roomName || "Room 1"}
+                            </Text>
+
+                            <Image source={Bed} style={styles.bedIcon} />
+                            <Text style={styles.bedValue}>
+                                {complaint?.bedName || "Bed 1"}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Row */}
+                {/* <View style={styles.rowBetween}>
+          <View>
+            <Text style={styles.labelSmall}>Request ID</Text>
+            <Text style={styles.boldText}>{complaint?.complaintId} </Text>
+          </View>
+
+          <View>
+            <Text style={styles.labelSmall}>Assigned to</Text>
+            <Text style={styles.boldText}>{complaint?.assigneeName || "N/A"}</Text>
+          </View>
+        </View> */}
+
+                {/* Status */}
+
+
+                <View style={styles.rowBetween}>
+                    <Text style={styles.sectionTitle}>Bed type</Text>
+                    <Text style={styles.boldText}>{complaint?.status || "2 Sharing"}</Text>
+                </View>
+
+                <View style={styles.rowBetween}>
+                    <Text style={styles.sectionTitle}>Bed Change Urgency</Text>
+                    <Text style={styles.boldText}> {complaint?.complaintTypeName || "2 Week "}</Text>
+                </View>
+
+                <View style={styles.rowBetween}>
+                    <Text style={styles.sectionTitle}>Requested Date</Text>
+                    <Text style={styles.boldText}>
+                        {complaint?.description || "10 Dec 2025"}
+                    </Text>
+                </View>
+
+
+
+
+
+
+                <View style={styles.infoCard}>
+                    <Text style={styles.cardLabel}>Reason</Text>
+
+                    <Text style={styles.cardValue}>
+                        Disturbance in current room
+                    </Text>
+                </View>
+
+
+                <View style={styles.notifyCard}>
+
+                    <Text style={styles.notifyTitle}>
+                        Notify to the tenant
+                    </Text>
+
+                    <Text style={styles.notifySubTitle}>
+                        If the request is not valid or availability concerns
+                    </Text>
+
+                    <TouchableOpacity style={styles.notifyBtn} onPress={handleNotifyTenantShow}>
+                        <Image
+                            source={require("../../../Assets/Images/message.png")}
+                            style={styles.notifyIcon}
+                        />
+
+                        <Text style={styles.notifyBtnText}>
+                            Notify
+                        </Text>
+                    </TouchableOpacity>
+
+                </View>
+
+                <View style={styles.buttonRow}>
+                    {/* <TouchableOpacity
+          
+
+              style={[
+    styles.assignBtn,
+    !canWriteComplaints && { opacity: 0.5 }
+  ]}
+  disabled={!canWriteComplaints}
+  onPress={() => {
+    if (!canWriteComplaints) return;
+
+    handleCloseSheet();
+    setTimeout(onOpenAssignSheet, 200);
+  }}
+          >
+            <Image source={userImg} style={styles.assignIcon} />
+            <Text style={styles.assignText}>Assign</Text>
+          </TouchableOpacity> */}
+
+
+
+
+
+                    <TouchableOpacity
+                        style={[
+                            styles.statusBtn,
+                            !canWriteComplaints && { opacity: 0.5 }
+                        ]}
+                        // disabled={!canWriteComplaints}
+                        onPress={() => {
+                            // if (!canWriteComplaints) return
+
+                            // handleCloseSheet()
+                            setTimeout(() => setShowBedSheet(true) , 200)
+                        }}
+                    >
+                        <Image source={Exchange} style={styles.assignIcon} />
+                        <Text style={{color: "#fff", fontSize: 16, fontFamily: "Gilroy-Semibold" }}>Check Availability</Text>
+                    </TouchableOpacity>
+                </View>
+            </Animated.View>
+
+                        <CheckAvailableBedSheet
+                            visible={showBedSheet}
+                            // joiningDate={checkJoiningDate}
+                            onClose={() => setShowBedSheet(false)}
+
+                            />
+
+               {notifytenantshow && (
+                    <NotifyTenantDetails
+                      visible={notifytenantshow}
+                onClose={() => setNotifyTenantShow(false)}
+                onSuccess={(msg) => {
+                  setNotifyTenantShow(false);
+                  handleCloseSheet(); 
+                }}
+                    />
+                  )}
+
+            {/* {deleteshow && (
+        <DeleteComplaint
+          visible={deleteshow}
+           complaintId={complaint.complaintId}
+    onClose={() => setDeleteShow(false)}
+    onSuccess={(msg) => {
+      setDeleteShow(false);
+      handleCloseSheet(); 
+    }}
+        />
+      )} */}
+        </>
+    );
+}
+
+const styles = StyleSheet.create({
+    overlay: {
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        right: 0,
+        left: 0,
+        backgroundColor: "rgba(0,0,0,0.4)",
+    },
+
+    sheet: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        padding: 20,
+        paddingBottom: 35,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+    },
+
+    headerLine: {
+        width: 60,
+        height: 5,
+        backgroundColor: "#D5D5D5",
+        borderRadius: 5,
+        alignSelf: "center",
+        marginBottom: 15,
+    },
+
+    headerRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+
+    title: { fontSize: 18, fontFamily: "Gilroy-Bold", color: "#000" },
+    time: { fontSize: 12, color: "#777", marginBottom: 15, fontFamily: "Gilroy-Regular", marginTop: 12 },
+
+    iconRow: { flexDirection: "row" },
+    icon: { width: 20, height: 20 },
+
+    sectionTitle: {
+        fontSize: 13,
+        color: "#777",
+        // marginTop: 5,
+        fontFamily: "Gilroy-Regular"
+    },
+
+    userRow: { flexDirection: "row", alignItems: "center", marginTop: 5, marginBottom: 16 },
+    avatar: {
+        width: 50,
+        height: 50,
+        borderRadius: 15,
+        marginRight: 6,
+    },
+
+    initialCircle: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: "#E5E7EB",
+        alignItems: "center",
+        justifyContent: "center",
+        marginRight: 6,
+    },
+
+    initialText: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Bold",
+        color: "#4B5563",
+    },
+
+    userName: { fontSize: 16, fontFamily: "Gilroy-Semibold" },
+
+    infoRow: { flexDirection: "row", alignItems: "center", marginTop: 5 },
+
+    floorTag: {
+        backgroundColor: "#F9E8C8",
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        borderRadius: 8,
+        marginRight: 10,
+    },
+
+    roomIcon: { width: 20, height: 20, marginRight: 5 },
+    bedIcon: { width: 20, height: 20, marginRight: 5 },
+
+    rowBetween: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 10,
+    },
+
+    labelSmall: { fontSize: 13, color: "#888", fontFamily: "Gilroy-Regular" },
+    boldText: { fontSize: 15, fontFamily: "Gilroy-Bold", marginTop: 4 },
+
+    value: { fontSize: 15, fontFamily: "Gilroy-Medium", color: "#000" },
+
+    commentBox: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: "#E0E0E0",
+        borderRadius: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        marginTop: 15,
+
+    },
+
+    commentInput: { flex: 1, fontSize: 14, fontFamily: "Gilroy-Regular" },
+    commentIcon: { width: 18, height: 18, marginRight: 6 },
+    commentCount: { fontSize: 14, color: "#555" },
+
+    buttonRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginTop: 25,
+        marginBottom: 25
+    },
+
+    assignBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#1D5DFF",
+        paddingVertical: 12,
+        borderRadius: 12,
+        flex: 1,
+        marginRight: 10,
+        justifyContent: "center",
+    },
+
+    statusBtn: {
+        flexDirection: "row",
+        alignItems: "center",
+        backgroundColor: "#1D5DFF",
+        paddingVertical: 12,
+        borderRadius: 12,
+        flex: 1,
+        justifyContent: "center",
+    },
+
+    assignIcon: { width: 18, height: 18, tintColor: "#fff", marginRight: 8 },
+    assignText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Semibold" },
+    statusText: { color: "#fff", fontSize: 16, fontFamily: "Gilroy-Semibold" },
+    assignedCard: {
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 14,
+        padding: 14,
+        marginTop: 16,
+        backgroundColor: "#fff",
+    },
+
+    assignedHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 12,
+    },
+
+    assignedTitle: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Bold",
+        color: "#000",
+    },
+
+    statusPill: {
+        display: 'flex',
+        flexDirection: 'row',
+        backgroundColor: "#FFF4E5",
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 20,
+    },
+
+    statustext: {
+        marginLeft: 5,
+        fontSize: 12,
+        fontFamily: "Gilroy-Semibold",
+        color: "#FF8A00",
+    },
+
+    updateBtn: {
+        backgroundColor: "#1D5DFF",
+        paddingVertical: 12,
+        borderRadius: 10,
+        alignItems: "center",
+    },
+
+    updateBtnText: {
+        color: "#fff",
+        fontSize: 15,
+        fontFamily: "Gilroy-Bold",
+    },
+    infoCard: {
+        marginTop: 18,
+        backgroundColor: "#F7F9FF",
+        borderRadius: 18,
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        paddingBottom: 40
+    },
+
+    cardLabel: {
+        fontSize: 14,
+        color: "#6B7280",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    cardValue: {
+        marginTop: 10,
+        fontSize: 17,
+        color: "#1F2937",
+        fontFamily: "Gilroy-Semibold",
+        lineHeight: 24,
+    },
+
+    notifyCard: {
+        marginTop: 18,
+        backgroundColor: "#FAFAFA",
+        borderRadius: 18,
+        padding: 18,
+    },
+
+    notifyTitle: {
+        fontSize: 18,
+        color: "#1F2937",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    notifySubTitle: {
+        marginTop: 8,
+        fontSize: 14,
+        color: "#6B7280",
+        fontFamily: "Gilroy-Regular",
+        lineHeight: 20,
+    },
+
+    notifyBtn: {
+        marginTop: 22,
+        alignSelf: "flex-end",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+
+        backgroundColor: "#2F49E7",
+        borderRadius: 10,
+
+        paddingHorizontal: 16,
+        height: 34,
+    },
+
+    notifyIcon: {
+        width: 15,
+        height: 15,
+        tintColor: "#FFFFFF",
+        marginRight: 10,
+    },
+
+    notifyBtnText: {
+        fontSize: 14,
+        color: "#FFFFFF",
+        fontFamily: "Gilroy-Semibold",
+    },
+     statusBadge: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderRadius: 20,
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+    },
+
+    statusDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        marginRight: 6,
+    },
+
+    statusText: {
+        fontSize: 13,
+        color: "#333",
+        fontFamily: "Gilroy-Medium",
+    },
+});

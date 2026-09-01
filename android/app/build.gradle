@@ -1,6 +1,8 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply plugin: "com.google.gms.google-services"
+
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -77,13 +79,17 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.smartstayownerapp"
+    namespace "com.qbatz.smartstay"
     defaultConfig {
-        applicationId "com.smartstayownerapp"
+        applicationId "com.qbatz.smartstay"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode 20
+        versionName "1.0.20"
+
+        ndk {
+            abiFilters "arm64-v8a", "armeabi-v7a", "x86_64",  "x86"
+        }
     }
     signingConfigs {
         debug {
@@ -93,6 +99,32 @@ android {
             keyPassword 'android'
         }
     }
+    flavorDimensions "version"
+    productFlavors {
+        dev {
+            dimension "version"
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "SmartStay Dev"
+            versionNameSuffix "-dev"
+        }
+        local {
+            dimension "version"
+            applicationIdSuffix ".dev"
+            resValue "string", "app_name", "SmartStay Dev"
+            versionNameSuffix "-local"
+        }
+        qa {
+            dimension "version"
+            applicationIdSuffix ".qa"
+            resValue "string", "app_name", "SmartStay QA"
+            versionNameSuffix "-qa"
+        }
+        prod {
+            dimension "version"
+            resValue "string", "app_name", "SmartStay"
+        }
+    }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
@@ -110,6 +142,9 @@ android {
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
+    implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
+    implementation 'com.google.firebase:firebase-messaging'
+
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

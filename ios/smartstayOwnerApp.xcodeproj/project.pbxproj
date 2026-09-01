@@ -8,9 +8,17 @@
 
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-smartstayOwnerApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-smartstayOwnerApp.a */; };
+		0FAA574AAF4C4403A09B4FBB /* Gilroy-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3C5D3BFB49924BB8B71EC6BB /* Gilroy-Bold.ttf */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		41A02B934E5D45F8AA677CA7 /* Gilroy-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = B6C9EF6662FF4D8D989D76F7 /* Gilroy-Medium.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		7ECBF9009D936A2822107DCA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		8F2021C52F66FD0F006EF95B /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2021C42F66FD0F006EF95B /* NetworkManager.swift */; };
+		8F6A8D3A2F65CDA40076194A /* CommonModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F6A8D392F65CDA40076194A /* CommonModule.swift */; };
+		8F6A8D3F2F65CF310076194A /* CommonModuleBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F6A8D3E2F65CF310076194A /* CommonModuleBridge.m */; };
+		A3319200EB174FE098EB1145 /* Gilroy-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3F9B0D564A804726A3B2FBAD /* Gilroy-Regular.ttf */; };
+		DB440756482C43AFA3846A2D /* Gilroy-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 1D9901F3CE3C47BC8ECD3C72 /* Gilroy-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -18,11 +26,19 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = smartstayOwnerApp/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = smartstayOwnerApp/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = smartstayOwnerApp/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		1D9901F3CE3C47BC8ECD3C72 /* Gilroy-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-SemiBold.ttf"; path = "../assets/fonts/Gilroy-SemiBold.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-smartstayOwnerApp.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-smartstayOwnerApp.debug.xcconfig"; path = "Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp.debug.xcconfig"; sourceTree = "<group>"; };
+		3C5D3BFB49924BB8B71EC6BB /* Gilroy-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-Bold.ttf"; path = "../assets/fonts/Gilroy-Bold.ttf"; sourceTree = "<group>"; };
+		3F9B0D564A804726A3B2FBAD /* Gilroy-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-Regular.ttf"; path = "../assets/fonts/Gilroy-Regular.ttf"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-smartstayOwnerApp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-smartstayOwnerApp.release.xcconfig"; path = "Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-smartstayOwnerApp.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-smartstayOwnerApp.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = smartstayOwnerApp/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = smartstayOwnerApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8F2021C42F66FD0F006EF95B /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		8F6A8D392F65CDA40076194A /* CommonModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommonModule.swift; sourceTree = "<group>"; };
+		8F6A8D3D2F65CF310076194A /* smartstayOwnerApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "smartstayOwnerApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		8F6A8D3E2F65CF310076194A /* CommonModuleBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = CommonModuleBridge.m; path = smartstayOwnerApp/CommonModuleBridge.m; sourceTree = "<group>"; };
+		B6C9EF6662FF4D8D989D76F7 /* Gilroy-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-Medium.ttf"; path = "../assets/fonts/Gilroy-Medium.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -46,6 +62,10 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				8F6A8D392F65CDA40076194A /* CommonModule.swift */,
+				8F6A8D3E2F65CF310076194A /* CommonModuleBridge.m */,
+				8F6A8D3D2F65CF310076194A /* smartstayOwnerApp-Bridging-Header.h */,
+				8F2021C42F66FD0F006EF95B /* NetworkManager.swift */,
 			);
 			name = smartstayOwnerApp;
 			sourceTree = "<group>";
@@ -74,6 +94,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				D712EC78136543C789EE2C0B /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -95,6 +116,17 @@
 				5709B34CF0A7D63546082F79 /* Pods-smartstayOwnerApp.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		D712EC78136543C789EE2C0B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				3C5D3BFB49924BB8B71EC6BB /* Gilroy-Bold.ttf */,
+				B6C9EF6662FF4D8D989D76F7 /* Gilroy-Medium.ttf */,
+				3F9B0D564A804726A3B2FBAD /* Gilroy-Regular.ttf */,
+				1D9901F3CE3C47BC8ECD3C72 /* Gilroy-SemiBold.ttf */,
+			);
+			name = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -130,7 +162,7 @@
 				LastUpgradeCheck = 1210;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 2620;
 					};
 				};
 			};
@@ -159,6 +191,11 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				7ECBF9009D936A2822107DCA /* PrivacyInfo.xcprivacy in Resources */,
+				0FAA574AAF4C4403A09B4FBB /* Gilroy-Bold.ttf in Resources */,
+				41A02B934E5D45F8AA677CA7 /* Gilroy-Medium.ttf in Resources */,
+				A3319200EB174FE098EB1145 /* Gilroy-Regular.ttf in Resources */,
+				DB440756482C43AFA3846A2D /* Gilroy-SemiBold.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -189,9 +226,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -228,9 +269,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -244,6 +289,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8F2021C52F66FD0F006EF95B /* NetworkManager.swift in Sources */,
+				8F6A8D3A2F65CDA40076194A /* CommonModule.swift in Sources */,
+				8F6A8D3F2F65CF310076194A /* CommonModuleBridge.m in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -256,11 +304,17 @@
 			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-smartstayOwnerApp.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 952KX8Q5Y5;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = smartstayOwnerApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				INFOPLIST_KEY_CFBundleDisplayName = "Smartstay ";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -271,8 +325,12 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = com.qbatz.smartstay;
+				PRODUCT_BUNDLE_IDENTIFIER1 = "";
+				"PRODUCT_BUNDLE_IDENTIFIER1[arch=*]" = com.smartstay.ownerapp;
 				PRODUCT_NAME = smartstayOwnerApp;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "smartstayOwnerApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -284,10 +342,16 @@
 			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-smartstayOwnerApp.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 952KX8Q5Y5;
 				INFOPLIST_FILE = smartstayOwnerApp/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				INFOPLIST_KEY_CFBundleDisplayName = "Smartstay ";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -298,8 +362,12 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER1 = "";
+				"PRODUCT_BUNDLE_IDENTIFIER1[arch=*]" = com.smartstay.ownerapp;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=iphoneos*]" = com.qbatz.smartstay;
 				PRODUCT_NAME = smartstayOwnerApp;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "smartstayOwnerApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
@@ -354,7 +422,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -374,7 +442,10 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				USE_HERMES = true;
 			};
 			name = Debug;
 		};
@@ -420,7 +491,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -439,7 +510,9 @@
 					"-DFOLLY_CFG_NO_COROUTINES=1",
 					"-DFOLLY_HAVE_CLOCK_GETTIME=1",
 				);
+				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				USE_HERMES = true;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
