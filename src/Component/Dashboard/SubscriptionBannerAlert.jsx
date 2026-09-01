@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Modal } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Modal, Platform } from "react-native";
 import LinearGradient from "react-native-linear-gradient";
 
 const SubscriptionExpiredCard = ({ visible, onRenew }) => {
@@ -26,11 +26,13 @@ const SubscriptionExpiredCard = ({ visible, onRenew }) => {
             property operations.
           </Text>
 
+          {Platform.OS === "ios" ? null : 
           <TouchableOpacity style={styles.button} onPress={onRenew}>
             <Text style={styles.buttonText}>
               Renew Now →
             </Text>
           </TouchableOpacity>
+          }
 
         </LinearGradient>
 

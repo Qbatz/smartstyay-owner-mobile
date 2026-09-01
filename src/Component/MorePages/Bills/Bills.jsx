@@ -99,9 +99,10 @@ import BillBookingDetails from "./Bill_BookingDetails"
 import ReceiptFilterSheet from "./ReceiptFilterSheet"
 import FilterBottomSheet from "../Reports/FilterBottomSheet";
 import RetainerFiltersheet from "./RetainerFilterSheet"
-import { useHideTabbarOnScroll } from "../../../Utils/useHideTabbarOnScroll";
+import { useHideTabbarOnScroll }
+  from "../../../Utils/useHideTabbarOnScroll";
 import { useCustomer } from "../../../Context/CustomerContext";
-import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+
 
 
 
@@ -140,7 +141,6 @@ export default function BillsDesign({ route }) {
 
   const [showPayments, setShowPayments] = useState(false);
   const [showDiscountSheet, setShowDiscountSheet] = useState(false);
-  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const {
     canWriteModule: canWriteInvoice,
@@ -300,6 +300,7 @@ export default function BillsDesign({ route }) {
   const [createdBy, setCreatedBy] = useState([]);
   const [appliedFilters, setAppliedFilters] = useState(null);
   const [receiptAppliedFilters, setReceiptAppliedFilters] = useState(null);
+  const [retainerAppliedFilter,setRetainerAppliedFilters] = useState(null)
   const [filterError, setFilterError] = useState("");
   const [showUnpaidModal, setShowUnpaidModal] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -452,62 +453,11 @@ export default function BillsDesign({ route }) {
     }
   }, [activeHostelId]);
 
-  // useEffect(() => {
-  //   if (activeHostelId) {
-  //     getParticularHostelDetails(activeHostelId);
-  //   }
-  // }, [activeHostelId])
-
-  // const handleLeaveRefundScreen = () => {
-  //   if (
-  //     refundAmount.trim() ||
-  //     refundDate ||
-  //     refundFrom ||
-  //     transactionId.trim()
-  //   ) {
-  //     setShowLeavePageScreen(true);
-  //   } else {
-  //     setShowRefundPayment(false)
-  //   }
-  // }
-
-
-const handleLeaveRefundScreenRef = useRef(null);
-
-//   const handleLeaveRefundScreen = () => {
-//   if (
-//     refundAmount.trim() ||
-//     refundDate ||
-//     refundFrom ||
-//     transactionId.trim()
-//   ) {
-//     setShowLeavePageScreen(true);
-//     return;
-//   }
-
-//   setShowRefundPayment(false);
-//   refundSheetY.setValue(0);
-// };
-
-
-const handleLeaveRefundScreen = () => {
-  const hasChanges =
-    refundAmount.trim() !== "" ||
-    refundDate !== null ||
-    refundFrom !== "" ||
-    transactionId.trim() !== "";
-
-  if (hasChanges) {
-    setShowLeavePageScreen(true);
-    return;
-  }
-
-  // No changes → directly close sheet
-  setShowRefundPayment(false);
-  refundSheetY.setValue(0);
-};
-
-handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
+  useEffect(() => {
+    if (activeHostelId) {
+      getParticularHostelDetails(activeHostelId);
+    }
+  }, [activeHostelId])
 
 
 
@@ -541,221 +491,106 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
     showRefundPayment,
     showRecuringBillDetail])
 
-    useLayoutEffect(() => {
-  const backAction = () => {
+  useLayoutEffect(() => {
+    const backAction = () => {
+
+      if (showDetailModal) {
+        setShowDetailModal(false);
+        return true;
+      }
+
+      if (showFilter) {
+        setShowFilter(false);
+        return true;
+      }
+
+      if (showBillDetails) {
+        setShowBillDetails(false);
+        return true;
+      }
+
+      if (showReceiptDetails) {
+        setShowReceiptDetails(false);
+        return true;
+      }
+
+      if (showWriteOff) {
+        setShowWriteOff(false);
+        return true;
+      }
+
+      if (showRecordPayment) {
+        setShowRecordPayment(false);
+        return true;
+      }
 
       if (showRefundPayment) {
-      handleLeaveRefundScreen();
+        setShowRefundPayment(false);
+        return true;
+      }
+
+      if (deleteTenants) {
+        setDeleteTenants(false);
+        return true;
+      }
+
+      if (showMenu) {
+        setShowMenu(false);
+        return true;
+      }
+      if (showReceiptMenu) {
+        setShowReceiptMenu(false);
+        return true;
+      }
+
+      if (showRecuringBillDetail) {
+        setShowRecuringBillDetail(false);
+        return true;
+      }
+
+      // ✅ 2) Tab navigation back order
+
+
+
+
+      if (activeTab === "Receipt") {
+        setActiveTab("RecurringBills");
+        return true;
+      }
+
+      if (activeTab === "RecurringBills") {
+        setActiveTab("Retainer");
+        return true;
+      }
+      if (activeTab === "Retainer") {
+        setActiveTab("Invoices");
+        return true;
+      }
+
+      // ✅ 3) Last → screen goBack
+      navigation.goBack();
       return true;
-    }
+    };
 
-    if (showDetailModal) {
-      setShowDetailModal(false);
-      return true;
-    }
+    const handler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
 
-    if (showFilter) {
-      setShowFilter(false);
-      return true;
-    }
-
-    if (showBillDetails) {
-      setShowBillDetails(false);
-      return true;
-    }
-
-    if (showReceiptDetails) {
-      setShowReceiptDetails(false);
-      return true;
-    }
-
-    if (showWriteOff) {
-      setShowWriteOff(false);
-      return true;
-    }
-
-    if (showRecordPayment) {
-      setShowRecordPayment(false);
-      return true;
-    }
-
-  
-
-
-    if (deleteTenants) {
-      setDeleteTenants(false);
-      return true;
-    }
-
-    if (showMenu) {
-      setShowMenu(false);
-      return true;
-    }
-
-    if (showReceiptMenu) {
-      setShowReceiptMenu(false);
-      return true;
-    }
-
-    if (showRecuringBillDetail) {
-      setShowRecuringBillDetail(false);
-      return true;
-    }
-
-    // Tab navigation
-    if (activeTab === "Receipt") {
-      setActiveTab("RecurringBills");
-      return true;
-    }
-
-    if (activeTab === "RecurringBills") {
-      setActiveTab("Retainer");
-      return true;
-    }
-
-    if (activeTab === "Retainer") {
-      setActiveTab("Invoices");
-      return true;
-    }
-
-    // Finally screen navigation
-    navigation.goBack();
-    return true;
-  };
-
-  const handler = BackHandler.addEventListener(
-    "hardwareBackPress",
-    backAction
-  );
-
-  return () => handler.remove();
-}, [
-  showDetailModal,
-  showFilter,
-  showBillDetails,
-  showReceiptDetails,
-  showWriteOff,
-  showRecordPayment,
-  showRefundPayment,
-  deleteTenants,
-  showMenu,
-  showReceiptMenu,
-  activeTab,
-  showRecuringBillDetail,
-
-  // Refund values
-  refundAmount,
-  refundDate,
-  refundFrom,
-  transactionId,
-]);
-
-
-
-  // useLayoutEffect(() => {
-  //   const backAction = () => {
-
-  //     if (showDetailModal) {
-  //       setShowDetailModal(false);
-  //       return true;
-  //     }
-
-  //     if (showFilter) {
-  //       setShowFilter(false);
-  //       return true;
-  //     }
-
-  //     if (showBillDetails) {
-  //       setShowBillDetails(false);
-  //       return true;
-  //     }
-
-  //     if (showReceiptDetails) {
-  //       setShowReceiptDetails(false);
-  //       return true;
-  //     }
-
-  //     if (showWriteOff) {
-  //       setShowWriteOff(false);
-  //       return true;
-  //     }
-
-  //     if (showRecordPayment) {
-  //       setShowRecordPayment(false);
-  //       return true;
-  //     }
-
-  //     if (showRefundPayment) {
-  //       handleLeaveRefundScreen();
-  //       return true;
-  //     }
-
-  //     if (deleteTenants) {
-  //       setDeleteTenants(false);
-  //       return true;
-  //     }
-
-  //     if (showMenu) {
-  //       setShowMenu(false);
-  //       return true;
-  //     }
-  //     if (showReceiptMenu) {
-  //       setShowReceiptMenu(false);
-  //       return true;
-  //     }
-
-  //     if (showRecuringBillDetail) {
-  //       setShowRecuringBillDetail(false);
-  //       return true;
-  //     }
-
-
-
-
-
-  //     if (activeTab === "Receipt") {
-  //       setActiveTab("RecurringBills");
-  //       return true;
-  //     }
-
-  //     if (activeTab === "RecurringBills") {
-  //       setActiveTab("Retainer");
-  //       return true;
-  //     }
-  //     if (activeTab === "Retainer") {
-  //       setActiveTab("Invoices");
-  //       return true;
-  //     }
-
-  
-  //     navigation.goBack();
-  //     return true;
-  //   };
-
-  //   const handler = BackHandler.addEventListener(
-  //     "hardwareBackPress",
-  //     backAction
-  //   );
-
-  //   return () => handler.remove();
-  // }, [
-  //   showDetailModal,
-  //   showFilter,
-  //   showBillDetails,
-  //   showReceiptDetails,
-  //   showWriteOff,
-  //   showRecordPayment,
-  //   showRefundPayment,
-  //   deleteTenants,
-  //   showMenu,
-  //   activeTab,
-  //   showRecuringBillDetail,
-  //   refundAmount,
-  //   refundDate,
-  //   refundFrom,
-  //   transactionId
-  // ]);
-
+    return () => handler.remove();
+  }, [
+    showDetailModal,
+    showFilter,
+    showBillDetails,
+    showReceiptDetails,
+    showWriteOff,
+    showRecordPayment,
+    showRefundPayment,
+    deleteTenants,
+    showMenu,
+    activeTab,
+    showRecuringBillDetail
+  ]);
 
 
   // const dotsRef = useRef(null);
@@ -997,80 +832,28 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
 
   const refundSheetY = useRef(new Animated.Value(0)).current;
 
-
   const refundPan = useRef(
-  PanResponder.create({
-    onMoveShouldSetPanResponder: (_, g) => {
-      return (
-        g.dy > 5 &&
-        Math.abs(g.dy) > Math.abs(g.dx)
-      );
-    },
-
-    onMoveShouldSetPanResponderCapture: (_, g) => {
-      return (
-        g.dy > 5 &&
-        Math.abs(g.dy) > Math.abs(g.dx)
-      );
-    },
-
-    onPanResponderMove: (_, g) => {
-      if (g.dy > 0) {
-        refundSheetY.setValue(g.dy);
-      }
-    },
-
-    onPanResponderRelease: (_, g) => {
-      if (g.dy > 120) {
-        // First bring sheet back
-        Animated.spring(refundSheetY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start(() => {
-          // Always use latest function/state
-          handleLeaveRefundScreenRef.current?.();
-        });
-      } else {
-        Animated.spring(refundSheetY, {
-          toValue: 0,
-          useNativeDriver: true,
-        }).start();
-      }
-    },
-
-    onPanResponderTerminate: () => {
-      Animated.spring(refundSheetY, {
-        toValue: 0,
-        useNativeDriver: true,
-      }).start();
-    },
-  })
-).current;
-
-  // const refundPan = useRef(
-  //   PanResponder.create({
-  //     onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-  //     onPanResponderMove: (_, g) => {
-  //       if (g.dy > 0) refundSheetY.setValue(g.dy);
-  //     },
-  //     onPanResponderRelease: (_, g) => {
-  //       if (g.dy > 120) {
-  //         Animated.spring(refundSheetY, {
-  //           toValue: 0,
-  //           useNativeDriver: true,
-  //         }).start(() => {
-  //           handleLeaveRefundScreen();
-  //         });
-  //       } else {
-  //         Animated.spring(refundSheetY, {
-  //           toValue: 0,
-  //           useNativeDriver: true,
-  //         }).start();
-  //       }
-       
-  //     },
-  //   })
-  // ).current;
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+      onPanResponderMove: (_, g) => {
+        if (g.dy > 0) refundSheetY.setValue(g.dy);
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dy > 120) {
+          Animated.timing(refundSheetY, {
+            toValue: 700,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            setShowRefundPayment(false);
+            refundSheetY.setValue(0);
+          });
+        } else {
+          Animated.spring(refundSheetY, { toValue: 0, useNativeDriver: true }).start();
+        }
+      },
+    })
+  ).current;
 
   useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
@@ -1124,72 +907,66 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
 
 
 
+  useLayoutEffect(() => {
+    const backAction = () => {
+      if (showDetailModal) {
+        setShowDetailModal(false);
+        return true;
+      }
 
-  // useLayoutEffect(() => {
-  //   const backAction = () => {
-  //     if (showDetailModal) {
-  //       setShowDetailModal(false);
-  //       return true;
-  //     }
+      if (showFilter) {
+        setShowFilter(false);
+        return true;
+      }
 
-  //     if (showFilter) {
-  //       setShowFilter(false);
-  //       return true;
-  //     }
+      if (showBillDetails) {
+        setShowBillDetails(false);
+        return true;
+      }
 
-  //     if (showBillDetails) {
-  //       setShowBillDetails(false);
-  //       return true;
-  //     }
+      if (showReceiptDetails) {
+        setShowReceiptDetails(false)
+        return true;
+      }
 
-  //     if (showReceiptDetails) {
-  //       setShowReceiptDetails(false)
-  //       return true;
-  //     }
+      if (showWriteOff) {
+        setShowWriteOff(false);
+        return true;
+      }
 
-  //     if (showWriteOff) {
-  //       setShowWriteOff(false);
-  //       return true;
-  //     }
+      if (showRecordPayment) {
+        setShowRecordPayment(false)
+        return true;
+      }
 
-  //     if (showRecordPayment) {
-  //       setShowRecordPayment(false)
-  //       return true;
-  //     }
-
-  //     if (showRefundPayment) {
-  //       handleLeaveRefundScreen();
-  //       return true;
-  //     }
+      if (showRefundPayment) {
+        setShowRefundPayment(false);
+        return true;
+      }
 
 
-  //     return false;
-  //   };
+      return false;
+    };
 
-  //   const handler = BackHandler.addEventListener(
-  //     "hardwareBackPress",
-  //     backAction
-  //   );
+    const handler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
 
-  //   return () => handler.remove();
-  // }, [showDetailModal, showFilter, showBillDetails, showWriteOff, showRecordPayment, 
-  //   showRefundPayment, showReceiptDetails, refundAmount,
-  // refundDate,
-  // refundFrom,
-  // transactionId]);
+    return () => handler.remove();
+  }, [showDetailModal, showFilter, showBillDetails, showWriteOff, showRecordPayment, showRefundPayment, showReceiptDetails]);
 
-  // useEffect(() => {
-  //   const backHandler = BackHandler.addEventListener(
-  //     "hardwareBackPress",
-  //     () => {
-  //       navigation.goBack();
-  //       return true;
-  //     }
-  //   );
+  useEffect(() => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        navigation.goBack();
+        return true;
+      }
+    );
 
-  //   return () => backHandler.remove();
-  // }, [])
-
+    return () => backHandler.remove();
+  }, [])
 
 
 
@@ -2135,6 +1912,14 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
     });
   };
 
+  const handleRetainerResetFilter=async()=>{
+    if(!canReadBooking) return;
+
+    setRetainerAppliedFilters(null);
+
+    await  GetAdvanceBookingBills(activeHostelId);
+  }
+
 
 
   const resetRefundForm = () => {
@@ -2598,8 +2383,6 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
     console.log("res", res);
 
   }
-
-
 
 
   const handleSaveRefund = async () => {
@@ -3320,7 +3103,7 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
 
 
                   {(
-                    !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.listInvoices?.length === 0) &&
+                    !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0) &&
                     <View style={styles.centerContainer}>
                       <Image source={EmptyFloor} style={styles.image} />
                       <Text style={styles.noFloorText}>No bills are there!</Text>
@@ -4986,8 +4769,8 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
               onApply={(filters) => {
                 console.log(filters);
               }}
-              setAppliedFilters={setReceiptAppliedFilters}
-              onResetFilter={handleReceiptResetFilters}
+              setAppliedFilters={setRetainerAppliedFilters}
+              onResetFilter={handleRetainerResetFilter}
             />
 
             <DiscountActionSheet
@@ -6131,11 +5914,10 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
           )}
 
 
-
           {showRefundPayment && (
             <View style={styles.sheetOverlay} pointerEvents="box-none">
               <View style={{ flex: 1 }}>
-                <TouchableWithoutFeedback onPress={handleLeaveRefundScreen}>
+                <TouchableWithoutFeedback onPress={() => setShowRefundPayment(false)}>
                   <View style={{ flex: 1 }} />
                 </TouchableWithoutFeedback>
               </View>
@@ -6539,7 +6321,7 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
 
                   {/* BUTTON ROW */}
                   <View style={styles.btnRow}>
-                    <TouchableOpacity style={styles.cancelBtn} onPress={handleLeaveRefundScreen}>
+                    <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowRefundPayment(false)}>
                       <Text style={styles.cancelText}>Cancel</Text>
                     </TouchableOpacity>
 
@@ -7330,19 +7112,6 @@ handleLeaveRefundScreenRef.current = handleLeaveRefundScreen;
             <BillBookingDetails visible={billbookingDetailsShow} onClose={() => setBillBookingDetailsShow(false)}
               selectedBill={billbookingDetails} />
           )}
-
-          <LeavePageScreen
-            visible={showLeavePageScreen}
-            onClose={() => setShowLeavePageScreen(false)}
-            discardClose={() => {
-              setShowLeavePageScreen(false);
-
-              setTimeout(() => {
-                resetRefundForm();
-                setShowRefundPayment(false);
-              }, 300);
-            }}
-          />
 
 
 

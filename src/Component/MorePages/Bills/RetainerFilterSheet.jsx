@@ -8,7 +8,8 @@ import {
     BackHandler,
     PanResponder,
     StyleSheet,
-    Image, Modal, ScrollView
+    Image, Modal, ScrollView,
+    TextInput
 } from "react-native";
 import dayjs from "dayjs"
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -33,7 +34,7 @@ const RetainerFilterSheet = ({
 
     const {
         receiptsList,
-        ReceiptFilter,
+        ReceiptFilter, bookingBills, GetAdvanceBookingBills
     } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
 
@@ -64,6 +65,8 @@ const RetainerFilterSheet = ({
     const [paymentMethod, setPaymentMethod] = useState([]);
     const [availableBalance, setAvailableBalance] = useState([]);
     const [showMoreFilters, setShowMoreFilters] = useState(false);
+    const [selectedFloor, setSelectedFloor] = useState([])
+    const [selectedRoom, setSelectedRoom] = useState([])
 
     const [fromDate, setFromDate] = useState(null);
     const [toDate, setToDate] = useState(null);
@@ -83,6 +86,11 @@ const RetainerFilterSheet = ({
         { label: "₹10,000+", value: "10000+" },
     ];
 
+
+    const [minAmount, setMinAmount] = useState(null)
+    const [maxAmount, setMaxAmount] = useState(null)
+
+    const [errorMsg, setErrorMsg] = useState("")
     const [amountRange, setAmountRange] = useState([]);
 
 
@@ -105,7 +113,7 @@ const RetainerFilterSheet = ({
         "Oldest First",
     ];
 
-    const filterOptions = receiptsList?.filterOptions || {};
+    const filterOptions = bookingBills?.filterOptions || {};
 
     const availableBalanceOptions = []
 
@@ -131,6 +139,16 @@ const RetainerFilterSheet = ({
     const collectedByOptions = (filterOptions.collectedBy || []).map(item => ({
         label: item.name,
         value: item.userId,
+    }))
+
+    const floorOptions = (filterOptions?.floors || []).map(item => ({
+        label: item?.name,
+        value: item?.type,
+    }))
+
+    const roomOptions = (filterOptions?.rooms || []).map(item => ({
+        label: item?.roomName,
+        value: item?.roomId,
     }))
 
 
@@ -228,6 +246,10 @@ const RetainerFilterSheet = ({
             type: type,
             modes: paymentmode,
             collectedBy: collectedBy,
+            floor: selectedFloor?.length > 0 ? selectedFloor : undefined,
+            room: selectedRoom?.length > 0 ? selectedRoom : undefined,
+            minAmount: Number(minAmount)|| undefined,
+            maxAmount: Number(maxAmount) || undefined,
         };
 
         const hasAnyFilter =
@@ -236,19 +258,20 @@ const RetainerFilterSheet = ({
             (filters.paymentStatus && filters.paymentStatus.length > 0) ||
             (filters.type && filters.type.length > 0) ||
             (filters.modes && filters.modes.length > 0) ||
-            (filters.collectedBy && filters.collectedBy.length > 0);
+            (filters.collectedBy && filters.collectedBy.length > 0) ||
+            (filters.floor && filters?.floor.length > 0) ||
+            (filters?.room && filters?.room.length > 0) || 
+            (minAmount) || maxAmount;
+
+            console.log("Kathina",filters)
 
         if (!hasAnyFilter) {
             setFilterError("Please select at least one filter");
             return;
         }
-        await ReceiptFilter({
-            hostelId: activeHostelId,
-            period: selectedPeriod,
-            invoiceType: type,
-            bankIds: paymentmode,
-            collectedBy,
-        });
+
+        await GetAdvanceBookingBills(activeHostelId, filters)
+
 
         setAppliedFilters(filters);
         // setAppliedFilters(filters);
@@ -271,6 +294,8 @@ const RetainerFilterSheet = ({
         setFilterError("");
         setAmountRange([]);
         setMode([]);
+        setMinAmount(null)
+        setMaxAmount(null)
         // remove chips
         setAppliedFilters(null);
 
@@ -319,7 +344,7 @@ const RetainerFilterSheet = ({
 
 
 
-                        <MultiSelectDropdown
+                        {/* <MultiSelectDropdown
                             label="Retainer Type"
                             dropdownKey="retainerType"
                             placeholder="Select Retainer Type"
@@ -328,7 +353,7 @@ const RetainerFilterSheet = ({
                             options={retainerTypeOptions}
                             selected={retainerType}
                             onChange={setRetainerType}
-                        />
+                        /> */}
 
 
                         <MultiSelectDropdown
@@ -393,7 +418,7 @@ const RetainerFilterSheet = ({
 
 
 
-                        <View style={styles.quickRow}>
+                        {/* <View style={styles.quickRow}>
                             <TouchableOpacity style={[
                                 styles.quickBtn,
                                 selectedPeriod === "today" && styles.activeQuickBtn,
@@ -414,7 +439,7 @@ const RetainerFilterSheet = ({
                             ]} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
                                 <Text style={styles.quickText}>This Month</Text>
                             </TouchableOpacity>
-                        </View>
+                        </View> */}
 
 
 
@@ -442,6 +467,34 @@ const RetainerFilterSheet = ({
                             options={paymentMethodOptions}
                             selected={paymentMethod}
                             onChange={setPaymentMethod}
+                        />
+
+                        <MultiSelectDropdown
+                            label="Floor"
+                            dropdownKey="floor"
+                            placeholder="Select floor"
+                            activeDropdown={activeDropdown}
+                            setActiveDropdown={setActiveDropdown}
+                            options={floorOptions}
+                            selected={selectedFloor}
+                            onChange={(values) => {
+                                setSelectedFloor(values)
+                                setFilterError("")
+                            }}
+                        />
+
+                        <MultiSelectDropdown
+                            label="Room"
+                            dropdownKey="room"
+                            placeholder="Select room"
+                            activeDropdown={activeDropdown}
+                            setActiveDropdown={setActiveDropdown}
+                            options={roomOptions}
+                            selected={selectedRoom}
+                            onChange={(values) => {
+                                setSelectedRoom(values)
+                                setFilterError("")
+                            }}
                         />
 
 
@@ -475,7 +528,7 @@ const RetainerFilterSheet = ({
                                     onChange={setCollectedBy}
                                 />
 
-                                <MultiSelectDropdown
+                                {/* <MultiSelectDropdown
                                     label="Available Balance"
                                     dropdownKey="availableBalance"
                                     placeholder="Select Balance"
@@ -484,7 +537,57 @@ const RetainerFilterSheet = ({
                                     options={availableBalanceOptions}
                                     selected={availableBalance}
                                     onChange={setAvailableBalance}
-                                />
+                                /> */}
+
+                                <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',marginTop:12}}>Amount Range</Text>
+                                <View style={styles.amountRow}>
+
+                                    {/* Minimum Amount */}
+                                    <View style={[styles.amountInputContainer, { marginRight: 5 }]}>
+                                        <Text style={styles.currency}>₹</Text>
+
+                                        <TextInput
+                                            value={minAmount}
+                                            onChangeText={(text) => {
+                                                if (text > maxAmount) {
+                                                    setErrorMsg("Min Amount should not be greater than max")
+                                                } else {
+                                                    setErrorMsg("")
+                                                }
+                                                const cleanText = text.replace(/[^0-9]/g, "");
+                                                setMinAmount(cleanText)                                                
+                                            }}
+                                            placeholder="Min"
+                                            placeholderTextColor="#999"
+                                            keyboardType="numeric"
+                                            style={styles.amountInput}
+                                        />
+                                    </View>
+
+                                    {/* Maximum Amount */}
+                                    <View style={[styles.amountInputContainer, { marginLeft: 5 }, !minAmount && { opacity: 0.4 }]}>
+                                        <Text style={styles.currency}>₹</Text>
+
+                                        <TextInput
+                                            value={maxAmount}
+                                            editable={minAmount ? true : false}
+                                            onChangeText={(text) => {
+                                                if (minAmount > text) {
+                                                    setErrorMsg("Min Amount should not be greater than max")
+                                                } else {
+                                                    setErrorMsg("")
+                                                }
+                                                const cleanText = text.replace(/[^0-9]/g, "");
+                                                setMaxAmount(cleanText)                                                
+                                            }}
+                                            placeholder="Max"
+                                            placeholderTextColor="#999"
+                                            keyboardType="numeric"
+                                            style={styles.amountInput}
+                                        />
+                                    </View>
+                                </View>
+                                {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
                             </>
                         )}
 
@@ -637,7 +740,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         borderTopLeftRadius: 25,
         borderTopRightRadius: 25,
-        height: "85%",
+        maxHeight: "97%",
         paddingHorizontal: 20,
         paddingTop: 15,
         paddingBottom: 20,
@@ -836,4 +939,33 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Medium",
         color: "#374151",
     },
+    amountRow: {
+        flexDirection: "row",
+        marginTop: 8
+    },
+
+    amountInputContainer: {
+        flex: 1,
+        height: 42,
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 9,
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 14,
+    },
+
+    currency: {
+        fontSize: 16,
+        color: "#999",
+        marginRight: 6,
+    },
+
+    amountInput: {
+        flex: 1,
+        fontSize: 16,
+        color: "#222",
+        paddingVertical: 0,
+    },
+
 })

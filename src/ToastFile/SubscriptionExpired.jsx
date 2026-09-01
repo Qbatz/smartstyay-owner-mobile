@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
+  Platform,
 } from "react-native";
 import { BackHandler } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
@@ -95,6 +96,7 @@ export default function SubscriptionExpired({setTabBar,onClose}){
           Renew your plan Now to continue managing the property operations.
         </Text>
 
+        {Platform.OS === "ios" ? null : 
         <TouchableOpacity
           style={{
             backgroundColor: "#1E40AF",
@@ -110,6 +112,7 @@ export default function SubscriptionExpired({setTabBar,onClose}){
             Renew Now →
           </Text>
         </TouchableOpacity>
+        }
 
       </View>
       </View>

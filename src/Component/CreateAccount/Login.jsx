@@ -196,7 +196,7 @@ export default function LoginDesign() {
 
 
 
-            <TouchableOpacity
+            <TouchableOpacity style={{alignSelf:'flex-end'}}
               onPress={() => navigation.replace("ForgotPassword")}
             >
               <Text style={styles.forgot}>Forgot Password?</Text>

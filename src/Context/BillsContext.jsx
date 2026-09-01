@@ -1063,6 +1063,56 @@ export default function BillsProvider({ children }) {
     }
   }
 
+  //  const GetAllBillDetails = async (hostelId, filters = {}) => {
+  //   try {
+  //     setLoading(true);
+  //     setErrorMsg("");
+  //     const axios = getAxios();
+  //     console.log("filters",filters);
+  //     const res = await axios.get(`/v2/bills/${hostelId}`, {
+  //       params: {
+  //         startDate: filters.startDate,
+  //         endDate: filters.endDate,
+  //         type: filters.type,
+  //         createdBy: filters.createdBy,
+  //         modes: filters.modes,
+  //         paymentStatus: filters.paymentStatus,
+  //         search: filters.search,
+  //       },
+        
+        
+  //       paramsSerializer: (params) =>
+  //         Object.keys(params)
+  //           .map((key) => {
+  //             const value = params[key];
+  //             if (Array.isArray(value)) {
+  //               return value.map((v) => `${key}=${v}`).join("&");
+  //             }
+  //             if (value !== undefined && value !== null && value !== "") {
+  //               return `${key}=${value}`;
+  //             }
+  //             return null;
+  //           })
+  //           .filter(Boolean)
+  //           .join("&"),
+  //     });
+
+  //     if (res.status === 200) {
+  //       setBillDetails(res.data || []);
+  //       return { success: true, data: res.data };
+  //     }
+
+  //     return { success: false };
+  //   } catch (error) {
+  //     const msg = getErrorMessage(error);
+  //     setErrorMsg(msg);
+  //     return { success: false, message: msg };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
 
 
   const GetAdvanceBookingBills = async (hostelId,filters,page=1,size=10) => {
@@ -1081,23 +1131,26 @@ export default function BillsProvider({ children }) {
           params: {
             page,
             size,
-            // name: filters?.name
-            name: filters?.name
+            name: filters?.name,
+            floor:filters?.floor,
+            room: filters?.room,
+            minAmount: filters?.minAmount,
+            maxAmount: filters?.maxAmount
           },
-          //  paramsSerializer: (params) =>
-          // Object.keys(params)
-          //   .map((key) => {
-          //     const value = params[key];
-          //     if (Array.isArray(value)) {
-          //       return value.map((v) => `${key}=${v}`).join("&");
-          //     }
-          //     if (value !== undefined && value !== null && value !== "") {
-          //       return `${key}=${value}`;
-          //     }
-          //     return null;
-          //   })
-          //   .filter(Boolean)
-          //   .join("&"),
+           paramsSerializer: (params) =>
+          Object.keys(params)
+            .map((key) => {
+              const value = params[key];
+              if (Array.isArray(value)) {
+                return value.map((v) => `${key}=${v}`).join("&");
+              }
+              if (value !== undefined && value !== null && value !== "") {
+                return `${key}=${value}`;
+              }
+              return null;
+            })
+            .filter(Boolean)
+            .join("&"),
       
           
         }

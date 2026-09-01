@@ -709,7 +709,7 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
         )
         }
 
-         {/* {!loading && Advancebookingbills && Advancebookingbills?.length > 0 && (
+         {!loading && hostelList?.length > 0 && (
           <TouchableOpacity
             style={[styles.filterButton, !canReadBooking && { opacity: 0.4 }]}
             disabled={!canReadBooking}
@@ -717,7 +717,7 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
           >
             <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
           </TouchableOpacity>
-        )} */}
+        )}
 
         {/*
 
@@ -1179,7 +1179,7 @@ const styles = StyleSheet.create({
   filterButton: {
     position: "absolute",
     bottom: 124,
-    right: 50,
+    right: 10,
     backgroundColor: "#fff",
     padding: 10,
     borderRadius: 30,
