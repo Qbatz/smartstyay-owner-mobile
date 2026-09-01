@@ -31,6 +31,7 @@ import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 import CalendarIcon from "../../../Assets/Images/calendar.png";
 import { Calendar } from "react-native-calendars";
 import dayjs from "dayjs";
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 export default function AddExpensesPage({ route, vendorData, navigation }) {
 
@@ -53,6 +54,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     const translateY = useRef(new Animated.Value(0)).current;
 
     const isApplyTriggeredRef = useRef(false);
+
+      const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const [selectedImage, setSelectedImage] = useState(null);
     const [initialImage, setInitialImage] = useState(null);
@@ -925,6 +928,51 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     console.log("purchaseDate", datevalid);
 
 
+    const handleLeavePage = useCallback(() => {
+    const hasMandatoryValue =
+        !!selectedCategory ||
+        !!selectedSubCategory ||
+        !!amount?.trim() ||
+        !!purchaseDate ||
+        !!selectedMode ||
+        !!selectedVendor ||
+        !!paymentStatus ||
+        !!paidAmount?.trim();
+
+    if (hasMandatoryValue) {
+        setShowLeavePageScreen(true);
+    } else {
+        navigation.goBack();
+    }
+}, [
+    selectedCategory,
+    selectedSubCategory,
+    amount,
+    purchaseDate,
+    selectedMode,
+    selectedVendor,
+    paymentStatus,
+    paidAmount,
+    navigation,
+]);
+
+useFocusEffect(
+    useCallback(() => {
+        const backAction = () => {
+            handleLeavePage();
+            return true;
+        };
+
+        const subscription = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => subscription.remove();
+    }, [handleLeavePage])
+);
+
+
     const handleSubmit = async () => {
         console.log("Submit Clicked");
         if (!validateExpenseForm()) return;
@@ -1069,7 +1117,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
                     {/* Header */}
                     <View style={styles.header}>
-                        <TouchableOpacity onPress={() => navigation.goBack()}
+                        <TouchableOpacity onPress={handleLeavePage}
                             style={styles.backBtn}
                         >
                             <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
@@ -2464,7 +2512,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                         <View style={styles.footerRow}>
                             <TouchableOpacity
                                 style={styles.cancelBtn}
-                                onPress={() => navigation.goBack()}
+                            onPress={handleLeavePage}
                             >
                                 <Text
                                     style={{
@@ -2566,6 +2614,18 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                     </View>
                 </View>
             )}
+
+              <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
         </>
 
     )

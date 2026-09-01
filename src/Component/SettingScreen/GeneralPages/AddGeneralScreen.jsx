@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput, KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, TextInput,
+   KeyboardAvoidingView, Keyboard, TouchableWithoutFeedback , BackHandler} from "react-native";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ProfilePlaceholder from "../../../Assets/Images/userAdd.png";
@@ -12,7 +13,7 @@ import { useGeneral } from "../../../Context/GeneralContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
-
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 
 
@@ -38,6 +39,8 @@ export default function AddGeneralScreen({ navigation, route }) {
   const [modalType, setModalType] = useState("success");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const [showProfileSheet, setShowProfileSheet] = useState(false);
   const isSubmittingRef = useRef(false);
@@ -140,6 +143,40 @@ export default function AddGeneralScreen({ navigation, route }) {
   //   const res = await addGeneral(formData);
   //   if (res) navigation.goBack();
   // };
+
+  
+  useEffect(() => {
+  const backHandler = BackHandler.addEventListener(
+    "hardwareBackPress",
+    () => {
+      handleLeaveGeneralScreen();
+      return true;
+    }
+  );
+
+  return () => backHandler.remove();
+}, [
+  firstName, mobile, email, password, pincode, city, selectedState, editData,])
+
+  const handleLeaveGeneralScreen = () => {
+    const hasMandatoryValue =
+      firstName.trim() !== "" ||
+      mobile.trim() !== "" ||
+      email.trim() !== "" ||
+      (!editData && password.trim() !== "") ||
+      pincode.trim() !== "" ||
+      city.trim() !== "" ||
+      (selectedState && selectedState !== "");
+
+    if (hasMandatoryValue) {
+      setShowLeavePageScreen(true);
+      return;
+    }
+
+    navigation.goBack();
+  };
+
+
   useEffect(() => {
     if (editData) {
       setFirstName(editData.firstName || "");
@@ -168,7 +205,7 @@ export default function AddGeneralScreen({ navigation, route }) {
   };
 
   const handleSubmit = async () => {
-   
+
     let newErrors = {};
 
 
@@ -216,7 +253,7 @@ export default function AddGeneralScreen({ navigation, route }) {
     }
 
     setErrors({});
-     if (isSubmittingRef.current) return;
+    if (isSubmittingRef.current) return;
     isSubmittingRef.current = true;
     setIsSubmitting(true);
     setErrors({});
@@ -252,36 +289,36 @@ export default function AddGeneralScreen({ navigation, route }) {
       });
     }
 
-    try { 
-    const res = await addGeneral(formData);
-    console.log("ADD RESPONSE:", res);
+    try {
+      const res = await addGeneral(formData);
+      console.log("ADD RESPONSE:", res);
 
 
-    if (res.success === false) {
-      const apiError = res.data || res?.message;
+      if (res.success === false) {
+        const apiError = res.data || res?.message;
 
-      if (apiError.emailStatus) setEmailError(apiError.emailStatus);
-      if (apiError.mobileStatus) setPhoneError(apiError.mobileStatus);
-
-
-      return;
-    }
+        if (apiError.emailStatus) setEmailError(apiError.emailStatus);
+        if (apiError.mobileStatus) setPhoneError(apiError.mobileStatus);
 
 
-    setModalMessage("General Added Successfully");
-    setModalType("success");
-    setShowSuccessModal(true);
+        return;
+      }
 
-    await getAdminList();
 
-    setTimeout(() => {
-      setShowSuccessModal(false);
-      navigation.goBack();
-    }, 1500);
-    }catch(error){
+      setModalMessage("General Added Successfully");
+      setModalType("success");
+      setShowSuccessModal(true);
+
+      await getAdminList();
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+        navigation.goBack();
+      }, 1500);
+    } catch (error) {
       console.log(error)
-    }finally{
-       isSubmittingRef.current = false;
+    } finally {
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
   };
@@ -371,6 +408,8 @@ export default function AddGeneralScreen({ navigation, route }) {
   //     !selectedImage                                 // image unchanged
   //   );
   // };
+
+
   const hasChanges = () => {
     if (!editData) return true;
 
@@ -742,7 +781,7 @@ export default function AddGeneralScreen({ navigation, route }) {
 
         {/* ✅ FIXED HEADER */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={handleLeaveGeneralScreen}>
             <Image source={LeftArrow} style={styles.backIcon} />
           </TouchableOpacity>
 
@@ -1216,6 +1255,17 @@ export default function AddGeneralScreen({ navigation, route }) {
           ]}
         />
       </View>
+      <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
     </>
   );
 }

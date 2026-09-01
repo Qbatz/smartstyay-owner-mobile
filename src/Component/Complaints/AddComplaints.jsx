@@ -20,6 +20,7 @@ import Loader from "../Loader/Loader"
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { Calendar } from "react-native-calendars";
+import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png";
@@ -46,6 +47,8 @@ export default function AddComplaint() {
   const navigation = useNavigation();
   const route = useRoute();
   const { mode, data } = route.params || {};
+
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -207,6 +210,39 @@ export default function AddComplaint() {
     return currentDate !== initialDate || currentDesc !== initialDesc;
   };
 
+  const handleLeavePage = useCallback(() => {
+  // ---------------- EDIT MODE ----------------
+  if (mode === "edit") {
+    if (hasEditChanges()) {
+      setShowLeavePageScreen(true);
+    } else {
+      navigation.goBack();
+    }
+
+    return;
+  }
+
+  // ---------------- ADD MODE ----------------
+  const hasMandatoryValue =
+    !!selectedCustomer ||
+    !!selectedComplaintType ||
+    !!complaintDate;
+
+  if (hasMandatoryValue) {
+    setShowLeavePageScreen(true);
+  } else {
+    navigation.goBack();
+  }
+}, [
+  mode,
+  selectedCustomer,
+  selectedComplaintType,
+  complaintDate,
+  hasEditChanges,
+  navigation,
+]);
+
+
 
   const handleDateChange = (dateString) => {
     setComplaintDate(dateString);
@@ -274,14 +310,30 @@ export default function AddComplaint() {
 
   console.log("CustomerOptions", CustomerOptions);
 
-  useEffect(() => {
-    const back = BackHandler.addEventListener("hardwareBackPress", () => {
-      navigation.goBack();
-      return true;
-    });
-    return () => back.remove();
-  }, []);
+  // useEffect(() => {
+  //   const back = BackHandler.addEventListener("hardwareBackPress", () => {
+  //     navigation.goBack();
+  //     return true;
+  //   });
+  //   return () => back.remove();
+  // }, []);
 
+
+  useFocusEffect(
+  useCallback(() => {
+    const backAction = () => {
+      handleLeavePage();
+      return true;
+    };
+
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => subscription.remove();
+  }, [handleLeavePage])
+);
 
 
 
@@ -578,7 +630,7 @@ export default function AddComplaint() {
 
         {/* HEADER - FIXED */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={handleLeavePage}>
             <Image source={ArrowLeft} style={styles.backIcon} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
@@ -967,6 +1019,18 @@ export default function AddComplaint() {
           </View>
         </View>
       )}
+
+       <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
 
     </>
   );

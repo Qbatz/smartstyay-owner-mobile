@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useContext } from "react";
+import React, { useRef, useState, useEffect, useContext , useCallback} from "react";
 import {
   View,
   Text,
@@ -24,6 +24,9 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { useCustomer } from "../../../Context/CustomerContext";
 import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+
+
 
 export default function AddVendorSheet({ route, navigation }) {
 
@@ -35,6 +38,8 @@ export default function AddVendorSheet({ route, navigation }) {
 
   const [selectedImage, setSelectedImage] = useState(null);
   const [initialImage, setInitialImage] = useState(null);
+
+   const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
 
   const [stateOpen, setStateOpen] = useState(false);
@@ -261,6 +266,63 @@ export default function AddVendorSheet({ route, navigation }) {
     creditPeriod,
     categoryId: selectedCategory?.value,
   });
+
+  const handleLeavePage = useCallback(() => {
+  const hasEnteredData =
+    !!vendorName.trim() ||
+    !!businessName.trim() ||
+    !!selectedCategory ||
+    !!businessmobile.trim() ||
+    !!mobile.trim() ||
+    !!email.trim() ||
+    !!street.trim() ||
+    !!landmark.trim() ||
+    !!city.trim() ||
+    !!stateName.trim() ||
+    !!pinCode.trim() ||
+    !!description.trim() ||
+    !!gstNumber.trim() ||
+    !!panNumber.trim() ||
+    !!allowCredit ||
+    !!creditLimit.trim() ||
+    !!creditPeriod.trim() ||
+    !!selectedImage;
+
+  if (hasEnteredData) {
+    setShowLeavePageScreen(true);
+  } else {
+    navigation.goBack();
+  }
+}, [
+  vendorName,
+  businessName,
+  selectedCategory,
+  businessmobile,
+  mobile,
+  email,
+  street,
+  landmark,
+  city,
+  stateName,
+  pinCode,
+  description,
+  gstNumber,
+  panNumber,
+  allowCredit,
+  creditLimit,
+  creditPeriod,
+  selectedImage,
+  navigation,
+]);
+
+
+
+useEffect(() => { const backAction = () =>{ 
+     handleLeavePage();
+     return true; }; 
+   const subscription = BackHandler.addEventListener( "hardwareBackPress", backAction );
+    return () => subscription.remove(); 
+  }, [handleLeavePage]);
 
   const isSameData = (a, b) => {
     return JSON.stringify(a) === JSON.stringify(b);
@@ -826,7 +888,7 @@ export default function AddVendorSheet({ route, navigation }) {
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}
+            <TouchableOpacity onPress={handleLeavePage}
               style={styles.backBtn}
             >
               <Image source={ArrowLeft} style={{ height: 18, width: 18 }} />
@@ -1581,7 +1643,7 @@ export default function AddVendorSheet({ route, navigation }) {
             <View style={styles.footerRow}>
               <TouchableOpacity
                 style={styles.cancelBtn}
-                onPress={() => navigation.goBack()}
+              onPress={handleLeavePage}
               >
                 <Text style={{
                   fontFamily: "Gilroy-Bold",
@@ -1607,6 +1669,18 @@ export default function AddVendorSheet({ route, navigation }) {
 
         </View>
       </KeyboardAvoidingView>
+
+         <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
 
     </>
 
