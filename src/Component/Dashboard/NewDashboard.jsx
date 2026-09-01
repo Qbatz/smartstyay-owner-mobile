@@ -1783,6 +1783,8 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                 Renew your plan to continue managing the property operations.
                               </Text>
 
+                              {Platform.OS === "ios" ? null : 
+
                               <TouchableOpacity
                                 style={styles.renewBtn}
                                 onPress={() => navigation.navigate("SubscriptionPlans")}
@@ -1791,6 +1793,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                   Renew Now →
                                 </Text>
                               </TouchableOpacity>
+                              }
 
                             </View>
 

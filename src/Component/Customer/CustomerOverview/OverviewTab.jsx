@@ -816,13 +816,13 @@ export default function OverviewTab({ customerDetails,
               )}
 
               {
-                customerDetails?.customerCurrentStatus === "VACATED" && (
+               ["VACATED","SETTLEMENT_GENERATED"].includes(customerDetails?.customerCurrentStatus)  && (
                   <View style={styles.detailBox}>
                     <Text style={styles.detailLabel}>Checkout Date</Text>
                     <View style={styles.valueWithIcon}>
                       <Image source={Home} style={styles.detailIcon} />
                       <Text style={styles.detailValue}>
-                        {customerDetails?.checkoutInfo?.checkoutDate || "N/A"}
+                        {customerDetails?.checkoutInfo?.checkoutDate || customerDetails?.checkoutInfo?.requestedLeavingDate || "N/A"}
                       </Text>
                     </View>
                   </View>

@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
   rightValue: {
     fontSize: 16,
     color: "#222",
-    fontFamily: "Gilroy-SemiBold",
+    fontFamily: "Gilroy-Semibold",
   },
   expiryText: {
     marginTop: 6,
