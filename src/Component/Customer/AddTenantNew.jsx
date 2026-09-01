@@ -6,7 +6,7 @@ import {
     TextInput,
     Image,
     StyleSheet,
-    ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard
+    ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard , BackHandler
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 // import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -39,7 +39,9 @@ import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ValidatedInput from "../MorePages/ValidatedInput"
 import BedDetailsSheet from "./BedDetailsBottomsheet"
+import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 // import DatePicker from "react-native-date-picker";
+
 
 
 export default function AddTenantNewform({ navigation, route }) {
@@ -58,6 +60,7 @@ export default function AddTenantNewform({ navigation, route }) {
     const { getBankListByHostel } = useContext(BankingContext);
 
     const isSubmittingRef = useRef(false);
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const customer = route.params?.customer;
     // const isEditMode = route.params?.isEdit;
@@ -1477,14 +1480,50 @@ export default function AddTenantNewform({ navigation, route }) {
         };
     }, []);
 
+    // const handleBack = () => {
+    //     if (currentStep > 1) {
+    //         setCurrentStep(prev => prev - 1);
+    //     }
+    //     else {
+    //         navigation.goBack();
+    //     }
+    // }
+
     const handleBack = () => {
-        if (currentStep > 1) {
-            setCurrentStep(prev => prev - 1);
-        }
-        else {
-            navigation.goBack();
-        }
+    if (currentStep > 1) {
+        setCurrentStep(prev => prev - 1);
+        return;
     }
+
+    const hasBasicDetails =
+        basicDetails.firstName.trim() !== "" ||
+        basicDetails.mobile.trim() !== "";
+
+    if (hasBasicDetails) {
+        setShowLeavePageScreen(true);
+        return;
+    }
+
+    navigation.goBack();
+}
+
+useEffect(() => {
+    const backAction = () => {
+        handleBack();
+        return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+    );
+
+    return () => backHandler.remove();
+}, [
+    currentStep,
+    basicDetails.firstName,
+    basicDetails.mobile,
+]);
 
 
 
@@ -6494,6 +6533,18 @@ export default function AddTenantNewform({ navigation, route }) {
                 />
 
             </View>
+
+              <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
         </>
     );
 }

@@ -35,7 +35,7 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import PlusIcon from "../../Assets/Images/add-circle.png";
 import { Switch } from "react-native";
 import BedDetailsSheet from "./BedDetailsBottomsheet"
-
+import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 
 
 export default function NewTenantCheckIn({ navigation, route }) {
@@ -70,6 +70,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
     const [amount, setAmount] = useState("");
     const [rentError, setRentError] = useState("")
     const [openDatePicker, setOpenDatePicker] = useState(false)
+
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     // const [joiningDate, setJoiningDate] = useState(new Date());
     // const [advanceAmount, setAdvanceAmount] = useState("");
@@ -171,21 +173,70 @@ export default function NewTenantCheckIn({ navigation, route }) {
     //     }
     //   };
 
-    useFocusEffect(
-        useCallback(() => {
-            const backAction = () => {
-                navigation.goBack();
-                return true;
-            };
+  const handleLeaveCheckInScreen = useCallback(() => {
+    const hasMandatoryValue =
+        floorSelected !== null ||
+        roomSelected !== null ||
+        bedSelected !== null ||
+        checkJoiningDate !== null ||
+        checkinrentalAmount?.trim() !== "" ||
+        advanceAmount?.trim() !== "" ||
+        extraCharges?.length > 0 ||
+        onetimepaymentcharges?.length > 0 ||
+        collectFullRent ||
+        savedCustomRent?.trim() !== "";
 
-            const handler = BackHandler.addEventListener(
-                "hardwareBackPress",
-                backAction
-            );
+    if (hasMandatoryValue) {
+        setShowLeavePageScreen(true);
+        return;
+    }
 
-            return () => handler.remove();
-        }, [navigation])
-    );
+    navigation.goBack();
+}, [
+    navigation,
+    floorSelected,
+    roomSelected,
+    bedSelected,
+    checkJoiningDate,
+    checkinrentalAmount,
+    advanceAmount,
+    extraCharges,
+    onetimepaymentcharges,
+    collectFullRent,
+    savedCustomRent,
+]);
+
+  useFocusEffect(
+    useCallback(() => {
+        const backAction = () => {
+            handleLeaveCheckInScreen();
+            return true;
+        };
+
+        const subscription = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
+
+        return () => subscription.remove();
+    }, [handleLeaveCheckInScreen])
+);
+
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         const backAction = () => {
+    //             navigation.goBack();
+    //             return true;
+    //         };
+
+    //         const handler = BackHandler.addEventListener(
+    //             "hardwareBackPress",
+    //             backAction
+    //         );
+
+    //         return () => handler.remove();
+    //     }, [navigation])
+    // );
 
 
     // useEffect(() => {
@@ -1018,7 +1069,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
                 >
                     <View style={styles.header}>
                         <TouchableOpacity
-                            onPress={() => navigation?.goBack?.()}
+                            // onPress={() => navigation?.goBack?.()}
+                            onPress={handleLeaveCheckInScreen}
                             style={styles.backBtn}
                         >
                             <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
@@ -2078,7 +2130,6 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                         <Text style={styles.primaryText}>Check In</Text>
                                     </TouchableOpacity>
 
-
                                 </View>
 
 
@@ -2114,6 +2165,18 @@ export default function NewTenantCheckIn({ navigation, route }) {
                     </ScrollView>
                 </KeyboardAvoidingView>
             </SafeAreaView>
+
+              <LeavePageScreen
+                visible={showLeavePageScreen}
+                onClose={() => setShowLeavePageScreen(false)}
+                discardClose={() => {
+                    setShowLeavePageScreen(false);
+
+                    setTimeout(() => {
+                        navigation.goBack();
+                    }, 300);
+                }}
+            />
 
             <BedDetailsSheet
                 visible={showBedSheet}
@@ -2212,6 +2275,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
                     </View>
                 </View>
             )}
+
+          
 
 
         </>

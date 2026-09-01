@@ -25,6 +25,8 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { useFocusEffect } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import LeavePageScreen from "../../ToastFile/LeavePageScreen";
+
 
 
 export default function AddBookingScreen({ navigation, route }) {
@@ -34,6 +36,8 @@ export default function AddBookingScreen({ navigation, route }) {
   const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
   const { bankList, getBankListByHostel } = useContext(BankingContext);
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, bookCustomer } = useCustomer();
+
+     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const [openDatePicker, setOpenDatePicker] = useState(false);
   // const [joiningDate, setJoiningDate] = useState(new Date());
@@ -90,21 +94,23 @@ export default function AddBookingScreen({ navigation, route }) {
 
     }
   };
-  useFocusEffect(
-    useCallback(() => {
-      const backAction = () => {
-        navigation.goBack();   // ✅ close screen
-        return true;           // ✅ stop default behavior
-      };
 
-      const handler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction
-      );
 
-      return () => handler.remove();
-    }, [navigation])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const backAction = () => {
+  //       navigation.goBack();  
+  //       return true;        
+  //     };
+
+  //     const handler = BackHandler.addEventListener(
+  //       "hardwareBackPress",
+  //       backAction
+  //     );
+
+  //     return () => handler.remove();
+  //   }, [navigation])
+  // );
 
 
   const loadRooms = async (floorId) => {
@@ -216,6 +222,51 @@ export default function AddBookingScreen({ navigation, route }) {
 
     return valid;
   };
+
+
+  const handleLeavePage = useCallback(() => {
+  const hasMandatoryValue =
+    !!bookingDate ||
+    !!joiningDate ||
+    !!amount?.trim() ||
+    !!selectedFloor ||
+    !!selectedRoom ||
+    !!selectedBed ||
+    !!accountSelected;
+
+  if (hasMandatoryValue) {
+    setShowLeavePageScreen(true);
+  } else {
+    navigation.goBack();
+  }
+}, [
+  bookingDate,
+  joiningDate,
+  amount,
+  selectedFloor,
+  selectedRoom,
+  selectedBed,
+  accountSelected,
+  navigation,
+]);
+
+useFocusEffect(
+  useCallback(() => {
+    const backAction = () => {
+      handleLeavePage();
+      return true;
+    };
+
+    const handler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => handler.remove();
+  }, [handleLeavePage])
+);
+
+
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -277,7 +328,7 @@ export default function AddBookingScreen({ navigation, route }) {
         <View style={styles.page}>
 
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
+            <TouchableOpacity onPress={handleLeavePage}>
               <Image source={BackIcon} style={styles.backIcon} />
             </TouchableOpacity>
 
@@ -668,7 +719,7 @@ export default function AddBookingScreen({ navigation, route }) {
               style={styles.inputBox}
             />
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={handleLeavePage}>
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
 
@@ -679,6 +730,19 @@ export default function AddBookingScreen({ navigation, route }) {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
+
+     <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
+
       {showDatePicker && (
         <View style={styles.datePickerOverlay}>
           <TouchableWithoutFeedback onPress={() => setShowDatePicker(false)}>

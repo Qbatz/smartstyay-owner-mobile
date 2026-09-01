@@ -31,6 +31,7 @@ import ImagePickerSheet from "../../Customer/CustomerOverview/ImagePickerSheet";
 import Loader from "../../Loader/Loader";
 import { storeData } from "../../../Utils/Storage";
 import { ACTIVEHOSTELID } from "../../../Utils/Constant";
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 export default function AddPG({ navigation, route }) {
 
@@ -44,6 +45,8 @@ export default function AddPG({ navigation, route }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [modalType, setModalType] = useState("success");
+
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const prepareImage = (img) => {
     if (!img?.uri) return null;
@@ -137,14 +140,41 @@ export default function AddPG({ navigation, route }) {
   const [errors, setErrors] = useState({});
 
 
+  const handleLeaveScreen = () => {
+    const hasMandatoryValue =
+      hostelName.trim() !== "" ||
+      mobile.trim() !== "" ||
+      pincode.trim() !== "" ||
+      city.trim() !== "" ||
+      state.trim() !== "";
+
+    if (hasMandatoryValue) {
+      setShowLeavePageScreen(true);
+      return;
+    }
+
+    navigation.goBack();
+  }
 
   useEffect(() => {
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-      navigation.goBack();
-      return true;
-    });
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        handleLeaveScreen();
+        return true;
+      }
+    );
+
     return () => backHandler.remove();
-  }, []);
+  }, [hostelName, mobile, pincode, city,state,])
+
+  // useEffect(() => {
+  //   const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+  //     navigation.goBack();
+  //     return true;
+  //   });
+  //   return () => backHandler.remove();
+  // }, []);
 
 
   const sheetY = useRef(new Animated.Value(700)).current;
@@ -388,21 +418,21 @@ export default function AddPG({ navigation, route }) {
           setModalType("success");
           setModalMessage("PG Updated Successfully");
           setShowSuccessModal(true);
-            navigation.goBack();
+          navigation.goBack();
           setTimeout(() => {
             setShowSuccessModal(false)
 
             setTimeout(() => {
-               isSubmittingRef.current = false;
-            setIsSubmitting(false);
+              isSubmittingRef.current = false;
+              setIsSubmitting(false);
             }, 3000);
-              
-          
-           
+
+
+
           }
 
             , 1500);
-          
+
 
         } else {
           setModalType("error");
@@ -643,7 +673,7 @@ export default function AddPG({ navigation, route }) {
       >
 
         <View style={styles.fixedHeader}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={handleLeaveScreen}>
             <Image source={ArrowLeft} style={styles.backIcon} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
@@ -1031,7 +1061,7 @@ export default function AddPG({ navigation, route }) {
 
 
 
-              <TouchableOpacity style={[styles.submitBtn,isSubmitting&&{opacity:0.4}]} onPress={handleSubmit}
+              <TouchableOpacity style={[styles.submitBtn, isSubmitting && { opacity: 0.4 }]} onPress={handleSubmit}
                 disabled={isSubmitting}>
                 <Text style={styles.submitText}>{isEdit ? "Update" : "Save"}</Text>
               </TouchableOpacity>
@@ -1040,6 +1070,18 @@ export default function AddPG({ navigation, route }) {
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+
+      <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
     </>
   );
 }

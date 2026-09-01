@@ -27,6 +27,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Calendar } from "react-native-calendars";
 import ListView from "../../Assets/Images/listview.png";
 import RoomView from "../../Assets/Images/Roomview.png";
+import LeavePageScreen from "../../ToastFile/LeavePageScreen";
+
 
 
 export default function TenantCheckIn({ navigation, route }) {
@@ -63,7 +65,10 @@ export default function TenantCheckIn({ navigation, route }) {
   const [extraCharges, setExtraCharges] = useState([]);
   const [openCalendar, setOpenCalendar] = useState(false);
   const scrollRef = React.useRef(null);
-  const [isCheckinClick,setIsCheckInClick]=useState(false)
+  const [isCheckinClick, setIsCheckInClick] = useState(false)
+
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+
   const scrollToInput = (y = 200) => {
     setTimeout(() => {
       scrollRef.current?.scrollTo({
@@ -137,10 +142,26 @@ export default function TenantCheckIn({ navigation, route }) {
     }
   };
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const backAction = () => {
+  //       navigation.goBack();
+  //       return true;
+  //     };
+
+  //     const handler = BackHandler.addEventListener(
+  //       "hardwareBackPress",
+  //       backAction
+  //     );
+
+  //     return () => handler.remove();
+  //   }, [navigation])
+  // );
+
   useFocusEffect(
     useCallback(() => {
       const backAction = () => {
-        navigation.goBack();
+        handleLeaveCheckInScreen();
         return true;
       };
 
@@ -150,7 +171,14 @@ export default function TenantCheckIn({ navigation, route }) {
       );
 
       return () => handler.remove();
-    }, [navigation])
+    }, [
+      navigation,
+      selectedFloor,
+      selectedRoom,
+      selectedBed,
+      advanceAmount,
+      rentalAmount,
+    ])
   );
 
 
@@ -171,7 +199,7 @@ export default function TenantCheckIn({ navigation, route }) {
       formattedDate
     );
     console.log("beds", res);
-    
+
 
     if (res.success) {
       setBeds(res?.data?.listBeds);
@@ -191,18 +219,18 @@ export default function TenantCheckIn({ navigation, route }) {
   // });
 
   const filteredBeds = beds.filter((bed) => {
-  if (!selectedFloor || !selectedRoom) return false;
+    if (!selectedFloor || !selectedRoom) return false;
 
-  return (
-    bed.floorId === selectedFloor.id &&
-    bed.roomId === selectedRoom.id &&
-    (bed.currentStatus === "VACANT" ||
-      bed.currentStatus === "NOTICE")
-  );
-});
+    return (
+      bed.floorId === selectedFloor.id &&
+      bed.roomId === selectedRoom.id &&
+      (bed.currentStatus === "VACANT" ||
+        bed.currentStatus === "NOTICE")
+    );
+  });
 
   console.log("filteredBeds", filteredBeds);
-  
+
 
   const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
@@ -411,62 +439,78 @@ export default function TenantCheckIn({ navigation, route }) {
   };
 
 
+  const handleLeaveCheckInScreen = () => {
+    const hasMandatoryValue =
+      selectedFloor !== null ||
+      selectedRoom !== null ||
+      selectedBed !== null ||
+      advanceAmount.trim() !== "" ||
+      rentalAmount.trim() !== "";
+
+    if (hasMandatoryValue) {
+      setShowLeavePageScreen(true);
+      return;
+    }
+
+    navigation.goBack();
+  };
+
   const submitLongStay = async () => {
 
-     if(isCheckinClick) return;
+    if (isCheckinClick) return;
     const isValid = validateLongStay();
 
     if (!isValid) return;
-   
+
     const chargeValid = validateExtraCharges();
     if (!chargeValid) return;
 
-    try{
+    try {
       setIsCheckInClick(true)
-    const payload = {
-      floorId: selectedFloor.id,
-      roomId: selectedRoom.id,
-      bedId: selectedBed.bedId,
-      joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
-      advanceAmount: Number(advanceAmount),
-      rentalAmount: Number(rentalAmount),
-      stayType: "LONG",
+      const payload = {
+        floorId: selectedFloor.id,
+        roomId: selectedRoom.id,
+        bedId: selectedBed.bedId,
+        joiningDate: dayjs(joiningDate).format("DD-MM-YYYY"),
+        advanceAmount: Number(advanceAmount),
+        rentalAmount: Number(rentalAmount),
+        stayType: "LONG",
 
-      deductions: extraCharges.map((e) => ({
-        type:
-          e.type === "Others"
-            ? e.title.trim().toLowerCase()
-            : e.type.toLowerCase(),
-        amount: Number(e.amount),
-      })),
-    };
+        deductions: extraCharges.map((e) => ({
+          type:
+            e.type === "Others"
+              ? e.title.trim().toLowerCase()
+              : e.type.toLowerCase(),
+          amount: Number(e.amount),
+        })),
+      };
 
-    const res = await checkInCustomer(customerId, payload);
-    console.log("checking",res)
-    console.log(res?.message)
+      const res = await checkInCustomer(customerId, payload);
+      console.log("checking", res)
+      console.log(res?.message)
 
-    if (res.success) {
-      setModalType("success");
-      setMessage(res.data);
-      setShowSuccess(true);
+      if (res.success) {
+        setModalType("success");
+        setMessage(res.data);
+        setShowSuccess(true);
 
-      await getAllBedsByRoom(selectedRoom.id);
-      navigation.goBack();
-      setTimeout(() => {
-        setShowSuccess(false);
+        await getAllBedsByRoom(selectedRoom.id);
+        navigation.goBack();
+        setTimeout(() => {
+          setShowSuccess(false);
 
-      }, 800);
+        }, 800);
 
-    } else {
-      setModalType("error");
-      setMessage(res.message || "Checkin Failed");
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false)
-         setIsCheckInClick(false);
-      }, 1000);
-    }
-    }catch(error){
+      } else {
+        setModalType("error");
+        setMessage(res.message || "Checkin Failed");
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false)
+          setIsCheckInClick(false);
+        }, 1000);
+      }
+    } catch (error) {
       console.log(error)
       setIsCheckInClick(false)
     }
@@ -488,7 +532,7 @@ export default function TenantCheckIn({ navigation, route }) {
         >
           <View style={styles.header}>
             <TouchableOpacity
-              onPress={() => navigation?.goBack?.()}
+             onPress={handleLeaveCheckInScreen}
               style={styles.backBtn}
             >
               <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
@@ -680,7 +724,7 @@ export default function TenantCheckIn({ navigation, route }) {
                                 setSelectedRoom(r);
                                 setRoomOpen(false);
                                 setRoomError("")
-                                 setSelectedBed(null);
+                                setSelectedBed(null);
                               }}
 
                             >
@@ -762,11 +806,11 @@ export default function TenantCheckIn({ navigation, route }) {
                   <ErrorMessage message={bedError} type="error" />
                 )}
                 {selectedBed?.shouldShowError && (
-  <ErrorMessage
-    message={selectedBed.errorMessage}
-    type="error"
-  />
-)}
+                  <ErrorMessage
+                    message={selectedBed.errorMessage}
+                    type="error"
+                  />
+                )}
 
 
 
@@ -991,15 +1035,15 @@ export default function TenantCheckIn({ navigation, route }) {
 
 
                 <View style={styles.BtnRow}>
-                  <TouchableOpacity style={styles.CancelBtn} onPress={() => navigation.goBack()}>
+                  <TouchableOpacity style={styles.CancelBtn} onPress={handleLeaveCheckInScreen}>
                     <Text style={{ color: "grey", fontFamily: "Gilroy-Semibold" }}>
                       Cancel
                     </Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.submitBtn,isCheckinClick && {opacity:0.4}]} 
-                  onPress={submitLongStay}
-                  disabled={isCheckinClick}>
+                  <TouchableOpacity style={[styles.submitBtn, isCheckinClick && { opacity: 0.4 }]}
+                    onPress={submitLongStay}
+                    disabled={isCheckinClick}>
                     <Text style={styles.submitText}>Check-In</Text>
                   </TouchableOpacity>
                 </View>
@@ -1052,6 +1096,18 @@ export default function TenantCheckIn({ navigation, route }) {
         </View>
       )}
 
+
+      <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
 
     </>
   );

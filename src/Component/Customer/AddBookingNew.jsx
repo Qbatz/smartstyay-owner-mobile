@@ -39,6 +39,7 @@ import ImagePickerSheet from "./CustomerOverview/ImagePickerSheet";
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import ValidatedInput from "../MorePages/ValidatedInput"
 import BedDetailsSheet from "./BedDetailsBottomsheet"
+import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 
 
 const AddBookingNew = ({ navigation, route }) => {
@@ -56,6 +57,8 @@ const AddBookingNew = ({ navigation, route }) => {
     const [draftCustomerId, setDraftCustomerId] = useState(null);
 
     const { getBankListByHostel } = useContext(BankingContext);
+
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const isSubmittingRef = useRef(false);
 
@@ -3385,7 +3388,7 @@ const AddBookingNew = ({ navigation, route }) => {
                                                 setShowIdProofType(v => !v);
                                             }}
                                         >
-                                            <Text style={{ fontSize: 15,fontFamily:'Gilroy-Medium' }}>
+                                            <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
                                                 {IdproofType
                                                     ? idProofOptions.find(o => o.value === IdproofType)?.label
                                                     : "Select ID Proof"}
@@ -3845,7 +3848,7 @@ const AddBookingNew = ({ navigation, route }) => {
                                     </View>
 
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <View style={{ flex: 1,marginRight:4}}>
+                                        <View style={{ flex: 1, marginRight: 4 }}>
 
                                             <Text style={styles.label}> Floor <Text style={{ color: "red" }}>*</Text></Text>
 
@@ -3908,7 +3911,7 @@ const AddBookingNew = ({ navigation, route }) => {
                                             )}
                                         </View>
 
-                                        <View style={{ flex: 1,marginLeft:4 }}>
+                                        <View style={{ flex: 1, marginLeft: 4 }}>
                                             <Text style={styles.label}> Room <Text style={{ color: "red" }}>*</Text></Text>
 
                                             <View style={{ position: "relative" }}>
@@ -4064,7 +4067,7 @@ const AddBookingNew = ({ navigation, route }) => {
                                             {rentalError && (
                                                 <ErrorMessage message={rentalError} type="error" />
                                             )} */}
-                                   
+
 
 
 
@@ -6040,6 +6043,18 @@ const AddBookingNew = ({ navigation, route }) => {
                 />
 
             </View>
+
+                          <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false);
+
+          setTimeout(() => {
+            navigation.goBack();
+          }, 300);
+        }}
+      />
         </>
     );
 

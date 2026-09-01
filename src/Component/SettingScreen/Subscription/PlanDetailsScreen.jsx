@@ -178,8 +178,8 @@ export default function PlanDetailsScreen({ route, navigation }) {
             ) : (
 
               <View style={styles.buttonRow}>
-
-                <TouchableOpacity
+                {
+                  Platform.OS === 'ios' ? null : <TouchableOpacity
                   style={styles.secondaryBtn}
                   onPress={() => navigation.navigate("SubscriptionPlans")}
                 >
@@ -187,6 +187,8 @@ export default function PlanDetailsScreen({ route, navigation }) {
                     {isPremium ? "Change Plan" : "Upgrade Plan"}
                   </Text>
                 </TouchableOpacity>
+                }
+                
 
                 <TouchableOpacity
                   style={styles.primaryBtn}

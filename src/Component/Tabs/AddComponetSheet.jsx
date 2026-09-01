@@ -510,21 +510,22 @@ export default function AddComponentSheet({
       icon: require("../../Assets/Images/user-circle-add.png"),
       screen: "AddTenantNew",
     },
+    // {
+    //   title: "Booking",
+    //   icon: BookingPencilIcon,
+    //   screen: 'AddBooking',
+    // },
     {
-      title: "Booking",
-      icon: BookingPencilIcon,
-      screen: 'AddBookingNewForm',
+      title: "Walkin",
+      icon: require("../../Assets/Images/walkin_user.png"),
+      screen: "AddTenant",
     },
     {
       title: "Expense",
       icon: require("../../Assets/Images/money-minus.png"),
       screen: "AddExpensesPage",
     },
-    {
-      title: "Walkin",
-      icon: require("../../Assets/Images/walkin_user.png"),
-      screen: "AddTenant",
-    },
+    
     {
       title: "Invoice",
       icon: require("../../Assets/Images/invoice.png"),

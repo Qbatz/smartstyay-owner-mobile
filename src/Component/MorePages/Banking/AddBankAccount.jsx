@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext, useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  ScrollView, Image
+  ScrollView, Image, BackHandler
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { BankingContext } from "../../../Context/BankingContext";
@@ -14,11 +14,13 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+
 
 export default function AddBankAccount() {
 
   const { activeHostelId } = useContext(CommonContexts);
-  const { createBankAccount, responsiblePersonList, NewgetBankList ,
+  const { createBankAccount, responsiblePersonList, NewgetBankList,
     getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel } = useContext(BankingContext);
 
 
@@ -31,7 +33,8 @@ export default function AddBankAccount() {
   const [cashaccountType, setCashAccountType] = useState(null)
   const [responsibleperson, setResponsiblePerson] = useState(null)
 
-  const isApplyTriggeredRef = useRef(false);
+  const isApplyTriggeredRef = useRef(false)
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
 
   const [form, setForm] = useState({
@@ -103,6 +106,54 @@ export default function AddBankAccount() {
       ifsc: "",
     }));
   };
+
+  const handleLeavePage = useCallback(() => {
+    let hasMandatoryValue = false;
+
+    if (accountType === "bank") {
+      hasMandatoryValue =
+        !!form.displayName?.trim() ||
+        !!form.bankName?.trim() ||
+        !!form.accountHolder?.trim() ||
+        !!form.accountNumber?.trim() ||
+        !!form.branch?.trim() ||
+        !!form.ifsc?.trim() ||
+        !!form.accountCategory?.trim() ||
+        !!form.openingBalance?.trim();
+    }
+
+    if (accountType === "cash") {
+      hasMandatoryValue =
+        !!form.displayName?.trim() ||
+        !!form.cashType?.trim() ||
+        !!form.responsiblePerson?.trim() ||
+        !!form.openingBalance?.trim();
+    }
+
+    if (hasMandatoryValue) {
+      setShowLeavePageScreen(true);
+    } else {
+      navigation.goBack();
+    }
+  }, [
+    accountType,
+    form,
+    navigation,
+  ])
+
+  useEffect(() => {
+  const backAction = () => {
+    handleLeavePage();
+    return true;
+  };
+
+  const subscription = BackHandler.addEventListener(
+    "hardwareBackPress",
+    backAction
+  );
+
+  return () => subscription.remove();
+}, [handleLeavePage]);
 
   const validate = () => {
     let err = {};
@@ -313,7 +364,7 @@ export default function AddBankAccount() {
           {/* <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={{ fontSize: 22 }}>←</Text>
           </TouchableOpacity> */}
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={handleLeavePage}>
             <Image source={ArrowLeft} style={styles.backIcon} />
           </TouchableOpacity>
 
@@ -713,7 +764,7 @@ export default function AddBankAccount() {
           />
 
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={handleLeavePage}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
 
@@ -728,6 +779,19 @@ export default function AddBankAccount() {
           </View>
         </ScrollView>
       </View>
+
+      <LeavePageScreen
+        visible={showLeavePageScreen}
+        onClose={() => setShowLeavePageScreen(false)}
+        discardClose={() => {
+          setShowLeavePageScreen(false)
+
+          setTimeout(() => {
+            navigation.goBack()
+          }, 300)
+        }}
+      />
+
     </>
   );
 }
