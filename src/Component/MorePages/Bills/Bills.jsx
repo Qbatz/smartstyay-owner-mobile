@@ -300,7 +300,7 @@ export default function BillsDesign({ route }) {
   const [createdBy, setCreatedBy] = useState([]);
   const [appliedFilters, setAppliedFilters] = useState(null);
   const [receiptAppliedFilters, setReceiptAppliedFilters] = useState(null);
-  const [retainerAppliedFilter,setRetainerAppliedFilters] = useState(null)
+  const [retainerAppliedFilter, setRetainerAppliedFilters] = useState(null)
   const [filterError, setFilterError] = useState("");
   const [showUnpaidModal, setShowUnpaidModal] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState(null);
@@ -315,6 +315,9 @@ export default function BillsDesign({ route }) {
   const isTriggeredRef = useRef(false)
 
   const { CommonModule } = NativeModules;
+
+  const [environment, setEnvironment] = useState("")
+
 
 
   const [openUnpaid, setOpenUnpaid] = useState(false);
@@ -592,6 +595,17 @@ export default function BillsDesign({ route }) {
     showRecuringBillDetail
   ]);
 
+
+
+
+  useEffect(() => {
+    CommonModule.fetchEnvironment().then(r => {
+      setEnvironment(r)
+    })
+  }, [])
+
+
+  const isProd = environment?.toUpperCase() === "PROD";
 
   // const dotsRef = useRef(null);
 
@@ -1348,6 +1362,20 @@ export default function BillsDesign({ route }) {
     navigation.navigate("CreateBills", { mode: "add" })
   }
 
+    const handleCreateInvoice = () => {
+
+    if (!activeHostelId) {
+      setModalType("warning");
+      setModalMessage("Please Add a Hostel First");
+      setShowSuccessModal(true);
+      setTimeout(() => setShowSuccessModal(false), 1500);
+      return;
+    }
+    if (!canReadInvoice) return;
+
+    navigation.navigate("CreateInvoice", { mode: "add" })
+  }
+
   const formatApiDate = (date) =>
     date
       ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
@@ -1912,12 +1940,12 @@ export default function BillsDesign({ route }) {
     });
   };
 
-  const handleRetainerResetFilter=async()=>{
-    if(!canReadBooking) return;
+  const handleRetainerResetFilter = async () => {
+    if (!canReadBooking) return;
 
     setRetainerAppliedFilters(null);
 
-    await  GetAdvanceBookingBills(activeHostelId);
+    await GetAdvanceBookingBills(activeHostelId);
   }
 
 
@@ -2956,14 +2984,33 @@ export default function BillsDesign({ route }) {
                       }
                     </>
                   </ScrollView>
+
+                  {!isProd && (
+                    <>
+                      <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+
+                        <TouchableOpacity
+                          style={[
+                            styles.addFloorBtn,
+                            !canWriteInvoice && { opacity: 0.4 }
+                          ]}
+                          disabled={!canWriteInvoice}
+                          onPress={handleCreateInvoice}>
+                          <Text style={styles.addFloorText}>+ New Create Invoice</Text>
+                        </TouchableOpacity>
+
+                      </View>
+                    </>
+                  )}
+
+
+
+
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
                       contentContainerStyle={{ paddingBottom: 150, }} onScroll={handleScroll}
                     >
-
-
-
 
                       {appliedFilters && (
                         <View style={{ marginTop: 10 }}>

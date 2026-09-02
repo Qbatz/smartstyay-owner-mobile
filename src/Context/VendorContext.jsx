@@ -50,6 +50,48 @@ export default function VendorProvider({ children }) {
   // };
 
 
+  // const getVendorList = async (
+  //   hostelId,
+  //   filters = {}
+  // ) => {
+  //   setLoading(true);
+  //   setVendorList([]);
+
+  //   try {
+  //     const axios = getAxios();
+
+  //     const res = await axios.get(
+  //       `/v2/vendors/all-vendors/${hostelId}`,
+  //       {
+  //         params: {
+  //           name: filters?.name,
+  //           categoryId: filters?.categoryId,
+  //           paymentStatus: filters?.paymentStatus,
+  //           page: filters?.page || 1,
+  //           size: filters?.size || 10,
+  //         },
+  //       }
+  //     );
+
+  //     if (res.status === 200) {
+  //       setVendorList(res.data || []);
+  //       return {
+  //         success: true,
+  //         data: res.data,
+  //       };
+  //     }
+
+  //     return { success: false };
+  //   } catch (err) {
+  //     return {
+  //       success: false,
+  //       message: getErrorMessage(err),
+  //     };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const getVendorList = async (
     hostelId,
     filters = {}
@@ -64,17 +106,21 @@ export default function VendorProvider({ children }) {
         `/v2/vendors/all-vendors/${hostelId}`,
         {
           params: {
-            name: filters?.name,
-            categoryId: filters?.categoryId,
-            paymentStatus: filters?.paymentStatus,
+            name: filters?.name || undefined,
+            categoryId: filters?.categoryId || undefined,
+            paymentStatus: filters?.paymentStatus || undefined,
             page: filters?.page || 1,
             size: filters?.size || 10,
           },
         }
       );
 
+      console.log("vendor", params);
+      
+
       if (res.status === 200) {
         setVendorList(res.data || []);
+
         return {
           success: true,
           data: res.data,
@@ -82,6 +128,7 @@ export default function VendorProvider({ children }) {
       }
 
       return { success: false };
+
     } catch (err) {
       return {
         success: false,
@@ -299,45 +346,45 @@ export default function VendorProvider({ children }) {
     }
   };
   const updateVendorCategory = async (
-  categoryId,
-  categoryName,
-  hostelId
-) => {
-  try {
-    setLoading(true);
+    categoryId,
+    categoryName,
+    hostelId
+  ) => {
+    try {
+      setLoading(true);
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const res = await axios.put(
-      `/v2/vendors/categories/${categoryId}?hostelId=${hostelId}`,
-      {
-        categoryName,
+      const res = await axios.put(
+        `/v2/vendors/categories/${categoryId}?hostelId=${hostelId}`,
+        {
+          categoryName,
+        }
+      );
+
+      if (res?.status === 200) {
+        await getVendorCategories(hostelId);
+
+        return {
+          success: true,
+          message: "Vendor Category updated successfully",
+          data: res?.data,
+        };
       }
-    );
-
-    if (res?.status === 200) {
-      await getVendorCategories(hostelId);
 
       return {
-        success: true,
-        message: "Vendor Category updated successfully",
-        data: res?.data,
+        success: false,
+        message: "Failed to update vendor category",
       };
+    } catch (err) {
+      return {
+        success: false,
+        message: getErrorMessage(err),
+      };
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      success: false,
-      message: "Failed to update vendor category",
-    };
-  } catch (err) {
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const deleteVendorCategory = async (

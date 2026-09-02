@@ -40,6 +40,7 @@ import DirectionImage from "../../../Assets/Images/direction-down.png"
 import Filter from "../../../Assets/Images/filter.png";
 import OutstandingIcon from "../../../Assets/Images/Outstanding.png"
 import GreenRupees from "../../../Assets/Images/GreenRupees.png"
+// import FilterBottomSheet from "../Reports/FilterBottomSheet";
 
 
 const { width } = Dimensions.get("window");
@@ -57,7 +58,7 @@ export default function Vendors({ navigation }) {
     //     getVendorCategories,
     //   } = useContext(VendorContext);
 
-    const { vendorList, loading, getVendorList, deleteVendor,setVendorList} = useContext(CustomerContext);;
+    const { vendorList, loading, getVendorList, deleteVendor, setVendorList } = useContext(CustomerContext);;
 
     const { activeHostelId } = useContext(CommonContexts)
 
@@ -100,6 +101,12 @@ export default function Vendors({ navigation }) {
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
 
+    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedStatus, setSelectedStatus] = useState(null);
+
+    const [categoryOpen, setCategoryOpen] = useState(false);
+    const [statusOpen, setStatusOpen] = useState(false);
+
     const [searchText, setSearchText] = useState("");
 
     const filteredVendors = vendorList?.vendors?.length > 0 && vendorList?.vendors?.filter((item) => {
@@ -112,11 +119,51 @@ export default function Vendors({ navigation }) {
         );
     });
 
+    const vendorFilterOptions = vendorList?.filterOptions;
+
+    // const categoryOptions =
+    //     vendorFilterOptions?.category?.map((item) => ({
+    //         label: item?.name,
+    //         value: item?.type,
+    //     })) || [];
+
+    const categoryOptions = vendorCategories.map(item => ({
+        label: item?.categoryName,
+        value: item?.id,
+    }));
+
+    const statusOptions =
+        vendorFilterOptions?.paymentStatus?.map((item) => ({
+            label: item,
+            value: item,
+        })) || [];
+
+
+    const selectedCategoryLabel =
+        categoryOptions.find(
+            item => String(item.value) === String(selectedCategory)
+        )?.label || "";
+
+    const selectedStatusLabel =
+        statusOptions.find(
+            item => item.value === selectedStatus
+        )?.label || "";
+
+    // const firstCategoryLabel =
+    //     categoryOptions.find(
+    //         (item) => item.value === selectedCategory?.[0]
+    //     )?.label || "";
+
+    // const firstStatusLabel =
+    //     statusOptions.find(
+    //         (item) => item.value === selectedStatus?.[0]
+    //     )?.label || "";
+
     useFocusEffect(
         useCallback(() => {
             if (activeHostelId) {
                 getVendorList(activeHostelId);
-            }else{
+            } else {
                 setVendorList([])
             }
         }, [activeHostelId])
@@ -128,13 +175,22 @@ export default function Vendors({ navigation }) {
         }
     }, [activeHostelId]);
 
-
-
     useFocusEffect(
         useCallback(() => {
             const onBackPress = () => {
+
+                if (categoryOpen) {
+                    setCategoryOpen(false);
+                    return true;
+                }
+
+                if (statusOpen) {
+                    setStatusOpen(false);
+                    return true;
+                }
+
                 if (showFilter) {
-                    setShowFilter(false)
+                    setShowFilter(false);
                     return true;
                 }
 
@@ -152,8 +208,65 @@ export default function Vendors({ navigation }) {
             );
 
             return () => subscription.remove();
-        }, [navigation, showFilter])
+
+        }, [
+            navigation,
+            showFilter,
+            categoryOpen,
+            statusOpen
+        ])
     );
+
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         const onBackPress = () => {
+    //             if (showFilter) {
+    //                 setShowFilter(false)
+    //                 return true;
+    //             }
+
+    //             if (navigation.canGoBack()) {
+    //                 navigation.goBack();
+    //                 return true;
+    //             }
+
+    //             return false;
+    //         };
+
+    //         const subscription = BackHandler.addEventListener(
+    //             "hardwareBackPress",
+    //             onBackPress
+    //         );
+
+    //         return () => subscription.remove();
+    //     }, [navigation, showFilter])
+    // );
+
+   const applyVendorFilters = (
+    category = selectedCategory,
+    status = selectedStatus
+) => {
+    if (!activeHostelId) return;
+
+    const filters = {
+        name: searchText?.trim() || undefined,
+
+        categoryId:
+            category !== null && category !== undefined
+                ? Number(category)
+                : undefined,
+
+        paymentStatus: status || undefined,   // ARRAY WRAP REMOVE பண்ணுங்க
+
+        page: 1,
+        size: 10,
+    };
+
+    console.log("Vendor Filters =>", filters);
+
+    getVendorList(activeHostelId, filters);
+};
+
     const amountOptions = [
         "Low to High (Lowest First)",
         "High to Low (Highest First)",
@@ -161,13 +274,67 @@ export default function Vendors({ navigation }) {
         "Oldest First",
     ];
 
-    const handleSearch = async (text) => {
-        await getVendorList(activeHostelId, {
-            name: text || null,
+    const searchTimeout = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (searchTimeout.current) {
+                clearTimeout(searchTimeout.current);
+            }
+        };
+    }, []);
+
+   const handleSearch = async (text) => {
+    if (!activeHostelId) return;
+
+    if (searchTimeout.current) {
+        clearTimeout(searchTimeout.current);
+    }
+
+    const searchValue = text?.trim() || "";
+
+    if (searchValue?.length === 0) {
+        const filters = {
+            name: "",
+            categoryId:
+                selectedCategory !== null
+                    ? Number(selectedCategory)
+                    : undefined,
+
+            paymentStatus: selectedStatus || undefined,   // FIX
+
             page: 1,
             size: 10,
-        });
-    };
+        };
+
+        getVendorList(activeHostelId, filters);
+        return;
+    }
+
+    if (searchValue.length < 2) {
+        return;
+    }
+
+    searchTimeout.current = setTimeout(() => {
+        const filters = {
+            name: searchValue,
+
+            categoryId:
+                selectedCategory !== null
+                    ? Number(selectedCategory)
+                    : undefined,
+
+            paymentStatus: selectedStatus || undefined,   // FIX
+
+            page: 1,
+            size: 10,
+        };
+
+        console.log("VENDOR SEARCH FILTERS =>", filters);
+
+        getVendorList(activeHostelId, filters);
+    }, 300);
+};
 
     const vendors = vendorList?.vendors ?? [];
 
@@ -523,18 +690,37 @@ export default function Vendors({ navigation }) {
                             <TextInput
                                 placeholder="Search Vendors"
                                 value={searchText}
+                                // onChangeText={(text) => {
+                                //     const cleanText = text.replace(/[^a-zA-Z]/g, "")
+                                //     if (text !== cleanText) {
+                                //         setSearchText(cleanText);
+                                //         return;
+                                //     }
+                                //     setSearchText(cleanText);
+                                //     handleSearch(cleanText);
+                                // }}
+
                                 onChangeText={(text) => {
-                                    const cleanText = text.replace(/[^a-zA-Z]/g, "")
-                                    if (text !== cleanText) {
-                                        setSearchText(cleanText);
-                                        return;
-                                    }
+                                    const cleanText = text.replace(/[^a-zA-Z\s]/g, "");
+
                                     setSearchText(cleanText);
                                     handleSearch(cleanText);
                                 }}
+
+                                // onChangeText={(text) => {
+                                //     const filtered = text.replace(
+                                //         /[^a-zA-Z\s]/g,
+                                //         ""
+                                //     );
+
+                                //     setSearchText(filtered);
+                                //     handleSearch(filtered);
+                                // }}
+
                                 style={styles.searchInput}
                                 placeholderTextColor="#9CA3AF"
                                 autoFocus
+                                editable={canReadVendor}
                             />
                         </View>
                     ) : (
@@ -547,7 +733,7 @@ export default function Vendors({ navigation }) {
 
 
 
-                {!loading && vendors?.length === 0 ? (
+                {!loading && vendorList?.vendors?.length === 0 ? (
                     <View style={styles.emptyContainer}>
                         <Image
                             source={EmptyState}
@@ -568,91 +754,37 @@ export default function Vendors({ navigation }) {
                 ) : (
 
                     <>
-                        {!loading && vendorList?.vendors?.length > 0 &&
-                            (
-                                <>
-                                    {/* <View style={styles.searchWrapper}>
-  <Image source={SearchIcon} style={styles.searchIcon} />
-  <TextInput
-    placeholder="Search Vendors"
-    value={searchText}
-    onChangeText={setSearchText}
-    placeholderTextColor="#9CA3AF"
-    style={styles.searchInput}
-  />
-</View> */}
-                                    {/* 
+
+                        {!loading && vendorList?.vendors?.length > 0 && (
+                            <>
+                                <View style={{ flex: 1 }}>
                                     <ScrollView
                                         horizontal
-                                        ref={horizontalRef}
                                         showsHorizontalScrollIndicator={false}
                                         contentContainerStyle={styles.cardRow}
-                                        style={{ marginBottom: 4 }}
-
+                                         style={styles.summaryScrollOuter} 
 
                                     >
                                         <SummaryCard
-                                            icon={RevenueIcon}
-                                            title="Total Vendors"
-                                            value={300}
-                                            prefix="₹ "
-                                        />
-
-                                        <SummaryCard
-                                            icon={RupeeIcon}
-                                            title="Total Purchase"
-                                            value={2000}
-                                            prefix="₹ "
-                                        />
-
-                                        <SummaryCard
                                             icon={PeopleIcon}
-                                            title="Outstanding"
-                                            value={50}
+                                            title="Total Vendors"
+                                            value={vendorList?.vendorSummary?.totalVendors || 0}
                                         />
 
+                                        <SummaryCard
+                                            icon={GreenRupees}
+                                            title="Total Purchase"
+                                            value={vendorList?.vendorSummary?.totalPurchase || 0}
+                                            prefix="₹ "
+                                            valueColor="#16A34A"
+                                        />
 
-
-                                    </ScrollView> */}
-                                </>
-                            )
-
-                        }
-
-
-                        <FlatList
-                            data={filteredVendors || []}
-                            keyExtractor={(item) => item?.id.toString()}
-                            renderItem={renderVendor}
-                            ListHeaderComponent={() => (
-                                <>
-                                    {!loading && vendorList?.vendors?.length > 0 && (
-                                        <>
-                                            <ScrollView
-                                                horizontal
-                                                showsHorizontalScrollIndicator={false}
-                                                contentContainerStyle={styles.cardRow}
-                                            >
-                                                <SummaryCard
-                                                    icon={PeopleIcon}
-                                                    title="Total Vendors"
-                                                    value={vendorList?.vendorSummary?.totalVendors || 0}
-                                                />
-
-                                                <SummaryCard
-                                                    icon={GreenRupees}
-                                                    title="Total Purchase"
-                                                    value={vendorList?.vendorSummary?.totalPurchase || 0}
-                                                    prefix="₹ "
-                                                    valueColor="#16A34A"
-                                                />
-
-                                                <SummaryCard
-                                                    icon={OutstandingIcon}
-                                                    title="Outstanding"
-                                                    value={vendorList?.vendorSummary?.outstandingAmount || 0}
-                                                    prefix="₹ "
-                                                />
+                                        <SummaryCard
+                                            icon={OutstandingIcon}
+                                            title="Outstanding"
+                                            value={vendorList?.vendorSummary?.outstandingAmount || 0}
+                                            prefix="₹ "
+                                        />
 
                                         <SummaryCard
                                             icon={GreenRupees}
@@ -662,39 +794,242 @@ export default function Vendors({ navigation }) {
                                         />
                                     </ScrollView>
 
-                                    {/* <View style={styles.filterRow}>
-                                        <TouchableOpacity style={styles.filterChipActive}>
-                                            <Text style={styles.filterChipTextActive}>All</Text>
-                                            <Image source={DirectionImage} style={styles.chipArrow} />
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity style={styles.filterChip}>
-                                            <Text style={styles.filterChipText}>Category</Text>
-                                            <Image source={DirectionImage} style={styles.chipArrow} />
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity style={styles.filterChip}>
-                                            <Text style={styles.filterChipText}>Status</Text>
-                                            <Image source={DirectionImage} style={styles.chipArrow} />
-                                        </TouchableOpacity>
-
-                                        <TouchableOpacity
-                                            style={styles.filterIconBtn}
-                                            onPress={() => setShowFilter(true)}
+                                    <View style={[styles.filterRow, { zIndex: 100 }]}>
+                                        {/* CATEGORY DROPDOWN */}
+                                        <View
+                                            style={[
+                                                styles.vendorFilterDropdown,
+                                                { zIndex: categoryOpen ? 100 : 10 }
+                                            ]}
                                         >
-                                            <Image source={Filter} style={{ width: 18, height: 18 }} />
-                                        </TouchableOpacity>
-                                    </View> */}
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.vendorFilterBox,
+                                                    selectedCategory !== null && styles.vendorFilterBoxActive,
+                                                ]}
+                                                activeOpacity={0.8}
+                                                onPress={() => {
+                                                    setCategoryOpen(prev => !prev);
+                                                    setStatusOpen(false);
+                                                }}
+                                            >
+                                                <Text
+                                                    numberOfLines={1}
+                                                    style={[
+                                                        styles.vendorFilterText,
+                                                        selectedCategory !== null &&
+                                                        styles.vendorFilterTextActive,
+                                                    ]}
+                                                >
+                                                    {selectedCategoryLabel || "Select Category"}
+                                                </Text>
 
-                                        </>
-                                    )}
-                                </>
-                            )}
-                            contentContainerStyle={{
-                                paddingHorizontal: 16,
-                                paddingBottom: 200,
+                                                <Image
+                                                    source={DirectionImage}
+                                                    style={styles.vendorFilterArrow}
+                                                />
+                                            </TouchableOpacity>
+
+                                            {categoryOpen && (
+                                                <View style={styles.vendorFilterMenu}>
+                                                    <ScrollView
+                                                        nestedScrollEnabled
+                                                        // showsVerticalScrollIndicator={false}
+                                                        // style={{ maxHeight: 200 }}
+                                                         showsVerticalScrollIndicator={categoryOptions.length > 4}
+            style={{
+                maxHeight: Math.min(categoryOptions.length * 46, 230), 
+            }}
+                                                    >
+                                                        {categoryOptions.map((item, index) => {
+                                                            const isSelected =
+                                                                String(selectedCategory) === String(item.value);
+
+                                                            return (
+                                                                <TouchableOpacity
+                                                                    key={`${item.value}-${index}`}
+                                                                    style={[
+                                                                        styles.vendorFilterOption,
+                                                                        isSelected &&
+                                                                        styles.vendorFilterOptionSelected,
+                                                                    ]}
+                                                                    onPress={() => {
+                                                                        setSelectedCategory(item.value);
+                                                                        setCategoryOpen(false);
+
+                                                                        applyVendorFilters(
+                                                                            item.value,
+                                                                            selectedStatus
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <Text
+                                                                        style={[
+                                                                            styles.vendorFilterOptionText,
+                                                                            isSelected &&
+                                                                            styles.vendorFilterOptionTextSelected,
+                                                                        ]}
+                                                                    >
+                                                                        {item.label}
+                                                                    </Text>
+                                                                </TouchableOpacity>
+                                                            );
+                                                        })}
+
+                                                        {selectedCategory !== null && (
+                                                            <TouchableOpacity
+                                                                style={styles.vendorFilterClearOption}
+                                                                onPress={() => {
+                                                                    setSelectedCategory(null);
+                                                                    setCategoryOpen(false);
+
+                                                                    applyVendorFilters(
+                                                                        null,
+                                                                        selectedStatus
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <Text style={styles.vendorFilterClearText}>
+                                                                    Clear Category
+                                                                </Text>
+                                                            </TouchableOpacity>
+                                                        )}
+                                                    </ScrollView>
+                                                </View>
+                                            )}
+                                        </View>
+
+
+                                        {/* STATUS DROPDOWN */}
+                                        <View style={[styles.vendorFilterDropdown, { zIndex: statusOpen ? 20 : 10 }]}>
+
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.vendorFilterBox,
+                                                    selectedStatus && styles.vendorFilterBoxActive,
+                                                ]}
+                                                activeOpacity={0.8}
+                                                onPress={() => {
+                                                    setStatusOpen(prev => !prev);
+                                                    setCategoryOpen(false);
+                                                }}
+                                            >
+                                                <Text
+                                                    numberOfLines={1}
+                                                    style={[
+                                                        styles.vendorFilterText,
+                                                        selectedStatus &&
+                                                        styles.vendorFilterTextActive,
+                                                    ]}
+                                                >
+                                                    {selectedStatusLabel || "Select Status"}
+                                                </Text>
+
+                                                <Image
+                                                    source={DirectionImage}
+                                                    style={styles.vendorFilterArrow}
+                                                />
+                                            </TouchableOpacity>
+
+                                           {statusOpen && (
+    <View style={styles.vendorFilterMenu}>
+        <ScrollView
+            nestedScrollEnabled
+            showsVerticalScrollIndicator={statusOptions.length > 4}
+            style={{
+                maxHeight: Math.min(statusOptions.length * 46, 230), 
+                // 5 items na ~230 varaikum full ah kaamikkum, adha thaandi na scroll varum
+            }}
+        >
+            {statusOptions.length === 0 ? (
+                <Text style={styles.vendorFilterNoData}>No status found</Text>
+            ) : (
+                <>
+                    {statusOptions.map((item, index) => {
+                        const isSelected = selectedStatus === item.value;
+                        return (
+                            <TouchableOpacity
+                                key={`${item.value}-${index}`}
+                                style={[
+                                    styles.vendorFilterOption,
+                                    isSelected && styles.vendorFilterOptionSelected,
+                                ]}
+                                onPress={() => {
+                                    setSelectedStatus(item.value);
+                                    setStatusOpen(false);
+                                    applyVendorFilters(selectedCategory, item.value);
+                                }}
+                            >
+                                <Text
+                                    style={[
+                                        styles.vendorFilterOptionText,
+                                        isSelected && styles.vendorFilterOptionTextSelected,
+                                    ]}
+                                >
+                                    {item.label}
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    })}
+
+                    {selectedStatus && (
+                        <TouchableOpacity
+                            style={styles.vendorFilterClearOption}
+                            onPress={() => {
+                                setSelectedStatus(null);
+                                setStatusOpen(false);
+                                applyVendorFilters(selectedCategory, null);
                             }}
-                        />
+                        >
+                            <Text style={styles.vendorFilterClearText}>Clear Status</Text>
+                        </TouchableOpacity>
+                    )}
+                </>
+            )}
+        </ScrollView>
+    </View>
+)}
+                                        </View>
+                                    </View>
+
+
+                                    <FlatList
+                                        style={{ flex: 1 }}
+                                        data={filteredVendors || []}
+                                        keyExtractor={(item) => item?.id.toString()}
+                                        renderItem={renderVendor}
+                                        contentContainerStyle={{
+                                            paddingHorizontal: 16,
+                                            paddingBottom: 200,
+                                            paddingTop: 0,
+                                             flexGrow: 1, 
+                                            // marginTop:0
+                                        }}
+
+                                        ListEmptyComponent={
+        <View style={styles.searchEmptyContainer}>
+            <Image
+                source={EmptyState}
+                style={styles.emptyImage}
+            />
+            <Text style={styles.emptyText}>
+                {searchText?.trim()
+                    ? `No vendors found for "${searchText}"`
+                    : "No vendors are there!"}
+            </Text>
+        </View>
+    }
+
+                                    />
+
+                                </View>
+                            </>
+                        )}
+
+
+
+
+
 
                     </>
                 )}
@@ -916,6 +1251,7 @@ export default function Vendors({ navigation }) {
                     </View>
                 </View>
             </Modal>
+
 
 
         </>
@@ -1255,6 +1591,12 @@ const styles = StyleSheet.create({
 
     dateText: { color: "#111" },
     calIcon: { width: 20, height: 20 },
+    searchEmptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingTop: 60,
+},
     emptyContainer: {
         flex: 1,
         justifyContent: "center",
@@ -1445,11 +1787,26 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontFamily: "Gilroy-Bold",
     },
-    cardRow: {
-        paddingLeft: 10,
-        paddingTop: 8,
-        // paddingBottom: 0,
-    },
+
+    summaryScrollOuter: {
+    flexGrow: 0,
+    flexShrink: 0,
+    height: 106,      // card height (90) + konjam buffer
+},
+
+cardRow: {
+    paddingLeft: 10,
+    paddingTop: 4,
+    alignItems: "flex-start",
+},
+    // cardRow: {
+    //     paddingLeft: 10,
+    //     paddingTop: 4,
+    //     paddingBottom: 0,
+    //     alignItems: "flex-start",
+    //     marginBottom: 0,
+    //     maxHeight: 100
+    // },
 
     // summaryCard: {
     //     width: CARD_WIDTH,
@@ -1490,7 +1847,7 @@ const styles = StyleSheet.create({
         elevation: 2,
 
         marginRight: 12,
-        marginBottom: 10, marginTop: 5
+        marginBottom: 0, marginTop: 0
     },
     cardTopRow: {
         flexDirection: "row",
@@ -1534,9 +1891,11 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        marginTop: 10,
-        marginBottom: 14,
+        marginTop: 0,
+        marginBottom: 10,
         paddingHorizontal: 2,
+        gap: 5,
+        marginHorizontal:10
     },
 
     filterChip: {
@@ -1545,7 +1904,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "#E5E7EB",
         borderRadius: 22,
-        paddingHorizontal: 18,
+        paddingHorizontal: 14,
         paddingVertical: 10,
     },
 
@@ -1589,6 +1948,104 @@ const styles = StyleSheet.create({
         width: 14,
         height: 14,
         marginLeft: 6,
+    },
+    vendorFilterDropdown: {
+        flex: 1,
+        position: "relative",
+    },
+
+    vendorFilterBox: {
+        borderWidth: 1,
+        borderColor: "#D4D4D4",
+        borderRadius: 18,
+        paddingHorizontal: 10,
+        paddingVertical: 3,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        backgroundColor: "#fff",
+        minHeight: 40,
+    },
+
+    vendorFilterBoxActive: {
+        borderColor: "#1D5BEE",
+        backgroundColor: "#F5F8FF",
+    },
+
+    vendorFilterText: {
+        flex: 1,
+        fontSize: 15,
+        color: "#9CA3AF",
+        fontFamily: "Gilroy-Medium",
+        marginRight: 8,
+    },
+
+    vendorFilterTextActive: {
+        color: "#1D5BEE",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    vendorFilterArrow: {
+        width: 18,
+        height: 18,
+        tintColor: "#6A6A6A",
+    },
+
+    vendorFilterMenu: {
+        position: "absolute",
+        top: 52,
+        left: 0,
+        right: 0,
+
+        backgroundColor: "#fff",
+        borderWidth: 1,
+        borderColor: "#DDDDDD",
+        borderRadius: 10,
+
+        overflow: "hidden",
+        elevation: 8,
+        zIndex: 999,
+    },
+
+    vendorFilterOption: {
+        paddingVertical: 12,
+        paddingHorizontal: 14,
+        backgroundColor: "#fff",
+    },
+
+    vendorFilterOptionSelected: {
+        backgroundColor: "#1D5BEE",
+    },
+
+    vendorFilterOptionText: {
+        fontSize: 15,
+        color: "#111",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    vendorFilterOptionTextSelected: {
+        color: "#fff",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    vendorFilterNoData: {
+        paddingVertical: 14,
+        textAlign: "center",
+        color: "#9CA3AF",
+        fontSize: 14,
+    },
+
+    vendorFilterClearOption: {
+        paddingVertical: 11,
+        paddingHorizontal: 14,
+        borderTopWidth: 1,
+        borderTopColor: "#EEEEEE",
+    },
+
+    vendorFilterClearText: {
+        fontSize: 14,
+        color: "#1D5BEE",
+        fontFamily: "Gilroy-Semibold",
     },
 })
 
