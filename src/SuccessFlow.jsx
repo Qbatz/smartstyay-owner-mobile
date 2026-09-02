@@ -53,6 +53,7 @@ import ChangeHostelScreen from "../src/Component/Dashboard/ChangeHostel";
 import ProfileDrawer from "../src/Component/Dashboard/ProfileClickScreen";
 import ProfileScreen from "../src/Component/Dashboard/ChangeProfile";
 import CreateBill from "./Component/MorePages/Bills/CreateBill";
+import CreateInvoice from "./Component/MorePages/Bills/CreateInvoice";
 import BillsPdfDesign from "./Component/MorePages/Bills/BillsPdf";
 import NewRetainerInvoiceSheet from "./Component/MorePages/Bills/CreateRetainer"
 import AssignTenant from "../src/Component/PG/AssignTenants";
@@ -187,6 +188,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="ProfileDrawer" component={ProfileDrawer} />
                     <Navigation.Screen name="ProfileScreen" component={ProfileScreen} />
                     <Navigation.Screen name="CreateBills" component={CreateBill} />
+                     <Navigation.Screen name="CreateInvoice" component={CreateInvoice} />
                     <Navigation.Screen name="BillsPdf" component={BillsPdfDesign} />
                     <Navigation.Screen name="NewRetainerInvoiceSheet" component={NewRetainerInvoiceSheet} />
                     <Navigation.Screen name="NewRecordPayment" component={NewRecordPayment} />

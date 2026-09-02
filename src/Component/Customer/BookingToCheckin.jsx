@@ -30,7 +30,7 @@ import CommingSoon from "../../Assets/Images/Coming_soon.png"
 import BedIcon from "../../Assets/Images/bed_NewIcon.png";
 import { Switch } from "react-native";
 import BedDetailsSheet from "./BedDetailsBottomsheet"
-
+import { UseSetting } from "../../Context/SettingContext";
 
 
 
@@ -51,6 +51,7 @@ export default function BookingCheckIn({ navigation, route }) {
     const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel,
         initializeCheckIn, bookedCheckInCustomer,
         BookedTenantCheckIn } = useCustomer();
+        const { getBillingConfig, billingRuleData } = UseSetting();
 
     const isSubmittingRef = useRef(false);
     const [floors, setFloors] = useState([]);
@@ -117,6 +118,12 @@ export default function BookingCheckIn({ navigation, route }) {
 
         }
     };
+
+    useEffect(() => {
+    if (activeHostelId) {
+        getBillingConfig(activeHostelId);
+    }
+}, [activeHostelId]);
 
 
     const loadRooms = async (floorId) => {
@@ -213,6 +220,8 @@ export default function BookingCheckIn({ navigation, route }) {
     };
 
 
+
+
     const displayName = isPGBooking
         ? selectedBedReserv.tenantFullName
         : customer?.fullName;
@@ -239,6 +248,77 @@ export default function BookingCheckIn({ navigation, route }) {
             ? selectedBedReserv?.profilePic
             : customer?.profilePic;
 
+
+
+    const isCurrentMonth = joiningDate
+    ? dayjs(joiningDate).isSame(dayjs(), "month")
+    : false;
+
+const isPreviousMonth = joiningDate
+    ? dayjs(joiningDate).isSame(
+        dayjs().subtract(1, "month"),
+        "month"
+    )
+    : false;
+
+const showFullRentOption = React.useMemo(() => {
+    if (!billingRuleData) {
+        return false;
+    }
+
+    const billingModel = String(
+        billingRuleData?.billingModel || ""
+    ).trim().toUpperCase();
+
+    const typeOfBilling = String(
+        billingRuleData?.typeOfBilling || ""
+    ).trim().toUpperCase();
+
+    // PREPAID + FIXED => Always show
+    if (
+        billingModel === "PREPAID" &&
+        typeOfBilling === "FIXED"
+    ) {
+        return true;
+    }
+
+    // PREPAID + JOINING DATE BASED => Hide
+    if (
+        billingModel === "PREPAID" &&
+        typeOfBilling === "JOINING DATE BASED"
+    ) {
+        return false;
+    }
+
+    // POSTPAID + FIXED => Current / Previous month only
+    if (
+        billingModel === "POSTPAID" &&
+        typeOfBilling === "FIXED"
+    ) {
+        return !!joiningDate && (
+            isCurrentMonth || isPreviousMonth
+        );
+    }
+
+    // Other combinations => Hide
+    return false;
+}, [
+    billingRuleData,
+    joiningDate,
+    isCurrentMonth,
+    isPreviousMonth,
+]);
+
+useEffect(() => {
+    if (!showFullRentOption) {
+        setCollectFullRent(false);
+        setShowCustomRentEditor(false);
+        setCustomRentAmount("");
+        setSavedCustomRent("");
+        setIsCustomRentSaved(false);
+        setCustomRentError("");
+    }
+}, [showFullRentOption]);
 
     // const filteredBeds = beds.filter(bed => {
     //     if (!selectedFloor || !selectedRoom) return false;
@@ -1321,6 +1401,9 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <ErrorMessage message={rentError} type="error" />
                                 )}
 
+
+            {showFullRentOption && (
+    <>
                                 <View style={styles.fullRentRow}>
                                     <TouchableOpacity
                                         style={[
@@ -1492,6 +1575,9 @@ export default function BookingCheckIn({ navigation, route }) {
                                     </>
                                 )}
 
+
+</>
+)}
 
                                 {/* <View style={styles.nonRefund}>
                                     <View style={styles.extraHeader}>

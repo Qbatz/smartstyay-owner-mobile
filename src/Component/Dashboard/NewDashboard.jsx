@@ -94,6 +94,7 @@ import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 import SubscriptionExpiredCard from "./SubscriptionBannerAlert";
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll";
 import { BillContext } from "../../Context/BillsContext";
+import { UseSetting } from "../../Context/SettingContext";
 import { ACTIVEHOSTELID, PROFILEDETAILS } from "../../Utils/Constant";
 
 
@@ -104,6 +105,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
 
   const insets = useSafeAreaInsets();
   const { getDashboardByHostel, GetParticularCustomerDetails } = useCustomer();
+    const {getBillingConfig ,billingRuleData} = UseSetting();
   const [activeTab, setActiveTab] = useState("Dashboard");
   const [drawerVisible, setDrawerVisible] = useState(false);
 
@@ -321,6 +323,14 @@ export default function DashboardNewDesign({ initialParams, route }) {
   };
 
 
+    useEffect(() => {
+    if (activeHostelId) {
+      getBillingConfig(activeHostelId);
+    }
+  }, [activeHostelId])
+
+  console.log("billingRuleData", billingRuleData);
+  
 
   useEffect(() => {
     if (activeHostelId) {

@@ -24,6 +24,8 @@ import SuccessModal from "../../ToastFile/ToastPage";
 import ArrowLeft from "../../Assets/Images/Arrow_left.png"
 import { Switch } from "react-native";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
+import { UseSetting } from "../../Context/SettingContext";
+
 
 
 export default function AssignTenant({ navigation, route }) {
@@ -32,6 +34,7 @@ export default function AssignTenant({ navigation, route }) {
   const { getCustomersByHostel, checkInCustomer, bookCustomer, TenantCheckIn } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
   const { getBankListByHostel } = useContext(BankingContext);
+  const { getBillingConfig, billingRuleData } = UseSetting();
 
   const [activeTab, setActiveTab] = useState("CheckIn");
   const [openDatePicker, setOpenDatePicker] = useState(false);
@@ -108,6 +111,12 @@ export default function AssignTenant({ navigation, route }) {
       hideSub.remove();
     };
   }, []);
+
+  useEffect(() => {
+  if (activeHostelId) {
+    getBillingConfig(activeHostelId);
+  }
+}, [activeHostelId]);
 
 
 
@@ -783,7 +792,84 @@ export default function AssignTenant({ navigation, route }) {
     }
   }
 
-  const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
+  const isCurrentMonth = checkJoiningDate
+  ? dayjs(checkJoiningDate).isSame(dayjs(), "month")
+  : false;
+
+const isPreviousMonth = checkJoiningDate
+  ? dayjs(checkJoiningDate).isSame(
+      dayjs().subtract(1, "month"),
+      "month"
+    )
+  : false;
+
+const showFullRentOption = React.useMemo(() => {
+  if (!billingRuleData) {
+    return false;
+  }
+
+  const billingModel = String(
+    billingRuleData?.billingModel || ""
+  )
+    .trim()
+    .toUpperCase();
+
+  const typeOfBilling = String(
+    billingRuleData?.typeOfBilling || ""
+  )
+    .trim()
+    .toUpperCase();
+
+  // PREPAID + FIXED => Always show
+  if (
+    billingModel === "PREPAID" &&
+    typeOfBilling === "FIXED"
+  ) {
+    return true;
+  }
+
+  // PREPAID + JOINING DATE BASED => Hide
+  if (
+    billingModel === "PREPAID" &&
+    typeOfBilling === "JOINING DATE BASED"
+  ) {
+    return false;
+  }
+
+  // POSTPAID + FIXED => Current / Previous month only
+  if (
+    billingModel === "POSTPAID" &&
+    typeOfBilling === "FIXED"
+  ) {
+    return !!checkJoiningDate && (
+      isCurrentMonth || isPreviousMonth
+    );
+  }
+
+  return false;
+}, [
+  billingRuleData,
+  checkJoiningDate,
+  isCurrentMonth,
+  isPreviousMonth,
+]);
+
+useEffect(() => {
+  if (!showFullRentOption) {
+    setCollectFullRent(false);
+    setShowCustomRentEditor(false);
+    setCustomRentAmount("");
+    setSavedCustomRent("");
+    setIsCustomRentSaved(false);
+    setCustomRentError("");
+  }
+}, [showFullRentOption]);
+
+  // const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
+
+
+
+
 
   // useEffect(() => {
   //   if (!checkJoiningDate) return;
@@ -1694,7 +1780,7 @@ export default function AssignTenant({ navigation, route }) {
 
                 </View>
 
-                {isCurrentMonth && (
+                {showFullRentOption && (
                   <View style={styles.fullRentRow}>
                     <TouchableOpacity
                       style={[

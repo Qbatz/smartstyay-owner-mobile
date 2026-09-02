@@ -12,6 +12,8 @@ export const SettingProvider = ({ children }) => {
   const [Reportsdetails, setReportsDetails] = useState(null)
   const [invoiceReports, setInvoiceReports] = useState(null);
   const [currentPlan, setCurrentPlan] = useState(null);
+  const [billingRuleData, setBillingRuleData] = useState("")
+
   const getElectricity = async (hostelId) => {
     try {
       setLoading(true)
@@ -138,7 +140,7 @@ export const SettingProvider = ({ children }) => {
         `/v2/hostel/config/billing/${hostelId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
+      setBillingRuleData(res?.data)
       return { success: true, data: res.data };
 
     } catch (err) {
@@ -1113,7 +1115,7 @@ export const SettingProvider = ({ children }) => {
     <ElectricityContext.Provider value={{
       getElectricity, updateElectricity, changeRoomHostelElectricity, getBillingConfig, addBillingRecurring, getRoleByHostel,
       getRoleModules, addRole, updateRole, deleteRole, loading, setLoading, getUsersByHostel, addUser, updateUser, deleteUser, getReportsByHostel, Reportsdetails, GetInvoiceReports, invoiceReports, getTenantRegisterReport, GetExpenseRegisterReport, getReceiptRegisterReport, downloadReceiptReport,
-      downloadExpenseReport, downloadInvoiceReport, getHostelPlans, getCurrentHostelPlan, NewupdateElectricityRule, postSubscription, verfiyPayment, currentPlan, downloadSubscriptionBill
+      downloadExpenseReport, downloadInvoiceReport, getHostelPlans, getCurrentHostelPlan, NewupdateElectricityRule, postSubscription, verfiyPayment, currentPlan, downloadSubscriptionBill , billingRuleData , 
     }}>
       {children}
     </ElectricityContext.Provider>

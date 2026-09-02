@@ -20,6 +20,7 @@ import DownArrow from "../../Assets/Images/direction-down.png";
 import CalendarImage from "../../Assets/Images/calendar.png";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
+import { UseSetting } from "../../Context/SettingContext";
 import { useCustomer } from '../../Context/CustomerContext';
 import Delete from "../../Assets/Images/remove.png";
 import ErrorMessage from '../ErrorMessagr/Errormessagestyle';
@@ -46,6 +47,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
     const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, TenantCheckIn } = useCustomer();
+     const {getBillingConfig ,billingRuleData} = UseSetting();
 
     const [floors, setFloors] = useState([]);
     const [floorOpen, setFloorOpen] = useState(false);
@@ -697,6 +699,12 @@ export default function NewTenantCheckIn({ navigation, route }) {
         loadBeds(checkJoiningDate);
     }, [activeHostelId, checkJoiningDate]);
 
+        useEffect(() => {
+        if (activeHostelId) {
+          getBillingConfig(activeHostelId);
+        }
+      }, [activeHostelId])
+
 
 
     console.log("beds", beds);
@@ -843,7 +851,94 @@ export default function NewTenantCheckIn({ navigation, route }) {
         setOpenDropdownId(null);
     }
 
-    const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
+    // const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
+const isCurrentMonth = checkJoiningDate
+    ? dayjs(checkJoiningDate).isSame(dayjs(), "month")
+    : false;
+
+const isPreviousMonth = checkJoiningDate
+    ? dayjs(checkJoiningDate).isSame(
+        dayjs().subtract(1, "month"),
+        "month"
+    )
+    : false;
+
+const showFullRentOption = React.useMemo(() => {
+    if (!billingRuleData) {
+        return false;
+    }
+
+    const billingModel = String(
+        billingRuleData?.billingModel || ""
+    ).trim().toUpperCase();
+
+    const typeOfBilling = String(
+        billingRuleData?.typeOfBilling || ""
+    ).trim().toUpperCase();
+
+    // PREPAID + FIXED => Always show
+    // Joining date is NOT required for this condition
+    if (
+        billingModel === "PREPAID" &&
+        typeOfBilling === "FIXED"
+    ) {
+        return true;
+    }
+
+    // PREPAID + JOINING DATE BASED => Hide
+    if (
+        billingModel === "PREPAID" &&
+        typeOfBilling === "JOINING DATE BASED"
+    ) {
+        return false;
+    }
+
+    // POSTPAID + FIXED => Show only current/previous month
+    if (
+        billingModel === "POSTPAID" &&
+        typeOfBilling === "FIXED"
+    ) {
+        return !!checkJoiningDate && (
+            isCurrentMonth || isPreviousMonth
+        );
+    }
+
+    return false;
+}, [
+    billingRuleData,
+    checkJoiningDate,
+    isCurrentMonth,
+    isPreviousMonth,
+]);
+
+useEffect(() => {
+    if (!showFullRentOption) {
+        setCollectFullRent(false);
+        setShowCustomRentEditor(false);
+        setCustomRentAmount("");
+        setSavedCustomRent("");
+        setIsCustomRentSaved(false);
+        setCustomRentError("");
+    }
+}, [showFullRentOption]);
+
+console.log("fullrentoption", showFullRentOption);
+console.log("billingrule", billingRuleData);
+
+
+console.log("FULL RENT DEBUG", {
+    billingModel: billingRuleData?.billingModel,
+    typeOfBilling: billingRuleData?.typeOfBilling,
+    billingModelNormalized: String(
+        billingRuleData?.billingModel || ""
+    ).trim().toUpperCase(),
+    typeOfBillingNormalized: String(
+        billingRuleData?.typeOfBilling || ""
+    ).trim().toUpperCase(),
+    checkJoiningDate,
+    showFullRentOption,
+});
+
 
     // useEffect(() => {
     //     if (!checkJoiningDate) return;
@@ -861,21 +956,21 @@ export default function NewTenantCheckIn({ navigation, route }) {
     //     }
     // }, [checkJoiningDate])
 
-    useEffect(() => {
-        if (!checkJoiningDate) return;
+    // useEffect(() => {
+    //     if (!checkJoiningDate) return;
 
-        const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
+    //     const currentMonth = dayjs(checkJoiningDate).isSame(dayjs(), "month");
 
-        if (!currentMonth) {
-            setCollectFullRent(false);
+    //     if (!currentMonth) {
+    //         setCollectFullRent(false);
 
-            setShowCustomRentEditor(false);
-            setCustomRentAmount("");
-            setSavedCustomRent("");
-            setIsCustomRentSaved(false);
-            setCustomRentError("");
-        }
-    }, [checkJoiningDate]);
+    //         setShowCustomRentEditor(false);
+    //         setCustomRentAmount("");
+    //         setSavedCustomRent("");
+    //         setIsCustomRentSaved(false);
+    //         setCustomRentError("");
+    //     }
+    // }, [checkJoiningDate]);
 
     const summaryAdvanceAmount = Number(advanceAmount || 0);
 
@@ -1687,7 +1782,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     <ErrorMessage message={rentalError} type="error" />
                                 )}
 
-
+                               {showFullRentOption && (
                                 <View style={styles.fullRentRow}>
                                     <TouchableOpacity
                                         style={[
@@ -1715,6 +1810,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                         Do you want to collect Full Rent for current month?
                                     </Text>
                                 </View>
+                               )}
 
 
                                 {collectFullRent && (
