@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 14, fontWeight: 400, color: '#4B4B4B', marginTop: 15 },
    pinContainer: {
         width: "100%", flexDirection: 'row', justifyContent: 'space-between', paddingTop: 20,
-        paddingLeft: 10, paddingRight: 10, height: 60, marginTop: 18
+        paddingLeft: 10, paddingRight: 10, height: 60, marginTop: 18,marginBottom:30
     },
     pinBox: {
         width: 60, height: 60, borderWidth: 1, borderColor: "#ccc", borderRadius: 12, textAlign: "center",

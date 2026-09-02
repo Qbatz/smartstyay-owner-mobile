@@ -153,6 +153,7 @@ const GetExpenseList = async (
   hostelId,
   filters = {}
 ) => {
+  console.log("keetha",filters)
   try {
     setLoading(true);
 
@@ -167,6 +168,20 @@ const GetExpenseList = async (
           page: filters.page,
           size: filters.size,
         },
+         paramsSerializer: (params) =>
+          Object.keys(params)
+            .map((key) => {
+              const value = params[key];
+              if (Array.isArray(value)) {
+                return value.map((v) => `${key}=${v}`).join("&");
+              }
+              if (value !== undefined && value !== null && value !== "") {
+                return `${key}=${value}`;
+              }
+              return null;
+            })
+            .filter(Boolean)
+            .join("&"),
       }
     );
 
