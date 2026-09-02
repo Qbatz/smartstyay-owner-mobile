@@ -44,6 +44,8 @@ import OutstandingIcon from "../../../Assets/Images/Outstanding.png"
 import GreenRupees from "../../../Assets/Images/RupeesBlue.png"
 import LocationIcon from "../../../Assets/Images/LocatIcon.png";
 import TickIcon from "../../../Assets/Images/tickgreen.png";
+import FilterBottomSheet from "../Reports/FilterBottomSheet";
+import MultiSelectDropdown from "../Bills/MultiSelectDropdown";
 
 
 
@@ -75,12 +77,12 @@ export default function ExpensesList({ navigation }) {
         canDeleteModule,
     } = useHasPermission("Vendor");
 
-      const {
+    const {
         canWriteModule: canWriteExpense,
         canReadModule: canReadExpense,
         canUpdateModule: canUpdateExpense,
         canDeleteModule: canDeleteExpense,
-      } = useHasPermission("Expense");
+    } = useHasPermission("Expense");
 
 
     useFocusEffect(
@@ -93,9 +95,9 @@ export default function ExpensesList({ navigation }) {
 
     useEffect(() => {
         if (activeHostelId) {
-         const res =   GetInitializeExpense(activeHostelId)
-         console.log("res", res);
-         
+            const res = GetInitializeExpense(activeHostelId)
+            console.log("res", res);
+
         }
 
     }, [activeHostelId])
@@ -124,7 +126,7 @@ export default function ExpensesList({ navigation }) {
     const categoryList = IntializeexpensesList?.listExpenses || [];
 
     console.log("IntializeexpensesList", IntializeexpensesList);
-    
+
 
     const Expensesdata =
         expensesList?.expenses || [];
@@ -158,12 +160,14 @@ export default function ExpensesList({ navigation }) {
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
 
-    const [selectedCategoryId, setSelectedCategoryId] = useState("");
+    const [selectedCategoryId, setSelectedCategoryId] = useState([]);
     const [page, setPage] = useState(1);
     const [size, setSize] = useState(10);
 
     const [searchText, setSearchText] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
+    const [showCategoryFilter, setShowCatergoryFilter] = useState(false)
+    const [tempCatgory, setTempCategory] = useState("")
 
     const staticExpenses = [
         {
@@ -255,6 +259,9 @@ export default function ExpensesList({ navigation }) {
         "Oldest First",
     ];
     const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
+    const [activeDropdown, setActiveDropdown] = useState(null)
+    const [paymentStatus, setPaymentStatus] = useState(null)
+    const [showMoreFilterOptions, setShowMoreFilterOption] = useState(true)
     const translateY = useRef(new Animated.Value(0)).current;
     const panResponder = useRef(
         PanResponder.create({
@@ -335,7 +342,7 @@ export default function ExpensesList({ navigation }) {
         }
 
         console.log("categoryList", categoryList);
-        
+
 
         if (categoryList?.length === 0) {
             setModalType("warning");
@@ -496,6 +503,11 @@ export default function ExpensesList({ navigation }) {
     //     </TouchableOpacity>
     // );
 
+    const CategoryOptions = expensesList?.filterOptions?.category.map(item => ({
+        label: item?.name,
+        value: item?.type,
+    }))
+
     const renderExpensesItem = ({ item }) => (
         <TouchableOpacity
             activeOpacity={0.8}
@@ -551,6 +563,19 @@ export default function ExpensesList({ navigation }) {
         </TouchableOpacity>
     );
 
+    const applyToFilter = async ({
+        newCategory = tempCatgory,
+    } = {}) => {
+
+        const filters = {
+            categoryId: newCategory ? Number(newCategory) : undefined,
+        }
+
+        console.log("lolopop", filters)
+
+        await GetExpenseList(activeHostelId, filters)
+    }
+
     if (!canReadExpense && !loading) {
         return (
             <View style={styles.container}>
@@ -570,6 +595,7 @@ export default function ExpensesList({ navigation }) {
             </View>
         );
     }
+
 
     return (
         <>
@@ -766,13 +792,14 @@ export default function ExpensesList({ navigation }) {
 
                                     </ScrollView>
 
-                                    {/* <View style={styles.filterRow}>
+                                    <View style={styles.filterRow}>
                                         <View style={{ display: 'flex', flexDirection: 'row' }}>
                                             <TouchableOpacity style={styles.filterChipActive}>
                                                 <Text style={styles.filterChipTextActive}>All</Text>
                                             </TouchableOpacity>
 
-                                            <TouchableOpacity style={styles.filterChip}>
+                                            <TouchableOpacity onPress={() => setShowCatergoryFilter(true)}
+                                                style={styles.filterChip}>
                                                 <Text style={styles.filterChipText}>Category</Text>
                                             </TouchableOpacity>
                                         </View>
@@ -783,7 +810,7 @@ export default function ExpensesList({ navigation }) {
                                         >
                                             <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
                                         </TouchableOpacity>
-                                    </View> */}
+                                    </View>
                                 </>
                             )}
                             contentContainerStyle={{
@@ -840,7 +867,7 @@ export default function ExpensesList({ navigation }) {
                             </View>
                         </View>
 
-                        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                        {/* <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
                             <Text style={styles.label}>Date Range</Text>
                             <TouchableOpacity
                                 onPress={() => {
@@ -851,68 +878,159 @@ export default function ExpensesList({ navigation }) {
                             >
                                 <Text style={styles.resetTextSmall}>Reset</Text>
                             </TouchableOpacity>
-                        </View>
+                        </View> */}
+                        <ScrollView showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{ paddingBottom: 40 }}>
 
-                        <View style={styles.dateRow}>
-                            <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-                                <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-                                <Image source={CalendarIcon} style={styles.calIcon} />
-                            </TouchableOpacity>
+                            <MultiSelectDropdown
+                                label="Payment Status"
+                                dropdownKey="paymentStatus"
+                                placeholder="Select Payment Status"
+                                activeDropdown={activeDropdown}
+                                setActiveDropdown={setActiveDropdown}
+                                //   options={billStatusOptions}
+                                //   selected={billStatus}
+                                onChange={(values) => {
+                                    setPaymentStatus(values);
+                                    // setFilterError("");
+                                }}
+                            />
 
-                            <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-                                <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-                                <Image source={CalendarIcon} style={styles.calIcon} />
-                            </TouchableOpacity>
-                        </View>
-
-                        <View style={styles.quickRow}>
-                            <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-                                <Text style={styles.quickText}>Today</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-                                <Text style={styles.quickText}>This Week</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-                                <Text style={styles.quickText}>This Month</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <Text style={[styles.label, { marginTop: 18 }]}>Amount</Text>
-
-                        <View
-                            style={styles.selectWrapper}
-                            onLayout={(event) => {
-                                const { y, height } = event.nativeEvent.layout;
-                                const screenHeight = Dimensions.get("window").height;
-                                const bottomSpace = screenHeight - (y + height);
-
-                                setOpenUpward(bottomSpace < 250);
-                            }}
-                        >
-                            <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
-                                <Text style={styles.selectedText}>{amountSelected}</Text>
-                                <Image source={DownArrow} style={styles.downArrow} />
-                            </TouchableOpacity>
-
-                            {amountDropdownVisible && (
-                                <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
-                                    <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                                        {amountOptions.map((opt) => (
-                                            <TouchableOpacity key={opt} style={styles.option}
-                                                onPress={() => {
-                                                    setAmountSelected(opt);
-                                                    setAmountDropdownVisible(false);
-                                                }}
-                                            >
-                                                <Text style={styles.optionText}>{opt}</Text>
-                                            </TouchableOpacity>
-                                        ))}
-                                    </ScrollView>
+                            <View style={styles.dateRow}>
+                                <View style={[styles.dateBox, { marginRight: 6 }]}>
+                                    <Text>From</Text>
+                                    <TouchableOpacity style={[styles.dateTouchBox]}
+                                        onPress={() => setOpenFrom(true)}>
+                                        <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
+                                        <Image source={CalendarIcon} style={styles.calIcon} />
+                                    </TouchableOpacity>
                                 </View>
+
+                                <View style={[styles.dateBox, , { marginLeft: 6 }]}>
+                                    <Text>To</Text>
+                                    <TouchableOpacity style={styles.dateTouchBox} onPress={() => setOpenTo(true)}>
+                                        <Text style={styles.dateText}>{formatDate(toDate)}</Text>
+                                        <Image source={CalendarIcon} style={styles.calIcon} />
+                                    </TouchableOpacity>
+                                </View>
+
+                            </View>
+
+                            <View style={styles.quickRow}>
+                                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+                                    <Text style={styles.quickText}>Today</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
+                                    <Text style={styles.quickText}>This Week</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
+                                    <Text style={styles.quickText}>This Month</Text>
+                                </TouchableOpacity>
+                            </View>
+
+
+                            <MultiSelectDropdown
+                                label="Category"
+                                dropdownKey="category"
+                                placeholder="Select Category"
+                                activeDropdown={activeDropdown}
+                                setActiveDropdown={setActiveDropdown}
+                                //   options={billStatusOptions}
+                                //   selected={billStatus}
+                                onChange={(values) => {
+                                    setPaymentStatus(values);
+                                    // setFilterError("");
+                                }}
+                            />
+
+                            <MultiSelectDropdown
+                                label="Vendor"
+                                dropdownKey="vendor"
+                                placeholder="Select Vendor"
+                                activeDropdown={activeDropdown}
+                                setActiveDropdown={setActiveDropdown}
+                                //   options={billStatusOptions}
+                                //   selected={billStatus}
+                                onChange={(values) => {
+                                    setPaymentStatus(values);
+                                    // setFilterError("");
+                                }}
+                            />
+
+                            <MultiSelectDropdown
+                                label="Payment Mode"
+                                dropdownKey="paymentMode"
+                                placeholder="Select Payment Mode"
+                                activeDropdown={activeDropdown}
+                                setActiveDropdown={setActiveDropdown}
+                                //   options={billStatusOptions}
+                                //   selected={billStatus}
+                                onChange={(values) => {
+                                    setPaymentStatus(values);
+                                    // setFilterError("");
+                                }}
+                            />
+
+                            <TouchableOpacity onPress={() => setShowMoreFilterOption(!showMoreFilterOptions)}>
+                                <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Bold', marginTop: 15 }}>More Filters</Text>
+                            </TouchableOpacity>
+
+                            {showMoreFilterOptions && (
+                                <>
+                                    <MultiSelectDropdown
+                                        label="Created By"
+                                        dropdownKey="createdby"
+                                        placeholder="Select CreatedBy"
+                                        activeDropdown={activeDropdown}
+                                        setActiveDropdown={setActiveDropdown}
+                                        //   options={billStatusOptions}
+                                        //   selected={billStatus}
+                                        onChange={(values) => {
+                                            setPaymentStatus(values);
+                                            // setFilterError("");
+                                        }}
+                                    />
+
+
+                                    <Text style={[styles.label, { marginTop: 18 }]}>Amount</Text>
+
+                                    <View
+                                        style={styles.selectWrapper}
+                                        onLayout={(event) => {
+                                            const { y, height } = event.nativeEvent.layout;
+                                            const screenHeight = Dimensions.get("window").height;
+                                            const bottomSpace = screenHeight - (y + height);
+
+                                            setOpenUpward(bottomSpace < 250);
+                                        }}
+                                    >
+                                        <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
+                                            <Text style={styles.selectedText}>{amountSelected}</Text>
+                                            <Image source={DownArrow} style={styles.downArrow} />
+                                        </TouchableOpacity>
+
+                                        {amountDropdownVisible && (
+                                            <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
+                                                <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
+                                                    {amountOptions.map((opt) => (
+                                                        <TouchableOpacity key={opt} style={styles.option}
+                                                            onPress={() => {
+                                                                setAmountSelected(opt);
+                                                                setAmountDropdownVisible(false);
+                                                            }}
+                                                        >
+                                                            <Text style={styles.optionText}>{opt}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </ScrollView>
+                                            </View>
+                                        )}
+                                    </View>
+                                </>
                             )}
-                        </View>
+                        </ScrollView>
 
                         <View style={styles.bottomButtons}>
                             <TouchableOpacity style={styles.resetBtn}
@@ -1009,6 +1127,35 @@ export default function ExpensesList({ navigation }) {
                     </View>
                 </View>
             </Modal>
+
+            <FilterBottomSheet
+                visible={showCategoryFilter}
+                title="Category"
+                options={CategoryOptions || []}
+                selectedValues={tempCatgory}
+                setSelectedValues={setTempCategory}
+
+                onReset={async () => {
+
+
+                    setTempCategory("")
+                    setShowCatergoryFilter(false);
+
+                    applyToFilter("")
+                }}
+
+                onApply={async () => {
+
+                    setShowCatergoryFilter(false);
+
+                    applyToFilter(tempCatgory)
+                }}
+
+                onClose={() => setShowCatergoryFilter(false)}
+            />
+
+
+
 
 
         </>
@@ -1312,7 +1459,7 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 28,
         width: "100%",
         minHeight: "42%",
-        maxHeight: "75%",
+        maxHeight: "97%",
         elevation: 30,
     },
     sheetHandle: {
@@ -1343,7 +1490,7 @@ const styles = StyleSheet.create({
     quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
     quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
     quickText: { color: "#111", fontFamily: "Gilroy-Semibold" },
-    bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 52, marginBottom: 20 },
+    bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 30, marginBottom: 20 },
     resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
     resetBtnText: { color: "#1E45E1", fontFamily: "Gilroy-Bold" }, applyBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, backgroundColor: "#1E45E1", alignItems: "center" },
     applyBtnText: { color: "#fff", fontFamily: "Gilroy-Bold" },
@@ -1371,6 +1518,14 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
         zIndex: 9999
     },
+    transactionSheet: {
+        backgroundColor: "#fff",
+        padding: 20,
+        borderTopLeftRadius: 25,
+        borderTopRightRadius: 25,
+        paddingBottom: 30,
+        minHeight: 400,
+    },
 
     dateText: { color: "#111" },
     calIcon: { width: 20, height: 20 },
@@ -1386,9 +1541,12 @@ const styles = StyleSheet.create({
         borderRadius: 12,
     },
     downArrow: { width: 18, height: 18, tintColor: "#6F6F6F" },
-    dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
-    dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
-
+    dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 12 },
+    dateBox: { flex: 1, },
+    dateTouchBox: {
+        flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+        borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12, marginTop: 10,
+    },
 
     dateText: { color: "#111" },
     calIcon: { width: 20, height: 20 },

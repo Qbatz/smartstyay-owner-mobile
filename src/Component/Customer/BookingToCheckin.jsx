@@ -141,8 +141,8 @@ export default function BookingCheckIn({ navigation, route }) {
                     setBookingDetailsError("Bed is Unavailable")
 
                     await loadBeds(joiningDate);
-                    setSelectedFloor(null);
-                    setSelectedRoom(null);
+                    // setSelectedFloor(null);
+                    // setSelectedRoom(null);
                     setSelectedBed(null);
                 }
             }
@@ -365,6 +365,10 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
 
+    console.log("slectTa",selectedFloor)
+    console.log(isPGBooking)
+
+    console.log("seetha",selectedBedReserv)
 
 
 
@@ -796,7 +800,7 @@ export default function BookingCheckIn({ navigation, route }) {
                         >
                             <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Tenant Check-Info</Text>
+                        <Text style={styles.headerTitle}>Tenant Check-Infofdfdf</Text>
                     </View>
 
                     <View style={styles.segmentRow}>
