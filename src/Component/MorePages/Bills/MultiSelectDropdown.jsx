@@ -99,8 +99,8 @@ export default function MultiSelectDropdown({
           <ScrollView
             nestedScrollEnabled
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-            style={{ maxHeight: 220 }}
+            // showsVerticalScrollIndicator={false}
+            style={{ maxHeight: 140 }}
           >
             {options.map((item) => {
               const checked = selected.includes(item.value);

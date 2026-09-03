@@ -824,30 +824,99 @@ export const CustomerProvider = ({ children }) => {
 
 
 
-  const getVendorList = async (hostelId) => {
-    setLoading(true);
-    setVendorList([]);
+ const getVendorList = async (hostelId, filters = {}) => {
+  setLoading(true);
+  setVendorList([]);
 
-    try {
-      const axios = getAxios();
-      const res = await axios.get(`/v2/vendors/all-vendors/${hostelId}`);
+  try {
+    const axios = getAxios();
 
-      if (res.status === 200) {
-        setVendorList(res.data || []);
-        return { success: true, data: res.data };
-      }
+    const queryParams = new URLSearchParams();
 
-      return { success: false };
-    } catch (err) {
-      console.log("Vendor list error:", err?.response?.data || err);
-      if (err?.response?.status === 401) {
-        await AutoLogout(loginContext)
-      }
-      return { success: false, message: getErrorMessage(err) };
-    } finally {
-      setLoading(false);
+    // Search
+    if (filters?.name !== undefined && filters?.name !== "") {
+      queryParams.append("name", filters.name);
     }
-  };
+
+    // Category
+    if (
+      filters?.categoryId !== undefined &&
+      filters?.categoryId !== null &&
+      filters?.categoryId !== ""
+    ) {
+      queryParams.append(
+        "categoryId",
+        String(filters.categoryId)
+      );
+    }
+
+    // Payment Status
+    // Swagger: paymentStatus = array<string>
+    if (
+      filters?.paymentStatus !== undefined &&
+      filters?.paymentStatus !== null &&
+      filters?.paymentStatus !== ""
+    ) {
+      const statuses = Array.isArray(filters.paymentStatus)
+        ? filters.paymentStatus
+        : [filters.paymentStatus];
+
+      statuses.forEach((status) => {
+        if (status) {
+          queryParams.append("paymentStatus", status);
+        }
+      });
+    }
+
+    // Pagination
+    queryParams.append(
+      "page",
+      String(filters?.page || 1)
+    );
+
+    queryParams.append(
+      "size",
+      String(filters?.size || 10)
+    );
+
+    const queryString = queryParams.toString();
+
+    const url =
+      `/v2/vendors/all-vendors/${hostelId}` +
+      (queryString ? `?${queryString}` : "");
+
+    console.log("GET VENDOR URL =>", url);
+
+    const res = await axios.get(url);
+
+    if (res.status === 200) {
+      setVendorList(res.data || []);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return { success: false };
+  } catch (err) {
+    console.log(
+      "Vendor list error:",
+      err?.response?.data || err
+    );
+
+    if (err?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message: getErrorMessage(err),
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const deleteVendor = async (vendorId, hostelId) => {
     setLoading(true);
@@ -2165,46 +2234,48 @@ export const CustomerProvider = ({ children }) => {
     }
   };
 
-  const retainerCustomerList = async (hostelId) => {
+  const retainerCustomerList = async (hostelId, purpose) => {
+  try {
+    const token = retriveData("token");
+    const axios = getAxios();
 
-    try {
-      const token = retriveData("token");
-      const axios = getAxios();
+    const res = await axios.get(`/v2/customers/get/${hostelId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: {
+        purpose: purpose,
+      },
+    });
 
-      const res = await axios.get(`/v2/customers/get/${hostelId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: {
-          purpose: "ADVANCE_HOLDING"
-          //  purpose: "BILL"
-        }
-      })
-      console.log(res)
-      if (res.status === 200) {
-        setReatinerList(res?.data?.customersLists)
-        setRetainerBankList(res?.data?.listBanks)
-      }
-      return {
-        success: true,
-        data: res.data || [],
-      };
-    } catch (error) {
-      console.log("Retainer List ERROR 👉", error?.response?.data);
+    console.log("Customer List Response 👉", res);
 
-      if (error?.response?.status === 401) {
-        await AutoLogout(loginContext);
-      }
-
-      return {
-        success: false,
-        data: [],
-        message:
-          error?.response?.data?.message ||
-          "Customer search failed",
-      };
+    if (res.status === 200) {
+      setReatinerList(res?.data?.customersLists || []);
+      setRetainerBankList(res?.data?.listBanks || []);
     }
+
+    return {
+      success: true,
+      data: res.data || {},
+    };
+
+  } catch (error) {
+    console.log("Customer List ERROR 👉", error?.response?.data);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      data: [],
+      message:
+        error?.response?.data?.message ||
+        "Customer search failed",
+    };
   }
+};
 
   const UpdateJobDetails = async (hostelId, customerId, payload) => {
     if (!hostelId || !customerId) {

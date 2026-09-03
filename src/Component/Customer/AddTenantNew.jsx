@@ -6,7 +6,7 @@ import {
     TextInput,
     Image,
     StyleSheet,
-    ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard , BackHandler
+    ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard, BackHandler
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 // import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -41,7 +41,7 @@ import ValidatedInput from "../MorePages/ValidatedInput"
 import BedDetailsSheet from "./BedDetailsBottomsheet"
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 // import DatePicker from "react-native-date-picker";
-
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 
 export default function AddTenantNewform({ navigation, route }) {
@@ -267,8 +267,14 @@ export default function AddTenantNewform({ navigation, route }) {
     const [openStartTime, setOpenStartTime] = useState(false);
     const [openEndTime, setOpenEndTime] = useState(false);
 
-    const [startTime, setStartTime] = useState("00:00 AM");
-    const [endTime, setEndTime] = useState("00:00 PM");
+    // const [startTime, setStartTime] = useState("00:00 AM");
+    // const [endTime, setEndTime] = useState("00:00 PM");
+
+    const [showStartPicker, setShowStartPicker] = useState(false);
+    const [showEndPicker, setShowEndPicker] = useState(false);
+
+    const [startTime, setStartTime] = useState(null);
+    const [endTime, setEndTime] = useState(null);
 
     console.log("time", startTime, endTime);
 
@@ -276,6 +282,42 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const [startDate, setStartDate] = useState(new Date());
     const [endDate, setEndDate] = useState(new Date());
+
+
+    const formatTime = (date) => {
+        if (!date) return "";
+
+        return date.toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+        });
+    };
+
+    const convertTimeToDate = (time) => {
+        if (!time) return null;
+
+        const match = time
+            .trim()
+            .match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+
+        if (!match) return null;
+
+        let [, hh, mm, meridian] = match;
+
+        let hours = parseInt(hh, 10);
+        const minutes = parseInt(mm, 10);
+
+        meridian = meridian.toUpperCase();
+
+        if (meridian === "PM" && hours !== 12) hours += 12;
+        if (meridian === "AM" && hours === 12) hours = 0;
+
+        const date = new Date();
+        date.setHours(hours, minutes, 0, 0);
+
+        return date;
+    };
 
     const formatTimeInput = (text) => {
         let value = text.toUpperCase();
@@ -325,13 +367,13 @@ export default function AddTenantNewform({ navigation, route }) {
         return value;
     };
 
-    const formatTime = (date) => {
-        return date.toLocaleTimeString("en-IN", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-        });
-    };
+    // const formatTime = (date) => {
+    //     return date.toLocaleTimeString("en-IN", {
+    //         hour: "2-digit",
+    //         minute: "2-digit",
+    //         hour12: true,
+    //     });
+    // };
 
     const idProofOptions = [
         { value: "Aadhar Card", label: "Aadhar Card" },
@@ -841,8 +883,11 @@ export default function AddTenantNewform({ navigation, route }) {
         );
         setCompanyName(getValue(job.companyName));
         setWorkLocations(getValue(job.workLocation));
-        setStartTime(getValue(job.shiftFrom));
-        setEndTime(getValue(job.shiftTo));
+
+        setStartTime(convertTimeToDate(getValue(job?.shiftFrom)));
+        setEndTime(convertTimeToDate(getValue(job?.shiftTo)));
+        // setStartTime(getValue(job.shiftFrom));
+        // setEndTime(getValue(job.shiftTo));
 
         setGuardians(
             Array.isArray(draftDetails?.guardians)
@@ -1465,6 +1510,10 @@ export default function AddTenantNewform({ navigation, route }) {
         setJobRole(null);
         setWorkLocations("");
         setShiftType(null);
+        setStartTime(null);
+        setEndTime(null);
+        setShowStartPicker(false);
+        setShowEndPicker(false);
 
         setGuardians([]);
         setExtraCharges([]);
@@ -1490,40 +1539,40 @@ export default function AddTenantNewform({ navigation, route }) {
     // }
 
     const handleBack = () => {
-    if (currentStep > 1) {
-        setCurrentStep(prev => prev - 1);
-        return;
+        if (currentStep > 1) {
+            setCurrentStep(prev => prev - 1);
+            return;
+        }
+
+        const hasBasicDetails =
+            basicDetails.firstName.trim() !== "" ||
+            basicDetails.mobile.trim() !== "";
+
+        if (hasBasicDetails) {
+            setShowLeavePageScreen(true);
+            return;
+        }
+
+        navigation.goBack();
     }
 
-    const hasBasicDetails =
-        basicDetails.firstName.trim() !== "" ||
-        basicDetails.mobile.trim() !== "";
+    useEffect(() => {
+        const backAction = () => {
+            handleBack();
+            return true;
+        };
 
-    if (hasBasicDetails) {
-        setShowLeavePageScreen(true);
-        return;
-    }
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
 
-    navigation.goBack();
-}
-
-useEffect(() => {
-    const backAction = () => {
-        handleBack();
-        return true;
-    };
-
-    const backHandler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction
-    );
-
-    return () => backHandler.remove();
-}, [
-    currentStep,
-    basicDetails.firstName,
-    basicDetails.mobile,
-]);
+        return () => backHandler.remove();
+    }, [
+        currentStep,
+        basicDetails.firstName,
+        basicDetails.mobile,
+    ]);
 
 
 
@@ -1803,8 +1852,8 @@ useEffect(() => {
                         jobRole: jobRole || "",
                         workLocation: worklocation || "",
                         shiftType: shiftType || "",
-                        shiftFrom: startTime || "",
-                        shiftTo: endTime || "",
+                        shiftFrom: startTime ? formatTime(startTime) : "",
+                        shiftTo: endTime ? formatTime(endTime) : "",
                     },
 
                     guardians: guardians.map(item => ({
@@ -2023,8 +2072,8 @@ useEffect(() => {
             jobRole ||
             worklocation.trim() ||
             shiftType ||
-            startTime.trim() ||
-            endTime.trim();
+            startTime ||
+            endTime
 
         if (hasJobData) {
             if (!companyName.trim()) {
@@ -2052,12 +2101,12 @@ useEffect(() => {
                 valid = false;
             }
 
-            if (!startTime.trim()) {
+            if (!startTime) {
                 setStartTimeError("Please enter Shift From");
                 valid = false;
             }
 
-            if (!endTime.trim()) {
+            if (!endTime) {
                 setEndTimeError("Please enter Shift To");
                 valid = false;
             }
@@ -2253,8 +2302,10 @@ useEffect(() => {
                         jobRole: jobRole?.value || "",
                         workLocation: worklocation || "",
                         shiftType: shiftType?.value || "",
-                        shiftFrom: startTime || "",
-                        shiftTo: endTime || "",
+                        shiftFrom: startTime ? formatTime(startTime) : "",
+                        shiftTo: endTime ? formatTime(endTime) : "",
+                        // shiftFrom: startTime || "",
+                        // shiftTo: endTime || "",
                     },
 
                     guardians: guardians.map(item => ({
@@ -2368,11 +2419,11 @@ useEffect(() => {
             return (
                 <View style={styles.row}>
 
-                    {!hideBookingSaveDraft && (
+                    {/* {!hideBookingSaveDraft && (
                         <TouchableOpacity style={styles.secondaryBtn} onPress={UpdateDraft}>
                             <Text>Save Draft</Text>
                         </TouchableOpacity>
-                    )}
+                    )} */}
 
                     <TouchableOpacity
                         style={[
@@ -3963,7 +4014,7 @@ useEffect(() => {
                                                 setCheckinTenantSelected(null);
                                                 setCheckinTenantsopen(false);
                                                 setJoiningDate(null)
-                                                 setcheckJoiningDate(null);
+                                                setcheckJoiningDate(null);
                                                 setRentalAmount("")
                                                 setCheckinRentalAmount("")
                                                 setAdvanceAmount("");
@@ -3998,7 +4049,7 @@ useEffect(() => {
                                                 setFloorSelected(null)
                                                 setRoomSelected(null)
                                                 setBedSelected(null)
-                                                setPurchaseDate(null);        
+                                                setPurchaseDate(null);
                                                 setJoiningDate(null);
                                             }}
 
@@ -6162,55 +6213,56 @@ useEffect(() => {
                                         <Text style={styles.label}>Shift Timing</Text>
 
                                         <View style={styles.shiftRow}>
+
                                             <TouchableOpacity
                                                 style={styles.shiftInput}
-                                                activeOpacity={1}
+                                                activeOpacity={0.8}
+                                                onPress={() => setShowStartPicker(true)}
                                             >
-                                                <TextInput
-                                                    style={styles.timeInput}
-                                                    value={startTime}
-                                                    onChangeText={(text) => {
-                                                        setStartTime(formatTimeInput(text))
-                                                        setStartTimeError("")
-                                                    }
-                                                    }
-                                                    keyboardType="number-pad"
-                                                    placeholder="00:00 AM"
-                                                    onFocus={(e) => scrollInputIntoView(e)}
-                                                />
+                                                <Text
+                                                    style={[
+                                                        styles.timeText,
+                                                        !startTime && styles.placeholder,
+                                                    ]}
+                                                >
+                                                    {startTime ? formatTime(startTime) : "From"}
+                                                </Text>
 
                                                 <Image
-                                                    source={require("../../Assets/Images/calendar.png")}
-                                                    style={styles.calendarIcon}
+                                                    source={require("../../Assets/Images/timer.png")}
+                                                    style={styles.clockIcon}
                                                 />
                                             </TouchableOpacity>
 
                                             <TouchableOpacity
                                                 style={styles.shiftInput}
-                                                activeOpacity={1}
+                                                activeOpacity={0.8}
+                                                onPress={() => setShowEndPicker(true)}
                                             >
-                                                <TextInput
-                                                    style={styles.timeInput}
-                                                    value={endTime}
-                                                    onChangeText={(text) => {
-                                                        setEndTime(formatTimeInput(text))
-                                                        setEndTimeError("")
-                                                    }
-
-                                                    }
-                                                    keyboardType="number-pad"
-                                                    placeholder="00:00 PM"
-                                                    onFocus={(e) => scrollInputIntoView(e)}
-                                                />
+                                                <Text
+                                                    style={[
+                                                        styles.timeText,
+                                                        !endTime && styles.placeholder,
+                                                    ]}
+                                                >
+                                                    {endTime ? formatTime(endTime) : "To"}
+                                                </Text>
 
                                                 <Image
-                                                    source={require("../../Assets/Images/calendar.png")}
-                                                    style={styles.calendarIcon}
+                                                    source={require("../../Assets/Images/timer.png")}
+                                                    style={styles.clockIcon}
                                                 />
                                             </TouchableOpacity>
+
                                         </View>
-                                        {startTimeError ? <ErrorMessage message={startTimeError} /> : null}
-                                        {endTimeError ? <ErrorMessage message={endTimeError} /> : null}
+
+                                        {startTimeError ? (
+                                            <ErrorMessage message={startTimeError} />
+                                        ) : null}
+
+                                        {endTimeError ? (
+                                            <ErrorMessage message={endTimeError} />
+                                        ) : null}
 
 
 
@@ -6506,6 +6558,10 @@ useEffect(() => {
 
                         setSelectedBedDetails(data);
 
+                        setFloorError("");
+                        setRoomError("");
+                        setBedError("");
+
                         const floor = floors.find(f => f?.id === data?.floorId);
                         if (floor) {
                             setFloorSelected(floor);
@@ -6534,17 +6590,51 @@ useEffect(() => {
 
             </View>
 
-              <LeavePageScreen
-        visible={showLeavePageScreen}
-        onClose={() => setShowLeavePageScreen(false)}
-        discardClose={() => {
-          setShowLeavePageScreen(false);
+            {showStartPicker && (
+                <DateTimePicker
+                    value={startTime || new Date()}
+                    mode="time"
+                    display="default"
+                    is24Hour={false}
+                    onChange={(event, date) => {
+                        setShowStartPicker(false);
 
-          setTimeout(() => {
-            navigation.goBack();
-          }, 300);
-        }}
-      />
+                        if (date) {
+                            setStartTime(date);
+                            setStartTimeError("");
+                        }
+                    }}
+                />
+            )}
+
+            {showEndPicker && (
+                <DateTimePicker
+                    value={endTime || new Date()}
+                    mode="time"
+                    display="default"
+                    is24Hour={false}
+                    onChange={(event, date) => {
+                        setShowEndPicker(false);
+
+                        if (date) {
+                            setEndTime(date);
+                            setEndTimeError("");
+                        }
+                    }}
+                />
+            )}
+
+            <LeavePageScreen
+                visible={showLeavePageScreen}
+                onClose={() => setShowLeavePageScreen(false)}
+                discardClose={() => {
+                    setShowLeavePageScreen(false);
+
+                    setTimeout(() => {
+                        navigation.goBack();
+                    }, 300);
+                }}
+            />
         </>
     );
 }
@@ -7911,5 +8001,10 @@ const styles = StyleSheet.create({
         fontSize: 17,
         fontFamily: "Gilroy-Bold",
         color: "#222",
+    },
+     clockIcon: {
+        width: 22,
+        height: 22,
+        tintColor: "#222",
     },
 });
