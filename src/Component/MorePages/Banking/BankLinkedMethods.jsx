@@ -14,6 +14,8 @@ import { useNavigation } from "@react-navigation/native";
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useRoute } from "@react-navigation/native";
+import { PGContext } from "../../../Context/PGContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 
 
@@ -24,6 +26,7 @@ export default function BankLinkedMethods() {
 
     const { getBankMethod, bankMethod, } = useContext(BankingContext);
     const { activeHostelId } = useContext(CommonContexts);
+      const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
     useEffect(() => {
       if (activeHostelId && bankId) {
@@ -32,9 +35,21 @@ export default function BankLinkedMethods() {
     }, [activeHostelId, bankId])
 
     console.log("bankMethod",bankMethod)
+
+        const {
+            canWriteModule: canWriteBanking,
+            canReadModule: canReadBanking,
+            canUpdateModule: canUpdateBanking,
+            canDeleteModule: canDeleteBanking,
+        } = useHasPermission("Banking")
+
+     const isValidSubscription = PGDetails?.isSubscriptionActive;
+    const isSubscriptionAllow = isValidSubscription
     
 
     const navigation = useNavigation()
+
+
 
     const getPaymentIcon = (method) => {
   switch (method) {
@@ -255,7 +270,16 @@ const getBadgeTextColor = (method) => {
                     Linked Payment methods
                 </Text>
 
-                <TouchableOpacity style={styles.addBtn} 
+                <TouchableOpacity 
+                // style={styles.addBtn} 
+                  style={[
+                                styles.addBtn,
+                                (!canWriteBanking || !isSubscriptionAllow) && {
+                                    opacity: 0.4,
+                                },
+                            ]}
+                            disabled={!canWriteBanking || !isSubscriptionAllow}
+
                onPress={() =>
   navigation.navigate("AddPaymentMethod", {
     bankDetails,

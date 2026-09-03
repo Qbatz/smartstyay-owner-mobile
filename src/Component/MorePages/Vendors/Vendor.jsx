@@ -107,6 +107,15 @@ export default function Vendors({ navigation }) {
     const [categoryOpen, setCategoryOpen] = useState(false);
     const [statusOpen, setStatusOpen] = useState(false);
 
+    const categoryRef = useRef(null);
+    const statusRef = useRef(null);
+
+    const [dropdownPosition, setDropdownPosition] = useState({
+        x: 0,
+        y: 0,
+        width: 0,
+    });
+
     const [searchText, setSearchText] = useState("");
 
     const filteredVendors = vendorList?.vendors?.length > 0 && vendorList?.vendors?.filter((item) => {
@@ -242,30 +251,60 @@ export default function Vendors({ navigation }) {
     //     }, [navigation, showFilter])
     // );
 
-   const applyVendorFilters = (
-    category = selectedCategory,
-    status = selectedStatus
-) => {
-    if (!activeHostelId) return;
+    const openDropdown = (type) => {
+        const ref = type === "category"
+            ? categoryRef
+            : statusRef;
 
-    const filters = {
-        name: searchText?.trim() || undefined,
+        ref.current?.measureInWindow((x, y, width, height) => {
+            setDropdownPosition({
+                x,
+                y: y + height + 6,
+                width,
+            });
 
-        categoryId:
-            category !== null && category !== undefined
-                ? Number(category)
-                : undefined,
-
-        paymentStatus: status || undefined,   // ARRAY WRAP REMOVE பண்ணுங்க
-
-        page: 1,
-        size: 10,
+            if (type === "category") {
+                setCategoryOpen(true);
+                setStatusOpen(false);
+            } else {
+                setStatusOpen(true);
+                setCategoryOpen(false);
+            }
+        });
     };
 
-    console.log("Vendor Filters =>", filters);
 
-    getVendorList(activeHostelId, filters);
-};
+    const applyVendorFilters = (
+        category = selectedCategory,
+        status = selectedStatus
+    ) => {
+        if (!activeHostelId) return;
+
+        const filters = {
+            name: searchText?.trim() || undefined,
+
+            categoryId:
+                category !== null &&
+                    category !== undefined &&
+                    category !== ""
+                    ? Number(category)
+                    : undefined,
+
+            paymentStatus:
+                status !== null &&
+                    status !== undefined &&
+                    status !== ""
+                    ? status
+                    : undefined,
+
+            page: 1,
+            size: 10,
+        };
+
+        console.log("Vendor Filters =>", filters);
+
+        getVendorList(activeHostelId, filters);
+    };
 
     const amountOptions = [
         "Low to High (Lowest First)",
@@ -284,59 +323,59 @@ export default function Vendors({ navigation }) {
         };
     }, []);
 
-   const handleSearch = async (text) => {
-    if (!activeHostelId) return;
+    const handleSearch = async (text) => {
+        if (!activeHostelId) return;
 
-    if (searchTimeout.current) {
-        clearTimeout(searchTimeout.current);
-    }
+        if (searchTimeout.current) {
+            clearTimeout(searchTimeout.current);
+        }
 
-    const searchValue = text?.trim() || "";
+        const searchValue = text?.trim() || "";
 
-    if (searchValue?.length === 0) {
-        const filters = {
-            name: "",
-            categoryId:
-                selectedCategory !== null
-                    ? Number(selectedCategory)
-                    : undefined,
+        if (searchValue?.length === 0) {
+            const filters = {
+                name: "",
+                categoryId: selectedCategory !== null ? Number(selectedCategory) : undefined,
+                paymentStatus: selectedStatus || undefined,
+                page: 1,
+                size: 10,
+            };
 
-            paymentStatus: selectedStatus || undefined,   // FIX
+            getVendorList(activeHostelId, filters);
+            return;
+        }
 
-            page: 1,
-            size: 10,
-        };
+        if (searchValue.length < 2) {
+            return;
+        }
 
-        getVendorList(activeHostelId, filters);
-        return;
-    }
+        searchTimeout.current = setTimeout(() => {
+            const filters = {
+                name: searchValue,
 
-    if (searchValue.length < 2) {
-        return;
-    }
+                categoryId:
+                    selectedCategory !== null
+                        ? Number(selectedCategory)
+                        : undefined,
 
-    searchTimeout.current = setTimeout(() => {
-        const filters = {
-            name: searchValue,
+                paymentStatus: selectedStatus || undefined,   // FIX
 
-            categoryId:
-                selectedCategory !== null
-                    ? Number(selectedCategory)
-                    : undefined,
+                page: 1,
+                size: 10,
+            };
 
-            paymentStatus: selectedStatus || undefined,   // FIX
+            console.log("VENDOR SEARCH FILTERS =>", filters);
 
-            page: 1,
-            size: 10,
-        };
-
-        console.log("VENDOR SEARCH FILTERS =>", filters);
-
-        getVendorList(activeHostelId, filters);
-    }, 300);
-};
+            getVendorList(activeHostelId, filters);
+        }, 300);
+    };
 
     const vendors = vendorList?.vendors ?? [];
+
+    const hasActiveVendorFilter =
+        searchText?.trim()?.length > 0 ||
+        selectedCategory !== null ||
+        selectedStatus !== null;
 
     const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
     const translateY = useRef(new Animated.Value(0)).current;
@@ -683,7 +722,7 @@ export default function Vendors({ navigation }) {
                     </TouchableOpacity>
 
 
-                    {vendorList?.vendors?.length > 0 ? (
+                    {vendorList?.vendors?.length > 0 || hasActiveVendorFilter ? (
 
                         <View style={styles.searchWrapper}>
                             <Image source={SearchIcon} style={styles.searchIcon} />
@@ -733,7 +772,9 @@ export default function Vendors({ navigation }) {
 
 
 
-                {!loading && vendorList?.vendors?.length === 0 ? (
+                {!loading && vendorList?.vendors?.length === 0 &&
+                    !hasActiveVendorFilter ? (
+
                     <View style={styles.emptyContainer}>
                         <Image
                             source={EmptyState}
@@ -755,14 +796,14 @@ export default function Vendors({ navigation }) {
 
                     <>
 
-                        {!loading && vendorList?.vendors?.length > 0 && (
+                        {!loading && (
                             <>
                                 <View style={{ flex: 1 }}>
                                     <ScrollView
                                         horizontal
                                         showsHorizontalScrollIndicator={false}
                                         contentContainerStyle={styles.cardRow}
-                                         style={styles.summaryScrollOuter} 
+                                        style={styles.summaryScrollOuter}
 
                                     >
                                         <SummaryCard
@@ -794,7 +835,7 @@ export default function Vendors({ navigation }) {
                                         />
                                     </ScrollView>
 
-                                    <View style={[styles.filterRow, { zIndex: 100 }]}>
+                                    <View style={[styles.filterRow,]}>
                                         {/* CATEGORY DROPDOWN */}
                                         <View
                                             style={[
@@ -803,14 +844,18 @@ export default function Vendors({ navigation }) {
                                             ]}
                                         >
                                             <TouchableOpacity
+                                                ref={categoryRef}
                                                 style={[
                                                     styles.vendorFilterBox,
                                                     selectedCategory !== null && styles.vendorFilterBoxActive,
                                                 ]}
                                                 activeOpacity={0.8}
                                                 onPress={() => {
-                                                    setCategoryOpen(prev => !prev);
-                                                    setStatusOpen(false);
+                                                    if (categoryOpen) {
+                                                        setCategoryOpen(false);
+                                                    } else {
+                                                        openDropdown("category");
+                                                    }
                                                 }}
                                             >
                                                 <Text
@@ -830,24 +875,48 @@ export default function Vendors({ navigation }) {
                                                 />
                                             </TouchableOpacity>
 
-                                            {categoryOpen && (
+                                            {/* {categoryOpen && (
                                                 <View style={styles.vendorFilterMenu}>
-                                                    <ScrollView
+                                                    <FlatList
+                                                        data={[
+                                                            ...categoryOptions,
+                                                            ...(selectedCategory !== null
+                                                                ? [{ value: "__clear__", label: "Clear Category" }]
+                                                                : []),
+                                                        ]}
+                                                        keyExtractor={(item, index) => `${item.value}-${index}`}
                                                         nestedScrollEnabled
-                                                        // showsVerticalScrollIndicator={false}
-                                                        // style={{ maxHeight: 200 }}
-                                                         showsVerticalScrollIndicator={categoryOptions.length > 4}
-            style={{
-                maxHeight: Math.min(categoryOptions.length * 46, 230), 
-            }}
-                                                    >
-                                                        {categoryOptions.map((item, index) => {
+                                                        scrollEnabled={categoryOptions.length > 4}
+                                                        showsVerticalScrollIndicator={categoryOptions.length > 4}
+                                                        keyboardShouldPersistTaps="handled"
+                                                        style={styles.vendorDropdownList}
+                                                        renderItem={({ item }) => {
+                                                            if (item.value === "__clear__") {
+                                                                return (
+                                                                    <TouchableOpacity
+                                                                        style={styles.vendorFilterClearOption}
+                                                                        onPress={() => {
+                                                                            setSelectedCategory(null);
+                                                                            setCategoryOpen(false);
+
+                                                                            applyVendorFilters(
+                                                                                null,
+                                                                                selectedStatus
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        <Text style={styles.vendorFilterClearText}>
+                                                                            Clear Category
+                                                                        </Text>
+                                                                    </TouchableOpacity>
+                                                                );
+                                                            }
+
                                                             const isSelected =
                                                                 String(selectedCategory) === String(item.value);
 
                                                             return (
                                                                 <TouchableOpacity
-                                                                    key={`${item.value}-${index}`}
                                                                     style={[
                                                                         styles.vendorFilterOption,
                                                                         isSelected &&
@@ -874,29 +943,10 @@ export default function Vendors({ navigation }) {
                                                                     </Text>
                                                                 </TouchableOpacity>
                                                             );
-                                                        })}
-
-                                                        {selectedCategory !== null && (
-                                                            <TouchableOpacity
-                                                                style={styles.vendorFilterClearOption}
-                                                                onPress={() => {
-                                                                    setSelectedCategory(null);
-                                                                    setCategoryOpen(false);
-
-                                                                    applyVendorFilters(
-                                                                        null,
-                                                                        selectedStatus
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <Text style={styles.vendorFilterClearText}>
-                                                                    Clear Category
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        )}
-                                                    </ScrollView>
+                                                        }}
+                                                    />
                                                 </View>
-                                            )}
+                                            )} */}
                                         </View>
 
 
@@ -904,14 +954,18 @@ export default function Vendors({ navigation }) {
                                         <View style={[styles.vendorFilterDropdown, { zIndex: statusOpen ? 20 : 10 }]}>
 
                                             <TouchableOpacity
+                                                ref={statusRef}
                                                 style={[
                                                     styles.vendorFilterBox,
                                                     selectedStatus && styles.vendorFilterBoxActive,
                                                 ]}
                                                 activeOpacity={0.8}
                                                 onPress={() => {
-                                                    setStatusOpen(prev => !prev);
-                                                    setCategoryOpen(false);
+                                                    if (statusOpen) {
+                                                        setStatusOpen(false);
+                                                    } else {
+                                                        openDropdown("status");
+                                                    }
                                                 }}
                                             >
                                                 <Text
@@ -931,64 +985,78 @@ export default function Vendors({ navigation }) {
                                                 />
                                             </TouchableOpacity>
 
-                                           {statusOpen && (
-    <View style={styles.vendorFilterMenu}>
-        <ScrollView
-            nestedScrollEnabled
-            showsVerticalScrollIndicator={statusOptions.length > 4}
-            style={{
-                maxHeight: Math.min(statusOptions.length * 46, 230), 
-                // 5 items na ~230 varaikum full ah kaamikkum, adha thaandi na scroll varum
-            }}
-        >
-            {statusOptions.length === 0 ? (
-                <Text style={styles.vendorFilterNoData}>No status found</Text>
-            ) : (
-                <>
-                    {statusOptions.map((item, index) => {
-                        const isSelected = selectedStatus === item.value;
-                        return (
-                            <TouchableOpacity
-                                key={`${item.value}-${index}`}
-                                style={[
-                                    styles.vendorFilterOption,
-                                    isSelected && styles.vendorFilterOptionSelected,
-                                ]}
-                                onPress={() => {
-                                    setSelectedStatus(item.value);
-                                    setStatusOpen(false);
-                                    applyVendorFilters(selectedCategory, item.value);
-                                }}
-                            >
-                                <Text
-                                    style={[
-                                        styles.vendorFilterOptionText,
-                                        isSelected && styles.vendorFilterOptionTextSelected,
-                                    ]}
-                                >
-                                    {item.label}
-                                </Text>
-                            </TouchableOpacity>
-                        );
-                    })}
+                                            {/* {statusOpen && (
+                                                <View style={styles.vendorFilterMenu}>
+                                                    <FlatList
+                                                        data={[
+                                                            ...statusOptions,
+                                                            ...(selectedStatus
+                                                                ? [{ value: "__clear__", label: "Clear Status" }]
+                                                                : []),
+                                                        ]}
+                                                        keyExtractor={(item, index) => `${item.value}-${index}`}
+                                                        nestedScrollEnabled
+                                                        scrollEnabled={statusOptions.length > 4}
+                                                        showsVerticalScrollIndicator={statusOptions.length > 4}
+                                                        keyboardShouldPersistTaps="handled"
+                                                        style={styles.vendorDropdownList}
+                                                        renderItem={({ item }) => {
+                                                            if (item.value === "__clear__") {
+                                                                return (
+                                                                    <TouchableOpacity
+                                                                        style={styles.vendorFilterClearOption}
+                                                                        onPress={() => {
+                                                                            setSelectedStatus(null);
+                                                                            setStatusOpen(false);
 
-                    {selectedStatus && (
-                        <TouchableOpacity
-                            style={styles.vendorFilterClearOption}
-                            onPress={() => {
-                                setSelectedStatus(null);
-                                setStatusOpen(false);
-                                applyVendorFilters(selectedCategory, null);
-                            }}
-                        >
-                            <Text style={styles.vendorFilterClearText}>Clear Status</Text>
-                        </TouchableOpacity>
-                    )}
-                </>
-            )}
-        </ScrollView>
-    </View>
-)}
+                                                                            applyVendorFilters(
+                                                                                selectedCategory,
+                                                                                null
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        <Text style={styles.vendorFilterClearText}>
+                                                                            Clear Status
+                                                                        </Text>
+                                                                    </TouchableOpacity>
+                                                                );
+                                                            }
+
+                                                            const isSelected =
+                                                                selectedStatus === item.value;
+
+                                                            return (
+                                                                <TouchableOpacity
+                                                                    style={[
+                                                                        styles.vendorFilterOption,
+                                                                        isSelected &&
+                                                                        styles.vendorFilterOptionSelected,
+                                                                    ]}
+                                                                    onPress={() => {
+                                                                        setSelectedStatus(item.value);
+                                                                        setStatusOpen(false);
+
+                                                                        applyVendorFilters(
+                                                                            selectedCategory,
+                                                                            item.value
+                                                                        );
+                                                                    }}
+                                                                >
+                                                                    <Text
+                                                                        style={[
+                                                                            styles.vendorFilterOptionText,
+                                                                            isSelected &&
+                                                                            styles.vendorFilterOptionTextSelected,
+                                                                        ]}
+                                                                    >
+                                                                        {item.label}
+                                                                    </Text>
+                                                                </TouchableOpacity>
+                                                            );
+                                                        }}
+                                                    />
+                                                </View>
+                                            )} */}
                                         </View>
                                     </View>
 
@@ -1002,23 +1070,25 @@ export default function Vendors({ navigation }) {
                                             paddingHorizontal: 16,
                                             paddingBottom: 200,
                                             paddingTop: 0,
-                                             flexGrow: 1, 
+                                            flexGrow: 1,
                                             // marginTop:0
                                         }}
 
                                         ListEmptyComponent={
-        <View style={styles.searchEmptyContainer}>
-            <Image
-                source={EmptyState}
-                style={styles.emptyImage}
-            />
-            <Text style={styles.emptyText}>
-                {searchText?.trim()
-                    ? `No vendors found for "${searchText}"`
-                    : "No vendors are there!"}
-            </Text>
-        </View>
-    }
+                                            <View style={styles.searchEmptyContainer}>
+                                                <Image
+                                                    source={EmptyState}
+                                                    style={styles.emptyImage}
+                                                />
+                                                <Text>
+                                                    {searchText?.trim()
+                                                        ? `No vendors found for "${searchText}"`
+                                                        : selectedCategory !== null || selectedStatus !== null
+                                                            ? "No vendors found for the selected filter"
+                                                            : "No vendors are there!"}
+                                                </Text>
+                                            </View>
+                                        }
 
                                     />
 
@@ -1166,6 +1236,219 @@ export default function Vendors({ navigation }) {
                 </View>
             )}
 
+
+<Modal
+    transparent
+    visible={categoryOpen}
+    animationType="none"
+    onRequestClose={() => setCategoryOpen(false)}
+>
+    <View style={styles.dropdownModalOverlay}>
+        <TouchableWithoutFeedback
+            onPress={() => setCategoryOpen(false)}
+        >
+            <View style={styles.dropdownModalBackdrop} />
+        </TouchableWithoutFeedback>
+
+        <View
+            style={[
+                styles.vendorModalDropdown,
+                {
+                    left: dropdownPosition.x,
+                    top: dropdownPosition.y,
+                    width: dropdownPosition.width,
+                },
+            ]}
+        >
+            <FlatList
+                data={[
+                    ...categoryOptions,
+                    ...(selectedCategory !== null
+                        ? [
+                            {
+                                value: "__clear__",
+                                label: "Clear Category",
+                            },
+                        ]
+                        : []),
+                ]}
+                keyExtractor={(item, index) =>
+                    `${item.value}-${index}`
+                }
+                renderItem={({ item }) => {
+                    if (item.value === "__clear__") {
+                        return (
+                            <TouchableOpacity
+                                style={styles.vendorFilterClearOption}
+                                onPress={() => {
+                                    setSelectedCategory(null);
+                                    setCategoryOpen(false);
+
+                                    applyVendorFilters(
+                                        null,
+                                        selectedStatus
+                                    );
+                                }}
+                            >
+                                <Text
+                                    style={styles.vendorFilterClearText}
+                                >
+                                    Clear Category
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    }
+
+                    const isSelected =
+                        String(selectedCategory) ===
+                        String(item.value);
+
+                    return (
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            style={[
+                                styles.vendorFilterOption,
+                                isSelected &&
+                                    styles.vendorFilterOptionSelected,
+                            ]}
+                            onPress={() => {
+                                setSelectedCategory(item.value);
+                                setCategoryOpen(false);
+
+                                applyVendorFilters(
+                                    item.value,
+                                    selectedStatus
+                                );
+                            }}
+                        >
+                            <Text
+                                style={[
+                                    styles.vendorFilterOptionText,
+                                    isSelected &&
+                                        styles.vendorFilterOptionTextSelected,
+                                ]}
+                            >
+                                {item.label}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                }}
+                style={styles.vendorDropdownList}
+                nestedScrollEnabled={true}
+                scrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+                keyboardShouldPersistTaps="handled"
+                removeClippedSubviews={false}
+            />
+        </View>
+    </View>
+</Modal>
+
+<Modal
+    transparent
+    visible={statusOpen}
+    animationType="none"
+    onRequestClose={() => setStatusOpen(false)}
+>
+    <View style={styles.dropdownModalOverlay}>
+        <TouchableWithoutFeedback
+            onPress={() => setStatusOpen(false)}
+        >
+            <View style={styles.dropdownModalBackdrop} />
+        </TouchableWithoutFeedback>
+
+        <View
+            style={[
+                styles.vendorModalDropdown,
+                {
+                    left: dropdownPosition.x,
+                    top: dropdownPosition.y,
+                    width: dropdownPosition.width,
+                },
+            ]}
+        >
+            <FlatList
+                data={[
+                    ...statusOptions,
+                    ...(selectedStatus
+                        ? [
+                            {
+                                value: "__clear__",
+                                label: "Clear Status",
+                            },
+                        ]
+                        : []),
+                ]}
+                keyExtractor={(item, index) =>
+                    `${item.value}-${index}`
+                }
+                renderItem={({ item }) => {
+                    if (item.value === "__clear__") {
+                        return (
+                            <TouchableOpacity
+                                style={styles.vendorFilterClearOption}
+                                onPress={() => {
+                                    setSelectedStatus(null);
+                                    setStatusOpen(false);
+
+                                    applyVendorFilters(
+                                        selectedCategory,
+                                        null
+                                    );
+                                }}
+                            >
+                                <Text
+                                    style={styles.vendorFilterClearText}
+                                >
+                                    Clear Status
+                                </Text>
+                            </TouchableOpacity>
+                        );
+                    }
+
+                    const isSelected =
+                        selectedStatus === item.value;
+
+                    return (
+                        <TouchableOpacity
+                            activeOpacity={0.7}
+                            style={[
+                                styles.vendorFilterOption,
+                                isSelected &&
+                                    styles.vendorFilterOptionSelected,
+                            ]}
+                            onPress={() => {
+                                setSelectedStatus(item.value);
+                                setStatusOpen(false);
+
+                                applyVendorFilters(
+                                    selectedCategory,
+                                    item.value
+                                );
+                            }}
+                        >
+                            <Text
+                                style={[
+                                    styles.vendorFilterOptionText,
+                                    isSelected &&
+                                        styles.vendorFilterOptionTextSelected,
+                                ]}
+                            >
+                                {item.label}
+                            </Text>
+                        </TouchableOpacity>
+                    );
+                }}
+                style={styles.vendorDropdownList}
+                nestedScrollEnabled={true}
+                scrollEnabled={true}
+                showsVerticalScrollIndicator={true}
+                keyboardShouldPersistTaps="handled"
+                removeClippedSubviews={false}
+            />
+        </View>
+    </View>
+</Modal>
 
 
             {openFrom && (
@@ -1592,11 +1875,11 @@ const styles = StyleSheet.create({
     dateText: { color: "#111" },
     calIcon: { width: 20, height: 20 },
     searchEmptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingTop: 60,
-},
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingTop: 60,
+    },
     emptyContainer: {
         flex: 1,
         justifyContent: "center",
@@ -1789,16 +2072,16 @@ const styles = StyleSheet.create({
     },
 
     summaryScrollOuter: {
-    flexGrow: 0,
-    flexShrink: 0,
-    height: 106,      // card height (90) + konjam buffer
-},
+        flexGrow: 0,
+        flexShrink: 0,
+        height: 106,      // card height (90) + konjam buffer
+    },
 
-cardRow: {
-    paddingLeft: 10,
-    paddingTop: 4,
-    alignItems: "flex-start",
-},
+    cardRow: {
+        paddingLeft: 10,
+        paddingTop: 4,
+        alignItems: "flex-start",
+    },
     // cardRow: {
     //     paddingLeft: 10,
     //     paddingTop: 4,
@@ -1895,7 +2178,7 @@ cardRow: {
         marginBottom: 10,
         paddingHorizontal: 2,
         gap: 5,
-        marginHorizontal:10
+        marginHorizontal: 10
     },
 
     filterChip: {
@@ -2006,6 +2289,10 @@ cardRow: {
         elevation: 8,
         zIndex: 999,
     },
+    vendorDropdownList: {
+        maxHeight: 230,
+        width: "100%",
+    },
 
     vendorFilterOption: {
         paddingVertical: 12,
@@ -2047,6 +2334,36 @@ cardRow: {
         color: "#1D5BEE",
         fontFamily: "Gilroy-Semibold",
     },
+    vendorModalDropdown: {
+    position: "absolute",
+    maxHeight: 230,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 10,
+    overflow: "hidden",
+
+    elevation: 20,
+
+    shadowColor: "#000",
+    shadowOffset: {
+        width: 0,
+        height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+},
+dropdownModalOverlay: {
+    flex: 1,
+},
+
+dropdownModalBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+},
 })
 
 

@@ -3150,7 +3150,7 @@ export default function BillsDesign({ route }) {
 
 
                   {(
-                    !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.length === 0) &&
+                    !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.listInvoices?.length === 0) &&
                     <View style={styles.centerContainer}>
                       <Image source={EmptyFloor} style={styles.image} />
                       <Text style={styles.noFloorText}>No bills are there!</Text>
@@ -6567,7 +6567,7 @@ export default function BillsDesign({ route }) {
                   </TouchableOpacity>
 
                   <TouchableOpacity style={styles.applyButton} onPress={handleApplyFilter}>
-                    <Text style={styles.applyBtnText}>Apply</Text>
+                    <Text style={styles.applyText}>Apply</Text>
                   </TouchableOpacity>
                 </View>
               </Animated.View>
@@ -7818,7 +7818,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 70,
-    marginBottom: 5
+    marginBottom: 25
   },
 
   resetBtn: {
@@ -7851,6 +7851,7 @@ const styles = StyleSheet.create({
   },
 
   applyText: {
+    fontSize:15,
     color: "#fff",
     fontFamily: "Gilroy-Semibold",
   },

@@ -29,6 +29,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import BankIcon from "../../../Assets/Images/bankBlue.png";
 import Location from "../../../Assets/Images/Locations.png";
 import TransactionSheet from "./TransactionSheet"
+import { PGContext } from "../../../Context/PGContext";
 
 
 export default function BankDetails({ }) {
@@ -41,6 +42,11 @@ export default function BankDetails({ }) {
     const route = useRoute();
 
     const { bankDetails, bankId } = route.params || {};
+
+
+  
+
+   
 
     console.log("bankDetails", bankDetails);
 
@@ -74,7 +80,7 @@ export default function BankDetails({ }) {
         useContext(BankingContext);
     const { activeHostelId } = useContext(CommonContexts);
 
-
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
 
     const [activeMenu, setActiveMenu] = useState(null);
@@ -83,7 +89,8 @@ export default function BankDetails({ }) {
 
 
 
-
+ const isValidSubscription = PGDetails?.isSubscriptionActive;
+    const isSubscriptionAllow = isValidSubscription
 
 
     //   const handleDelete = async () => {
@@ -251,13 +258,31 @@ export default function BankDetails({ }) {
 
                     <View style={styles.actionRow}>
 
-                        <TouchableOpacity style={styles.addBtn} onPress={() => setShowTransactionSheet(true)}>
+                        <TouchableOpacity
+                            //  style={styles.addBtn} 
+                            style={[
+                                styles.addBtn,
+                                (!canWriteBanking || !isSubscriptionAllow) && {
+                                    opacity: 0.4,
+                                },
+                            ]}
+                            disabled={!canWriteBanking || !isSubscriptionAllow}
+                            onPress={() => setShowTransactionSheet(true)}>
                             <Text style={styles.addBtnText}>
                                 ＋ Add Transaction
                             </Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.transferBtn} onPress={handleTransfer}>
+                        <TouchableOpacity
+                            // style={styles.transferBtn}
+                            style={[
+                                styles.transferBtn,
+                                (!canWriteBanking || !isSubscriptionAllow) && {
+                                    opacity: 0.4,
+                                },
+                            ]}
+                            disabled={!canWriteBanking || !isSubscriptionAllow}
+                            onPress={handleTransfer}>
                             <Image source={TransferIcon} style={{ height: 18, width: 18, marginRight: 10 }} />
                             <Text style={styles.transferText}>
                                 Transfer

@@ -29,6 +29,7 @@ import AddTransaction from "./AddTransaction"
 import SelfTransferModal from "./SelfTransferScreen";
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { PGContext } from "../../../Context/PGContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
@@ -66,7 +67,7 @@ export default function NewBankingList() {
   const { getBankOverview, NewgetBankList, bankList, getAllTransactions, newtransactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
     useContext(BankingContext);
 
-
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
   console.log("bankinglist", bankList,);
   console.log("transactionList", newtransactionList,);
@@ -131,6 +132,9 @@ export default function NewBankingList() {
   const [tempStatus, setTempStatus] = useState([]);
   const [tempType, setTempType] = useState([]);
   const [tempsharingType, setTempSharingype] = useState([]);
+
+  const isValidSubscription = PGDetails?.isSubscriptionActive;
+  const isSubscriptionAllow = isValidSubscription
 
 
 
@@ -606,28 +610,66 @@ export default function NewBankingList() {
 
   const mappedTransactions = (newtransactionList?.transactions || []).map((t) => {
     const isCredit = t.type === "CREDIT";
+    const isSelfTransfer = t.source === "SELF_TRANSFER";
+    const isInvestment = t.source === "ASSETS";
 
     return {
       id: t.transactionId,
 
-      type: isCredit ? "income" : "expense",
+      // Self transfer needs its own blue presentation, while the amount
+      // color still follows CREDIT / DEBIT like the Figma design.
+      type: isSelfTransfer
+        ? "selftransfer"
+        : isInvestment
+          ? "Assets"
+          : isCredit
+            ? "income"
+            : "expense",
 
-      title: t.source || "Transaction",
+      title: isSelfTransfer
+        ? "Self transfer"
+        : isInvestment
+          ? "Assets"
+          : t.source || "Transaction",
 
-      amount: `₹${Number(
-        t.transactionAmount ?? 0
-      ).toLocaleString("en-IN")}`,
+      amount: `₹${Number(t.transactionAmount ?? 0).toLocaleString("en-IN", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })}`,
 
       date: dayjs(t.createdAt).format("DD MMM YYYY, hh:mm A"),
 
-      icon: isCredit ? ArrowUp : ArrowDown,
+      icon: isSelfTransfer
+        ? SelfTransIcon
+        : isInvestment
+          ? InvestmentIcon
+          : isCredit
+            ? ArrowUp
+            : ArrowDown,
 
+      // Figma: Self Transfer = #1E45E1, Investment = purple,
+      // Income = green, Expense = red.
+      iconBackgroundColor: isSelfTransfer
+        ? "#1E45E1"
+        : isInvestment
+          ? "#6B3FB8"
+          : isCredit
+            ? "#05964B"
+            : "#EB2D2D",
+
+      // Prefer the actual bank account when bankId is available.
+      // This also keeps ASSETS / SELF_TRANSFER rows from falling back
+      // to the card icon when bankAccountType is not populated.
       account:
-        t.bankAccountType
+        t.bankAccountType || t.bankId
           ? BankIcon
           : t.cashAccountType
             ? CashIcon
-            : CardIcon,
+            : t.cardNumber || t.cardNetwork
+              ? CardIcon
+              : t.linkedUpiId || t.upiApp
+                ? UpiIcon
+                : null,
 
       raw: t,
     };
@@ -912,6 +954,7 @@ export default function NewBankingList() {
 
 
   const handleAddBanking = () => {
+      if (!canWriteBanking || !isSubscriptionAllow) return;
     navigation.navigate("AddBankAccount")
     // setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
     // setAddBankingShow(true);
@@ -1003,6 +1046,7 @@ export default function NewBankingList() {
                 <TouchableOpacity
                   style={styles.searchBtn}
                   onPress={() => setSearchOpen(true)}
+                  disabled
                 >
                   <Image source={SearchIcon} style={styles.headerSearchIcon} />
                 </TouchableOpacity>
@@ -1010,7 +1054,7 @@ export default function NewBankingList() {
             ) : (
               <View style={styles.searchWrapper}>
                 <TextInput
-                  placeholder="Search Expenses"
+                  placeholder="Search Banking"
                   value={searchText}
                   onChangeText={(text) => {
                     setSearchText(text);
@@ -1287,8 +1331,16 @@ export default function NewBankingList() {
                   {/* ADD CARD */}
 
                   <TouchableOpacity
-                    style={[styles.addNewCard, !canWriteBanking && { opacity: 0.4 }]}
-                    disabled={!canWriteBanking}
+                    // style={[styles.addNewCard, !canWriteBanking && { opacity: 0.4 }]}
+                    // disabled={!canWriteBanking}
+
+                    style={[
+                      styles.addNewCard,
+                      (!canWriteBanking || !isSubscriptionAllow) && {
+                        opacity: 0.4,
+                      },
+                    ]}
+                    disabled={!canWriteBanking || !isSubscriptionAllow}
                     onPress={handleAddBanking}
                   >
 
@@ -1417,7 +1469,7 @@ export default function NewBankingList() {
 
 
                   {/* FULL FILTER */}
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={[
                       styles.filterIconBtn,
                       { marginLeft: 5 },
@@ -1432,7 +1484,7 @@ export default function NewBankingList() {
                         height: 18,
                       }}
                     />
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
 
                 </View>
               </ScrollView>
@@ -1454,10 +1506,7 @@ export default function NewBankingList() {
                         style={[
                           styles.iconContainer,
                           {
-                            backgroundColor:
-                              item.type === "income"
-                                ? "#05964B"
-                                : "#EB2D2D",
+                            backgroundColor: item.iconBackgroundColor,
                           },
                         ]}
                       >
@@ -1493,10 +1542,12 @@ export default function NewBankingList() {
                         {item.type === "income" ? "+" : "-"} {item.amount}
                       </Text>
 
-                      <Image
-                        source={item.account}
-                        style={styles.smallIcon}
-                      />
+                      {item.account && (
+                        <Image
+                          source={item.account}
+                          style={styles.smallIcon}
+                        />
+                      )}
                     </View>
                   </TouchableOpacity>
                 ))}

@@ -181,7 +181,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
     useEffect(() => {
         const fetchCustomerRetainerList = async () => {
-            const res = await retainerCustomerList(activeHostelId)
+            // const res = await retainerCustomerList(activeHostelId)
+            const res = await retainerCustomerList( activeHostelId,"ADVANCE_HOLDING")
             console.log("retainerList", res)
 
             const list = res?.data?.customersLists || [];

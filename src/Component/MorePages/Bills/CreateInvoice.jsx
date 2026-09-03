@@ -66,14 +66,40 @@ const CreateInvoice = ({ }) => {
     const [openRetainerType, setOpenRetainerType] = useState(false)
     const [openDetailIndex, setOpenDetailIndex] = useState(null)
 
+    // Invoice item rules:
+    // - Advance is exclusive: selecting it removes all other rows.
+    // - Room Rent and EB can each be selected only once.
+    // - Other can be selected multiple times and uses a manual item name.
     const detailOptions = [
         "Advance",
         "Room Rent",
         "EB",
-        "Rent Retainer",
-        "EB Retainer",
         "Other",
     ]
+
+    const getDetailOptions = (currentIndex) => {
+        const hasAdvance = items.some(
+            (item, index) => index !== currentIndex && item?.itemDetail === "Advance"
+        );
+
+        if (hasAdvance) {
+            return [];
+        }
+
+        const hasRoomRent = items.some(
+            (item, index) => index !== currentIndex && item?.itemDetail === "Room Rent"
+        );
+
+        const hasEB = items.some(
+            (item, index) => index !== currentIndex && item?.itemDetail === "EB"
+        );
+
+        return detailOptions.filter(option => {
+            if (option === "Room Rent") return !hasRoomRent;
+            if (option === "EB") return !hasEB;
+            return true; // Advance + Other
+        });
+    }
     const [showSuccessModal, setShowSuccessModal] = useState(false)
     const [modalMessage, setModalMessage] = useState("")
     const [modalType, setModalType] = useState("")
@@ -82,9 +108,9 @@ const CreateInvoice = ({ }) => {
     const descriptionRef = useRef(null);
     const transactionRef = useRef(null)
 
-      const [discount, setDiscount] = useState("");
-        const [discountType, setDiscountType] = useState("amount"); // amount | percentage
-        const [discountError, setDiscountError] = useState("")
+    const [discount, setDiscount] = useState("");
+    const [discountType, setDiscountType] = useState("amount"); // amount | percentage
+    const [discountError, setDiscountError] = useState("")
 
 
     //   const scrollToField = (ref) => {
@@ -163,9 +189,61 @@ const CreateInvoice = ({ }) => {
     };
 
 
+    // Advance is a standalone invoice type.
+    // Once Advance is selected, no additional row can be added.
     const handleAddRow = () => {
-        setItems(prev => [...prev, { ...emptyItem }])
+        const hasAdvance = items.some(
+            item => item?.itemDetail === "Advance"
+        );
+
+        if (hasAdvance) {
+            return;
+        }
+
+        setItems(prev => [...prev, { ...emptyItem }]);
+        setErrors({});
     }
+
+    const handleDetailChange = (index, value) => {
+        // Advance must be the only invoice row.
+        if (value === "Advance") {
+            setItems(prev => [{
+                ...prev[index],
+                itemDetail: "Advance",
+                retainerType: "",
+            }]);
+            setOpenDetailIndex(null);
+            setErrors({});
+            return;
+        }
+
+        // Prevent duplicate Room Rent / EB even if state changes unexpectedly.
+        const duplicate = items.some(
+            (item, itemIndex) =>
+                itemIndex !== index && item?.itemDetail === value &&
+                ["Room Rent", "EB"].includes(value)
+        );
+
+        if (duplicate) {
+            return;
+        }
+
+        setItems(prev => {
+            const updated = [...prev];
+            updated[index] = {
+                ...updated[index],
+                itemDetail: value,
+                ...(value !== "Other" ? { retainerType: "" } : {}),
+            };
+            return updated;
+        });
+
+        setOpenDetailIndex(null);
+        setErrors(prev => ({
+            ...prev,
+            [`itemDetail_${index}`]: "",
+        }));
+    };
 
     const handleDeleteRow = (index) => {
         console.log(index)
@@ -196,7 +274,7 @@ const CreateInvoice = ({ }) => {
 
     useEffect(() => {
         const fetchCustomerRetainerList = async () => {
-            const res = await retainerCustomerList(activeHostelId)
+            const res = await retainerCustomerList( activeHostelId, "BILL")
             console.log("retainerList", res)
 
             const list = res?.data?.customersLists || [];
@@ -304,6 +382,12 @@ const CreateInvoice = ({ }) => {
             if (!item?.itemDetail) {
                 newErrors[`itemDetail_${index}`] =
                     "Please Select Detail";
+            } else if (
+                item.itemDetail === "Other" &&
+                !String(item?.am_name || "").trim()
+            ) {
+                newErrors[`itemDetail_${index}`] =
+                    "Please Enter Item Name";
             }
 
             if (!item?.amount || Number(item.amount) <= 0) {
@@ -344,7 +428,11 @@ const CreateInvoice = ({ }) => {
             invoiceType: items[0]?.itemDetail,
             amount: totalRetainerAmount,
             items: items.map(item => ({
-                detail: item.itemDetail,
+                detail:
+                    item.itemDetail === "Other"
+                        ? (item.am_name || "").trim()
+                        : item.itemDetail,
+                invoiceItem: item.itemDetail,
                 description: item.description || "",
                 amount: Number(item.amount || 0),
             })),
@@ -512,111 +600,111 @@ const CreateInvoice = ({ }) => {
                         >Search existing tenants in the property flow ecosystem to auto-fill details</Text>
 
                         {selectedTenant?.customerId && (
-  <View style={styles.tenantProfileCard}>
+                            <View style={styles.tenantProfileCard}>
 
-    {/* TOP PROFILE ROW */}
-    <View style={styles.profileTopRow}>
-      <View style={styles.profileLeftSection}>
-        {selectedTenant?.profilePic ? (
-          <Image
-            source={{ uri: selectedTenant.profilePic }}
-            style={styles.tenantProfileImage}
-          />
-        ) : (
-          <View style={styles.tenantInitialCircle}>
-            <Text style={styles.tenantInitialText}>
-              {selectedTenant?.initials ||
-                selectedTenant?.fullName?.charAt(0)?.toUpperCase() ||
-                "?"}
-            </Text>
-          </View>
-        )}
+                                {/* TOP PROFILE ROW */}
+                                <View style={styles.profileTopRow}>
+                                    <View style={styles.profileLeftSection}>
+                                        {selectedTenant?.profilePic ? (
+                                            <Image
+                                                source={{ uri: selectedTenant.profilePic }}
+                                                style={styles.tenantProfileImage}
+                                            />
+                                        ) : (
+                                            <View style={styles.tenantInitialCircle}>
+                                                <Text style={styles.tenantInitialText}>
+                                                    {selectedTenant?.initials ||
+                                                        selectedTenant?.fullName?.charAt(0)?.toUpperCase() ||
+                                                        "?"}
+                                                </Text>
+                                            </View>
+                                        )}
 
-        <View style={styles.profileTextSection}>
-          <Text
-            style={styles.tntName}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {selectedTenant?.fullName || "-"}
-          </Text>
+                                        <View style={styles.profileTextSection}>
+                                            <Text
+                                                style={styles.tntName}
+                                                numberOfLines={1}
+                                                ellipsizeMode="tail"
+                                            >
+                                                {selectedTenant?.fullName || "-"}
+                                            </Text>
 
-          <Text
-            style={styles.hstlDtl}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {selectedTenant?.stayInfo?.floorName || "-"} {" | "}
-            {selectedTenant?.stayInfo?.roomName || "-"} {" | "}
-            {selectedTenant?.stayInfo?.bedName || "-"}
-          </Text>
-        </View>
-      </View>
+                                            <Text
+                                                style={styles.hstlDtl}
+                                                numberOfLines={1}
+                                                ellipsizeMode="tail"
+                                            >
+                                                {selectedTenant?.stayInfo?.floorName || "-"} {" | "}
+                                                {selectedTenant?.stayInfo?.roomName || "-"} {" | "}
+                                                {selectedTenant?.stayInfo?.bedName || "-"}
+                                            </Text>
+                                        </View>
+                                    </View>
 
-      <Image
-        source={ActiveIcon}
-        style={styles.activeIcon}
-      />
-    </View>
+                                    <Image
+                                        source={ActiveIcon}
+                                        style={styles.activeIcon}
+                                    />
+                                </View>
 
-    {/* BILLED TO */}
-    <View style={styles.billedToRow}>
-      <Text style={styles.billedToLabel}>Billed to</Text>
+                                {/* BILLED TO */}
+                                <View style={styles.billedToRow}>
+                                    <Text style={styles.billedToLabel}>Billed to</Text>
 
-      <Image
-        source={EditConfigure}
-        style={styles.billedEditIcon}
-      />
-    </View>
+                                    <Image
+                                        source={EditConfigure}
+                                        style={styles.billedEditIcon}
+                                    />
+                                </View>
 
-    {/* ADDRESS */}
-    <Text style={styles.tenantAddressText}>
-      {[
-        selectedTenant?.addressInfo?.houseNo,
-        selectedTenant?.addressInfo?.street,
-        selectedTenant?.addressInfo?.landmark,
-        selectedTenant?.addressInfo?.city,
-        selectedTenant?.addressInfo?.state,
-        selectedTenant?.addressInfo?.pincode &&
-          String(selectedTenant.addressInfo.pincode),
-      ]
-        .filter(
-          value =>
-            value !== null &&
-            value !== undefined &&
-            String(value).trim()
-        )
-        .join(", ") || "N/A"}
-    </Text>
+                                {/* ADDRESS */}
+                                <Text style={styles.tenantAddressText}>
+                                    {[
+                                        selectedTenant?.addressInfo?.houseNo,
+                                        selectedTenant?.addressInfo?.street,
+                                        selectedTenant?.addressInfo?.landmark,
+                                        selectedTenant?.addressInfo?.city,
+                                        selectedTenant?.addressInfo?.state,
+                                        selectedTenant?.addressInfo?.pincode &&
+                                        String(selectedTenant.addressInfo.pincode),
+                                    ]
+                                        .filter(
+                                            value =>
+                                                value !== null &&
+                                                value !== undefined &&
+                                                String(value).trim()
+                                        )
+                                        .join(", ") || "N/A"}
+                                </Text>
 
-    {/* MOBILE */}
-    {!!selectedTenant?.mobile && (
-      <Text style={styles.tenantMobileText}>
-        +91 {selectedTenant.mobile}
-      </Text>
-    )}
-  </View>
-)}
+                                {/* MOBILE */}
+                                {!!selectedTenant?.mobile && (
+                                    <Text style={styles.tenantMobileText}>
+                                        +91 {selectedTenant.mobile}
+                                    </Text>
+                                )}
+                            </View>
+                        )}
 
-                        <Text style={styles.headerTxt}>Invoice Number <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-                     <TextInput
-                                ref={transactionRef}
-                                value={transactionId}
-                                style={[styles.inputBox, { marginTop: 10 }]}
-                                // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
-                                placeholder="Enter Invoice Number"
-                                onFocus={() => scrollToField(transactionRef)}
-                                onChangeText={(text) => {
-                                    const filteredText = text.replace(
-                                        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
-                                        , ""
-                                    );
-                                    setTransactionId(filteredText)
-                                }
+                        <Text style={styles.headerTxt}>Invoice Number </Text>
+                        <TextInput
+                            ref={transactionRef}
+                            value={transactionId}
+                            style={[styles.inputBox, { marginTop: 10 }]}
+                            // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
+                            placeholder="Enter Invoice Number"
+                            onFocus={() => scrollToField(transactionRef)}
+                            onChangeText={(text) => {
+                                const filteredText = text.replace(
+                                    /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+                                    , ""
+                                );
+                                setTransactionId(filteredText)
+                            }
 
-                                } />
+                            } />
 
-                     
+
 
 
                         <Text style={styles.headerTxt}>Invoice Date <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
@@ -672,59 +760,83 @@ const CreateInvoice = ({ }) => {
 
                                 <Text style={styles.itemdetailTxt}>Detail</Text>
 
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setOpenDetailIndex(
-                                            openDetailIndex === index ? null : index
-                                        );
-                                        setOpenRetainerType(false);
-                                        setErrors(prev => ({
-                                            ...prev,
-                                            [`itemDetail_${index}`]: "",
-                                        }));
-                                    }}
-                                    style={styles.retainTypeBox}
-                                >
-                                    <Text
-                                        style={[
-                                            styles.detailValueText,
-                                            !item.itemDetail && styles.detailPlaceholder,
-                                        ]}
-                                    >
-                                        {item.itemDetail || "Select Detail"}
-                                    </Text>
+                                {item.itemDetail === "Other" ? (
+                                    <View style={styles.otherItemInputRow}>
+                                        <TextInput
+                                            style={styles.otherItemInput}
+                                            value={item.am_name || ""}
+                                            placeholder="Enter Item Name"
+                                            placeholderTextColor="#A0A0A0"
+                                            autoFocus
+                                            onChangeText={value => {
+                                                handleChange(index, "am_name", value);
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    [`itemDetail_${index}`]: "",
+                                                }));
+                                            }}
+                                        />
 
-                                    <Image
-                                        source={DownArrow}
-                                        style={styles.detailArrow}
-                                    />
-                                </TouchableOpacity>
-
-                                {openDetailIndex === index && (
-                                    <View style={styles.detailDropdownMenu}>
-                                        {detailOptions.map(option => (
-                                            <TouchableOpacity
-                                                key={option}
-                                                onPress={() => {
-                                                    handleChange(
-                                                        index,
-                                                        "itemDetail",
-                                                        option
-                                                    );
-                                                    setOpenDetailIndex(null);
-                                                    setErrors(prev => ({
-                                                        ...prev,
-                                                        [`itemDetail_${index}`]: "",
-                                                    }));
-                                                }}
-                                                style={styles.detailOption}
-                                            >
-                                                <Text style={styles.detailOptionText}>
-                                                    {option}
-                                                </Text>
-                                            </TouchableOpacity>
-                                        ))}
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                handleChange(index, "itemDetail", "");
+                                                handleChange(index, "am_name", "");
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    [`itemDetail_${index}`]: "",
+                                                }));
+                                            }}
+                                            style={styles.otherClearButton}
+                                        >
+                                            <Text style={styles.closeIcon}>×</Text>
+                                        </TouchableOpacity>
                                     </View>
+                                ) : (
+                                    <>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setOpenDetailIndex(
+                                                    openDetailIndex === index ? null : index
+                                                );
+                                                setOpenRetainerType(false);
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    [`itemDetail_${index}`]: "",
+                                                }));
+                                            }}
+                                            style={styles.retainTypeBox}
+                                        >
+                                            <Text
+                                                style={[
+                                                    styles.detailValueText,
+                                                    !item.itemDetail && styles.detailPlaceholder,
+                                                ]}
+                                            >
+                                                {item.itemDetail || "Select Detail"}
+                                            </Text>
+
+                                            <Image
+                                                source={DownArrow}
+                                                style={styles.detailArrow}
+                                            />
+                                        </TouchableOpacity>
+
+                                        {openDetailIndex === index && (
+                                            <View style={styles.detailDropdownMenu}>
+                                                {getDetailOptions(index).map(option => (
+                                                    <TouchableOpacity
+                                                        key={option}
+                                                        onPress={() => handleDetailChange(index, option)}
+                                                        style={styles.detailOption}
+                                                    >
+                                                        <Text style={styles.detailOptionText}>
+                                                            {option}
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        )}
+                                    </>
                                 )}
 
                                 {errors[`itemDetail_${index}`] && (
@@ -789,7 +901,7 @@ const CreateInvoice = ({ }) => {
                         </TouchableOpacity>
 
 
-                      <View style={styles.summaryCard}>
+                        <View style={styles.summaryCard}>
                             <View style={styles.summaryRow}>
                                 <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold", }}>
                                     Sub Total
@@ -804,7 +916,7 @@ const CreateInvoice = ({ }) => {
                                 </Text>
                             </View>
 
-                          
+
 
                             <View style={styles.summaryInputRow}>
 
@@ -844,7 +956,7 @@ const CreateInvoice = ({ }) => {
                                         </TouchableOpacity>
                                     </View>
 
-                                 
+
                                     <ValidatedInput
                                         type="numberOnly"
                                         inputType="numeric"
@@ -854,7 +966,7 @@ const CreateInvoice = ({ }) => {
                                             if (discountType === "percentage" && Number(text) > 100) {
                                                 setDiscountError("Discount percentage cannot exceed 100%")
                                                 return;
-                                            } 
+                                            }
                                             // else if (discountType === "amount" && Number(text) > amount) {
                                             //     setDiscountError("Discount amount cannot exceed total amount")
                                             //     return;
@@ -874,7 +986,7 @@ const CreateInvoice = ({ }) => {
                                     TOTAL AMOUNT
                                 </Text>
                                 <Text style={styles.totalValue}>
-                                    ₹ 
+                                    ₹
                                 </Text>
                             </View>
                         </View>
@@ -886,7 +998,7 @@ const CreateInvoice = ({ }) => {
                         </View> */}
                         {errors.retainerAmount && <ErrorMessage message={errors.retainerAmount} type="error" />}
 
-                      
+
 
 
                         <Text style={styles.dscptTxt}>Terms and Conditions</Text>
@@ -1111,6 +1223,34 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
+    },
+
+    otherItemInputRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 10,
+    },
+
+    otherItemInput: {
+        flex: 1,
+        height: 40,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#E2E2E2",
+        paddingHorizontal: 14,
+        backgroundColor: "#fff",
+        fontFamily: "Gilroy-Medium",
+        fontSize: 14,
+    },
+
+    otherClearButton: {
+        width: 32,
+        height: 32,
+        marginLeft: 6,
+        borderRadius: 8,
+        backgroundColor: "#FFF3F3",
+        alignItems: "center",
+        justifyContent: "center",
     },
     itemAmountBox: {
         height: 40,
@@ -1343,115 +1483,115 @@ const styles = StyleSheet.create({
         borderColor: "#E2E8F0",
         paddingTop: 16
     },
- prflField: {
+    prflField: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     },
     txtinputhead: {
         fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 12,
     },
-     tntName: {
+    tntName: {
         fontSize: 18, fontFamily: 'Gilroy-Semibold',
     },
     hstlDtl: {
         fontSize: 12, fontFamily: 'Gilroy-Medium', color: "#616161",
         marginTop: 7
     },
-   tenantProfileCard: {
-  backgroundColor: "#F9FAFB",
-  borderRadius: 14,
-  padding: 14,
-  marginTop: 10,
-},
+    tenantProfileCard: {
+        backgroundColor: "#F9FAFB",
+        borderRadius: 14,
+        padding: 14,
+        marginTop: 10,
+    },
 
-profileTopRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-},
+    profileTopRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
 
-profileLeftSection: {
-  flexDirection: "row",
-  alignItems: "center",
-  flex: 1,
-  marginRight: 10,
-},
+    profileLeftSection: {
+        flexDirection: "row",
+        alignItems: "center",
+        flex: 1,
+        marginRight: 10,
+    },
 
-profileTextSection: {
-  flex: 1,
-  marginLeft: 10,
-},
+    profileTextSection: {
+        flex: 1,
+        marginLeft: 10,
+    },
 
-tenantProfileImage: {
-  width: 48,
-  height: 48,
-  borderRadius: 24,
-},
+    tenantProfileImage: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+    },
 
-tenantInitialCircle: {
-  width: 48,
-  height: 48,
-  borderRadius: 24,
-  backgroundColor: "#E1E8F0",
-  alignItems: "center",
-  justifyContent: "center",
-},
+    tenantInitialCircle: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: "#E1E8F0",
+        alignItems: "center",
+        justifyContent: "center",
+    },
 
-tenantInitialText: {
-  fontSize: 16,
-  fontFamily: "Gilroy-Bold",
-  color: "#334155",
-},
+    tenantInitialText: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Bold",
+        color: "#334155",
+    },
 
-tntName: {
-  fontSize: 17,
-  fontFamily: "Gilroy-Semibold",
-  color: "#111827",
-},
+    tntName: {
+        fontSize: 17,
+        fontFamily: "Gilroy-Semibold",
+        color: "#111827",
+    },
 
-hstlDtl: {
-  fontSize: 12,
-  fontFamily: "Gilroy-Medium",
-  color: "#616161",
-  marginTop: 5,
-},
+    hstlDtl: {
+        fontSize: 12,
+        fontFamily: "Gilroy-Medium",
+        color: "#616161",
+        marginTop: 5,
+    },
 
-activeIcon: {
-  width: 20,
-  height: 20,
-},
+    activeIcon: {
+        width: 20,
+        height: 20,
+    },
 
-billedToRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 14,
-},
+    billedToRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginTop: 14,
+    },
 
-billedToLabel: {
-  fontSize: 14,
-  fontFamily: "Gilroy-Medium",
-  color: "#111827",
-},
+    billedToLabel: {
+        fontSize: 14,
+        fontFamily: "Gilroy-Medium",
+        color: "#111827",
+    },
 
-billedEditIcon: {
-  width: 15,
-  height: 15,
-  marginLeft: 6,
-},
+    billedEditIcon: {
+        width: 15,
+        height: 15,
+        marginLeft: 6,
+    },
 
-tenantAddressText: {
-  fontSize: 13,
-  fontFamily: "Gilroy-Medium",
-  color: "#5E6470",
-  marginTop: 6,
-  lineHeight: 19,
-},
+    tenantAddressText: {
+        fontSize: 13,
+        fontFamily: "Gilroy-Medium",
+        color: "#5E6470",
+        marginTop: 6,
+        lineHeight: 19,
+    },
 
-tenantMobileText: {
-  fontSize: 13,
-  fontFamily: "Gilroy-Semibold",
-  color: "#5E6470",
-  marginTop: 8,
-},
+    tenantMobileText: {
+        fontSize: 13,
+        fontFamily: "Gilroy-Semibold",
+        color: "#5E6470",
+        marginTop: 8,
+    },
     prflField: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     },

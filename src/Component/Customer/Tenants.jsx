@@ -117,6 +117,17 @@ export default function TenantsScreen({ route }) {
 
   // const { handleScroll } = useHideTabbarOnScroll(setShowTabBar);
 
+   const [environment, setEnvironment] = useState("")
+  
+  
+    useEffect(() => {
+      CommonModule.fetchEnvironment().then(r => {
+        setEnvironment(r)
+      })
+    }, [])
+
+      const isProd = environment?.toUpperCase() === "PROD";
+
 
   const sheetTranslateY = useRef(
     new Animated.Value(SHEET_HEIGHT)
@@ -1031,7 +1042,10 @@ export default function TenantsScreen({ route }) {
                   </View>
                 )}
 
-                {/* <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
+
+                 {!isProd && 
+                 (
+                 <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
                   style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
                   <>
                     {customers?.listCustomers?.length > 0 && (
@@ -1124,7 +1138,9 @@ export default function TenantsScreen({ route }) {
                     )
                     }
                   </>
-                </ScrollView> */}
+                </ScrollView> 
+                )
+                }
 
 
 
