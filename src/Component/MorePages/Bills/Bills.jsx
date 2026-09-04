@@ -404,13 +404,31 @@ export default function BillsDesign({ route }) {
   //   GetAllBillDetails(activeHostelId);
   // }, [activeHostelId])
 
+  // useEffect(() => {
+  //   if (activeHostelId && canReadInvoice) {
+  //     GetAllBillDetails(activeHostelId);
+  //   } else {
+  //     setBillDetails([])
+  //   }
+  // }, [activeHostelId, canReadInvoice, currentRouteName]);
+
   useEffect(() => {
-    if (activeHostelId && canReadInvoice) {
-      GetAllBillDetails(activeHostelId);
-    } else {
-      setBillDetails([])
-    }
-  }, [activeHostelId, canReadInvoice, currentRouteName]);
+  if (
+    activeTab === "Invoices" &&
+    activeHostelId &&
+    canReadInvoice
+  ) {
+    GetAllBillDetails(activeHostelId);
+  } else if (!activeHostelId || !canReadInvoice) {
+    setBillDetails([]);
+  }
+}, [
+  activeTab,
+  activeHostelId,
+  canReadInvoice,
+  currentRouteName,
+  customersList
+]);
 
   //  useFocusEffect(
   //   useCallback(() => {
@@ -427,15 +445,15 @@ export default function BillsDesign({ route }) {
   console.log("activehost", activeHostelId)
 
 
-  useEffect(() => {
-    if (
-      activeTab === "Invoices" &&
-      activeHostelId &&
-      canReadInvoice
-    ) {
-      GetAllBillDetails(activeHostelId);
-    }
-  }, [activeTab, activeHostelId, customersList]);
+  // useEffect(() => {
+  //   if (
+  //     activeTab === "Invoices" &&
+  //     activeHostelId &&
+  //     canReadInvoice
+  //   ) {
+  //     GetAllBillDetails(activeHostelId);
+  //   }
+  // }, [activeTab, activeHostelId, customersList]);
 
   useEffect(() => {
     if (activeHostelId) {
@@ -3150,7 +3168,7 @@ export default function BillsDesign({ route }) {
 
 
                   {(
-                    !loading && BillDetails && (BillDetails?.listInvoices?.length === 0 || BillDetails?.listInvoices?.length === 0) &&
+                    !loading && BillDetails && BillDetails?.listInvoices?.length === 0  &&
                     <View style={styles.centerContainer}>
                       <Image source={EmptyFloor} style={styles.image} />
                       <Text style={styles.noFloorText}>No bills are there!</Text>

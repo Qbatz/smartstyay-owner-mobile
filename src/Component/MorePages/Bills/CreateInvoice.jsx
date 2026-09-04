@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from "react";
-import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableWithoutFeedback } from "react-native";
+import { Image, BackHandler, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, TextInput, TouchableWithoutFeedback } from "react-native";
 import { View, Text, TouchableOpacity } from "react-native";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import { useNavigation } from "@react-navigation/native";
@@ -21,23 +21,25 @@ import ValidatedInput from "../ValidatedInput"
 import Profile from "../../../Assets/Images/profile.png";
 import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
 import EditConfigure from "../../../Assets/Images/Edit_Configure.png"
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 const CreateInvoice = ({ }) => {
 
     const navigation = useNavigation();
     const { retainerCustomerList } = useContext(CustomerContext)
     const { activeHostelId } = useContext(CommonContexts);
-    const { createRetainderInvoice, loading, GetAdvanceBookingBills } = useContext(BillContext)
+    const { loading, CreateManualInvoice, GetAllBillDetails } = useContext(BillContext)
 
     const route = useRoute();
     const { customerDetails: passedCustomer } = route.params || {};
 
-    const [isTenantLocked, setIsTenantLocked] = useState(false);
+    const [isTenantLocked, setIsTenantLocked] = useState(false)
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false)
+
 
     const [paidDate, setPaidDate] = useState("")
     const [openPaidDate, setOpenPaidDate] = useState(false);
-    const [selectedRetainerType, setSelectedRetainerType] = useState("")
-    const [paymentMethod, setPaymentMethod] = useState("")
+
     const emptyItem = {
         itemDetail: "",
         retainerType: "",
@@ -49,27 +51,21 @@ const CreateInvoice = ({ }) => {
     const [selectedName, setSelectedName] = useState("")
     const [selectedTenant, setSelectedTenant] = useState("")
     const [receivedFrom, setReceivedFrom] = useState("")
-    const tenantNamelist = [{ id: 0, name: "Karthi" }, { id: 1, name: "Mooly" }, { id: 2, name: "Siinu" }, { id: 3, name: "Nona" }, { id: 4, name: "Sila" }]
-    console.log(items)
-    console.log(emptyItem)
+
+
     const [stateQuery, setStateQuery] = useState("");
     const [showPaymentMode, setShowPaymentMode] = useState(false);
     const [selectedMode, setSelectedMode] = useState("");
-    const [selectedBankId, setSelectedBankId] = useState("")
     const [transactionId, setTransactionId] = useState("")
     const [errors, setErrors] = useState("")
-    const [retainerList, setReatinerList] = useState([])
+    const [availabletenantList, setAvailbleTenantList] = useState([])
     const [retainerBankList, setRetainerBankList] = useState([])
-    const [guardianOpen, setGuardianOpen] = useState(false)
     const [selectedGuardian, setSelectedGuardian] = useState("")
     const [retainerType, setRetainerTypeList] = useState()
     const [openRetainerType, setOpenRetainerType] = useState(false)
     const [openDetailIndex, setOpenDetailIndex] = useState(null)
 
-    // Invoice item rules:
-    // - Advance is exclusive: selecting it removes all other rows.
-    // - Room Rent and EB can each be selected only once.
-    // - Other can be selected multiple times and uses a manual item name.
+
     const detailOptions = [
         "Advance",
         "Room Rent",
@@ -97,7 +93,7 @@ const CreateInvoice = ({ }) => {
         return detailOptions.filter(option => {
             if (option === "Room Rent") return !hasRoomRent;
             if (option === "EB") return !hasEB;
-            return true; // Advance + Other
+            return true;
         });
     }
     const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -107,67 +103,63 @@ const CreateInvoice = ({ }) => {
     const scrollRef = useRef(null);
     const descriptionRef = useRef(null);
     const transactionRef = useRef(null)
+    const tenantInputRef = useRef(null);
+    const discountInputRef = useRef(null);
+    const itemInputRefs = useRef({});
 
     const [discount, setDiscount] = useState("");
-    const [discountType, setDiscountType] = useState("amount"); // amount | percentage
+    const [discountType, setDiscountType] = useState("amount")
     const [discountError, setDiscountError] = useState("")
 
 
-    //   const scrollToField = (ref) => {
-    //     if (!ref?.current || !scrollRef.current) return;
 
-    //     ref.current.measureLayout(
-    //       scrollRef.current,
-    //       (x, y) => {
-    //         scrollRef.current.scrollTo({
-    //           y: y - 100,
-    //           animated: true,
-    //         });
-    //       },
-    //       () => { }
-    //     );
-    //   };
     const scrollToField = (ref) => {
-        if (!ref?.current || !scrollRef.current) {
-            return;
-        }
+        if (!ref?.current || !scrollRef.current) return;
 
-        setTimeout(() => {
-            scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
-                ref.current,
-                120,
-                true
-            );
-        }, 100);
+
+        const runScroll = () => {
+            try {
+                if (scrollRef.current?.scrollResponderScrollNativeHandleToKeyboard) {
+                    scrollRef.current.scrollResponderScrollNativeHandleToKeyboard(
+                        ref.current,
+                        140,
+                        true
+                    );
+                    return;
+                }
+
+                if (ref.current?.measureInWindow) {
+                    ref.current.measureInWindow((x, y, width, height) => {
+                        scrollRef.current?.scrollTo({
+                            y: Math.max(0, y - 180),
+                            animated: true,
+                        });
+                    });
+                }
+            } catch (error) {
+                console.log("scrollToField", error);
+            }
+        };
+
+        requestAnimationFrame(() => {
+            setTimeout(runScroll, Platform.OS === "ios" ? 100 : 180);
+        });
     };
 
-    const retainerTypeList = [{ id: 1, retainerType: "AMOUNT_HOLDING" }, { id: 2, retainerType: "EB_HOLDING" }]
+    const handleInputFocus = (ref) => {
+        requestAnimationFrame(() => scrollToField(ref));
+    };
 
-    console.log("selectedTenant", selectedTenant)
-    console.log("paidDate", dayjs(paidDate).format("DD/MM/YYYY"))
 
-    const paymentModeTypes = [{ id: 0, lable: "Gpayf" }, { id: 1, lable: "phonepay" }, { id: 2, lable: "Cash" }]
 
-    // useEffect(() => {
-    //     const fetchCustomerRetainerList = async () => {
-    //         const res = await retainerCustomerList(activeHostelId)
-    //         console.log("retainerList", res)
-    //         setReatinerList(res?.data?.customersLists)
-    //         setRetainerBankList(res?.data?.listBanks)
-    //     }
 
-    //     fetchCustomerRetainerList();
-    // }, [])
 
-    console.log("retainlist", retainerList)
 
-    // setItems({emptyItem.itemDetail})
+
 
     const handleRepeatRow = (index) => {
-        console.log(index)
 
         const seletedItem = items[index];
-        console.log(seletedItem)
 
         if (!seletedItem?.itemDetail && !seletedItem?.retainerType && !seletedItem?.amount) {
             setItems(prev => [...prev, { ...emptyItem }])
@@ -189,8 +181,7 @@ const CreateInvoice = ({ }) => {
     };
 
 
-    // Advance is a standalone invoice type.
-    // Once Advance is selected, no additional row can be added.
+
     const handleAddRow = () => {
         const hasAdvance = items.some(
             item => item?.itemDetail === "Advance"
@@ -205,7 +196,6 @@ const CreateInvoice = ({ }) => {
     }
 
     const handleDetailChange = (index, value) => {
-        // Advance must be the only invoice row.
         if (value === "Advance") {
             setItems(prev => [{
                 ...prev[index],
@@ -217,7 +207,6 @@ const CreateInvoice = ({ }) => {
             return;
         }
 
-        // Prevent duplicate Room Rent / EB even if state changes unexpectedly.
         const duplicate = items.some(
             (item, itemIndex) =>
                 itemIndex !== index && item?.itemDetail === value &&
@@ -246,39 +235,25 @@ const CreateInvoice = ({ }) => {
     };
 
     const handleDeleteRow = (index) => {
-        console.log(index)
         setItems(prev =>
             prev.filter((_, i) => i !== index));
-        // setItems(prev=> 
-        // [prev.filter((_,i)=>{i.index == index})] 
 
-        // )
     }
     const handleChange = (index, key, value) => {
 
         const updated = [...items];
-        console.log(updated)
         updated[index][key] = value;
         setItems(updated);
     };
 
-    // let total = 0;
 
-    // for (i = 0; i < items.length; i++) {
-    //     const totalamount = total + Number(items[i].amount || 0);
-
-    //     console.log(totalamount)
-
-
-    // }
 
     useEffect(() => {
         const fetchCustomerRetainerList = async () => {
-            const res = await retainerCustomerList( activeHostelId, "BILL")
-            console.log("retainerList", res)
+            const res = await retainerCustomerList(activeHostelId, "BILL")
 
-            const list = res?.data?.customersLists || [];
-            setReatinerList(list)
+            const list = res?.data || [];
+            setAvailbleTenantList(list)
             setRetainerBankList(res?.data?.listBanks)
 
             if (passedCustomer?.customerId) {
@@ -304,8 +279,47 @@ const CreateInvoice = ({ }) => {
         return sum + Number(item.amount || 0);
     }, 0);
 
+    const discountValue = Number(discount || 0);
 
-    const filterList = retainerList?.filter((i) => i.fullName.toLowerCase().includes(stateQuery.toLowerCase())).sort((a, b) => {
+    const calculatedDiscountAmount =
+        discountType === "percentage"
+            ? (totalRetainerAmount * discountValue) / 100
+            : discountValue;
+
+    const totalInvoiceAmount = Math.max(
+        0,
+        totalRetainerAmount - calculatedDiscountAmount
+    );
+
+    const validateDiscount = (value = discount, type = discountType) => {
+        const numericValue = Number(value || 0);
+
+        if (!value) return "";
+
+        if (numericValue < 0) {
+            return "Discount cannot be negative";
+        }
+
+        if (type === "percentage" && numericValue > 100) {
+            return "Discount percentage cannot exceed 100%";
+        }
+
+        if (type === "amount" && numericValue > totalRetainerAmount) {
+            return "Discount amount cannot exceed subtotal";
+        }
+
+        return "";
+    };
+
+    useEffect(() => {
+        if (discount) {
+            setDiscountError(validateDiscount(discount, discountType));
+        } else {
+            setDiscountError("");
+        }
+    }, [totalRetainerAmount]);
+
+    const filterList = availabletenantList?.filter((i) => i.fullName.toLowerCase().includes(stateQuery.toLowerCase())).sort((a, b) => {
         const aStart = a.fullName.toLowerCase().startsWith(stateQuery.toLowerCase());
         const bStart = b.fullName.toLowerCase().startsWith(stateQuery.toLowerCase());
         return bStart - aStart;
@@ -359,6 +373,59 @@ const CreateInvoice = ({ }) => {
     console.log(errors)
 
 
+    const handleLeaveScreen = () => {
+        const hasMandatoryChanges =
+            !!String(selectedName || "").trim() ||
+            !!paidDate ||
+            items.length > 0;
+
+        if (hasMandatoryChanges) {
+            setShowLeavePageScreen(true);
+        } else {
+            navigation.goBack();
+        }
+    };
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            () => {
+                handleLeaveScreen();
+                return true;
+            }
+        );
+
+        return () => backHandler.remove();
+    }, [
+        selectedName,
+        paidDate,
+        selectedMode,
+
+        receivedFrom,
+        items,
+    ]);
+
+
+    const payload = {
+        invoiceNumber: transactionId || "",
+        invoiceDate: dayjs(paidDate).format("DD/MM/YYYY"),
+        notes: description || "",
+        isDiscounted: Number(discount || 0) > 0,
+        discountAmount: Number(calculatedDiscountAmount || 0),
+        invoiceItems: items.map((item) => ({
+            invoiceItem:
+                item.itemDetail === "Other"
+                    ? (item.am_name || "").trim()
+                    : item.itemDetail,
+            amount: Number(item.amount || 0),
+        })),
+    };
+
+    console.log("Manual Invoice Payload:", payload);
+
+
+
+
     const savegenerate = async () => {
 
 
@@ -368,11 +435,15 @@ const CreateInvoice = ({ }) => {
             newErrors.name = "Please Select Name"
         }
         if (!paidDate) {
-            newErrors.paidDate = "Please Select Date"
+            newErrors.paidDate = "Please Select Invoice Date"
         }
-        if (!selectedMode) {
-            newErrors.payMode = "Please Select Mode"
+
+
+        const currentDiscountError = validateDiscount();
+        if (currentDiscountError) {
+            newErrors.discount = currentDiscountError;
         }
+
         // if (!totalRetainerAmount) {
         //     newErrors.retainerAmount = "Please Enter Amount"
         // }
@@ -396,9 +467,8 @@ const CreateInvoice = ({ }) => {
             }
 
         });
-        if (!String(selectedGuardian || "").trim() && !receivedFrom) {
-            newErrors.guardianName = "Please Enter Guardian Name";
-        }
+
+
 
         setErrors(newErrors)
 
@@ -419,58 +489,66 @@ const CreateInvoice = ({ }) => {
         console.log("itemsList", items[0]?.retainerType)
         console.log(totalRetainerAmount)
         const invoiceCreatedDate = dayjs(paidDate).format("DD/MM/YYYY")
-        const payload = {
-            paymentDate: invoiceCreatedDate,
-            mobile: selectedTenant?.mobile,
-            relationName: selectedGuardian?.guardianName || receivedFrom,
-            description: items[0]?.itemDetail,
-            detailedDescription: items[0]?.description || description,
-            invoiceType: items[0]?.itemDetail,
-            amount: totalRetainerAmount,
-            items: items.map(item => ({
-                detail:
-                    item.itemDetail === "Other"
-                        ? (item.am_name || "").trim()
-                        : item.itemDetail,
-                invoiceItem: item.itemDetail,
-                description: item.description || "",
-                amount: Number(item.amount || 0),
-            })),
-            bankId: selectedBankId,
-            referenceNumber: transactionId,
-        }
 
-        if (selectedGuardian?.guardianId) {
-            payload.relationId = selectedGuardian?.guardianId;
-        }
 
-        console.log("payload", payload)
+        console.log("payload", selectedTenant?.customerId)
+        console.log("payload", transactionId)
+        console.log("payload", paidDate)
+        console.log("payload", items)
+
 
         try {
             setIsSubmitClicked(true);
 
-            const res = await createRetainderInvoice(activeHostelId, selectedTenant?.customerId, payload)
-            console.log("retainerInovice", res)
-            if (res.success) {
-                setShowSuccessModal(true)
-                setModalMessage(res?.data)
-                setModalType("success")
+
+            const payload = {
+                invoiceNumber: transactionId || "",
+                invoiceDate: dayjs(paidDate).format("DD/MM/YYYY"),
+                notes: description || "",
+                isDiscounted: Number(discount || 0) > 0,
+                discountAmount: Number(calculatedDiscountAmount || 0),
+                invoiceItems: items.map((item) => ({
+                    invoiceItem:
+                        item.itemDetail === "Other"
+                            ? (item.am_name || "").trim()
+                            : item.itemDetail,
+                    amount: Number(item.amount || 0),
+                })),
+            };
+
+            console.log("Manual Invoice Payload:", payload);
+
+
+            const res = await CreateManualInvoice({
+                hostelId: activeHostelId,
+                customerId: selectedTenant?.customerId,
+                payload,
+            });
+
+
+            console.log("Inovice", res)
+            if (res?.success) {
+                setModalType("success");
+                setModalMessage("Manual Invoice added successfully");
+                setShowSuccessModal(true);
+
                 setTimeout(() => {
-                    setShowSuccessModal(false)
-                    GetAdvanceBookingBills(activeHostelId);
+                    setShowSuccessModal(false);
+                    setIsSubmitClicked(false);
+                    GetAllBillDetails(activeHostelId);
                     navigation.goBack();
-                    setTimeout(() => {
-                        setIsSubmitClicked(false)
-                    }, 300);
-                }, 1000);
+                }, 1500);
+
             } else {
-                setShowSuccessModal(true)
-                setModalMessage(res?.message)
-                setModalType("error")
+                setModalType("error");
+                setModalMessage(res?.message || "Manual Invoice add failed");
+                setShowSuccessModal(true);
+
                 setTimeout(() => {
-                    setShowSuccessModal(false)
-                    setIsSubmitClicked(false)
-                }, 1000);
+
+                    setShowSuccessModal(false);
+                }, 2500);
+                setIsSubmitClicked(false);
             }
         } catch (error) {
             console.log(error)
@@ -482,38 +560,49 @@ const CreateInvoice = ({ }) => {
 
     return (
         <>
-
+            <SuccessModal
+                visible={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                message={modalMessage}
+                type={modalType}
+            />
             <View style={styles.mainSheet}>
                 {loading && <Loader />}
-                <SuccessModal
-                    visible={showSuccessModal}
-                    message={modalMessage}
-                    type={modalType} />
+
 
                 <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity style={{ marginRight: 5 }}
-                        onPress={() => navigation.goBack()} >
+                        onPress={handleLeaveScreen} >
                         <Image source={ArrowLeft} style={{ width: 22, height: 22 }} />
                     </TouchableOpacity>
                     <Text style={styles.pageHead}>New Invoice</Text>
                 </View>
                 <KeyboardAvoidingView
-                    style={{ flex: 1, backgroundColor: "#fff" }}
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}   // ✅ change here
-                    keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+                    style={styles.formKeyboardContainer}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    // Header is outside this container, so no extra offset is needed.
+                    // Android must use windowSoftInputMode="adjustResize".
+                    keyboardVerticalOffset={0}
                 >
                     <ScrollView
                         ref={scrollRef}
-                        contentContainerStyle={{ paddingBottom: 50 }}
+                        style={styles.formScrollView}
+                        contentContainerStyle={styles.formContentContainer}
                         showsVerticalScrollIndicator={false}
-                        keyboardDismissMode="on-drag">
+                        keyboardShouldPersistTaps="always"
+                        keyboardDismissMode="none"
+                        nestedScrollEnabled={true}
+                        scrollEventThrottle={16}>
+
 
 
                         <Text style={styles.tntNameTxt}>
                             Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
                         <View style={[styles.container, isTenantLocked && { backgroundColor: "#F3F4F6" }]}>
-                            <TextInput
+                            <ValidatedInput
+                                type="name"
+                                inputType="text"
                                 placeholder="Add or Search Tenant"
                                 style={styles.input}
                                 value={showTenantName ? stateQuery || selectedName : selectedName}
@@ -524,13 +613,11 @@ const CreateInvoice = ({ }) => {
                                     setShowTenantName(!showTenantName)
                                     setErrors(prev => ({ ...prev, name: "" }))
                                 }}
-                                onChangeText={(text) => {
+                                onChangeText={(value) => {
                                     if (isTenantLocked) return;
-                                    const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
-                                    setStateQuery(onlyLetters)
+                                    setStateQuery(value)
                                     setErrors(prev => ({ ...prev, name: "" }))
                                     setReceivedFrom("")
-                                    setSelectedGuardian("")
                                     setSelectedName("")
                                 }}
                             />
@@ -578,12 +665,20 @@ const CreateInvoice = ({ }) => {
                                             <TouchableOpacity key={index}
                                                 style={{ paddingVertical: 8, paddingHorizontal: 14 }}
                                                 onPress={() => {
+                                                    setTransactionId("");
+                                                    setPaidDate("");
+                                                    setItems([]);
+                                                    setDiscount("");
+                                                    setDiscountType("amount");
+                                                    setDiscountError("");
+                                                    setErrors({});
+
+
                                                     setSelectedName(i.fullName)
                                                     setSelectedTenant(i)
                                                     setStateQuery("");
                                                     setShowTenantName(false)
                                                     setReceivedFrom("")
-                                                    setSelectedGuardian("")
                                                 }}>
                                                 <Text>{i.fullName}</Text>
                                             </TouchableOpacity>
@@ -687,45 +782,45 @@ const CreateInvoice = ({ }) => {
                         )}
 
                         <Text style={styles.headerTxt}>Invoice Number </Text>
-                        <TextInput
+                        <ValidatedInput
                             ref={transactionRef}
+                            type="alphaNumeric"
+                            inputType="text"
                             value={transactionId}
                             style={[styles.inputBox, { marginTop: 10 }]}
-                            // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
                             placeholder="Enter Invoice Number"
+                            placeholderTextColor="#B5B5B5"
                             onFocus={() => scrollToField(transactionRef)}
-                            onChangeText={(text) => {
-                                const filteredText = text.replace(
-                                    /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
-                                    , ""
-                                );
-                                setTransactionId(filteredText)
-                            }
+                            onChangeText={setTransactionId}
+                        />
 
-                            } />
-
-
-
-
-                        <Text style={styles.headerTxt}>Invoice Date <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-
-                        <TouchableOpacity onPress={() => {
-                            setOpenPaidDate(true)
-                            setErrors(prev => ({ ...prev, paidDate: "" }))
-                        }}
-                            style={[styles.inputBox, { marginTop: 10 }]}>
-
-                            <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
-                                {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
+                        <Text style={styles.headerTxt}>Invoice Date <Text style={{ color: "red" }}>*</Text></Text>
+                        <TouchableOpacity
+                            style={[styles.inputBox, { marginTop: 10 }]}
+                            onPress={() => {
+                                setOpenPaidDate(true);
+                                setErrors(prev => ({ ...prev, paidDate: "" }));
+                            }}
+                        >
+                            <Text
+                                style={{
+                                    color: paidDate ? "#111827" : "#B5B5B5",
+                                    fontSize: 14,
+                                    fontFamily: "Gilroy-Medium",
+                                }}
+                            >
+                                {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "Select Invoice Date"}
                             </Text>
-
                             <Image
                                 source={CalendarIcon}
-                                style={{ width: 22, height: 22, tintColor: "#444" }}
+                                style={{ width: 20, height: 20, tintColor: "#555" }}
                             />
                         </TouchableOpacity>
 
                         {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error" />}
+
+
+                        {/* </TouchableOpacity> */}
 
                         {/* <Text style={styles.headerTxt}>Reference No</Text>
 
@@ -762,7 +857,9 @@ const CreateInvoice = ({ }) => {
 
                                 {item.itemDetail === "Other" ? (
                                     <View style={styles.otherItemInputRow}>
-                                        <TextInput
+                                        <ValidatedInput
+                                            type="description"
+                                            inputType="text"
                                             style={styles.otherItemInput}
                                             value={item.am_name || ""}
                                             placeholder="Enter Item Name"
@@ -846,7 +943,9 @@ const CreateInvoice = ({ }) => {
                                     />
                                 )}
 
-                                <TextInput
+                                <ValidatedInput
+                                    type="description"
+                                    inputType="text"
                                     style={styles.itemDescriptionInput}
                                     value={item.description || ""}
                                     placeholder="Add a description to your item"
@@ -863,15 +962,13 @@ const CreateInvoice = ({ }) => {
                                 </Text>
 
                                 <ValidatedInput
-                                    keyboardType="numeric"
                                     type="numberOnly"
                                     inputType="numeric"
                                     style={styles.itemAmountBox}
                                     placeholder="Enter Amount"
                                     value={item.amount}
                                     onChangeText={value => {
-                                        const onlyNumbers = value.replace(/[^0-9]/g, "");
-                                        handleChange(index, "amount", onlyNumbers);
+                                        handleChange(index, "amount", value);
                                         setErrors(prev => ({
                                             ...prev,
                                             [`amount_${index}`]: "",
@@ -935,7 +1032,9 @@ const CreateInvoice = ({ }) => {
                                             ]}
                                             onPress={() => {
                                                 setDiscountType("amount")
-                                                setDiscountError("")
+                                                setDiscountError(
+                                                    validateDiscount(discount, "amount")
+                                                )
                                             }}
                                         >
                                             <Text style={{ color: discountType === "amount" ? "#fff" : "#00000" }}>₹</Text>
@@ -949,7 +1048,9 @@ const CreateInvoice = ({ }) => {
                                             ]}
                                             onPress={() => {
                                                 setDiscountType("percentage")
-                                                setDiscountError("")
+                                                setDiscountError(
+                                                    validateDiscount(discount, "percentage")
+                                                )
                                             }}
                                         >
                                             <Text style={{ color: discountType === "percentage" ? "#fff" : "#00000" }}>%</Text>
@@ -961,24 +1062,38 @@ const CreateInvoice = ({ }) => {
                                         type="numberOnly"
                                         inputType="numeric"
                                         value={discount}
-                                        onChangeText={(text) => {
+                                        onChangeText={(value) => {
+                                            const validationError = validateDiscount(
+                                                value,
+                                                discountType
+                                            );
 
-                                            if (discountType === "percentage" && Number(text) > 100) {
-                                                setDiscountError("Discount percentage cannot exceed 100%")
+                                            if (validationError) {
+                                                setDiscountError(validationError);
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    discount: "",
+                                                }));
                                                 return;
                                             }
-                                            // else if (discountType === "amount" && Number(text) > amount) {
-                                            //     setDiscountError("Discount amount cannot exceed total amount")
-                                            //     return;
-                                            // }
-                                            setDiscount(text)
-                                            setDiscountError("")
+
+                                            setDiscount(value);
+                                            setDiscountError("");
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                discount: "",
+                                            }));
                                         }}
-                                        placeholder="₹ 0.00"
+                                        placeholder={discountType === "percentage" ? "0" : "₹ 0.00"}
                                         style={styles.discountInput}
                                     />
                                 </View>
-                                {discountError && <ErrorMessage message={discountError} type="error" />}
+                                {(discountError || errors.discount) && (
+                                    <ErrorMessage
+                                        message={discountError || errors.discount}
+                                        type="error"
+                                    />
+                                )}
                             </View>
 
                             <View style={styles.totalContainer}>
@@ -986,7 +1101,7 @@ const CreateInvoice = ({ }) => {
                                     TOTAL AMOUNT
                                 </Text>
                                 <Text style={styles.totalValue}>
-                                    ₹
+                                    ₹ {totalInvoiceAmount.toLocaleString("en-IN")}
                                 </Text>
                             </View>
                         </View>
@@ -1003,32 +1118,47 @@ const CreateInvoice = ({ }) => {
 
                         <Text style={styles.dscptTxt}>Terms and Conditions</Text>
 
-                        <TextInput
+                        <ValidatedInput
                             ref={descriptionRef}
+                            type="description"
+                            inputType="text"
                             style={styles.dscpBox}
                             placeholder="Enter terms and condition for this invoice"
+                            placeholderTextColor="#A0A0A0"
                             value={description}
-                            onFocus={() => scrollToField(descriptionRef)}
+                            onFocus={() => handleInputFocus(descriptionRef)}
                             onChangeText={handleDescriptionChange}
                         />
 
-                        <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', marginTop: 22 }}>
-                            <TouchableOpacity style={{ marginRight: 8 }}>
-                                <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
-                                    Cancel</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity onPress={savegenerate}
-                                style={[{ backgroundColor: '#1E45E1', padding: 10, borderRadius: 8, marginLeft: 8 }, isSubmitClicked && { opacity: 0.4 }]}>
-                                <Text style={{ color: '#ffffff', fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
-                                    Save & Generate</Text>
-                            </TouchableOpacity>
-                        </View>
                     </ScrollView>
+
+                    {/* Fixed action bar.
+                        It stays at the bottom of the available screen area and,
+                        with KeyboardAvoidingView, moves above the keyboard on both
+                        Android and iOS instead of scrolling away with the form. */}
+                    <View style={styles.bottomActionBar}>
+                        <TouchableOpacity
+                            style={styles.cancelButton}
+                            onPress={handleLeaveScreen}
+                            disabled={isSubmitClicked}>
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={savegenerate}
+                            disabled={isSubmitClicked}
+                            style={[
+                                styles.saveButton,
+                                isSubmitClicked && styles.saveButtonDisabled
+                            ]}>
+                            <Text style={styles.saveButtonText}>
+                                Save & Generate
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 </KeyboardAvoidingView>
             </View>
 
-            {console.log("slected", selectedTenant)}
 
             {openPaidDate && (
                 <View style={styles.dateOverlay}>
@@ -1053,7 +1183,8 @@ const CreateInvoice = ({ }) => {
                             onDayPress={(day) => {
                                 if (paidMarkedDates[day.dateString]?.disabled) return;
 
-                                setPaidDate(new Date(day.dateString))
+                                setPaidDate(new Date(day.dateString));
+                                setErrors(prev => ({ ...prev, paidDate: "" }));
                                 setOpenPaidDate(false);
                             }}
                             theme={{
@@ -1067,6 +1198,18 @@ const CreateInvoice = ({ }) => {
                     </View>
                 </View>
             )}
+
+            <LeavePageScreen
+                visible={showLeavePageScreen}
+                onClose={() => setShowLeavePageScreen(false)}
+                discardClose={() => {
+                    setShowLeavePageScreen(false);
+
+                    setTimeout(() => {
+                        navigation.goBack();
+                    }, 300);
+                }}
+            />
         </>
     )
 }
@@ -1078,6 +1221,72 @@ const styles = StyleSheet.create({
         padding: 20,
         paddingTop: 50
     },
+
+    // KeyboardAvoidingView owns both the scrollable form and the action bar.
+    // Therefore the action bar remains fixed to the bottom of the visible
+    // screen and is automatically lifted above the keyboard.
+    formKeyboardContainer: {
+        flex: 1,
+        backgroundColor: "#fff",
+    },
+
+    formScrollView: {
+        flex: 1,
+    },
+
+    formContentContainer: {
+        // Extra bottom space prevents the last inputs from being hidden behind
+        // the fixed action buttons when the keyboard is closed.
+        paddingBottom: 100,
+        flexGrow: 1,
+    },
+
+    bottomActionBar: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "flex-end",
+        backgroundColor: "#FFFFFF",
+        borderTopWidth: 1,
+        borderTopColor: "#F0F0F0",
+        paddingTop: 12,
+        paddingBottom: Platform.OS === "ios" ? 8 : 12,
+        paddingHorizontal: 0,
+    },
+
+    cancelButton: {
+        minHeight: 48,
+        paddingHorizontal: 14,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 8,
+    },
+
+    cancelButtonText: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Medium",
+        color: "#111827",
+    },
+
+    saveButton: {
+        minHeight: 48,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        backgroundColor: "#1E45E1",
+        justifyContent: "center",
+        alignItems: "center",
+        marginLeft: 8,
+    },
+
+    saveButtonDisabled: {
+        opacity: 0.4,
+    },
+
+    saveButtonText: {
+        color: "#FFFFFF",
+        fontSize: 15,
+        fontFamily: "Gilroy-Medium",
+    },
+
     pageHead: {
         fontSize: 20,
         fontFamily: 'Gilroy-Semibold'
