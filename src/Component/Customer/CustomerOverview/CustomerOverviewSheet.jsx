@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity, TouchableWithoutFeedback,
   Image, BackHandler,
-  NativeModules, Animated, Linking
+  NativeModules, Animated, Linking , Modal
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
@@ -82,7 +82,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, loading } = useCustomer();
+  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, loading, DeleteTenantDraft } = useCustomer();
   console.log("customer", customer)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails, setCustomerDetails] = useState("")
@@ -99,6 +99,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [message, setMessage] = useState("");
 
   const [menuVisible, setMenuVisible] = useState(false);
+  const [deleteTenants, setDeleteTenants] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [selectedItem, setSelectedItem] = useState(null);
   const [showReAssignbed, setShowReAssignBed] = useState(false)
@@ -213,9 +214,53 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const handleshowJobdetails = () => {
     setShowJobDetails(true)
   }
- const handleshowVechiledetails = () => {
+  const handleshowVechiledetails = () => {
     setShowVechileDetails(true)
   }
+
+  const handleDraftContinue = () => {
+    navigation.navigate("AddTenantNew", {
+      customerId: customerDetails?.customerId,
+      customer: customerDetails,
+      mode: "EDIT",
+    });
+
+    setMenuVisible(false);
+  };
+
+  const handleDeleteDraft = async () => {
+    const result = await DeleteTenantDraft(
+      activeHostelId,
+      customerDetails?.customerId
+    );
+
+    console.log(
+      "draftdelete",
+      result,
+      activeHostelId,
+      customerDetails?.customerId
+    );
+
+    if (result?.success) {
+      setModalType("success");
+      setMessage("Draft deleted successfully");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigation.goBack();
+      }, 1500);
+
+      setDeleteTenants(false);
+      setMenuVisible(false);
+    } else {
+      setModalType("error");
+      setMessage(result?.message);
+      setShowSuccess(true);
+
+      setTimeout(() => setShowSuccess(false), 1500);
+    }
+  };
 
 
   const fetchCustomerDetails = async () => {
@@ -780,6 +825,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             handleshowKYCPendingSheet={handleshowKYCPendingSheet}
             handleJobdetails={handleshowJobdetails}
             handleVechileDetails={handleshowVechiledetails}
+            onRentDeleted={fetchCustomerDetails}
           />
         );
     }
@@ -832,18 +878,19 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               </Text>
               {/* </View> */}
 
-              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING" && customerDetails?.customerCurrentStatus != "DRAFT") && (
-                <TouchableOpacity onPress={(e) => {
-                  openMenu(e, customerDetails);
-                }}>
-                  <Image
-                    source={MoreDot}
-                    style={{ width: 20, height: 20, }}
-                  />
+              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING"
+              ) && (
+                  <TouchableOpacity onPress={(e) => {
+                    openMenu(e, customerDetails);
+                  }}>
+                    <Image
+                      source={MoreDot}
+                      style={{ width: 20, height: 20, }}
+                    />
 
-                </TouchableOpacity>
+                  </TouchableOpacity>
 
-              )}
+                )}
             </Animated.View>
           )}
 
@@ -877,7 +924,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
 
-              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING" && customerDetails?.customerCurrentStatus != "DRAFT") && (
+              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING" ) && (
                 <TouchableOpacity onPress={(e) => {
                   openMenu(e, customerDetails);
                 }}>
@@ -1095,7 +1142,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                   })}
                 </View>
               </View> */}
-           
+
 
               <View
                 style={{
@@ -1230,21 +1277,46 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                     </>
 
                   }
+
+
+                  {selectedItem?.customerCurrentStatus === "DRAFT" && (
+                    <>
+                      <TouchableOpacity
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }
+                        ]}
+                        disabled={!canUpdateTenant}
+                        onPress={handleDraftContinue}
+                      >
+                        <Image
+                          source={MakeCheckInIcon}
+                          style={styles.popupIcon}
+                        />
+                        <Text style={styles.popupText}>Draft Continue</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        style={styles.popupRow}
+                        onPress={() => {
+                          setMenuVisible(false);
+                          setDeleteTenants(true);
+                        }}
+                      >
+                        <Image
+                          source={require("../../../Assets/Images/trash.png")}
+                          style={styles.popupIcon}
+                        />
+                        <Text style={styles.popupText}>Delete</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+
                   {
                     selectedItem && selectedItem.customerCurrentStatus === "BOOKED" &&
                     <>
-                      <TouchableOpacity
-                        // style={styles.popupRow}
-                        style={[
-                          styles.popupRow,
-                          !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
-                        onPress={handleMakeUsInActive}
-                      >
-                        <Image source={ReAssignIcon} style={styles.popupIcon} />
-                        <Text style={styles.popupText}>Make Us InActive</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
+
+                     <TouchableOpacity
                         // style={styles.popupRow}
                         style={[
                           styles.popupRow,
@@ -1259,10 +1331,23 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         <Image source={MakeCheckInIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Checkin</Text>
                       </TouchableOpacity>
+
+                      <TouchableOpacity
+                        // style={styles.popupRow}
+                        style={[
+                          styles.popupRow,
+                          !canUpdateTenant && { opacity: 0.4 }]}
+                        disabled={!canUpdateTenant}
+                        onPress={handleMakeUsInActive}
+                      >
+                        <Image source={ReAssignIcon} style={styles.popupIcon} />
+                        <Text style={styles.popupText}>Make Us InActive</Text>
+                      </TouchableOpacity>
+                     
                     </>
                   }
                   {selectedItem &&
-                    !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
+                    !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED","DRAFT"].includes(selectedItem.customerCurrentStatus) && (
 
                       <>
                         {/* <TouchableOpacity
@@ -1308,7 +1393,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                       </>
                     )}
                   {selectedItem &&
-                    !["CHECK_IN", "NOTICE", "BOOKED"].includes(selectedItem.customerCurrentStatus) && (
+                    !["CHECK_IN", "NOTICE", "BOOKED", "DRAFT"].includes(selectedItem.customerCurrentStatus) && (
                       <TouchableOpacity
                         style={[
                           styles.popupRow,
@@ -1326,7 +1411,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                     )}
 
                   {selectedItem &&
-                    !["BOOKED"].includes(selectedItem.customerCurrentStatus) && (
+                    !["BOOKED","DRAFT"].includes(selectedItem.customerCurrentStatus) && (
                       <TouchableOpacity
                         style={[
                           styles.popupRow,
@@ -1363,6 +1448,42 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           </TouchableWithoutFeedback>
         )}
 
+
+ {deleteTenants && (
+          <Modal
+            transparent
+            animationType="fade"
+            visible={deleteTenants}
+            onRequestClose={() => setDeleteTenants(false)}
+          >
+            <View style={styles.deleteOverlay}>
+              <View style={styles.deleteBox}>
+
+                <Text style={styles.deleteTitle}>Delete Customer?</Text>
+                <Text style={styles.deleteSub}>
+                  Are you sure you want to delete this Customer?
+                </Text>
+
+                <View style={styles.deleteBtnRow}>
+                  <TouchableOpacity
+                    style={styles.cancelBtn}
+                    onPress={() => setDeleteTenants(false)}
+                  >
+                    <Text style={styles.cancelText}>Cancel</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.deleteBtn}
+                    onPress={handleDeleteDraft}
+                  >
+                    <Text style={styles.deleteBtnText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+
+              </View>
+            </View>
+          </Modal>
+        )}
 
 
         {
@@ -1519,7 +1640,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         onSuccess={fetchCustomerDetails}
       />
 
-        <AddVechileSheet
+      <AddVechileSheet
         visible={showVechiledetails}
         onClose={() => setShowVechileDetails(false)}
         customerDetails={customerDetails}
@@ -1820,6 +1941,72 @@ const styles = StyleSheet.create({
   actionIcon: {
     width: 18,
     height: 18
+  },
+
+  deleteOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  deleteBox: {
+    width: "90%",
+    backgroundColor: "#fff",
+    padding: 25,
+    borderRadius: 15,
+    alignItems: "center",
+    elevation: 10,
+  },
+
+  deleteTitle: {
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+    color: "#111",
+    marginBottom: 10,
+  },
+
+  deleteSub: {
+    fontSize: 14,
+    color: "#555",
+    textAlign: "center",
+    marginBottom: 25,
+  },
+
+  deleteBtnRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#2D6CDF",
+    marginRight: 10,
+    alignItems: "center",
+  },
+
+  cancelText: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+    color: "#2D6CDF",
+  },
+
+  deleteBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: "#2D6CDF",
+    alignItems: "center",
+  },
+
+  deleteBtnText: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+    color: "#fff",
   },
 
 });

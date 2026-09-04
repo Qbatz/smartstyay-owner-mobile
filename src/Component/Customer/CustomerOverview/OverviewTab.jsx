@@ -44,7 +44,7 @@ import Remainderbtn from "../../../Assets/Images/RemainderIcon.png"
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  , openAdditionalContact, handleshowKYCPendingSheet, handleJobdetails  , handleVechileDetails}) {
+  , openAdditionalContact, handleshowKYCPendingSheet, handleJobdetails  , handleVechileDetails , onRentDeleted ,}) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
@@ -56,6 +56,8 @@ export default function OverviewTab({ customerDetails,
 
   const [deletePopup, setDeletePopup] = useState(false)
   const [deleteDocumentId, setDeleteDocumentId] = useState(null);
+
+  const [deletenewRentshow , setDeleteNewRentShow] = useState(false)
 
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -214,17 +216,30 @@ export default function OverviewTab({ customerDetails,
     );
 
     if (res?.success) {
-      await GetParticularCustomerDetails(customerDetails?.customerId)
-      await getCustomerDetails(customerDetails?.customerId);
+
+          setDeleteNewRentShow(false)
+
+        await onRentDeleted?.();
+
+  await GetParticularCustomerDetails(customerDetails?.customerId);
+
+  //       const updatedCustomer = await getCustomerDetails(
+  //   customerDetails?.customerId
+  // );
+
+
+      // await GetParticularCustomerDetails(customerDetails?.customerId)
+      // await getCustomerDetails(customerDetails?.customerId);
       // await GetParticularCustomerDetails(customerDetails?.customerId)
 
       setModalType("success");
       setMessage("Upcoming monthly rent cancelled successfully");
       setShowSuccess(true);
+  
 
       setTimeout(() => {
         setShowSuccess(false);
-      }, 800)
+      }, 1500)
     } else {
       setModalType("error");
       setMessage(res?.message);
@@ -232,7 +247,7 @@ export default function OverviewTab({ customerDetails,
 
       setTimeout(() => {
         setShowSuccess(false);
-      }, 800)
+      }, 1500)
 
     }
   };
@@ -883,6 +898,7 @@ export default function OverviewTab({ customerDetails,
 
             </View>
 
+
             {isNewRentApplied && (
               <>
                 <View style={styles.amountBox}>
@@ -892,7 +908,7 @@ export default function OverviewTab({ customerDetails,
                     {
                       !disableFinancialEdit &&
                       isSubscriptionAllow &&
-                      !isProd &&
+                      // !isProd &&
                       !["VACATED", "NOTICE"].includes(status) && (
                         <TouchableOpacity
                           disabled={
@@ -907,8 +923,9 @@ export default function OverviewTab({ customerDetails,
                               opacity: 0.4,
                             }
                           }
-                          onPress={handleDeleteNewRent}
+                          onPress={()=> setDeleteNewRentShow(true)}
                         >
+
                           <Image
                             source={require("../../../Assets/Images/trash.png")}
                             style={{
@@ -1882,6 +1899,42 @@ export default function OverviewTab({ customerDetails,
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      {deletenewRentshow && (
+                <Modal
+                  transparent
+                  animationType="fade"
+                  visible={deletenewRentshow}
+                  onRequestClose={() => setDeleteNewRentShow(false)}
+                >
+                  <View style={styles.deleteOverlay}>
+                    <View style={styles.deleteBox}>
+      
+                      <Text style={styles.deleteTitle}>Delete Monthly New Rent?</Text>
+                      <Text style={styles.deleteSub}>
+                        Are you sure you want to delete New Rent?
+                      </Text>
+      
+                      <View style={styles.deleteBtnRow}>
+                        <TouchableOpacity
+                          style={styles.cancelBtn}
+                          onPress={() => setDeleteNewRentShow(false)}
+                        >
+                          <Text style={styles.cancelText}>Cancel</Text>
+                        </TouchableOpacity>
+      
+                        <TouchableOpacity
+                          style={styles.deleteBtn}
+                          onPress={handleDeleteNewRent}
+                        >
+                          <Text style={styles.deleteBtnText}>Delete</Text>
+                        </TouchableOpacity>
+                      </View>
+      
+                    </View>
+                  </View>
+                </Modal>
+              )}
 
 
 

@@ -13,12 +13,12 @@ export default function BillsProvider({ children }) {
   const [bookingBills, setBookingBills] = useState([]);
   const [InitializebookingBills, setInitailizeBookingBills] = useState([])
   const [advanceCreditDetails, setAdvanceCreditDetails] = useState(null);
-  const [InitializeRecordPaymentDetails , setInitializeRecordPaymentDetails] = useState(null)
-  const [InitializeDiscountDetails , setInitializeDiscountDetails] = useState(null)
+  const [InitializeRecordPaymentDetails, setInitializeRecordPaymentDetails] = useState(null)
+  const [InitializeDiscountDetails, setInitializeDiscountDetails] = useState(null)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [refundError, setRefundError] = useState("");
-  const [retainerInvoiceDetail,setRetainerInvoiceDetail]=useState(null)
+  const [retainerInvoiceDetail, setRetainerInvoiceDetail] = useState(null)
 
 
   const getErrorMessage = (error) =>
@@ -53,7 +53,7 @@ export default function BillsProvider({ children }) {
       setLoading(true);
       setErrorMsg("");
       const axios = getAxios();
-      console.log("filters",filters);
+      console.log("filters", filters);
       const res = await axios.get(`/v2/bills/${hostelId}`, {
         params: {
           startDate: filters.startDate,
@@ -64,8 +64,8 @@ export default function BillsProvider({ children }) {
           paymentStatus: filters.paymentStatus,
           search: filters.search,
         },
-        
-        
+
+
         paramsSerializer: (params) =>
           Object.keys(params)
             .map((key) => {
@@ -451,7 +451,7 @@ export default function BillsProvider({ children }) {
     minAmount,
     maxAmount,
   }) => {
-    console.log("wordsSearch",keyword)
+    console.log("wordsSearch", keyword)
     if (!hostelId) {
       return { success: false, message: "Invalid hostelId" };
     }
@@ -639,7 +639,7 @@ export default function BillsProvider({ children }) {
 
   const downloadReceipt = async (hostelId, transactionId) => {
     console.log(hostelId)
-    console.log("istransactionGet",transactionId)
+    console.log("istransactionGet", transactionId)
     if (!hostelId || !transactionId) {
       return { success: false, message: "Invalid data" };
     }
@@ -664,8 +664,8 @@ export default function BillsProvider({ children }) {
       return { success: false, message: "Download failed" };
     } catch (error) {
       const msg = getErrorMessage(error);
-      console.log("whyError",msg)
-      console.log("whyError",error.message)
+      console.log("whyError", msg)
+      console.log("whyError", error.message)
       return { success: false, message: msg };
     } finally {
       setLoading(false);
@@ -1079,8 +1079,8 @@ export default function BillsProvider({ children }) {
   //         paymentStatus: filters.paymentStatus,
   //         search: filters.search,
   //       },
-        
-        
+
+
   //       paramsSerializer: (params) =>
   //         Object.keys(params)
   //           .map((key) => {
@@ -1115,8 +1115,8 @@ export default function BillsProvider({ children }) {
 
 
 
-  const GetAdvanceBookingBills = async (hostelId,filters,page=1,size=10) => {
-    console.log("filteredRetainer",filters)
+  const GetAdvanceBookingBills = async (hostelId, filters, page = 1, size = 10) => {
+    console.log("filteredRetainer", filters)
     if (!hostelId) {
       return { success: false, message: "Invalid hostelId" };
     }
@@ -1127,17 +1127,17 @@ export default function BillsProvider({ children }) {
 
       const axios = getAxios();
 
-      const res = await axios.get( `/v2/bills/advances/${hostelId}`,{
-          params: {
-            page,
-            size,
-            name: filters?.name,
-            floor:filters?.floor,
-            room: filters?.room,
-            minAmount: filters?.minAmount,
-            maxAmount: filters?.maxAmount
-          },
-           paramsSerializer: (params) =>
+      const res = await axios.get(`/v2/bills/advances/${hostelId}`, {
+        params: {
+          page,
+          size,
+          name: filters?.name,
+          floor: filters?.floor,
+          room: filters?.room,
+          minAmount: filters?.minAmount,
+          maxAmount: filters?.maxAmount
+        },
+        paramsSerializer: (params) =>
           Object.keys(params)
             .map((key) => {
               const value = params[key];
@@ -1151,15 +1151,15 @@ export default function BillsProvider({ children }) {
             })
             .filter(Boolean)
             .join("&"),
-      
-          
-        }
+
+
+      }
       );
       console.log("Request URL:", res.request?.responseURL);
 
-      console.log("AfterFilterRetainer",res)
+      console.log("AfterFilterRetainer", res)
 
-     
+
 
       if (res.status === 200) {
         setBookingBills(res?.data || []);
@@ -1331,154 +1331,154 @@ export default function BillsProvider({ children }) {
 
 
   const GetInitializeRecordPaymentDetails = async ({ hostelId, invoiceId }) => {
-  if (!hostelId || !invoiceId) {
-    return { success: false, message: "Invalid data" };
-  }
-
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/bills/payment/initialize/${hostelId}/${invoiceId}`
-    );
-
-    if (res?.status === 200) {
-      setInitializeRecordPaymentDetails(res?.data || [])
-      return {
-        success: true,
-        data: res?.data,
-        statusCode: res?.status,
-      };
+    if (!hostelId || !invoiceId) {
+      return { success: false, message: "Invalid data" };
     }
 
-    return {
-      success: false,
-      message: "Failed to fetch payment initialization details",
-    };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-}
+      const axios = getAxios();
 
+      const res = await axios.get(
+        `/v2/bills/payment/initialize/${hostelId}/${invoiceId}`
+      );
 
-const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
-  if (!hostelId || !invoiceId) {
-    return { success: false, message: "Invalid data" };
-  }
+      if (res?.status === 200) {
+        setInitializeRecordPaymentDetails(res?.data || [])
+        return {
+          success: true,
+          data: res?.data,
+          statusCode: res?.status,
+        };
+      }
 
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.get(
-      `/v2/bills/discount/${hostelId}/${invoiceId}`
-    );
-
-    if (res?.status === 200) {
-      setInitializeDiscountDetails(res?.data)
       return {
-        success: true,
-        data: res?.data,
-        statusCode: res?.status,
+        success: false,
+        message: "Failed to fetch payment initialization details",
       };
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  }
+
+
+  const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
+    if (!hostelId || !invoiceId) {
+      return { success: false, message: "Invalid data" };
     }
 
-    return {
-      success: false,
-      message: "Failed to fetch discount initialization details",
-    };
-  } catch (error) {
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-}
+      const axios = getAxios();
 
- const createRetainderInvoice=async(hostelId,customerId,payload)=>{
+      const res = await axios.get(
+        `/v2/bills/discount/${hostelId}/${invoiceId}`
+      );
 
-  setLoading(true)
-  try{
-    const token= await retriveData("token")
-    const axios= getAxios()
+      if (res?.status === 200) {
+        setInitializeDiscountDetails(res?.data)
+        return {
+          success: true,
+          data: res?.data,
+          statusCode: res?.status,
+        };
+      }
 
-    const res= await axios.post(`/v2/retainer/${hostelId}/${customerId}`, payload)
-
-    console.log(res)
-
-     if (res?.status === 201 || 200) {
       return {
-        success: true,
-        data: res?.data,
-        statusCode: res?.status,
+        success: false,
+        message: "Failed to fetch discount initialization details",
       };
-    }
-  }catch(error){
-    console.log(error)
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
+    } catch (error) {
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
 
-    return {
-      success: false,
-      message: msg,
-    };
-  }finally{
-    setLoading(false)
-  }
- }
-
- const getRetainerInvoiceDetail=async(hostelId,invoiceId)=>{
-  setLoading(true)
-
-  try{
-    const token= await retriveData("token")
-    const axios= getAxios();
-
-    const res= await axios.get(`/v2/retainer/get/${hostelId}/${invoiceId}`);
-    console.log("RetainerInvoice",res)
-
-     if (res?.status === 200) {
-      setRetainerInvoiceDetail(res?.data)
-     
       return {
-        success: true,
-        data: res?.data,
-        statusCode: res?.status,
+        success: false,
+        message: msg,
       };
+    } finally {
+      setLoading(false);
     }
-  }catch(error){
-    console.log(error)
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-  }finally{
-    setLoading(false)
   }
- }
 
- const ApplyRetainerToInvoices = async ({
+  const createRetainderInvoice = async (hostelId, customerId, payload) => {
+
+    setLoading(true)
+    try {
+      const token = await retriveData("token")
+      const axios = getAxios()
+
+      const res = await axios.post(`/v2/retainer/${hostelId}/${customerId}`, payload)
+
+      console.log(res)
+
+      if (res?.status === 201 || 200) {
+        return {
+          success: true,
+          data: res?.data,
+          statusCode: res?.status,
+        };
+      }
+    } catch (error) {
+      console.log(error)
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getRetainerInvoiceDetail = async (hostelId, invoiceId) => {
+    setLoading(true)
+
+    try {
+      const token = await retriveData("token")
+      const axios = getAxios();
+
+      const res = await axios.get(`/v2/retainer/get/${hostelId}/${invoiceId}`);
+      console.log("RetainerInvoice", res)
+
+      if (res?.status === 200) {
+        setRetainerInvoiceDetail(res?.data)
+
+        return {
+          success: true,
+          data: res?.data,
+          statusCode: res?.status,
+        };
+      }
+    } catch (error) {
+      console.log(error)
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const ApplyRetainerToInvoices = async ({
     hostelId,
     invoiceId,
     payload,
@@ -1492,7 +1492,7 @@ const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
       const res = await axios.post(
         `/v2/retainer/redeem/${hostelId}/${invoiceId}`, payload);
 
-      console.log("appliedretainersin",res)
+      console.log("appliedretainersin", res)
 
       return {
         success: true,
@@ -1502,14 +1502,14 @@ const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
     } catch (error) {
 
       console.log("ERRORRetinar", error?.response?.data);
-      console.log("messageRetiner",error?.response?.data?.message)
+      console.log("messageRetiner", error?.response?.data?.message)
 
       const message =
         error?.response?.data ||
         error?.response?.data?.message ||
         error?.response?.data?.error ||
         "Something went wrong";
-        console.log(message)
+      console.log(message)
 
       return {
         success: false,
@@ -1520,6 +1520,55 @@ const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
       setLoading(false);
     }
   }
+
+  const CreateManualInvoice = async ({ hostelId, customerId, payload }) => {
+    if (!hostelId || !customerId) {
+      return {
+        success: false,
+        message: "Invalid hostelId or customerId",
+      };
+    }
+
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.post(
+        `/v2/bills/manual/${hostelId}/${customerId}`,
+        payload
+      );
+
+      if (res?.status === 200 || res?.status === 201) {
+
+        console.log("res", res);
+        
+        return {
+          success: true,
+          data: res.data,
+          statusCode: res.status,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to create manual invoice",
+      };
+    } catch (error) {
+      console.log("err", error);
+      
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   return (
@@ -1533,8 +1582,8 @@ const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
         bookingBills,
         InitializebookingBills,
         advanceCreditDetails,
-        InitializeRecordPaymentDetails ,
-        InitializeDiscountDetails ,
+        InitializeRecordPaymentDetails,
+        InitializeDiscountDetails,
         loading,
         errorMsg,
         refundError,
@@ -1568,8 +1617,9 @@ const GetInitializeDiscountDetails = async ({ hostelId, invoiceId }) => {
         ApplyAdvanceToInvoices,
         GetAdvanceCreditDetails,
         ReceiptFilter,
-        GetInitializeRecordPaymentDetails , GetInitializeDiscountDetails,createRetainderInvoice,
-        getRetainerInvoiceDetail,retainerInvoiceDetail,ApplyRetainerToInvoices,setBillDetails,setRecurringBills
+        GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, createRetainderInvoice,
+        getRetainerInvoiceDetail, retainerInvoiceDetail, ApplyRetainerToInvoices, setBillDetails, setRecurringBills,
+        CreateManualInvoice,
       }}
     >
       {children}
