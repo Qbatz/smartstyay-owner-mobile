@@ -362,11 +362,12 @@ export default function ExpensesSettings({ navigation }) {
     subItem = null,
     expenseId = null
   ) => {
+    setExpenseError("")
     subAddSheetY.setValue(700);
     setIsSubAddEdit(edit);
 
     if (expenseId) {
-      setSelectedExpenseId(expenseId); // ✅ ensure parent is set
+      setSelectedExpenseId(expenseId)
     }
 
     if (edit && subItem) {
@@ -397,6 +398,7 @@ export default function ExpensesSettings({ navigation }) {
     }).start(() => {
       setShowSubAddSheet(false);
       setSubName("");
+      setExpenseError("");
       setIsSubAddEdit(false);
       setEditingSubId(null);
     });
