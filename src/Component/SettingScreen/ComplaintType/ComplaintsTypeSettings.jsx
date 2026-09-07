@@ -679,7 +679,6 @@ export default function ComplaintsSettings({ navigation }) {
               styles.sheet,
               {
                 marginBottom: insets.bottom,
-
                 transform: [
                   {
                     translateY: Animated.subtract(

@@ -16,6 +16,7 @@ import {
     BackHandler,
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import EmptyComplaint from "../../../Assets/Images/Empty_complaint.png";
@@ -28,6 +29,9 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { VendorContext } from "../../../Context/VendorContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import Loader from "../../../Component/Loader/Loader"
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+
+
 
 export default function vendorSettings({ navigation }) {
     const { activeHostelId } = useContext(CommonContexts);
@@ -64,11 +68,16 @@ export default function vendorSettings({ navigation }) {
     } = useHasPermission("Vendor");
 
 
+    const insets = useSafeAreaInsets();
+
+
     const [showSheet, setShowSheet] = useState(false);
     const [showMenuId, setShowMenuId] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
-    const [complaintText, setComplaintText] = useState("");
+    const [vendorText, setVendorText] = useState("");
+    const [vendorError, setVendorError] = useState("")
+
     const [isEdit, setIsEdit] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [showMenu, setShowMenu] = useState(false);
@@ -79,6 +88,10 @@ export default function vendorSettings({ navigation }) {
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
 
+      const [keyboardHeight, setKeyboardHeight] = useState(0);
+      const [isSubmitting, setIsSubmitting] = useState(false);
+    
+      const safeKeyboardHeight = keyboardHeight > 0 ? 240 : 0;
 
 
     const sheetY = useRef(new Animated.Value(700)).current;
@@ -119,32 +132,77 @@ export default function vendorSettings({ navigation }) {
 
 
 
+    // useEffect(() => {
+    //     const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
+    //         navigation.goBack();
+    //         return true;
+    //     });
+    //     return () => backHandler.remove();
+    // }, []);
+
     useEffect(() => {
-        const backHandler = BackHandler.addEventListener("hardwareBackPress", () => {
-            navigation.goBack();
-            return true;
-        });
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            () => {
+                if (showSheet) {
+                    Keyboard.dismiss();
+                    closeSheet();
+                    return true;
+                }
+
+                if (showDeleteConfirm) {
+                    setShowDeleteConfirm(false);
+                    return true;
+                }
+
+                if (showMenu) {
+                    setShowMenu(false);
+                    return true;
+                }
+
+                navigation.goBack();
+                return true;
+            }
+        );
+
         return () => backHandler.remove();
-    }, []);
+    }, [showSheet, showDeleteConfirm, showMenu]);
 
 
 
-    const sheetPan = useRef(
+    // const sheetPan = useRef(
+    //     PanResponder.create({
+    //         onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+    //         onPanResponderMove: (_, g) => {
+    //             if (g.dy > 0) sheetY.setValue(g.dy);
+    //         },
+    //         onPanResponderRelease: (_, g) => {
+    //             if (g.dy > 120) closeSheet();
+    //             else
+    //                 Animated.spring(sheetY, {
+    //                     toValue: 0,
+    //                     useNativeDriver: true,
+    //                 }).start();
+    //         },
+    //     })
+    // ).current;
+
+     const sheetPan = useRef(
         PanResponder.create({
-            onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-            onPanResponderMove: (_, g) => {
-                if (g.dy > 0) sheetY.setValue(g.dy);
-            },
-            onPanResponderRelease: (_, g) => {
-                if (g.dy > 120) closeSheet();
-                else
-                    Animated.spring(sheetY, {
-                        toValue: 0,
-                        useNativeDriver: true,
-                    }).start();
-            },
+          onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+          onPanResponderMove: (_, g) => {
+            if (g.dy > 0) sheetY.setValue(g.dy);
+          },
+          onPanResponderRelease: (_, g) => {
+            if (g.dy > 120) closeSheet();
+            else
+              Animated.spring(sheetY, {
+                toValue: 0,
+                useNativeDriver: true,
+              }).start();
+          },
         })
-    ).current;
+      ).current;
 
 
     // const openSheet = (edit = false, item = null) => {
@@ -152,10 +210,10 @@ export default function vendorSettings({ navigation }) {
     //   setIsEdit(edit);
 
     //   if (edit && item) {
-    //     setComplaintText(item.title);
+    //     setVendorText(item.title);
     //     setEditingId(item.id);
     //   } else {
-    //     setComplaintText("");
+    //     setVendorText("");
     //     setEditingId(null);
     //   }
 
@@ -176,21 +234,22 @@ export default function vendorSettings({ navigation }) {
             setTimeout(() => setShowSuccessModal(false), 1500);
             return;
         }
-
+        
         sheetY.setValue(700);
         setIsEdit(edit);
 
         if (edit && item) {
-            setComplaintText(item?.categoryName);
+            setVendorText(item?.categoryName);
             setOriginalComplaintName(item?.categoryName);
             setEditingId(item.id);
         } else {
-            setComplaintText("");
+            setVendorText("");
             setOriginalComplaintName("");
             setEditingId(null);
         }
 
         setShowSheet(true);
+         setVendorError("")
 
         Animated.timing(sheetY, {
             toValue: 0,
@@ -207,35 +266,28 @@ export default function vendorSettings({ navigation }) {
             useNativeDriver: true,
         }).start(() => {
             setShowSheet(false);
-            setComplaintText("");
+            setVendorText("");
+             setVendorError("")
             setEditingId(null);
             setIsEdit(false);
         });
     };
 
 
-    useEffect(() => {
-        const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-            Animated.timing(sheetY, {
-                toValue: -e.endCoordinates.height + 60,
-                duration: 180,
-                useNativeDriver: true,
-            }).start();
-        });
+   useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+    });
 
-        const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-            Animated.timing(sheetY, {
-                toValue: 0,
-                duration: 180,
-                useNativeDriver: true,
-            }).start();
-        });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+        setKeyboardHeight(0);
+    });
 
-        return () => {
-            showSub.remove();
-            hideSub.remove();
-        };
-    }, []);
+    return () => {
+        showSub.remove();
+        hideSub.remove();
+    };
+}, []);
 
 
     // const handleSave = async () => {
@@ -255,7 +307,7 @@ export default function vendorSettings({ navigation }) {
     //     }
 
 
-    
+
 
     //     let res = await addVendorCategory(
     //         complaintText,
@@ -282,52 +334,70 @@ export default function vendorSettings({ navigation }) {
 
 
     const handleSave = async () => {
-  if (isEdit) {
-    const newValue = complaintText.trim();
-    const oldValue = originalComplaintName.trim();
+    const value = vendorText.trim();
 
-    if (newValue === oldValue) {
-      setModalType("warning");
-      setModalMessage("No changes detected");
-      setShowSuccessModal(true);
-
-      setTimeout(() => setShowSuccessModal(false), 1500);
-      return;
+    if (!value) {
+        setVendorError("Please Enter Vendor Category");
+        return;
     }
-  }
 
-  let res;
+    if (isSubmitting) return;
 
-  if (isEdit) {
-    res = await updateVendorCategory(
-      editingId,
-      complaintText.trim(),
-      activeHostelId
-    );
-  } else {
-    res = await addVendorCategory(
-      complaintText.trim(),
-      activeHostelId
-    );
-  }
+    setIsSubmitting(true);
 
-  if (!res.success) {
-    setModalType("warning");
-    setModalMessage(res.message);
-    setShowSuccessModal(true);
-   
-    setTimeout(() => setShowSuccessModal(false), 1500);
-    return;
-  }
+    try {
 
-  setModalType("success");
-  setModalMessage(res.message);
-  setShowSuccessModal(true);
-   getVendorCategories(activeHostelId)
-  setTimeout(() => setShowSuccessModal(false), 1500);
+        if (isEdit) {
+            const newValue = vendorText.trim();
+            const oldValue = originalComplaintName.trim();
 
-  closeSheet();
-};
+            if (newValue === oldValue) {
+                setModalType("warning");
+                setModalMessage("No changes detected");
+                setShowSuccessModal(true);
+
+                setTimeout(() => setShowSuccessModal(false), 1500);
+                return;
+            }
+        }
+
+        let res;
+
+        if (isEdit) {
+            res = await updateVendorCategory(
+                editingId,
+                vendorText.trim(),
+                activeHostelId
+            );
+        } else {
+            res = await addVendorCategory(
+                vendorText.trim(),
+                activeHostelId
+            );
+        }
+
+        if (!res.success) {
+            setModalType("warning");
+            setModalMessage(res.message);
+            setShowSuccessModal(true);
+
+            setTimeout(() => setShowSuccessModal(false), 1500);
+            return;
+        }
+
+        setModalType("success");
+        setModalMessage(res.message);
+        setShowSuccessModal(true);
+        getVendorCategories(activeHostelId)
+        setTimeout(() => setShowSuccessModal(false), 1500);
+
+        closeSheet();
+
+    }
+    finally {
+    setIsSubmitting(false);
+}
+    };
 
 
 
@@ -365,7 +435,7 @@ export default function vendorSettings({ navigation }) {
     const vendors = vendorCategories || [];
 
     console.log("vendorCategories", vendorCategories);
-    
+
 
     // const renderPopupMenu = (item) => {
     //     if (showMenuId !== item.id) return null;
@@ -431,12 +501,12 @@ export default function vendorSettings({ navigation }) {
                     // }}
 
                     onPress={(e) => {
-    e.target.measure((fx, fy, width, height, px, py) => {
-        setMenuPosition({ x: px, y: py });
-        setMenuComplaintId(item.id);
-        setShowMenu(true);
-    });
-}}
+                        e.target.measure((fx, fy, width, height, px, py) => {
+                            setMenuPosition({ x: px, y: py });
+                            setMenuComplaintId(item.id);
+                            setShowMenu(true);
+                        });
+                    }}
                 >
                     <Image source={Dots} style={styles.dots} />
                 </TouchableOpacity>
@@ -546,21 +616,21 @@ export default function vendorSettings({ navigation }) {
                             ]}
                         >
                             <TouchableOpacity
-          style={[styles.menuItem ,  {opacity: canUpdateVendor ? 1 : 0.4} ]}
-          disabled={!canUpdateVendor}
-          onPress={() => {
-            const category = vendorCategories.find(
-  (c) => c.id === menuComplaintId
-);
-            setShowMenu(false);
-            openSheet(true, category);
-          }}
-        >
-          <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
-          <Text style={styles.menuText}>Edit</Text>
-        </TouchableOpacity>
+                                style={[styles.menuItem, { opacity: canUpdateVendor ? 1 : 0.4 }]}
+                                disabled={!canUpdateVendor}
+                                onPress={() => {
+                                    const category = vendorCategories.find(
+                                        (c) => c.id === menuComplaintId
+                                    );
+                                    setShowMenu(false);
+                                    openSheet(true, category);
+                                }}
+                            >
+                                <Image source={require("../../../Assets/Images/editIcon.png")} style={styles.popupIcon} />
+                                <Text style={styles.menuText}>Edit</Text>
+                            </TouchableOpacity>
 
-        <View style={styles.menuDivider} />
+                            <View style={styles.menuDivider} />
 
                             <TouchableOpacity
                                 style={[styles.menuItem, { opacity: canDeleteVendor ? 1 : 0.4 }]}
@@ -616,14 +686,32 @@ export default function vendorSettings({ navigation }) {
                         <View style={styles.dimLayer} />
                     </TouchableWithoutFeedback>
 
-                    <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
+                    <Animated.View
+                        style={[
+                            styles.sheet,
+                            {
+                                marginBottom: insets.bottom,
+                                transform: [
+                                    {
+                                        translateY: Animated.subtract(
+                                            sheetY,
+                                            new Animated.Value(
+                                                keyboardHeight > 0 ? 240 : 0
+                                            )
+                                        ),
+                                    },
+                                ],
+                            },
+                        ]}
+                    >
                         {/* Drag Handle */}
                         <View style={styles.handleWrapper} {...sheetPan.panHandlers}>
                             <View style={styles.sheetHandle} />
                         </View>
 
                         {/* Content */}
-                        <ScrollView contentContainerStyle={{ paddingBottom: 60 }}>
+                        <ScrollView      keyboardShouldPersistTaps="handled"
+    showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
                             <Text style={styles.sheetTitle}>
                                 {isEdit ? "Edit vendor Category" : "Add Vendor Category"}
                             </Text>
@@ -635,26 +723,55 @@ export default function vendorSettings({ navigation }) {
                             <TextInput
                                 style={styles.inputBox}
                                 placeholder="Enter Vendor Category"
-                                value={complaintText}
+                                value={vendorText}
                                 onChangeText={(t) => {
-                                    setComplaintText(t.replace(/[^a-zA-Z\s]/g, ""))
+                                    setVendorText(t.replace(/[^a-zA-Z\s]/g, ""))
+                                    setVendorError("");
                                 }
                                 }
                             />
+
+                            {vendorError ? (
+                                <ErrorMessage
+                                    message={vendorError}
+                                    type="error"
+                                />
+                            ) : null}
                         </ScrollView>
 
                         <TouchableOpacity
                             style={[
                                 styles.addTypeBtn,
-                                { opacity: complaintText.trim() ? 1 : 0.4 },
+                                {
+                                    marginBottom: Math.max(insets.bottom, 10),
+                                    opacity:
+                                        vendorText.trim() && !isSubmitting
+                                            ? 1
+                                            : 0.4,
+                                },
                             ]}
-                            disabled={!complaintText.trim()}
+                            disabled={!vendorText.trim() || isSubmitting}
+                            onPress={handleSave}
+                        >
+                            <Text style={styles.addTypeText}>
+                                {isEdit
+                                    ? "Update Vendor Category"
+                                    : "Add Vendor Category"}
+                            </Text>
+                        </TouchableOpacity>
+
+                        {/* <TouchableOpacity
+                            style={[
+                                styles.addTypeBtn,
+                                { opacity: vendorText.trim() ? 1 : 0.4 },
+                            ]}
+                            disabled={!vendorText.trim()}
                             onPress={handleSave}
                         >
                             <Text style={styles.addTypeText}>
                                 {isEdit ? "Update Vendor Category" : "Add Vendor Category"}
                             </Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
 
                         <View style={styles.bottomMask} />
                     </Animated.View>
@@ -687,7 +804,7 @@ const styles = StyleSheet.create({
     addBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
 
     card: {
-        flex:1,
+        flex: 1,
         backgroundColor: "#F9FAFB",
         borderRadius: 12,
         padding: 15,
@@ -699,7 +816,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
 
-    cardLeft: { flexDirection: "row", alignItems: "center",flexShrink:1,marginRight:30},
+    cardLeft: { flexDirection: "row", alignItems: "center", flexShrink: 1, marginRight: 30 },
     icon: { width: 20, height: 20, marginRight: 12 },
     dots: { width: 24, height: 24 },
     cardText: { fontSize: 15, color: "#111", fontWeight: "600" },
