@@ -1126,12 +1126,30 @@ export default function BillsProvider({ children }) {
       setErrorMsg("");
 
       const axios = getAxios();
+      const params = {
+        page,
+        size,
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        name: filters?.name,
+        type: filters?.type,
+        period: filters?.period,
+        floor: filters?.floor,
+        room: filters?.room,
+        minAmount: filters?.minAmount,
+        maxAmount: filters?.maxAmount,
+      };
+      console.log("PARAMS TO SEND:", params);
 
       const res = await axios.get(`/v2/bills/advances/${hostelId}`, {
         params: {
           page,
           size,
+          startDate: filters?.startDate,
+          endDate: filters?.endDate,
           name: filters?.name,
+          type: filters?.type,
+          period: filters?.period,
           floor: filters?.floor,
           room: filters?.room,
           minAmount: filters?.minAmount,
@@ -1141,29 +1159,54 @@ export default function BillsProvider({ children }) {
           Object.keys(params)
             .map((key) => {
               const value = params[key];
+
               if (Array.isArray(value)) {
-                return value.map((v) => `${key}=${v}`).join("&");
+                if (!value.length) return null;
+                return value
+                  .map((v) => `${key}=${encodeURIComponent(v)}`)
+                  .join("&");
               }
-              if (value !== undefined && value !== null && value !== "") {
-                return `${key}=${value}`;
+
+              if (
+                value !== undefined &&
+                value !== null &&
+                value !== ""
+              ) {
+                return `${key}=${encodeURIComponent(value)}`;
               }
+
               return null;
             })
             .filter(Boolean)
             .join("&"),
+      });
+      //   paramsSerializer: (params) =>
+      //     Object.keys(params)
+      //       .map((key) => {
+      //         const value = params[key];
+      //         if (Array.isArray(value)) {
+      //           return value.map((v) => `${key}=${v}`).join("&");
+      //         }
+      //         if (value !== undefined && value !== null && value !== "") {
+      //           return `${key}=${value}`;
+      //         }
+      //         return null;
+      //       })
+      //       .filter(Boolean)
+      //       .join("&"),
 
 
-      }
-      );
+      // }
+      // );
       console.log("Request URL:", res.request?.responseURL);
 
       console.log("AfterFilterRetainer", res)
 
 
-
       if (res.status === 200) {
         setBookingBills(res?.data || []);
         console.log("res", res);
+        console.log("Balaji")
 
         return {
           success: true,
@@ -1543,7 +1586,7 @@ export default function BillsProvider({ children }) {
       if (res?.status === 200 || res?.status === 201) {
 
         console.log("res", res);
-        
+
         return {
           success: true,
           data: res.data,
@@ -1557,7 +1600,7 @@ export default function BillsProvider({ children }) {
       };
     } catch (error) {
       console.log("err", error);
-      
+
       const msg = getErrorMessage(error);
       setErrorMsg(msg);
 

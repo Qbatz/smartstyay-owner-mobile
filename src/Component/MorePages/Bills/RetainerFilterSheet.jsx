@@ -55,8 +55,8 @@ const RetainerFilterSheet = ({
     const [showUnpaidModal, setShowUnpaidModal] = useState(false)
     const [activeDropdown, setActiveDropdown] = useState(null);
 
-    const [retainerTypeOptions, setRetainerTypeOption] = useState([])
-    const statusOptions = []
+    // const [retainerTypeOptions, setRetainerTypeOption] = useState([])
+    // const statusOptions = []
 
     const paymentMethodOptions = []
 
@@ -72,7 +72,7 @@ const RetainerFilterSheet = ({
     const [toDate, setToDate] = useState(null);
 
 
-    const [selectedPeriod, setSelectedPeriod] = useState("");
+    const [selectedPeriod, setSelectedPeriod] = useState({});
 
 
     const [openFrom, setOpenFrom] = useState(false);
@@ -139,6 +139,16 @@ const RetainerFilterSheet = ({
     const collectedByOptions = (filterOptions.collectedBy || []).map(item => ({
         label: item.name,
         value: item.userId,
+    }))
+
+    const retainerTypeOptions = (filterOptions?.invoiceTypes || []).map(item => ({
+        label: item?.name,
+        value: item?.type,
+    }))
+
+    const statusOptions = (filterOptions?.status || []).map(item => ({
+        label: item?.name,
+        value: item?.type,
     }))
 
     const floorOptions = (filterOptions?.floors || []).map(item => ({
@@ -232,6 +242,7 @@ const RetainerFilterSheet = ({
     //   collectedBy.length > 0 ||
     //   mode.length > 0;
 
+
     const handleApplyFilter = async () => {
         if (!canReadReceipt) return;
         if (!fromDate && toDate) {
@@ -243,13 +254,14 @@ const RetainerFilterSheet = ({
             startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
             endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
             paymentStatus: billStatus,
-            type: type,
+            type: retainerType,
+            period: selectedPeriod,
             modes: paymentmode,
             collectedBy: collectedBy,
             floor: selectedFloor?.length > 0 ? selectedFloor : undefined,
             room: selectedRoom?.length > 0 ? selectedRoom : undefined,
-            minAmount: Number(minAmount)|| undefined,
-            maxAmount: Number(maxAmount) || undefined,
+            minAmount: String(minAmount) || undefined,
+            maxAmount: String(maxAmount) || undefined,
         };
 
         const hasAnyFilter =
@@ -257,13 +269,14 @@ const RetainerFilterSheet = ({
             filters.endDate ||
             (filters.paymentStatus && filters.paymentStatus.length > 0) ||
             (filters.type && filters.type.length > 0) ||
+            (filters?.period) ||
             (filters.modes && filters.modes.length > 0) ||
             (filters.collectedBy && filters.collectedBy.length > 0) ||
             (filters.floor && filters?.floor.length > 0) ||
-            (filters?.room && filters?.room.length > 0) || 
+            (filters?.room && filters?.room.length > 0) ||
             (minAmount) || maxAmount;
 
-            console.log("Kathina",filters)
+        console.log("Kathina", filters)
 
         if (!hasAnyFilter) {
             setFilterError("Please select at least one filter");
@@ -287,7 +300,7 @@ const RetainerFilterSheet = ({
         setFromDate(null);
         setToDate(null);
         setCollectedBy([]);
-        setBillStatus([]);
+        setRetainerType([])
         setType([]);
         setPaymentMode([]);
         setSelectedPeriod("");
@@ -296,10 +309,8 @@ const RetainerFilterSheet = ({
         setMode([]);
         setMinAmount(null)
         setMaxAmount(null)
-        // remove chips
         setAppliedFilters(null);
-
-        // call parent reset
+     
         onResetFilter?.();
 
         onClose();
@@ -344,16 +355,16 @@ const RetainerFilterSheet = ({
 
 
 
-                        {/* <MultiSelectDropdown
+                        <MultiSelectDropdown
                             label="Retainer Type"
                             dropdownKey="retainerType"
                             placeholder="Select Retainer Type"
                             activeDropdown={activeDropdown}
                             setActiveDropdown={setActiveDropdown}
-                            options={retainerTypeOptions}
+                            options={retainerTypeOptions || []}
                             selected={retainerType}
                             onChange={setRetainerType}
-                        /> */}
+                        />
 
 
                         <MultiSelectDropdown
@@ -418,11 +429,30 @@ const RetainerFilterSheet = ({
 
 
 
-                        {/* <View style={styles.quickRow}>
-                            <TouchableOpacity style={[
+                        <View style={styles.quickRow}>
+
+                            {periodOptions.map(i => (
+                                <TouchableOpacity style={[
+                                    styles.quickBtn,
+                                    selectedPeriod === i?.value  && styles.activeQuickBtn,
+                                ]} 
+                                key={i?.type} 
+                                 onPress={() => {
+                                    setFromDate(dayjs()); setToDate(dayjs());
+                                    setSelectedPeriod(i?.value)
+                                }}>
+                                    <Text style={[styles.quickText, 
+                                         selectedPeriod === i?.value  && {color:"#ffffff"},
+                                    ]}>{i?.label}</Text>
+                                </TouchableOpacity>
+
+                            ))}
+                            {/* <TouchableOpacity style={[
                                 styles.quickBtn,
-                                selectedPeriod === "today" && styles.activeQuickBtn,
-                            ]} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
+                                selectedPeriod === "TODAY" && styles.activeQuickBtn,
+                            ]} onPress={() => { 
+                                setFromDate(dayjs()); setToDate(dayjs()); 
+                                setSelectedPeriod}}>
                                 <Text style={styles.quickText}>Today</Text>
                             </TouchableOpacity>
 
@@ -438,8 +468,8 @@ const RetainerFilterSheet = ({
                                 selectedPeriod === "month" && styles.activeQuickBtn,
                             ]} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
                                 <Text style={styles.quickText}>This Month</Text>
-                            </TouchableOpacity>
-                        </View> */}
+                            </TouchableOpacity> */}
+                        </View>
 
 
 
@@ -458,7 +488,7 @@ const RetainerFilterSheet = ({
                         /> */}
 
 
-                        <MultiSelectDropdown
+                        {/* <MultiSelectDropdown
                             label="Payment Method"
                             dropdownKey="paymentMethod"
                             placeholder="Select Payment Method"
@@ -467,7 +497,7 @@ const RetainerFilterSheet = ({
                             options={paymentMethodOptions}
                             selected={paymentMethod}
                             onChange={setPaymentMethod}
-                        />
+                        /> */}
 
                         <MultiSelectDropdown
                             label="Floor"
@@ -506,18 +536,19 @@ const RetainerFilterSheet = ({
                                 More Filters
                             </Text>
 
-                            {/* <Image
-    source={
-      showMoreFilters
-        ? require("../../Assets/upArrow.png")
-        : require("../../Assets/downArrow.png")
+                            <Image
+    source={require("../../../Assets/Images/direction_down.png")
+    //   showMoreFilters
+    //     ? require("")
+    //     : require("../../Assets/Images/downArrow.png")
     }
-  /> */}
+    style={{width:25,height:22,tintColor:'red',marginLeft:4}}
+  />
                         </TouchableOpacity>
 
                         {showMoreFilters && (
                             <>
-                                <MultiSelectDropdown
+                                {/* <MultiSelectDropdown
                                     label="Collected By"
                                     dropdownKey="collectedBy"
                                     placeholder="Select User"
@@ -526,7 +557,7 @@ const RetainerFilterSheet = ({
                                     options={collectedByOptions}
                                     selected={collectedBy}
                                     onChange={setCollectedBy}
-                                />
+                                /> */}
 
                                 {/* <MultiSelectDropdown
                                     label="Available Balance"
@@ -539,7 +570,7 @@ const RetainerFilterSheet = ({
                                     onChange={setAvailableBalance}
                                 /> */}
 
-                                <Text style={{fontSize:14,fontFamily:'Gilroy-Medium',marginTop:12}}>Amount Range</Text>
+                                <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 12 }}>Amount Range</Text>
                                 <View style={styles.amountRow}>
 
                                     {/* Minimum Amount */}
@@ -555,7 +586,7 @@ const RetainerFilterSheet = ({
                                                     setErrorMsg("")
                                                 }
                                                 const cleanText = text.replace(/[^0-9]/g, "");
-                                                setMinAmount(cleanText)                                                
+                                                setMinAmount(cleanText)
                                             }}
                                             placeholder="Min"
                                             placeholderTextColor="#999"
@@ -578,7 +609,7 @@ const RetainerFilterSheet = ({
                                                     setErrorMsg("")
                                                 }
                                                 const cleanText = text.replace(/[^0-9]/g, "");
-                                                setMaxAmount(cleanText)                                                
+                                                setMaxAmount(cleanText)
                                             }}
                                             placeholder="Max"
                                             placeholderTextColor="#999"
@@ -918,6 +949,7 @@ const styles = StyleSheet.create({
 
     quickBtn: {
         width: "31.5%",
+        // flex:1,
         height: 44,
         borderRadius: 10,
         backgroundColor: "#fff",
@@ -967,5 +999,12 @@ const styles = StyleSheet.create({
         color: "#222",
         paddingVertical: 0,
     },
+    moreFilterHeader:{
+        marginTop:16,flexDirection:'row',
+        alignItems:'center'
+    },
+    moreFilterText:{
+        fontSize:16,fontFamily:'Gilroy-Bold'
+    }
 
 })
