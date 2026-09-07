@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 
 const { height } = Dimensions.get("window");
@@ -27,6 +28,12 @@ export default function TransactionSheet({
     bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
     useContext(BankingContext);
   const { activeHostelId } = useContext(CommonContexts);
+   const {
+      canWriteModule: canWriteBanking,
+      canReadModule: canReadBanking,
+      canUpdateModule: canUpdateBanking,
+      canDeleteModule: canDeleteBanking,
+    } = useHasPermission("Banking")
 
   const translateY = useRef(
     new Animated.Value(SHEET_HEIGHT)
@@ -83,6 +90,7 @@ export default function TransactionSheet({
       title: "Expense",
       icon: require("../../../Assets/Images/Room_bed.png"),
       screen: "AddExpensesPage",
+      // disabled: !canWriteBanking
     },
     // {
     //   title: "Tenant Payment",
@@ -100,21 +108,25 @@ export default function TransactionSheet({
       icon: require("../../../Assets/Images/arrow-transfer.png"),
       screen: "BankTransfer",
       action: "TRANSFER",
+      // disabled: !canWriteBanking
     },
     {
       title: "Vendor Payment",
       icon: require("../../../Assets/Images/VendorPaymentIcon.png"),
       screen: "VendorPayment",
+      // disabled: !canWriteBanking
     },
     {
       title: "Credit Card Payment",
       icon: require("../../../Assets/Images/CreditCardIcon.png"),
       screen: "CreditCardPayment",
+      // disabled: !canWriteBanking
     },
     {
       title: "Investment",
       icon: require("../../../Assets/Images/InvestmentBlue.png"),
       screen: "Investment",
+      // disabled: !canWriteBanking
     },
   ];
 

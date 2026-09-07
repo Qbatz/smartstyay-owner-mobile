@@ -722,14 +722,28 @@ export default function GeneralDetailsScreen({ navigation }) {
           {showHeader && (
             <Animated.View
               style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 110,
-                zIndex: 100,
-                elevation: 10,
-                transform: [{ translateY: headerTranslateY }],
+                // position: "absolute",
+                // top: 0,
+                // left: 0,
+                // right: 0,
+                // height: 110,
+                // zIndex: 100,
+                // elevation: 10,
+                // transform: [{ translateY: headerTranslateY }],
+                 position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 110,
+              backgroundColor: "#fff",
+              // justifyContent: "center",
+              alignItems: "center",
+              zIndex: 100,
+              // elevation: 10,
+              borderBottomWidth: 0.5,
+              borderColor: "#ddd",
+              display: 'flex', flexDirection: 'row', justifyContent: 'space-between',
+              transform: [{ translateY: headerTranslateY }],
               }}
             >
               <LinearGradient
@@ -771,8 +785,6 @@ export default function GeneralDetailsScreen({ navigation }) {
                     />
                   </TouchableOpacity>
 
-
-                  {/* CENTER - Name + Role */}
                   <View
                     style={{
                       flex: 1,
@@ -821,7 +833,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                   </View>
 
 
-                  {/* Three dots */}
+                 
                   {profileDetails && (
                     <TouchableOpacity
                       ref={DotsTopRef}
@@ -864,6 +876,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               </LinearGradient>
             </Animated.View>
           )}
+
           <Animated.ScrollView
             onScroll={(event) => {
               const y = event.nativeEvent.contentOffset.y;
@@ -877,7 +890,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               scrollY.setValue(y);
             }}
             scrollEventThrottle={16}
-            stickyHeaderIndices={[2]}
+            stickyHeaderIndices={[2]}           
             contentContainerStyle={{ paddingBottom: 100 }}
             stickyHeaderHiddenOnScroll={false}
             showsVerticalScrollIndicator={false}>
@@ -885,7 +898,7 @@ export default function GeneralDetailsScreen({ navigation }) {
               colors={["#E2E8FF", "#FFFFFF"]}
               start={{ x: 0.5, y: 0 }}
               end={{ x: 0.5, y: 0.8 }}
-              style={{ paddingHorizontal: Platform.OS === "android" ? 16 : 3, paddingTop: 50, }}>
+              style={[{ paddingHorizontal: Platform.OS === "android" ? 16 : 3, paddingTop: 50, }, showHeader && {opacity:0.2}]}>
 
 
 
@@ -1053,10 +1066,6 @@ export default function GeneralDetailsScreen({ navigation }) {
             />
 
 
-            {/* =====================================================
-          INDEX 2
-          STICKY TABS
-         ===================================================== */}
 
             <View style={{
                   backgroundColor: "#fff",
@@ -1077,6 +1086,7 @@ export default function GeneralDetailsScreen({ navigation }) {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={{
                     paddingHorizontal: 16,
+                    marginTop:5
                   }}
                 >
 

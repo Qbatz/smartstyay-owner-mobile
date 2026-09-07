@@ -42,7 +42,7 @@ const TenantRegister = ({ navigation }) => {
   // const {  Reportsdetails} = UseSetting();
 
   const { loading, Reportsdetails, GetInvoiceReports,
-    invoiceReports, getTenantRegisterReport } = UseSetting();
+    invoiceReports, getTenantRegisterReport, getTenantReportDownload } = UseSetting();
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
   const { activeHostelId } = useContext(CommonContexts);
 
@@ -68,7 +68,7 @@ const TenantRegister = ({ navigation }) => {
   const [allSelectedSharing, setAllSelectedSharing] = useState([]);
   const [selectedFloorValue, setSelectedFloorValue] = useState([])
   const [selectedRoomValue, setSelectedRoomValue] = useState([]);
-  const [selectedTenantValue,setTenantValue]=useState("")
+  const [selectedTenantValue, setTenantValue] = useState("")
   // const [tempSharing, setTempSharing] = useState([]);
 
   const {
@@ -127,41 +127,41 @@ const TenantRegister = ({ navigation }) => {
 
 
 
-  const handleDownloadReport = async () => {
-    try {
-      const token = await retriveData("token")
-      const axios = getAxios();
+  // const handleDownloadReport = async () => {
+  //   try {
+  //     const token = await retriveData("token")
+  //     const axios = getAxios();
 
-      const startDate = tenantData?.dateRange?.from
-      const endDate = tenantData?.dateRange?.to
+  //     const startDate = tenantData?.dateRange?.from
+  //     const endDate = tenantData?.dateRange?.to
 
-      const res = await axios.get(`/v2/reports/download/${activeHostelId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: {
-            startDate,
-            endDate,
-          },
-        }
-      )
+  //     const res = await axios.get(`/v2/reports/download/${activeHostelId}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         params: {
+  //           startDate,
+  //           endDate,
+  //         },
+  //       }
+  //     )
 
-      console.log("DOWNLOAD API RESPONSE →", res.data);
+  //     console.log("DOWNLOAD API RESPONSE →", res.data);
 
-      const fileUrl = res.data;
+  //     const fileUrl = res.data;
 
-      if (!fileUrl) {
-        console.log("No file URL received");
-        return;
-      }
+  //     if (!fileUrl) {
+  //       console.log("No file URL received");
+  //       return;
+  //     }
 
-      await CommonModule.downloadAndViewDocument(fileUrl);
+  //     await CommonModule.downloadAndViewDocument(fileUrl);
 
-    } catch (error) {
-      console.log("Download error →", error);
-    }
-  };
+  //   } catch (error) {
+  //     console.log("Download error →", error);
+  //   }
+  // };
 
   const filterOptions = tenantData?.filters;
 
@@ -246,6 +246,57 @@ const TenantRegister = ({ navigation }) => {
 
   };
 
+  const handleDownloadReport = async () => {
+
+    const finalMonth = allSelectedMonth !== undefined && allSelectedMonth !== null
+      ? allSelectedMonth
+      : selectedMonth;
+
+    const finalStatus =
+      allSelectedStatus !== undefined && allSelectedStatus !== null
+        ? allSelectedStatus
+        : selectedStatus;
+
+    const finalType =
+      allSelectedSharing !== undefined && allSelectedSharing !== null
+        ? allSelectedSharing
+        : selectedSharing;
+
+    const filters = {
+      period: finalMonth || undefined,
+
+      status: finalStatus?.length
+        ? finalStatus
+        : undefined,
+
+      sharingType: finalType?.length
+        ? finalType
+        : undefined,
+
+      floor: selectedFloorValue?.length ? selectedFloorValue : undefined,
+
+      room: selectedRoomValue?.length ? selectedRoomValue : undefined,
+
+      search: selectedTenantValue || undefined,
+
+      page: 1,
+      size: 10,
+    };
+
+
+    const res = await getTenantReportDownload(activeHostelId, filters)
+    console.log("billana", res)
+
+    const fileUrl = res?.data;
+
+    if (!fileUrl) {
+      console.log("No file URL received");
+      return;
+    }
+
+    await CommonModule.downloadAndViewDocument(fileUrl);
+  }
+
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadReports;
 
@@ -279,7 +330,7 @@ const TenantRegister = ({ navigation }) => {
     icon,
     title,
     value,
-      showRupee = true,
+    showRupee = true,
     prefix,
     suffix,
     valueColor,
@@ -298,8 +349,8 @@ const TenantRegister = ({ navigation }) => {
           </Text>
 
           <Text style={[styles.cardValue, { color: valueColor }]}>
-             {/* {showRupee && "₹ "} */}
-             {prefix && <Text>{prefix}</Text>}
+            {/* {showRupee && "₹ "} */}
+            {prefix && <Text>{prefix}</Text>}
 
             <AnimatedNumber value={value} />
 
@@ -434,7 +485,7 @@ const TenantRegister = ({ navigation }) => {
           <View style={styles.filterRow}>
 
             {/* All */}
-{/* 
+            {/* 
             <TouchableOpacity
               style={[
                 styles.filterBtn,
@@ -456,60 +507,60 @@ const TenantRegister = ({ navigation }) => {
               <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
             </TouchableOpacity> */}
 
-          <View style={{flexDirection:'row'}}>
-            {/* STATUS */}
-            <TouchableOpacity
-              style={[
-                styles.filterBtn,
-                selectedStatus.length > 0 && styles.activeFilter
-              ]}
-              onPress={() => {
-                setTempStatus(selectedStatus);
-                setStatusSheetOpen(true);
-              }}
-            >
-              <Text style={selectedStatus.length ? styles.activeFilterText : styles.filterText}>
-                {selectedStatus.length === 0
-                  ? "Status"
-                  : `${statusOptions.find(s => s.value === selectedStatus[0])?.label}
+            <View style={{ flexDirection: 'row' }}>
+              {/* STATUS */}
+              <TouchableOpacity
+                style={[
+                  styles.filterBtn,
+                  selectedStatus.length > 0 && styles.activeFilter
+                ]}
+                onPress={() => {
+                  setTempStatus(selectedStatus);
+                  setStatusSheetOpen(true);
+                }}
+              >
+                <Text style={selectedStatus.length ? styles.activeFilterText : styles.filterText}>
+                  {selectedStatus.length === 0
+                    ? "Status"
+                    : `${statusOptions.find(s => s.value === selectedStatus[0])?.label}
      ${selectedStatus.length > 1 ? `+${selectedStatus.length - 1} more` : ""}`
-                }
-              </Text>
+                  }
+                </Text>
 
-              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-            </TouchableOpacity>
+                <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+              </TouchableOpacity>
 
 
-            {/* SHARING TYPE */}
-            <TouchableOpacity
-              style={[
-                styles.filterBtn,
-                selectedSharing.length > 0 && styles.activeFilter
-              ]}
-              onPress={() => {
-                setTempSharing(selectedSharing);
-                setSharingSheetOpen(true);
-              }}
-            >
-              <Text style={selectedSharing.length ? styles.activeFilterText : styles.filterText}>
-                {selectedSharing.length === 0
-                  ? "Type"
-                  : `${sharingOptions.find(s => s.value === selectedSharing[0])?.label}
+              {/* SHARING TYPE */}
+              <TouchableOpacity
+                style={[
+                  styles.filterBtn,
+                  selectedSharing.length > 0 && styles.activeFilter
+                ]}
+                onPress={() => {
+                  setTempSharing(selectedSharing);
+                  setSharingSheetOpen(true);
+                }}
+              >
+                <Text style={selectedSharing.length ? styles.activeFilterText : styles.filterText}>
+                  {selectedSharing.length === 0
+                    ? "Type"
+                    : `${sharingOptions.find(s => s.value === selectedSharing[0])?.label}
      ${selectedSharing.length > 1 ? `+${selectedSharing.length - 1} more` : ""}`
-                }
-              </Text>
+                  }
+                </Text>
 
-              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-            </TouchableOpacity>
+                <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+              </TouchableOpacity>
             </View>
 
 
-                           <TouchableOpacity
-                                                        style={styles.filterIconBtn}
-                                                        onPress={() => setAllFilterSheet(true)}
-                                                    >
-                                                        <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
-                                                    </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.filterIconBtn}
+              onPress={() => setAllFilterSheet(true)}
+            >
+              <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
+            </TouchableOpacity>
 
           </View>
 
@@ -638,7 +689,7 @@ const TenantRegister = ({ navigation }) => {
           setSelectedRoomValue([])
           setTenantValue("")
           setAllFilterSheet(false)
-          applyTenantFilters("",[],[],[],[],[],"")
+          applyTenantFilters("", [], [], [], [], [], "")
         }}
         onApply={() => {
           setAllFilterSheet(false)
@@ -737,9 +788,9 @@ const styles = StyleSheet.create({
   //   flexDirection: "row",
   //   marginBottom: 10, marginTop: 12
   // },
-  
-   filterRow: {
-    flexDirection: "row", alignItems: 'center', justifyContent:'space-between',
+
+  filterRow: {
+    flexDirection: "row", alignItems: 'center', justifyContent: 'space-between',
     marginTop: 10,
   },
 
@@ -900,14 +951,14 @@ const styles = StyleSheet.create({
     // paddingBottom: 0,
     marginBottom: 5, alignItems: "flex-start",
   },
-   filterIconBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        // backgroundColor: "#F3F4F6",
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#F3F4F6",
-    },
+  filterIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    // backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
 });

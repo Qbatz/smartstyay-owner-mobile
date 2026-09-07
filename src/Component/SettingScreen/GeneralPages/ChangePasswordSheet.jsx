@@ -15,6 +15,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import Eye from "../../../Assets/Images/Eye.png";
 import EyeClose from "../../../Assets/Images/EyeIcon.png";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 
 export default function ChangePasswordSheet({ visible, onClose, adminId }) {
@@ -28,6 +29,12 @@ export default function ChangePasswordSheet({ visible, onClose, adminId }) {
   const [modalType, setModalType] = useState("success");
   const [showPassword, setShowPassword] = useState(false);
 
+   const {
+      canWriteModule: canWriteProfile,
+      canReadModule: canReadProfile,
+      canUpdateModule: canUpdateProfile,
+      canDeleteModule: canDeleteProfile,
+    } = useHasPermission("Profile");
 
 
   // ✅ keyboard height state
@@ -103,6 +110,7 @@ export default function ChangePasswordSheet({ visible, onClose, adminId }) {
       useNativeDriver: true,
     }).start(() => {
       setKeyboardHeight(0);
+      setPassError("")
       onClose();
     });
   };
@@ -198,7 +206,9 @@ export default function ChangePasswordSheet({ visible, onClose, adminId }) {
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.updateBtn} onPress={handlePasswordUpdate}>
+            <TouchableOpacity style={[styles.updateBtn, !canUpdateProfile && {opacity:0.4}]}
+              onPress={handlePasswordUpdate}
+              disabled={!canUpdateProfile}>
               <Text style={styles.updateText}>Update</Text>
             </TouchableOpacity>
           </View>

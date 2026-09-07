@@ -672,7 +672,7 @@ export const SettingProvider = ({ children }) => {
             }),
         }
       );
-
+      console.log("realfilte",res)
       return {
         success: true,
         data: res.data,
@@ -1110,14 +1110,123 @@ export const SettingProvider = ({ children }) => {
     }
   };
 
+//   try {
+//     setLoading(true);
 
-  return (
-    <ElectricityContext.Provider value={{
-      getElectricity, updateElectricity, changeRoomHostelElectricity, getBillingConfig, addBillingRecurring, getRoleByHostel,
-      getRoleModules, addRole, updateRole, deleteRole, loading, setLoading, getUsersByHostel, addUser, updateUser, deleteUser, getReportsByHostel, Reportsdetails, GetInvoiceReports, invoiceReports, getTenantRegisterReport, GetExpenseRegisterReport, getReceiptRegisterReport, downloadReceiptReport,
-      downloadExpenseReport, downloadInvoiceReport, getHostelPlans, getCurrentHostelPlan, NewupdateElectricityRule, postSubscription, verfiyPayment, currentPlan, downloadSubscriptionBill , billingRuleData , 
-    }}>
-      {children}
-    </ElectricityContext.Provider>
-  );
+//     const token = await retriveData("token");
+//     const axios = getAxios();
+
+//     const params = {
+//       startDate: filters?.startDate,
+//       endDate: filters?.endDate,
+//       period: filters?.period,
+//       status: filters?.status,
+//       floor: filters?.floor,
+//       room: filters?.room,
+//       search: filters?.search,
+//       sharingType: filters?.sharingType,
+//       page: filters?.page ?? 1,
+//       size: filters?.size ?? 10,
+//     };
+
+//     const cleanParams = Object.fromEntries(
+//       Object.entries(params).filter(
+//         ([_, value]) =>
+//           value !== undefined &&
+//           value !== null &&
+//           value !== ""
+//       )
+//     );
+
+//     const res = await axios.get(
+//       `/v2/reports/tenants/${hostelId}`,
+//       {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//         params: cleanParams,
+//         paramsSerializer: (params) =>
+//           qs.stringify(params, {
+//             arrayFormat: "repeat",
+//           }),
+//       }
+//     );
+
+//     return {
+//       success: true,
+//       data: res.data,
+//     };
+//   } catch (err) {
+//     return {
+//       success: false,
+//       data: err.response?.data || err.message,
+//     };
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+const getTenantReportDownload =async(hostelId, filters) => {
+
+  try {
+    const token = await retriveData("token");
+    const axios = getAxios();
+
+    const params = {
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+      period: filters?.period,
+      status: filters?.status,
+      floor: filters?.floor,
+      room: filters?.room,
+      search: filters?.search,
+      sharingType: filters?.sharingType,
+      page: filters?.page ?? 1,
+      size: filters?.size ?? 10,
+    };
+
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(
+        ([_, value]) =>
+          value !== undefined &&
+          value !== null &&
+          value !== ""
+      )
+    );
+
+
+    const res = await axios.get(`/v2/reports/download/${hostelId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      params: cleanParams,
+      paramsSerializer: (params) =>
+        qs.stringify(params, {
+          arrayFormat: "repeat",
+        }),
+    })
+    console.log(res)
+    return {
+      success: true,
+      data: res.data,
+    };
+
+  }catch(error){
+    return {
+      success: false,
+      data: error.response?.data || error.message,
+    };
+  }
+    }
+
+
+return (
+  <ElectricityContext.Provider value={{
+    getElectricity, updateElectricity, changeRoomHostelElectricity, getBillingConfig, addBillingRecurring, getRoleByHostel,
+    getRoleModules, addRole, updateRole, deleteRole, loading, setLoading, getUsersByHostel, addUser, updateUser, deleteUser, getReportsByHostel, Reportsdetails, GetInvoiceReports, invoiceReports, getTenantRegisterReport, GetExpenseRegisterReport, getReceiptRegisterReport, downloadReceiptReport,
+    downloadExpenseReport, downloadInvoiceReport, getHostelPlans, getCurrentHostelPlan, NewupdateElectricityRule, postSubscription, verfiyPayment, currentPlan, downloadSubscriptionBill, billingRuleData,
+    getTenantReportDownload,
+  }}>
+    {children}
+  </ElectricityContext.Provider>
+);
 };
