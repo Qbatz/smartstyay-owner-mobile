@@ -8,7 +8,7 @@ import {
     PanResponder,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard, Image
+    TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard, Image , BackHandler
 } from "react-native";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -63,6 +63,10 @@ export default function JobDetailsSheet({
     const [employmentStatus, setEmploymentStatus] = useState(null);
     const [jobRole, setJobRole] = useState(null);
     const [shiftType, setShiftType] = useState(null);
+
+    const employmentOpenRef = useRef(false);
+    const jobRoleOpenRef = useRef(false);
+    const shiftOpenRef = useRef(false);
 
     const [aadhaarError, setAadhaarError] = useState("");
     const [panError, setPanError] = useState("")
@@ -132,6 +136,12 @@ export default function JobDetailsSheet({
 
     //     return date;
     // };
+
+    useEffect(() => {
+        employmentOpenRef.current = employmentOpen;
+        jobRoleOpenRef.current = jobRoleOpen;
+        shiftOpenRef.current = shiftOpen;
+    }, [employmentOpen, jobRoleOpen, shiftOpen]);
 
 
 
@@ -351,7 +361,25 @@ export default function JobDetailsSheet({
             resetForm();
             onClose();
         });
+    }
+
+    useEffect(() => {
+    const backAction = () => {
+        if (visible) {
+            closeSheet()
+            return true
+        }
+
+        return false; 
     };
+
+    const backHandler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+    );
+
+    return () => backHandler.remove();
+}, [visible])
 
 
     // const panResponder = useRef(
@@ -375,8 +403,17 @@ export default function JobDetailsSheet({
 
     const panResponder = useRef(
         PanResponder.create({
-            onMoveShouldSetPanResponder: (_, gestureState) =>
-                Math.abs(gestureState.dy) > 5,
+            onMoveShouldSetPanResponder: (_, gestureState) => {
+                if (
+                    employmentOpenRef.current ||
+                    jobRoleOpenRef.current ||
+                    shiftOpenRef.current
+                ) {
+                    return false;
+                }
+
+                return Math.abs(gestureState.dy) > 5;
+            },
 
             onPanResponderMove: (_, gestureState) => {
                 if (gestureState.dy > 0) {
@@ -624,30 +661,15 @@ export default function JobDetailsSheet({
 
                 {/* BOTTOM SHEET */}
 
-
-                <Animated.View
-                    {...(panResponder?.panHandlers || {})}
-                    style={[
-                        styles.sheet,
-                        {
-                            transform: [
-                                {
-                                    translateY,
-                                },
-                            ],
-                        },
-                        // {
-                        //     transform: [
-                        //         {
-                        //             translateY: Animated.subtract(
-                        //                 translateY,
-                        //                 new Animated.Value(safeKeyboardHeight)
-                        //             ),
-                        //         },
-                        //     ],
-                        // },
-                    ]}
-                >
+<Animated.View
+    {...panResponder.panHandlers}
+    style={[
+        styles.sheet,
+        {
+            transform: [{ translateY }],
+        },
+    ]}
+>
 
 
                     <KeyboardAvoidingView
@@ -660,8 +682,13 @@ export default function JobDetailsSheet({
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{ paddingBottom: 30 }}
                             ref={scrollRef}
+                            scrollEnabled={!employmentOpen && !jobRoleOpen && !shiftOpen}
+                            nestedScrollEnabled={true}
                         >
-                            <View style={styles.handle} />
+                         <View
+    style={styles.handle}
+    // {...(panResponder?.panHandlers || {})}
+/>
                             <Text style={styles.title}>
                                 {hasJobDetails ? "Edit Job Details" : "Add Job Details"}
                             </Text>
@@ -701,7 +728,12 @@ export default function JobDetailsSheet({
 
                             <Text style={styles.label}>Employment Status</Text>
 
-                            <View style={{ zIndex: employmentOpen ? 30 : 1 }}>
+                            <View
+                                style={{
+                                    zIndex: employmentOpen ? 1000 : 1,
+                                    elevation: employmentOpen ? 1000 : 1,
+                                }}
+                            >
                                 <TouchableOpacity
                                     style={styles.dropdown}
                                     activeOpacity={0.8}
@@ -729,7 +761,10 @@ export default function JobDetailsSheet({
 
                                 {employmentOpen && (
                                     <View style={styles.dropdownList}>
-                                        <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                                        <ScrollView
+                                            style={{ maxHeight: 150 }} nestedScrollEnabled
+  onStartShouldSetResponder={() => true}
+                                        >
                                             {jobOptions.map(item => (
                                                 <TouchableOpacity
                                                     key={item.value}
@@ -749,7 +784,12 @@ export default function JobDetailsSheet({
                             {employmentError ? <ErrorMessage message={employmentError} /> : null}
 
                             <Text style={styles.label}>Job Role </Text>
-                            <View style={{ zIndex: jobRoleOpen ? 30 : 1 }}>
+                            <View
+                                style={{
+                                    zIndex: jobRoleOpen ? 1000 : 1,
+                                    elevation: jobRoleOpen ? 1000 : 1,
+                                }}
+                            >
                                 <TouchableOpacity
                                     style={styles.dropdown}
                                     activeOpacity={0.8}
@@ -778,7 +818,9 @@ export default function JobDetailsSheet({
 
                                 {jobRoleOpen && (
                                     <View style={styles.dropdownList}>
-                                        <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                                        <ScrollView
+                                            style={{ maxHeight: 150 }} nestedScrollEnabled
+                                              onStartShouldSetResponder={() => true}>
                                             {jobRoleOptions.map(item => (
                                                 <TouchableOpacity
                                                     key={item.value}
@@ -830,7 +872,12 @@ export default function JobDetailsSheet({
 
 
                             <Text style={styles.label}>Shift Type </Text>
-                            <View style={{ zIndex: shiftOpen ? 30 : 1 }}>
+                            <View
+                                style={{
+                                    zIndex: shiftOpen ? 1000 : 1,
+                                    elevation: shiftOpen ? 1000 : 1,
+                                }}
+                            >
                                 <TouchableOpacity
                                     style={styles.dropdown}
                                     activeOpacity={0.8}
@@ -857,7 +904,9 @@ export default function JobDetailsSheet({
 
                                 {shiftOpen && (
                                     <View style={styles.dropdownList}>
-                                        <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
+                                        <ScrollView
+                                            style={{ maxHeight: 150 }} nestedScrollEnabled
+                                              onStartShouldSetResponder={() => true}>
                                             {shiftTypeOptions.map(item => (
                                                 <TouchableOpacity
                                                     key={item.value}
@@ -1041,20 +1090,30 @@ const styles = StyleSheet.create({
     //     fontFamily: "Gilroy-Medium",
     // },
 
-
-
     dropdownList: {
-        position: "absolute",
-        top: 56,
-        width: "100%",
-        backgroundColor: "#fff",
-        borderRadius: 12,
         borderWidth: 1,
         borderColor: "#E5E7EB",
-        maxHeight: 220,
-        elevation: 6,
+        borderRadius: 10,
+        marginTop: 6,
+        maxHeight: 180,
+        backgroundColor: "#fff",
         zIndex: 999,
+        elevation: 5,
     },
+
+
+    // dropdownList: {
+    //     position: "absolute",
+    //     top: 56,
+    //     width: "100%",
+    //     backgroundColor: "#fff",
+    //     borderRadius: 12,
+    //     borderWidth: 1,
+    //     borderColor: "#E5E7EB",
+    //     maxHeight: 220,
+    //     elevation: 6,
+    //     zIndex: 999,
+    // },
 
     // option: {
     //   paddingVertical: 14,
