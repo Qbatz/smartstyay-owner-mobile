@@ -113,10 +113,10 @@ export default function AssignTenant({ navigation, route }) {
   }, []);
 
   useEffect(() => {
-  if (activeHostelId) {
-    getBillingConfig(activeHostelId);
-  }
-}, [activeHostelId]);
+    if (activeHostelId) {
+      getBillingConfig(activeHostelId);
+    }
+  }, [activeHostelId]);
 
 
 
@@ -793,77 +793,84 @@ export default function AssignTenant({ navigation, route }) {
   }
 
   const isCurrentMonth = checkJoiningDate
-  ? dayjs(checkJoiningDate).isSame(dayjs(), "month")
-  : false;
+    ? dayjs(checkJoiningDate).isSame(dayjs(), "month")
+    : false;
 
-const isPreviousMonth = checkJoiningDate
-  ? dayjs(checkJoiningDate).isSame(
+  const isPreviousMonth = checkJoiningDate
+    ? dayjs(checkJoiningDate).isSame(
       dayjs().subtract(1, "month"),
       "month"
     )
-  : false;
+    : false;
 
-const showFullRentOption = React.useMemo(() => {
-  if (!billingRuleData) {
+  const showFullRentOption = React.useMemo(() => {
+    if (!billingRuleData) {
+      return false;
+    }
+
+    const billingModel = String(
+      billingRuleData?.billingModel || ""
+    )
+      .trim()
+      .toUpperCase();
+
+    const typeOfBilling = String(
+      billingRuleData?.typeOfBilling || ""
+    )
+      .trim()
+      .toUpperCase();
+
+    // PREPAID + FIXED => Always show
+    // if (
+    //   billingModel === "PREPAID" &&
+    //   typeOfBilling === "FIXED"
+    // ) {
+    //   return true;
+    // }
+
+    if (
+      billingModel === "PREPAID" &&
+      typeOfBilling === "FIXED"
+    ) {
+      return !!checkJoiningDate && isCurrentMonth;
+    }
+
+    // PREPAID + JOINING DATE BASED => Hide
+    if (
+      billingModel === "PREPAID" &&
+      typeOfBilling === "JOINING DATE BASED"
+    ) {
+      return false;
+    }
+
+    // POSTPAID + FIXED => Current / Previous month only
+    if (
+      billingModel === "POSTPAID" &&
+      typeOfBilling === "FIXED"
+    ) {
+      return !!checkJoiningDate && (
+        isCurrentMonth || isPreviousMonth
+      );
+    }
+
     return false;
-  }
+  }, [
+    billingRuleData,
+    checkJoiningDate,
+    isCurrentMonth,
+    isPreviousMonth,
+  ]);
 
-  const billingModel = String(
-    billingRuleData?.billingModel || ""
-  )
-    .trim()
-    .toUpperCase();
-
-  const typeOfBilling = String(
-    billingRuleData?.typeOfBilling || ""
-  )
-    .trim()
-    .toUpperCase();
-
-  // PREPAID + FIXED => Always show
-  if (
-    billingModel === "PREPAID" &&
-    typeOfBilling === "FIXED"
-  ) {
-    return true;
-  }
-
-  // PREPAID + JOINING DATE BASED => Hide
-  if (
-    billingModel === "PREPAID" &&
-    typeOfBilling === "JOINING DATE BASED"
-  ) {
-    return false;
-  }
-
-  // POSTPAID + FIXED => Current / Previous month only
-  if (
-    billingModel === "POSTPAID" &&
-    typeOfBilling === "FIXED"
-  ) {
-    return !!checkJoiningDate && (
-      isCurrentMonth || isPreviousMonth
-    );
-  }
-
-  return false;
-}, [
-  billingRuleData,
-  checkJoiningDate,
-  isCurrentMonth,
-  isPreviousMonth,
-]);
-
-useEffect(() => {
-  if (!showFullRentOption) {
-    setCollectFullRent(false);
-    setShowCustomRentEditor(false);
-    setCustomRentAmount("");
-    setSavedCustomRent("");
-    setIsCustomRentSaved(false);
-    setCustomRentError("");
-  }
-}, [showFullRentOption]);
+  useEffect(() => {
+    if (!showFullRentOption) {
+      setCollectFullRent(false);
+      setShowCustomRentEditor(false);
+      setCustomRentAmount("");
+      setSavedCustomRent("");
+      setIsCustomRentSaved(false);
+      setCustomRentError("");
+    }
+  }, [showFullRentOption]);
 
   // const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
 
@@ -1048,20 +1055,20 @@ useEffect(() => {
   ]);
 
   useFocusEffect(
-  useCallback(() => {
-    const backAction = () => {
-      handleLeavePage();
-      return true;
-    };
+    useCallback(() => {
+      const backAction = () => {
+        handleLeavePage();
+        return true;
+      };
 
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
 
-    return () => subscription.remove();
-  }, [handleLeavePage])
-);
+      return () => subscription.remove();
+    }, [handleLeavePage])
+  );
 
   return (
     <>

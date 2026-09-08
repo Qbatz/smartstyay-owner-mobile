@@ -279,10 +279,20 @@ const TenantRegister = ({ navigation }) => {
 
       search: selectedTenantValue || undefined,
 
-      page: 1,
-      size: 10,
+   
     };
 
+
+   
+console.log("========== TENANT PDF FILTERS ==========");
+console.log("period:", filters.period);
+console.log("status:", filters.status);
+console.log("sharingType:", filters.sharingType);
+console.log("floor:", filters.floor);
+console.log("room:", filters.room);
+console.log("search:", filters.search);
+console.log("FULL FILTERS:", filters);
+    
 
     const res = await getTenantReportDownload(activeHostelId, filters)
     console.log("billana", res)

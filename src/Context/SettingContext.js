@@ -1165,23 +1165,20 @@ export const SettingProvider = ({ children }) => {
 //     setLoading(false);
 //   }
 // };
-const getTenantReportDownload =async(hostelId, filters) => {
-
+const getTenantReportDownload = async (hostelId, filters = {}) => {
   try {
     const token = await retriveData("token");
     const axios = getAxios();
 
     const params = {
+      search: filters?.search,
+      status: filters?.status,
+      room: filters?.room,
+      floor: filters?.floor,
+      period: filters?.period,
       startDate: filters?.startDate,
       endDate: filters?.endDate,
-      period: filters?.period,
-      status: filters?.status,
-      floor: filters?.floor,
-      room: filters?.room,
-      search: filters?.search,
       sharingType: filters?.sharingType,
-      page: filters?.page ?? 1,
-      size: filters?.size ?? 10,
     };
 
     const cleanParams = Object.fromEntries(
@@ -1193,30 +1190,38 @@ const getTenantReportDownload =async(hostelId, filters) => {
       )
     );
 
+    const res = await axios.get(
+      `/v2/reports/download/${hostelId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: cleanParams,
+        paramsSerializer: (params) =>
+          qs.stringify(params, {
+            arrayFormat: "repeat",
+          }),
+      }
+    );
 
-    const res = await axios.get(`/v2/reports/download/${hostelId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: cleanParams,
-      paramsSerializer: (params) =>
-        qs.stringify(params, {
-          arrayFormat: "repeat",
-        }),
-    })
-    console.log(res)
+    console.log("TENANT REPORT DOWNLOAD RESPONSE →", res);
+
     return {
       success: true,
       data: res.data,
     };
+  } catch (error) {
+    console.log(
+      "TENANT REPORT DOWNLOAD ERROR →",
+      error.response?.data || error.message
+    );
 
-  }catch(error){
     return {
       success: false,
       data: error.response?.data || error.message,
     };
   }
-    }
+};
 
 
 return (

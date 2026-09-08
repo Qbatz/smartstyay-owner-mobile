@@ -27,50 +27,109 @@ export const CustomerProvider = ({ children }) => {
     error?.response?.data ||
     "Something went wrong";
 
+  // const getCustomersByHostel = async (
+  //   hostelId,
+  //   name = "",
+  //   type = ""
+  // ) => {
+  //   try {
+  //     setLoading(true);
+  //     setErrorMsg("");
+
+  //     const token = await retriveData("token");
+  //     const axios = getAxios();
+  //     const response = await axios.get(
+  //       `/v2/customers/${hostelId}`,
+  //       {
+  //         params: {
+  //           ...(name && { name }),
+  //           ...(type && { type }),
+  //         },
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //       }
+  //     );
+
+  //     setLoading(false);
+  //     setCustomersList(response?.data)
+  //     console.log("res", response?.data);
+
+
+  //     return response.data;
+
+  //   } catch (error) {
+  //     setLoading(false);
+  //     if (error?.response?.status === 401) {
+  //       await AutoLogout(loginContext)
+  //     }
+  //     const msg =
+  //       error.response?.data?.message || "Customer fetch failed";
+  //     console.log("CUSTOMER API ERROR:", msg);
+  //     setErrorMsg(msg);
+  //     return [];
+  //   }
+  // }
+
   const getCustomersByHostel = async (
-    hostelId,
-    name = "",
-    type = ""
-  ) => {
-    try {
-      setLoading(true);
-      setErrorMsg("");
+  hostelId,
+  name = "",
+  type = [],
+  period = [],
+  sharingType = []
+) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
 
-      const token = await retriveData("token");
-      const axios = getAxios();
-      const response = await axios.get(
-        `/v2/customers/${hostelId}`,
-        {
-          params: {
-            ...(name && { name }),
-            ...(type && { type }),
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+    const token = await retriveData("token");
+    const axios = getAxios();
 
-      setLoading(false);
-      setCustomersList(response?.data)
-      console.log("res", response?.data);
-
-
-      return response.data;
-
-    } catch (error) {
-      setLoading(false);
-      if (error?.response?.status === 401) {
-        await AutoLogout(loginContext)
+    const response = await axios.get(
+      `/v2/customers/${hostelId}`,
+      {
+        params: {
+          ...(name && { name }),
+          ...(type?.length > 0 && { type }),
+          ...(period?.length > 0 && { period }),
+          ...(sharingType?.length > 0 && { sharingType }),
+        },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
-      const msg =
-        error.response?.data?.message || "Customer fetch failed";
-      console.log("CUSTOMER API ERROR:", msg);
-      setErrorMsg(msg);
-      return [];
-    }
-  }
+    );
 
+    setLoading(false);
+    setCustomersList(response?.data);
+
+    console.log("CUSTOMER API PARAMS:", {
+      name,
+      type,
+      period,
+      sharingType,
+    });
+
+    console.log("CUSTOMER API RESPONSE:", response?.data);
+
+    return response.data;
+
+  } catch (error) {
+    setLoading(false);
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    const msg =
+      error.response?.data?.message || "Customer fetch failed";
+
+    console.log("CUSTOMER API ERROR:", msg);
+    setErrorMsg(msg);
+
+    return [];
+  }
+};
 
   const GetParticularCustomerDetails = async (customerId) => {
     if (!customerId) return { success: false };
