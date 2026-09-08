@@ -1772,7 +1772,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               styles.expiryCard,
                               Platform.OS === "ios" && {
                                 flexDirection: "row",
-                                alignItems: "center",
+                                alignItems: "center",paddingLeft:20 , margin:0
                               },
                             ]}
                             start={{ x: 0, y: 0 }}
@@ -1783,6 +1783,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                               style={{
                                 flex: 1,
                                 paddingRight: Platform.OS === "ios" ? 70 : 0,
+                                // paddingRight: 0,
                               }}
                             >
                               <Text style={styles.expiryTitle}>
@@ -1793,7 +1794,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                 Renew your plan to continue managing the property operations.
                               </Text>
 
-                              {Platform.OS === "ios" ? null : 
+                              {/* {Platform.OS === "ios" ? null :  */}
 
                               <TouchableOpacity
                                 style={styles.renewBtn}
@@ -1803,7 +1804,7 @@ export default function DashboardNewDesign({ initialParams, route }) {
                                   Renew Now →
                                 </Text>
                               </TouchableOpacity>
-                              }
+                              {/* // } */}
 
                             </View>
 
@@ -3943,13 +3944,16 @@ const styles = StyleSheet.create({
   },
 
   expiryCard: {
-    margin: Platform.OS === "ios" ? 5 : 16,
+    margin: Platform.OS === "ios" ? 4: 16,
     paddingHorizontal: Platform.OS === "ios" ? 10 : 20,
-    paddingVertical: Platform.OS === "ios" ? 10 : 20,
+    paddingVertical: Platform.OS === "ios" ? 5 : 20,
     borderRadius: 16,
     overflow: "hidden",
-    minHeight: Platform.OS === "ios" ? 180 : 120,
+    minHeight: Platform.OS === "ios" ? 170 : 120,
+    // paddingLeft:Platform.OS === "ios" ? 0 : 20,
   },
+
+  
 
   expiryTitle: {
     color: "#fff",
@@ -4003,9 +4007,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontFamily: "Gilroy-Regular",
-
     flexShrink: 1,   // 🔥 IMPORTANT
-    paddingRight: 80 // 🔥 reserve space for image
+    paddingRight:Platform.OS === "ios" ? 50 : 80 // 🔥 reserve space for image
   },
 
   billingCard: {

@@ -275,12 +275,19 @@ const showFullRentOption = React.useMemo(() => {
     ).trim().toUpperCase();
 
     // PREPAID + FIXED => Always show
-    if (
-        billingModel === "PREPAID" &&
-        typeOfBilling === "FIXED"
-    ) {
-        return true;
-    }
+    // if (
+    //     billingModel === "PREPAID" &&
+    //     typeOfBilling === "FIXED"
+    // ) {
+    //     return true;
+    // }
+
+     if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!joiningDate && isCurrentMonth;
+        }
 
     // PREPAID + JOINING DATE BASED => Hide
     if (

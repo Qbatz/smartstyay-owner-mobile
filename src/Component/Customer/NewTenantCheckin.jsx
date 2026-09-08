@@ -47,7 +47,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
     const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, TenantCheckIn } = useCustomer();
-     const {getBillingConfig ,billingRuleData} = UseSetting();
+    const { getBillingConfig, billingRuleData } = UseSetting();
 
     const [floors, setFloors] = useState([]);
     const [floorOpen, setFloorOpen] = useState(false);
@@ -175,54 +175,54 @@ export default function NewTenantCheckIn({ navigation, route }) {
     //     }
     //   };
 
-  const handleLeaveCheckInScreen = useCallback(() => {
-    const hasMandatoryValue =
-        floorSelected !== null ||
-        roomSelected !== null ||
-        bedSelected !== null ||
-        checkJoiningDate !== null ||
-        checkinrentalAmount?.trim() !== "" ||
-        advanceAmount?.trim() !== "" ||
-        extraCharges?.length > 0 ||
-        onetimepaymentcharges?.length > 0 ||
-        collectFullRent ||
-        savedCustomRent?.trim() !== "";
+    const handleLeaveCheckInScreen = useCallback(() => {
+        const hasMandatoryValue =
+            floorSelected !== null ||
+            roomSelected !== null ||
+            bedSelected !== null ||
+            checkJoiningDate !== null ||
+            checkinrentalAmount?.trim() !== "" ||
+            advanceAmount?.trim() !== "" ||
+            extraCharges?.length > 0 ||
+            onetimepaymentcharges?.length > 0 ||
+            collectFullRent ||
+            savedCustomRent?.trim() !== "";
 
-    if (hasMandatoryValue) {
-        setShowLeavePageScreen(true);
-        return;
-    }
+        if (hasMandatoryValue) {
+            setShowLeavePageScreen(true);
+            return;
+        }
 
-    navigation.goBack();
-}, [
-    navigation,
-    floorSelected,
-    roomSelected,
-    bedSelected,
-    checkJoiningDate,
-    checkinrentalAmount,
-    advanceAmount,
-    extraCharges,
-    onetimepaymentcharges,
-    collectFullRent,
-    savedCustomRent,
-]);
+        navigation.goBack();
+    }, [
+        navigation,
+        floorSelected,
+        roomSelected,
+        bedSelected,
+        checkJoiningDate,
+        checkinrentalAmount,
+        advanceAmount,
+        extraCharges,
+        onetimepaymentcharges,
+        collectFullRent,
+        savedCustomRent,
+    ]);
 
-  useFocusEffect(
-    useCallback(() => {
-        const backAction = () => {
-            handleLeaveCheckInScreen();
-            return true;
-        };
+    useFocusEffect(
+        useCallback(() => {
+            const backAction = () => {
+                handleLeaveCheckInScreen();
+                return true;
+            };
 
-        const subscription = BackHandler.addEventListener(
-            "hardwareBackPress",
-            backAction
-        );
+            const subscription = BackHandler.addEventListener(
+                "hardwareBackPress",
+                backAction
+            );
 
-        return () => subscription.remove();
-    }, [handleLeaveCheckInScreen])
-);
+            return () => subscription.remove();
+        }, [handleLeaveCheckInScreen])
+    );
 
     // useFocusEffect(
     //     useCallback(() => {
@@ -699,11 +699,11 @@ export default function NewTenantCheckIn({ navigation, route }) {
         loadBeds(checkJoiningDate);
     }, [activeHostelId, checkJoiningDate]);
 
-        useEffect(() => {
+    useEffect(() => {
         if (activeHostelId) {
-          getBillingConfig(activeHostelId);
+            getBillingConfig(activeHostelId);
         }
-      }, [activeHostelId])
+    }, [activeHostelId])
 
 
 
@@ -852,92 +852,99 @@ export default function NewTenantCheckIn({ navigation, route }) {
     }
 
     // const isCurrentMonth = checkJoiningDate ? dayjs(checkJoiningDate).isSame(dayjs(), "month") : false;
-const isCurrentMonth = checkJoiningDate
-    ? dayjs(checkJoiningDate).isSame(dayjs(), "month")
-    : false;
+    const isCurrentMonth = checkJoiningDate
+        ? dayjs(checkJoiningDate).isSame(dayjs(), "month")
+        : false;
 
-const isPreviousMonth = checkJoiningDate
-    ? dayjs(checkJoiningDate).isSame(
-        dayjs().subtract(1, "month"),
-        "month"
-    )
-    : false;
+    const isPreviousMonth = checkJoiningDate
+        ? dayjs(checkJoiningDate).isSame(
+            dayjs().subtract(1, "month"),
+            "month"
+        )
+        : false;
 
-const showFullRentOption = React.useMemo(() => {
-    if (!billingRuleData) {
+    const showFullRentOption = React.useMemo(() => {
+        if (!billingRuleData) {
+            return false;
+        }
+
+        const billingModel = String(
+            billingRuleData?.billingModel || ""
+        ).trim().toUpperCase();
+
+        const typeOfBilling = String(
+            billingRuleData?.typeOfBilling || ""
+        ).trim().toUpperCase();
+
+
+        // if (
+        //     billingModel === "PREPAID" &&
+        //     typeOfBilling === "FIXED"
+        // ) {
+        //     return true;
+        // }
+
+        // PREPAID + FIXED => Show only for current month
+        if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!checkJoiningDate && isCurrentMonth;
+        }
+
+        // PREPAID + JOINING DATE BASED => Hide
+        if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "JOINING DATE BASED"
+        ) {
+            return false;
+        }
+
+        // POSTPAID + FIXED => Show only current/previous month
+        if (
+            billingModel === "POSTPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!checkJoiningDate && (
+                isCurrentMonth || isPreviousMonth
+            );
+        }
+
         return false;
-    }
+    }, [
+        billingRuleData,
+        checkJoiningDate,
+        isCurrentMonth,
+        isPreviousMonth,
+    ]);
 
-    const billingModel = String(
-        billingRuleData?.billingModel || ""
-    ).trim().toUpperCase();
+    useEffect(() => {
+        if (!showFullRentOption) {
+            setCollectFullRent(false);
+            setShowCustomRentEditor(false);
+            setCustomRentAmount("");
+            setSavedCustomRent("");
+            setIsCustomRentSaved(false);
+            setCustomRentError("");
+        }
+    }, [showFullRentOption]);
 
-    const typeOfBilling = String(
-        billingRuleData?.typeOfBilling || ""
-    ).trim().toUpperCase();
-
-    // PREPAID + FIXED => Always show
-    // Joining date is NOT required for this condition
-    if (
-        billingModel === "PREPAID" &&
-        typeOfBilling === "FIXED"
-    ) {
-        return true;
-    }
-
-    // PREPAID + JOINING DATE BASED => Hide
-    if (
-        billingModel === "PREPAID" &&
-        typeOfBilling === "JOINING DATE BASED"
-    ) {
-        return false;
-    }
-
-    // POSTPAID + FIXED => Show only current/previous month
-    if (
-        billingModel === "POSTPAID" &&
-        typeOfBilling === "FIXED"
-    ) {
-        return !!checkJoiningDate && (
-            isCurrentMonth || isPreviousMonth
-        );
-    }
-
-    return false;
-}, [
-    billingRuleData,
-    checkJoiningDate,
-    isCurrentMonth,
-    isPreviousMonth,
-]);
-
-useEffect(() => {
-    if (!showFullRentOption) {
-        setCollectFullRent(false);
-        setShowCustomRentEditor(false);
-        setCustomRentAmount("");
-        setSavedCustomRent("");
-        setIsCustomRentSaved(false);
-        setCustomRentError("");
-    }
-}, [showFullRentOption]);
-
-console.log("fullrentoption", showFullRentOption);
-console.log("billingrule", billingRuleData);
+    console.log("fullrentoption", showFullRentOption);
+    console.log("billingrule", billingRuleData);
 
 
-console.log("FULL RENT DEBUG", {
-    billingModel: billingRuleData?.billingModel,
-    typeOfBilling: billingRuleData?.typeOfBilling,
-    billingModelNormalized: String(
-        billingRuleData?.billingModel || ""
-    ).trim().toUpperCase(),
-    typeOfBillingNormalized: String(
-        billingRuleData?.typeOfBilling || ""
-    ).trim().toUpperCase(),
-    checkJoiningDate,
-    showFullRentOption,
-});
+    console.log("FULL RENT DEBUG", {
+        billingModel: billingRuleData?.billingModel,
+        typeOfBilling: billingRuleData?.typeOfBilling,
+        billingModelNormalized: String(
+            billingRuleData?.billingModel || ""
+        ).trim().toUpperCase(),
+        typeOfBillingNormalized: String(
+            billingRuleData?.typeOfBilling || ""
+        ).trim().toUpperCase(),
+        checkJoiningDate,
+        showFullRentOption,
+    });
 
 
     // useEffect(() => {
@@ -1782,35 +1789,35 @@ console.log("FULL RENT DEBUG", {
                                     <ErrorMessage message={rentalError} type="error" />
                                 )}
 
-                               {showFullRentOption && (
-                                <View style={styles.fullRentRow}>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.checkbox,
-                                            collectFullRent && styles.checkboxSelected,
-                                        ]}
-                                        onPress={() => {
-                                            const value = !collectFullRent;
+                                {showFullRentOption && (
+                                    <View style={styles.fullRentRow}>
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.checkbox,
+                                                collectFullRent && styles.checkboxSelected,
+                                            ]}
+                                            onPress={() => {
+                                                const value = !collectFullRent;
 
-                                            setCollectFullRent(value);
+                                                setCollectFullRent(value);
 
-                                            if (!value) {
-                                                setShowCustomRentEditor(false);
-                                                setCustomRentAmount("");
-                                                setSavedCustomRent("");
-                                                setIsCustomRentSaved(false);
-                                                setCustomRentError("");
-                                            }
-                                        }}
-                                    >
-                                        {collectFullRent && <Text style={styles.tick}>✓</Text>}
-                                    </TouchableOpacity>
+                                                if (!value) {
+                                                    setShowCustomRentEditor(false);
+                                                    setCustomRentAmount("");
+                                                    setSavedCustomRent("");
+                                                    setIsCustomRentSaved(false);
+                                                    setCustomRentError("");
+                                                }
+                                            }}
+                                        >
+                                            {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                                        </TouchableOpacity>
 
-                                    <Text style={styles.fullRentText}>
-                                        Do you want to collect Full Rent for current month?
-                                    </Text>
-                                </View>
-                               )}
+                                        <Text style={styles.fullRentText}>
+                                            Do you want to collect Full Rent for current month?
+                                        </Text>
+                                    </View>
+                                )}
 
 
                                 {collectFullRent && (
@@ -2262,7 +2269,7 @@ console.log("FULL RENT DEBUG", {
                 </KeyboardAvoidingView>
             </SafeAreaView>
 
-              <LeavePageScreen
+            <LeavePageScreen
                 visible={showLeavePageScreen}
                 onClose={() => setShowLeavePageScreen(false)}
                 discardClose={() => {
@@ -2372,7 +2379,7 @@ console.log("FULL RENT DEBUG", {
                 </View>
             )}
 
-          
+
 
 
         </>
