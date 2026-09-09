@@ -171,6 +171,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
 
+    const { canWriteModule: canWriteBooking, canUpdateModule: canUpdateBooking } =
+    useHasPermission("Booking");
+
   console.log("custosus", customerId)
 
 
@@ -1240,8 +1243,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         // style={styles.popupRow}
                         style={[
                           styles.popupRow,
-                          !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                          !canUpdateBooking && { opacity: 0.4 }]}
+                        disabled={!canUpdateBooking}
                         onPress={() => {
                           setReassignCustomer(selectedItem);
                           handleShowReAssignBed();

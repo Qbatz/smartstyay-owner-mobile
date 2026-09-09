@@ -147,6 +147,9 @@ export default function TenantsScreen({ route }) {
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
 
+    const { canWriteModule: canWriteBooking, canUpdateModule: canUpdateBooking } =
+    useHasPermission("Booking");
+
 
   useEffect(() => {
     if (showDetailModal) {
@@ -2220,8 +2223,8 @@ export default function TenantsScreen({ route }) {
                         // style={styles.popupRow}
                         style={[
                           styles.popupRow,
-                          !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                          !canUpdateBooking && { opacity: 0.4 }]}
+                        disabled={!canUpdateBooking}
                         onPress={() => {
                           console.log("allwin", selectedItem);
 

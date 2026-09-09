@@ -2308,8 +2308,8 @@ const BillDetailsSheet = ({
               !BillPdfdetails?.invoiceInfo?.isDiscounted && (
 
                 <TouchableOpacity
-                  style={[styles.popupRow, !canWriteInvoice && {opacity:0.4}]}
-                  disabled={!canWriteInvoice}
+                  style={[styles.popupRow, !canUpdateInvoice && {opacity:0.4}]}
+                  disabled={!canUpdateInvoice}
                   onPress={() => {
                     setShowMenu(false);
                     // setShowBillDetails(false)
