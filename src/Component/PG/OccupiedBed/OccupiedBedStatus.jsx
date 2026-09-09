@@ -140,6 +140,9 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
     // canDeleteModule: canDeletePayingGuests,
   } = useHasPermission("Customers");
 
+    const { canWriteModule: canWriteBooking, canUpdateModule: canUpdateBooking } =
+    useHasPermission("Booking");
+
   const {
     canReadModule: canReadPayingGuests,
     canUpdateModule: canUpdatePayingGuests,
@@ -311,8 +314,8 @@ export default function OccupiedBedSheet({ visible, onClose, bed, room, onMoveTo
 
                 <View style={styles.popupMenu}>
                   <TouchableOpacity
-                    disabled={!canWriteCustomers}
-                    style={[styles.popupItem, !canWriteCustomers && { opacity: 0.4 }]}
+                    disabled={!canUpdateBooking}
+                    style={[styles.popupItem, !canUpdateBooking && { opacity: 0.4 }]}
                     onPress={handleReAssignBed}>
                     <Image source={ReassignIcon} style={styles.menuIcon} />
                     <Text style={styles.popupText}>Change Bed</Text>

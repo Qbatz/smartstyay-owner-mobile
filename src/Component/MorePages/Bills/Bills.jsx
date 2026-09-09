@@ -5323,7 +5323,7 @@ export default function BillsDesign({ route }) {
                   <>
                     <TouchableOpacity
                       style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
-                      // disabled={!canUpdateInvoice}
+                      disabled={!canUpdateInvoice}
 
                       onPress={handleBookingApplyInvoices} >
                       <Image
@@ -5375,8 +5375,8 @@ export default function BillsDesign({ route }) {
                   !selectedBill?.isDiscounted && (
                     <>
                       <TouchableOpacity
-                        style={[styles.popupRow, !canWriteInvoice && styles.popupRowDisabled]}
-                        disabled={!canWriteInvoice}
+                        style={[styles.popupRow, !canUpdateInvoice && styles.popupRowDisabled]}
+                        disabled={!canUpdateInvoice}
                         onPress={handlemakeDiscount}
                       >
                         <Image

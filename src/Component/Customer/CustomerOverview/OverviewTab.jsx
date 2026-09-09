@@ -1363,12 +1363,12 @@ export default function OverviewTab({ customerDetails,
                 <TouchableOpacity
                   style={[
                     styles.addSmallBtn,
-                    (!isSubscriptionAllow || disabledocEdit || !canWriteTenant || disableAssignBtn) && { opacity: 0.4 }
+                    (!isSubscriptionAllow || disabledocEdit || !canUpdateTenant || disableAssignBtn) && { opacity: 0.4 }
                   ]}
                   // disabled={disableAssignBtn}
                   disabled={
                     disableAssignBtn || disabledocEdit ||
-                    !canWriteTenant || !isSubscriptionAllow
+                    !canUpdateTenant || !isSubscriptionAllow
                   }
                   // style={styles.addSmallBtn}
                   onPress={handleshowAdditionalContact}>

@@ -22,6 +22,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import RemoveIcon from "../../../Assets/Images/remove.png";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { useHasPermission } from "../../../Utils/useHasPermission";
 
 export default function GlobalBillSettings({ onBack }) {
 
@@ -53,6 +54,13 @@ export default function GlobalBillSettings({ onBack }) {
   const [mobileError, setMobileError] = useState("")
   const [mailError, setMailError] = useState("")
   const [signError, setSignError] = useState("")
+
+  const {
+    canWriteModule: canWriteInvoice,
+    canReadModule: canReadInvoice,
+    canUpdateModule: canUpdateInvoice,
+    canDeleteModule: canDeleteInvoice,
+  } = useHasPermission("Bills")
 
 
   useEffect(() => {
@@ -132,13 +140,13 @@ export default function GlobalBillSettings({ onBack }) {
 
   const handleDeleteLogo = async () => {
     if (uploadedLogo && uploadedLogo !== originalLogo) {
-       setShowSuccessModal(true),
-          setmessage("Logo deleted Successfully"),
-          setErrorType("success")
+      setShowSuccessModal(true),
+        setmessage("Logo deleted Successfully"),
+        setErrorType("success")
 
-        setTimeout(() => {
-          setShowSuccessModal(false)
-        }, 1000);
+      setTimeout(() => {
+        setShowSuccessModal(false)
+      }, 1000);
       // local
       setUploadedLogo(null);
 
@@ -471,12 +479,21 @@ export default function GlobalBillSettings({ onBack }) {
         </View>
 
         <View style={styles.bottomActionRow}>
-          <TouchableOpacity onPress={handleReset}>
-            <Text style={styles.resetBtn}>Reset</Text>
+          <TouchableOpacity
+            style={styles.resetBtn}
+            onPress={handleReset}
+          >
+            <Text >Reset</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleSave}>
-            <Text style={styles.saveBtn}>Save Changes</Text>
+          <TouchableOpacity
+            style={[
+              styles.saveBtn,
+              !canWriteInvoice && { opacity: 0.4 },
+            ]}
+            disabled={!canWriteInvoice}
+            onPress={handleSave}>
+            <Text >Save Changes</Text>
           </TouchableOpacity>
         </View>
 

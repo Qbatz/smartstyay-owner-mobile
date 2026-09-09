@@ -101,6 +101,13 @@ export default function LongStay({ navigation }) {
         canReadModule: canReadRecurring,
     } = useHasPermission("Bills");
 
+    const {
+        canWriteModule: canWritePayingGuests,
+        canReadModule: canReadPayingGuests,
+        canUpdateModule: canUpdatePayingGuests,
+        canDeleteModule: canDeletePayingGuests,
+      } = useHasPermission("Paying Guests");
+
     //     useEffect(() => {
 
     // if(billingData){
@@ -276,7 +283,7 @@ export default function LongStay({ navigation }) {
 
     const isLocked = PGDetails && !PGDetails?.canModifyBilling;
     const isValidSubscription = PGDetails?.isSubscriptionActive;
-    const isSubscriptionAllow = isValidSubscription && canWriteBills;
+    const isSubscriptionAllow = isValidSubscription && canUpdatePayingGuests;
 
     const [noticedayErr, setNoticeDayErr] = useState("")
 

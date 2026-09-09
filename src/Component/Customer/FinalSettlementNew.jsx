@@ -75,6 +75,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
 
   const [showRefundableAdvance, setShowRefundableAdvance] = useState(false);
+  const [showAdditionalAdvance, setShowAdditionalAdvance] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
   const [showRetainer, setShowRetainer] = useState(false);
   const [openWallet, setOpenWallet] = useState(false)
@@ -2167,6 +2168,86 @@ export default function FinalSettlementScreen({ navigation, route }) {
                       </Text>
                     </View>
                   )}
+
+                </View>
+              )}
+            </View>
+
+              <View style={styles.accordionCard}>
+              <TouchableOpacity
+                style={styles.accordionHeader}
+                onPress={() => setShowAdditionalAdvance(!showAdditionalAdvance)}
+                activeOpacity={0.8}
+              >
+                <Animated.Image
+                  source={DownArrow}
+                  style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                />
+
+                <Text style={styles.cardTitle}>Additional Advance</Text>
+
+                <Text style={styles.amountText}>
+                  ₹ {settlementDetails?.additionalAdvanceItems?.advanceBalances || 0}
+                </Text>
+              </TouchableOpacity>
+
+              {showAdditionalAdvance && (
+                <View style={styles.accordionBody}>
+                  <View style={styles.tableHeader}>
+                    <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
+                    <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                      Invoice Amount
+                    </Text>
+                  </View>
+
+                  <>
+                    {settlementDetails?.additionalAdvanceItems?.listInvoices?.length > 0 ? (
+                      settlementDetails.additionalAdvanceItems.listInvoices.map((item, index) => (
+                        <View key={index} style={styles.invoiceRow}>
+                          <Text
+                            style={[
+                              styles.invText,
+                              { flex: 1, color: "#2563EB" },
+                            ]}
+                          >
+                            {item?.invoiceNumber}
+                          </Text>
+
+                          <Text
+                            style={[
+                              styles.invText,
+                              { flex: 1, textAlign: "right" },
+                            ]}
+                          >
+                            ₹ {item?.invoiceAmount}
+                          </Text>
+                        </View>
+                      ))
+                    ) : (
+                      <View style={styles.emptyState}>
+                        <Text style={styles.emptyText}>
+                          No Additional advance available
+                        </Text>
+                      </View>
+                    )}
+
+                  </>
+
+                  {/* <View style={styles.emptyState}>
+          <Text style={styles.emptyText}>
+            No refundable advance transaction available
+          </Text>
+        </View> */}
+{/* 
+                  {settlementDetails?.advanceItems?.redeemedList?.length > 0 && (
+                    <View style={styles.totalInvoiceRow}>
+                      <Text style={styles.totalText}>Total</Text>
+
+                      <Text style={styles.totalAmount}>
+                        ₹ {settlementDetails?.advanceItems?.appliedAmount || 0}
+                      </Text>
+                    </View>
+                  )} */}
 
                 </View>
               )}
