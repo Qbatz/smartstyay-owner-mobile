@@ -42,6 +42,9 @@ import BedDetailsSheet from "./BedDetailsBottomsheet"
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 // import DatePicker from "react-native-date-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { UseSetting } from "../../Context/SettingContext";
+
+
 
 
 export default function AddTenantNewform({ navigation, route }) {
@@ -59,6 +62,8 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const { getBankListByHostel } = useContext(BankingContext);
 
+    const { getBillingConfig, billingRuleData } = UseSetting();
+
     const isSubmittingRef = useRef(false);
     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
@@ -67,6 +72,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const isEditMode = route?.params?.mode === "EDIT";
     const isAddMode = route?.params?.mode === "Add";
+    const isBookingMode = route?.params?.mode === "BOOKING";
 
     console.log("MODE", route?.params?.mode);
     console.log("DRAFT", draftDetails);
@@ -230,6 +236,85 @@ export default function AddTenantNewform({ navigation, route }) {
     const [customRentError, setCustomRentError] = useState("");
 
     console.log("savedCustomRent", savedCustomRent);
+
+    useEffect(() => {
+        if (activeHostelId) {
+            getBillingConfig(activeHostelId);
+        }
+    }, [activeHostelId]);
+
+
+    const isCurrentMonth = checkJoiningDate
+        ? dayjs(checkJoiningDate).isSame(dayjs(), "month")
+        : false;
+
+    const isPreviousMonth = checkJoiningDate
+        ? dayjs(checkJoiningDate).isSame(
+            dayjs().subtract(1, "month"),
+            "month"
+        )
+        : false;
+
+    const showFullRentOption = React.useMemo(() => {
+        if (!billingRuleData) {
+            return false;
+        }
+
+        const billingModel = String(
+            billingRuleData?.billingModel || ""
+        ).trim().toUpperCase();
+
+        const typeOfBilling = String(
+            billingRuleData?.typeOfBilling || ""
+        ).trim().toUpperCase();
+
+        // PREPAID + FIXED => Always show
+        // if (
+        //     billingModel === "PREPAID" &&
+        //     typeOfBilling === "FIXED"
+        // ) {
+        //     return true;
+        // }
+
+        if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!checkJoiningDate && isCurrentMonth;
+        }
+
+        if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "JOINING DATE BASED"
+        ) {
+            return false
+        }
+
+        if (
+            billingModel === "POSTPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!checkJoiningDate && (isCurrentMonth || isPreviousMonth)
+        }
+
+        return false;
+    }, [
+        billingRuleData,
+        checkJoiningDate,
+        isCurrentMonth,
+        isPreviousMonth,
+    ])
+
+    useEffect(() => {
+        if (!showFullRentOption) {
+            setCollectFullRent(false);
+            setShowCustomRentEditor(false);
+            setCustomRentAmount("");
+            setSavedCustomRent("");
+            setIsCustomRentSaved(false);
+            setCustomRentError("");
+        }
+    }, [showFullRentOption]);
 
 
 
@@ -704,7 +789,11 @@ export default function AddTenantNewform({ navigation, route }) {
     };
 
 
-
+    useEffect(() => {
+        if (isBookingMode) {
+            setActiveTab("Booking");
+        }
+    }, [isBookingMode]);
 
 
 
@@ -1742,10 +1831,22 @@ export default function AddTenantNewform({ navigation, route }) {
 
                 setDraftCustomerId(res?.data?.customerId)
 
+                // setTimeout(() => {
+                //     setCurrentStep(2);
+                //     setShowSuccess(false);
+                //     setIsSubmitClicked(false)
+                // }, 800);
+
                 setTimeout(() => {
-                    setCurrentStep(2);
-                    setShowSuccess(false);
+                    setShowSuccess(false)
+
+                    if (isBookingMode) {
+                        setActiveTab("Booking")
+                        setCurrentStep(2)
+                        return
+                    }
                     setIsSubmitClicked(false)
+                    setCurrentStep(2);
                 }, 800);
             }
             else {
@@ -3298,10 +3399,13 @@ export default function AddTenantNewform({ navigation, route }) {
                                     currentStep === 1
                                         ? "Basic Details"
                                         : currentStep === 2
-                                            ? "Onboard"
+                                            ? isBookingMode
+                                                ? "Booking"
+                                                : "Onboard"
                                             : "Documents & Job Details"
                                 }
                             </Text>
+                
 
                             <Text style={styles.subTitle}>
                                 {
@@ -4006,32 +4110,33 @@ export default function AddTenantNewform({ navigation, route }) {
                                 <>
 
                                     <View style={styles.tabRow}>
+                                        {!isBookingMode && (
+                                            <TouchableOpacity
+                                                style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
+                                                onPress={() => {
+                                                    setActiveTab("CheckIn");
+                                                    setCheckinTenantSelected(null);
+                                                    setCheckinTenantsopen(false);
+                                                    setJoiningDate(null)
+                                                    setcheckJoiningDate(null);
+                                                    setRentalAmount("")
+                                                    setCheckinRentalAmount("")
+                                                    setAdvanceAmount("");
+                                                    setTenantsError("")
+                                                    clearAllErrors();
+                                                    resetBookingState();
+                                                    clearAllErrors();
+                                                    setFloorSelected(null)
+                                                    setRoomSelected(null)
+                                                    setBedSelected(null)
+                                                }}
 
-                                        <TouchableOpacity
-                                            style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
-                                            onPress={() => {
-                                                setActiveTab("CheckIn");
-                                                setCheckinTenantSelected(null);
-                                                setCheckinTenantsopen(false);
-                                                setJoiningDate(null)
-                                                setcheckJoiningDate(null);
-                                                setRentalAmount("")
-                                                setCheckinRentalAmount("")
-                                                setAdvanceAmount("");
-                                                setTenantsError("")
-                                                clearAllErrors();
-                                                resetBookingState();
-                                                clearAllErrors();
-                                                setFloorSelected(null)
-                                                setRoomSelected(null)
-                                                setBedSelected(null)
-                                            }}
-
-                                        >
-                                            <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
-                                                Check-In
-                                            </Text>
-                                        </TouchableOpacity>
+                                            >
+                                                <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
+                                                    Check-In
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
 
                                         <TouchableOpacity
                                             style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
@@ -4978,175 +5083,179 @@ export default function AddTenantNewform({ navigation, route }) {
                                             )}
 
 
-                                            <View style={styles.fullRentRow}>
-                                                <TouchableOpacity
-                                                    style={[
-                                                        styles.checkbox,
-                                                        collectFullRent && styles.checkboxSelected,
-                                                    ]}
-                                                    onPress={() => {
-                                                        const value = !collectFullRent;
-
-                                                        setCollectFullRent(value);
-
-                                                        if (!value) {
-                                                            setShowCustomRentEditor(false);
-                                                            setCustomRentAmount("");
-                                                            setSavedCustomRent("");
-                                                            setIsCustomRentSaved(false);
-                                                            setCustomRentError("");
-                                                        }
-                                                    }}
-                                                >
-                                                    {collectFullRent && <Text style={styles.tick}>✓</Text>}
-                                                </TouchableOpacity>
-
-                                                <Text style={styles.fullRentText}>
-                                                    Do you want to collect Full Rent for current month?
-                                                </Text>
-                                            </View>
-
-                                            {collectFullRent && (
+                                            {showFullRentOption && (
                                                 <>
-                                                    <TouchableOpacity
-                                                        style={[
-                                                            styles.customRentBtn,
-                                                            (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
-                                                        ]}
-                                                        onPress={() => {
-
-                                                            if (showCustomRentEditor || isCustomRentSaved) {
-                                                                setShowCustomRentEditor(false);
-                                                                setIsCustomRentSaved(false)
-                                                            } else {
-                                                                setShowCustomRentEditor(true);
-                                                            }
-                                                        }}
-                                                    >
-                                                        <Text
+                                                    <View style={styles.fullRentRow}>
+                                                        <TouchableOpacity
                                                             style={[
-                                                                styles.customRentBtnText,
-                                                                (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                                                                styles.checkbox,
+                                                                collectFullRent && styles.checkboxSelected,
                                                             ]}
+                                                            onPress={() => {
+                                                                const value = !collectFullRent;
+
+                                                                setCollectFullRent(value);
+
+                                                                if (!value) {
+                                                                    setShowCustomRentEditor(false);
+                                                                    setCustomRentAmount("");
+                                                                    setSavedCustomRent("");
+                                                                    setIsCustomRentSaved(false);
+                                                                    setCustomRentError("");
+                                                                }
+                                                            }}
                                                         >
-                                                            {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                                                            {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                                                        </TouchableOpacity>
+
+                                                        <Text style={styles.fullRentText}>
+                                                            Do you want to collect Full Rent for current month?
                                                         </Text>
-                                                        <Image source={(showCustomRentEditor || isCustomRentSaved) ? RemoveIcon : DirectionBottom} style={{ height: 8, width: 8, marginLeft: 13 }} />
-                                                    </TouchableOpacity>
+                                                    </View>
 
-                                                    {(showCustomRentEditor || isCustomRentSaved) && (
-                                                        <View style={styles.customRentCard}>
+                                                    {collectFullRent && (
+                                                        <>
+                                                            <TouchableOpacity
+                                                                style={[
+                                                                    styles.customRentBtn,
+                                                                    (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
+                                                                ]}
+                                                                onPress={() => {
 
-                                                            <Text style={styles.customRentTitle}>
-                                                                Custom Rent Amount
-                                                            </Text>
+                                                                    if (showCustomRentEditor || isCustomRentSaved) {
+                                                                        setShowCustomRentEditor(false);
+                                                                        setIsCustomRentSaved(false)
+                                                                    } else {
+                                                                        setShowCustomRentEditor(true);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <Text
+                                                                    style={[
+                                                                        styles.customRentBtnText,
+                                                                        (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                                                                    ]}
+                                                                >
+                                                                    {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                                                                </Text>
+                                                                <Image source={(showCustomRentEditor || isCustomRentSaved) ? RemoveIcon : DirectionBottom} style={{ height: 8, width: 8, marginLeft: 13 }} />
+                                                            </TouchableOpacity>
 
-                                                            <Text style={styles.customRentSubTitle}>
-                                                                This amount reflects First month Rent only.
-                                                            </Text>
+                                                            {(showCustomRentEditor || isCustomRentSaved) && (
+                                                                <View style={styles.customRentCard}>
 
-                                                            {!isCustomRentSaved ? (
-
-                                                                <>
-                                                                    <View style={styles.amountRow}>
-
-                                                                        <TextInput
-                                                                            style={styles.amountInput}
-                                                                            placeholder="₹ 0.00"
-                                                                            keyboardType="numeric"
-                                                                            value={customRentAmount}
-                                                                            onChangeText={(text) => {
-                                                                                setCustomRentAmount(
-                                                                                    text.replace(/[^0-9]/g, "")
-                                                                                );
-                                                                                setCustomRentError("");
-                                                                            }}
-                                                                            onFocus={(e) => scrollInputIntoView(e)}
-                                                                        />
-
-                                                                        <TouchableOpacity
-                                                                            style={styles.setBtn}
-                                                                            onPress={() => {
-
-                                                                                if (!customRentAmount) {
-                                                                                    setCustomRentError(
-                                                                                        "Please enter custom rent amount"
-                                                                                    );
-                                                                                    return;
-                                                                                }
-
-                                                                                if (Number(customRentAmount) <= 0) {
-                                                                                    setCustomRentError(
-                                                                                        "Amount should be greater than zero"
-                                                                                    );
-                                                                                    return;
-                                                                                }
-
-                                                                                // if (
-                                                                                //     Number(customRentAmount) >
-                                                                                //     Number(checkinrentalAmount || 0)
-                                                                                // ) {
-                                                                                //     setCustomRentError(
-                                                                                //         "Custom rent cannot exceed total rent"
-                                                                                //     );
-                                                                                //     return;
-                                                                                // }
-
-                                                                                setSavedCustomRent(customRentAmount);
-
-                                                                                setIsCustomRentSaved(true);
-
-                                                                                setShowCustomRentEditor(false);
-
-                                                                                setCustomRentError("");
-                                                                            }}
-                                                                        >
-                                                                            <Text style={styles.setBtnText}>
-                                                                                ✓ Set
-                                                                            </Text>
-                                                                        </TouchableOpacity>
-
-                                                                    </View>
-
-                                                                    {customRentError ? (
-                                                                        <ErrorMessage message={customRentError} />
-                                                                    ) : null}
-                                                                </>
-
-                                                            ) : (
-
-                                                                <View style={styles.savedRow}>
-
-                                                                    <Text style={styles.savedAmount}>
-                                                                        ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                                                                    <Text style={styles.customRentTitle}>
+                                                                        Custom Rent Amount
                                                                     </Text>
 
-                                                                    <TouchableOpacity
-                                                                        onPress={() => {
+                                                                    <Text style={styles.customRentSubTitle}>
+                                                                        This amount reflects First month Rent only.
+                                                                    </Text>
 
-                                                                            setCustomRentAmount(savedCustomRent);
+                                                                    {!isCustomRentSaved ? (
 
-                                                                            setIsCustomRentSaved(false);
+                                                                        <>
+                                                                            <View style={styles.amountRow}>
 
-                                                                            setShowCustomRentEditor(true);
+                                                                                <TextInput
+                                                                                    style={styles.amountInput}
+                                                                                    placeholder="₹ 0.00"
+                                                                                    keyboardType="numeric"
+                                                                                    value={customRentAmount}
+                                                                                    onChangeText={(text) => {
+                                                                                        setCustomRentAmount(
+                                                                                            text.replace(/[^0-9]/g, "")
+                                                                                        );
+                                                                                        setCustomRentError("");
+                                                                                    }}
+                                                                                    onFocus={(e) => scrollInputIntoView(e)}
+                                                                                />
 
-                                                                        }}
-                                                                    >
-                                                                        <Image
-                                                                            source={require("../../Assets/Images/edit.png")}
-                                                                            style={{
-                                                                                width: 24,
-                                                                                height: 24,
-                                                                                tintColor: "#6B7280",
-                                                                            }}
-                                                                        />
-                                                                    </TouchableOpacity>
+                                                                                <TouchableOpacity
+                                                                                    style={styles.setBtn}
+                                                                                    onPress={() => {
+
+                                                                                        if (!customRentAmount) {
+                                                                                            setCustomRentError(
+                                                                                                "Please enter custom rent amount"
+                                                                                            );
+                                                                                            return;
+                                                                                        }
+
+                                                                                        if (Number(customRentAmount) <= 0) {
+                                                                                            setCustomRentError(
+                                                                                                "Amount should be greater than zero"
+                                                                                            );
+                                                                                            return;
+                                                                                        }
+
+                                                                                        // if (
+                                                                                        //     Number(customRentAmount) >
+                                                                                        //     Number(checkinrentalAmount || 0)
+                                                                                        // ) {
+                                                                                        //     setCustomRentError(
+                                                                                        //         "Custom rent cannot exceed total rent"
+                                                                                        //     );
+                                                                                        //     return;
+                                                                                        // }
+
+                                                                                        setSavedCustomRent(customRentAmount);
+
+                                                                                        setIsCustomRentSaved(true);
+
+                                                                                        setShowCustomRentEditor(false);
+
+                                                                                        setCustomRentError("");
+                                                                                    }}
+                                                                                >
+                                                                                    <Text style={styles.setBtnText}>
+                                                                                        ✓ Set
+                                                                                    </Text>
+                                                                                </TouchableOpacity>
+
+                                                                            </View>
+
+                                                                            {customRentError ? (
+                                                                                <ErrorMessage message={customRentError} />
+                                                                            ) : null}
+                                                                        </>
+
+                                                                    ) : (
+
+                                                                        <View style={styles.savedRow}>
+
+                                                                            <Text style={styles.savedAmount}>
+                                                                                ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                                                                            </Text>
+
+                                                                            <TouchableOpacity
+                                                                                onPress={() => {
+
+                                                                                    setCustomRentAmount(savedCustomRent);
+
+                                                                                    setIsCustomRentSaved(false);
+
+                                                                                    setShowCustomRentEditor(true);
+
+                                                                                }}
+                                                                            >
+                                                                                <Image
+                                                                                    source={require("../../Assets/Images/edit.png")}
+                                                                                    style={{
+                                                                                        width: 24,
+                                                                                        height: 24,
+                                                                                        tintColor: "#6B7280",
+                                                                                    }}
+                                                                                />
+                                                                            </TouchableOpacity>
+
+                                                                        </View>
+
+                                                                    )}
 
                                                                 </View>
-
                                                             )}
-
-                                                        </View>
+                                                        </>
                                                     )}
                                                 </>
                                             )}
@@ -8002,7 +8111,7 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Bold",
         color: "#222",
     },
-     clockIcon: {
+    clockIcon: {
         width: 22,
         height: 22,
         tintColor: "#222",

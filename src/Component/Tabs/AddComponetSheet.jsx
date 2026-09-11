@@ -378,8 +378,8 @@ export default function AddComponentSheet({
 
   const { getCustomersByHostel } = useCustomer();
 
-    const { complaintsList, complaintListOtherDetails, GetComplaintListDetails,
-      complaintTypes, fetchComplaintTypes, getParticularComplaint } = useContext(ComplaintContext);
+  const { complaintsList, complaintListOtherDetails, GetComplaintListDetails,
+    complaintTypes, fetchComplaintTypes, getParticularComplaint } = useContext(ComplaintContext);
 
   const { IntializeexpensesList, GetInitializeExpense } = useContext(ExpensesContext)
 
@@ -442,11 +442,11 @@ export default function AddComponentSheet({
     }
   }, [activeHostelId])
 
-    useEffect(() => {
-      if (activeHostelId) {
-        fetchComplaintTypes(activeHostelId);
-      }
-    }, [activeHostelId])
+  useEffect(() => {
+    if (activeHostelId) {
+      fetchComplaintTypes(activeHostelId);
+    }
+  }, [activeHostelId])
 
   // 👇 Expense category, Vendor category — rendum vera vera source
   const expenseCategoryList = IntializeexpensesList?.listExpenses || [];
@@ -509,12 +509,14 @@ export default function AddComponentSheet({
       title: "Tenant",
       icon: require("../../Assets/Images/user-circle-add.png"),
       screen: "AddTenantNew",
+      mode: "Add",
     },
-    // {
-    //   title: "Booking",
-    //   icon: BookingPencilIcon,
-    //   screen: 'AddBooking',
-    // },
+    {
+      title: "Booking",
+      icon: BookingPencilIcon,
+      screen: 'AddTenantNew',
+      mode: "BOOKING",
+    },
     {
       title: "Walkin",
       icon: require("../../Assets/Images/walkin_user.png"),
@@ -525,7 +527,7 @@ export default function AddComponentSheet({
       icon: require("../../Assets/Images/money-minus.png"),
       screen: "AddExpensesPage",
     },
-    
+
     {
       title: "Invoice",
       icon: require("../../Assets/Images/invoice.png"),
@@ -571,27 +573,27 @@ export default function AddComponentSheet({
     }
 
     switch (item.title) {
-      // case "Booking":
-      //   if (!walkinCustomers || walkinCustomers.length === 0) {
-      //     return "Please add a walkin first";
-      //   }
-      //   break;
+      case "Booking":
+        if (!walkinCustomers || walkinCustomers.length === 0) {
+          return "Please add a walkin first";
+        }
+        break;
 
-     case "Invoice":
-      if (!customers || customers.length === 0) {
-        return "Please add a tenant first";
-      }
-      break;
+      case "Invoice":
+        if (!customers || customers.length === 0) {
+          return "Please add a tenant first";
+        }
+        break;
 
-    case "Complaint":
-      if (!customers || customers.length === 0) {
-        return "Please add a tenant first";
-      }
+      case "Complaint":
+        if (!customers || customers.length === 0) {
+          return "Please add a tenant first";
+        }
 
-      if (!complaintTypes || complaintTypes.length === 0) {
-        return "Please Create Complaint Type in Settings-Complaint";
-      }
-      break;
+        if (!complaintTypes || complaintTypes.length === 0) {
+          return "Please Create Complaint Type in Settings-Complaint";
+        }
+        break;
 
       case "Expense":
         if (!expenseCategoryList || expenseCategoryList.length === 0) {
@@ -634,7 +636,9 @@ export default function AddComponentSheet({
     }).start(() => {
       onClose?.();
 
-      navigation.navigate(item.screen);
+      navigation.navigate(item.screen, {
+        mode: item.mode,
+      });
     });
   };
 
@@ -678,16 +682,16 @@ export default function AddComponentSheet({
                 //   activeOpacity={0.8}
                 //   onPress={() => handleItemPress(item)}
                 // >
-                  <TouchableOpacity
-                    key={index}
-                    style={[
-                      styles.item,
-                      isExpired && { opacity: 0.4 }
-                    ]}
-                    activeOpacity={isExpired ? 1 : 0.8}
-                    disabled={isExpired}
-                    onPress={() => handleItemPress(item)}
-                  >
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.item,
+                    isExpired && { opacity: 0.4 }
+                  ]}
+                  activeOpacity={isExpired ? 1 : 0.8}
+                  disabled={isExpired}
+                  onPress={() => handleItemPress(item)}
+                >
                   <View style={styles.iconBox}>
                     <Image
                       source={item.icon}
