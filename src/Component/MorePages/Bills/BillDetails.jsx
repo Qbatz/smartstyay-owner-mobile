@@ -2303,7 +2303,8 @@ const BillDetailsSheet = ({
               (
                 BillPdfdetails?.invoiceInfo?.invoiceType === "REASSIGN_RENT" ||
                 BillPdfdetails?.invoiceInfo?.invoiceType === "RENT" ||
-                BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT"
+                BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT" || 
+                  BillPdfdetails?.invoiceInfo?.invoiceType === "OTHER" 
               ) &&
               !BillPdfdetails?.invoiceInfo?.isDiscounted && (
 

@@ -84,6 +84,7 @@ export default function BillsProvider({ children }) {
 
       if (res.status === 200) {
         setBillDetails(res.data || []);
+         setLoading(false);
         return { success: true, data: res.data };
       }
 

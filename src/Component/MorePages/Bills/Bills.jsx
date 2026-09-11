@@ -248,7 +248,12 @@ export default function BillsDesign({ route }) {
   const [dateError, setDateError] = useState("");
   const [modeError, setModeError] = useState("");
 
+  
+
   const [recordLoading, setRecordLoading] = useState(false);
+
+
+  console.log("loader", loading , recordLoading);
 
   const [showPaymentMode, setShowPaymentMode] = useState(false);
   const paymentModes = ["Cash", "UPI", "Bank Transfer"];
@@ -865,50 +870,88 @@ export default function BillsDesign({ route }) {
   const refundSheetY = useRef(new Animated.Value(0)).current;
 
   const refundPan = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-      onPanResponderMove: (_, g) => {
-        if (g.dy > 0) refundSheetY.setValue(g.dy);
-      },
-      onPanResponderRelease: (_, g) => {
-        if (g.dy > 120) {
-          Animated.timing(refundSheetY, {
-            toValue: 700,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            setShowRefundPayment(false);
-            refundSheetY.setValue(0);
-          });
-        } else {
-          Animated.spring(refundSheetY, { toValue: 0, useNativeDriver: true }).start();
-        }
-      },
-    })
-  ).current;
+  PanResponder.create({
+    onMoveShouldSetPanResponder: (_, g) => {
+      // Only allow downward drag
+      // Prevent sheet movement during normal input/scroll interaction
+      return g.dy > 10 && Math.abs(g.dy) > Math.abs(g.dx);
+    },
 
-  useEffect(() => {
-    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-      Animated.timing(refundSheetY, {
-        toValue: -e.endCoordinates.height + 70,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-    });
+    onPanResponderMove: (_, g) => {
+      if (g.dy > 0) {
+        refundSheetY.setValue(g.dy);
+      }
+    },
 
-    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-      Animated.timing(refundSheetY, {
-        toValue: 0,
-        duration: 180,
-        useNativeDriver: true,
-      }).start();
-    });
+    onPanResponderRelease: (_, g) => {
+      if (g.dy > 120) {
+        Animated.timing(refundSheetY, {
+          toValue: 700,
+          duration: 200,
+          useNativeDriver: true,
+        }).start(() => {
+          setShowRefundPayment(false);
+          refundSheetY.setValue(0);
+        });
+      } else {
+        Animated.spring(refundSheetY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
+      }
+    },
+  })
+).current
 
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
+
+
+  // const refundPan = useRef(
+  //   PanResponder.create({
+  //     onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
+  //     onPanResponderMove: (_, g) => {
+  //       if (g.dy > 0) refundSheetY.setValue(g.dy);
+  //     },
+  //     onPanResponderRelease: (_, g) => {
+  //       if (g.dy > 120) {
+  //         Animated.timing(refundSheetY, {
+  //           toValue: 700,
+  //           duration: 200,
+  //           useNativeDriver: true,
+  //         }).start(() => {
+  //           setShowRefundPayment(false);
+  //           refundSheetY.setValue(0);
+  //         });
+  //       } else {
+  //         Animated.spring(refundSheetY, { toValue: 0, useNativeDriver: true }).start();
+  //       }
+  //     },
+  //   })
+  // ).current;
+
+  // useEffect(() => {
+  //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+  //     Animated.timing(refundSheetY, {
+  //       toValue: -e.endCoordinates.height + 70,
+  //       duration: 180,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   });
+
+  //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+  //     Animated.timing(refundSheetY, {
+  //       toValue: 0,
+  //       duration: 180,
+  //       useNativeDriver: true,
+  //     }).start();
+  //   });
+
+  //   return () => {
+  //     showSub.remove();
+  //     hideSub.remove();
+  //   };
+  // }, []);
+
+
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   // useEffect(() => {
@@ -5371,7 +5414,7 @@ export default function BillsDesign({ route }) {
                 )} */}
 
                 {console.log("canwirteShanthi", canWriteInvoice)}
-                {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent") &&
+                {selectedBill?.paymentStatus === "Pending" && (selectedBill?.invoiceType === "Rent" || selectedBill?.invoiceType === "Settlement" || selectedBill?.invoiceType === "Reassign-Rent" || selectedBill?.invoiceType === "Other") &&
                   !selectedBill?.isDiscounted && (
                     <>
                       <TouchableOpacity
@@ -5987,16 +6030,31 @@ export default function BillsDesign({ route }) {
                 </TouchableWithoutFeedback>
               </View>
 
-              <Animated.View
-                style={[
-                  styles.transactionSheet,
-                  { height: "85%", transform: [{ translateY: refundSheetY }] }
-                ]}
-                {...refundPan.panHandlers}
-              >
-                <View style={styles.sheetHandle} />
+             <Animated.View
+  style={[
+    styles.transactionSheet,
+    {
+      height: "85%",
+      transform: [{ translateY: refundSheetY }],
+    },
+  ]}
+  {...refundPan.panHandlers}
+>
+  <View style={styles.sheetHandle} />
 
-                <ScrollView showsVerticalScrollIndicator={false}>
+  <KeyboardAvoidingView
+    behavior={Platform.OS === "ios" ? "padding" : "height"}
+    style={{ flex: 1 }}
+  >
+    <ScrollView
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="on-drag"
+      nestedScrollEnabled={true}
+      contentContainerStyle={{
+        paddingBottom: 40,
+      }}
+    >
 
                   {/* TITLE */}
                   <Text style={{ fontSize: 20, fontFamily: "Gilroy-Bold", marginBottom: 20 }}>
@@ -6401,6 +6459,7 @@ export default function BillsDesign({ route }) {
 
 
                 </ScrollView>
+                </KeyboardAvoidingView>
               </Animated.View>
             </View>
           )}
