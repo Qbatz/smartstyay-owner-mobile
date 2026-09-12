@@ -83,7 +83,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, loading, DeleteTenantDraft } = useCustomer();
-  console.log("customer", customer)
+  console.log("customer", customer, customerId)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails, setCustomerDetails] = useState("")
   const [showEdit, setShowEdit] = useState(false);
@@ -266,13 +266,25 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   };
 
 
+  // const fetchCustomerDetails = async () => {
+  //   const res = await getCustomerDetails(customer.customerId || customerId);
+  //   console.log("fetchCustomerDetails", res)
+  //   if (res.success) {
+  //     setCustomerDetails(res.data)
+  //   }
+  // }
+
   const fetchCustomerDetails = async () => {
-    const res = await getCustomerDetails(customer.customerId || customerId);
-    console.log("fetchCustomerDetails", res)
-    if (res.success) {
-      setCustomerDetails(res.data)
-    }
+  const res = await getCustomerDetails(
+    customer?.customerId || customerId
+  );
+
+  console.log("fetchCustomerDetails", res);
+
+  if (res.success) {
+    setCustomerDetails(res.data);
   }
+};
 
   useFocusEffect(
     useCallback(() => {

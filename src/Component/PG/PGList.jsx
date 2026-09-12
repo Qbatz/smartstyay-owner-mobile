@@ -213,7 +213,7 @@ export default function PGPageFull({ route }) {
     if (res?.success) {
 
       setModalType("success");
-      setMessage(res.data);
+      setMessage("Room Deleted Successfully" || res.data);
       setShowSuccess(true);
 
       setTimeout(() => {

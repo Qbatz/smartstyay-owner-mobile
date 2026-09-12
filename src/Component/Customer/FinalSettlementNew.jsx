@@ -745,16 +745,16 @@ export default function FinalSettlementScreen({ navigation, route }) {
       });
     }, Platform.OS === "ios" ? 250 : 350);
   };
-  useEffect(() => {
+  // useEffect(() => {
 
-    if (isDiscountFocused) {
-      scrollRef.current?.scrollTo({
-        y: 1200, // or dynamic later
-        animated: true,
-      });
-    }
+  //   if (isDiscountFocused) {
+  //     scrollRef.current?.scrollTo({
+  //       y: 1200, // or dynamic later
+  //       animated: true,
+  //     });
+  //   }
 
-  }, [isDiscountFocused])
+  // }, [isDiscountFocused])
 
 
 
@@ -1207,8 +1207,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
     ) > 0
       ? "Refundable Rent"
       : "Rent";
-  console.log("settlement", settlementDetails);
-
+  console.log("settlement", settlementDetails)
 
 
   return (
@@ -1221,7 +1220,6 @@ export default function FinalSettlementScreen({ navigation, route }) {
         keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 20}
       >
         <SafeAreaView style={styles.safeArea}>
-          {/* ✅ HEADER */}
           <View style={styles.topHeader}>
             <TouchableOpacity onPress={() => navigation.goBack()}>
               <Image source={ArrowLeft} style={styles.backIcon} />
@@ -1233,7 +1231,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
             ref={scrollRef}
             contentContainerStyle={{
               paddingBottom:
-                keyboardVisible ? 200 : 160,
+                keyboardVisible
+                  ? Platform.OS === "android"
+                    ? 120
+                    : 20
+                  : 160,
             }}
             keyboardShouldPersistTaps="handled"
             onScroll={(e) => {
@@ -2173,7 +2175,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
               )}
             </View>
 
-              <View style={styles.accordionCard}>
+            <View style={styles.accordionCard}>
               <TouchableOpacity
                 style={styles.accordionHeader}
                 onPress={() => setShowAdditionalAdvance(!showAdditionalAdvance)}
@@ -2238,7 +2240,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
             No refundable advance transaction available
           </Text>
         </View> */}
-{/* 
+                  {/* 
                   {settlementDetails?.advanceItems?.redeemedList?.length > 0 && (
                     <View style={styles.totalInvoiceRow}>
                       <Text style={styles.totalText}>Total</Text>
@@ -2559,14 +2561,21 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     style={{ flex: 1, fontSize: 16 }}
                     // onPress={handleDiscountFocus}
                     //  onFocus={handleDiscountFocus}  
-                    onFocus={() => {
-                      setIsDiscountFocused(true);
+                    // onFocus={() => {
+                    //   setIsDiscountFocused(true);
 
-                      setTimeout(() => {
-                        scrollRef.current?.scrollToEnd({
-                          animated: true,
-                        });
-                      }, 250);
+                    //   setTimeout(() => {
+                    //     scrollRef.current?.scrollToEnd({
+                    //       animated: true,
+                    //     });
+                    //   }, 250);
+                    // }}
+                    onFocus={() => {
+                      if (Platform.OS === "android") {
+                        setTimeout(() => {
+                          handleDiscountFocus();
+                        }, 350);
+                      }
                     }}
 
                   />

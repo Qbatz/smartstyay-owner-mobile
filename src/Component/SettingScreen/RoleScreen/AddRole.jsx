@@ -12,6 +12,7 @@ import {
   BackHandler,
 } from "react-native";
 import { UseSetting } from "../../../Context/SettingContext";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CommonContexts } from "../../../Context/CommonContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -23,6 +24,8 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
   const { activeHostelId } = useContext(CommonContexts);
   const [initialRoleName, setInitialRoleName] = useState("");
   const [initialPermState, setInitialPermState] = useState([]);
+
+    const insets = useSafeAreaInsets();
 
 
   const [roleOpen, setRoleOpen] = useState(false);
@@ -331,7 +334,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
       <View style={styles.overlay}>
         {/* Sheet */}
         <Animated.View
-          style={[styles.sheet, { transform: [{ translateY }] }]}
+          style={[styles.sheet, {marginBottom: insets.bottom, transform: [{ translateY }] }]}
           {...panResponder.panHandlers}
         >
           <View style={styles.handle} />
@@ -636,7 +639,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#1D5BEE",
     paddingVertical: 14,
     borderRadius: 10,
-    marginTop: 20,
+    marginTop: 10,
+    marginBottom:20
   },
 
   saveText: {
