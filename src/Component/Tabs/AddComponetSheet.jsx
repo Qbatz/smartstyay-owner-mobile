@@ -573,11 +573,11 @@ export default function AddComponentSheet({
     }
 
     switch (item.title) {
-      case "Booking":
-        if (!walkinCustomers || walkinCustomers.length === 0) {
-          return "Please add a walkin first";
-        }
-        break;
+      // case "Booking":
+      //   if (!walkinCustomers || walkinCustomers.length === 0) {
+      //     return "Please add a walkin first";
+      //   }
+      //   break;
 
       case "Invoice":
         if (!customers || customers.length === 0) {

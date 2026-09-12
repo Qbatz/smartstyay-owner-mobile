@@ -234,12 +234,19 @@ const BillDetailsSheet = ({
   );
 
 
+const SelectedinvoiceId =
+  BillPdfdetails?.invoiceId ||
+  BillPdfdetails?.invoiceInfo?.invoiceId;
+
+const invoiceDetail = BillDetails?.listInvoices?.find(
+  item => item?.invoiceId === SelectedinvoiceId
+);
 
 
+  // const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === (BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId))
 
-  const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === BillPdfdetails?.invoiceId)
-
-
+   console.log("invoicedetail", invoiceDetail);
+   
 
   const billDetailsPan = useRef(
     PanResponder.create({
@@ -2299,12 +2306,12 @@ const BillDetailsSheet = ({
               (invoiceType === "Rent" || invoiceType === "Settlement" || invoiceType === "REASSIGN_RENT") &&
               !isDiscounted &&
               ( */}
-            {BillPdfdetails?.invoiceInfo?.paymentStatus === "Pending" &&
+            {(BillPdfdetails?.invoiceInfo?.paymentStatus === "Pending" || BillPdfdetails?.invoiceInfo?.status === "PENDING")  &&
               (
                 BillPdfdetails?.invoiceInfo?.invoiceType === "REASSIGN_RENT" ||
                 BillPdfdetails?.invoiceInfo?.invoiceType === "RENT" ||
-                BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT" || 
-                  BillPdfdetails?.invoiceInfo?.invoiceType === "OTHER" 
+               (invoiceDetail?.invoiceType === "Settlement" || BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT")||
+                  BillPdfdetails?.invoiceInfo?.invoiceType === "OTHER"  
               ) &&
               !BillPdfdetails?.invoiceInfo?.isDiscounted && (
 

@@ -10,7 +10,7 @@ import {
   Animated,
   PanResponder,
   Dimensions,
-  TouchableWithoutFeedback, BackHandler , Platform
+  TouchableWithoutFeedback, BackHandler, Platform
 } from "react-native";
 import { NotificationContext } from "../../Context/NotificationContext";
 import { CommonContexts } from "../../Context/CommonContext";
@@ -48,7 +48,7 @@ export default function NotificationDetails() {
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
-const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
 
 
@@ -313,17 +313,18 @@ const insets = useSafeAreaInsets();
 
         <View style={{ height: 40 }} />
       </ScrollView> */}
-        <ScrollView showsVerticalScrollIndicator={false}  contentContainerStyle={{
-    paddingBottom: 20,
-    flexGrow: 1
-  }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{
+          paddingBottom: 20,
+          flexGrow: 1
+        }}>
           {notifications
             .sort(
               (a, b) =>
                 dayjs(b.requestedAt, "DD/MM/YYYY").valueOf() -
                 dayjs(a.requestedAt, "DD/MM/YYYY").valueOf()
             )
-            .map((item, index, arr) => { console.log(item)
+            .map((item, index, arr) => {
+              console.log(item)
               const curr = dayjs(item.requestedAt, "DD/MM/YYYY");
               const prev =
                 index > 0
@@ -383,7 +384,7 @@ const insets = useSafeAreaInsets();
                       </View>
                     </View>
 
-                    {item.typeCode === 4 && (
+                    {/* {item.typeCode === 4 && (
                       <TouchableOpacity
                         style={styles.reviewBtn}
                         onPress={() =>
@@ -397,20 +398,80 @@ const insets = useSafeAreaInsets();
                           Review
                         </Text>
                       </TouchableOpacity>
-                    )}
+                    )} */}
+
+                    {/* ACTION BUTTON */}
+                    {(item.type === "Amenities" ||
+                      item.notificationTitle === "Raise Notice Request" ||
+                      item.typeCode === 4) && (
+                        <View style={styles.actionButtonRow}>
+
+                          {/* Amenity */}
+                          {item.type === "Amenities" && (
+                            <TouchableOpacity
+                              style={styles.actionBtn}
+
+                              onPress={() =>
+                                navigation.navigate("CustomerOverviewScreen", {
+                                  customerId: item?.userId,
+                                })
+                                // navigation.navigate("AmenityRequest", {
+                                //   notificationId: item.requestId,
+                                //   item: item,
+                                // })
+                              }
+                            >
+                              <Text style={styles.actionBtnText}>Amenity</Text>
+                            </TouchableOpacity>
+                          )}
+
+                          {/* Raise Notice */}
+                          {item.notificationTitle === "Raise Notice Request" && (
+                            <TouchableOpacity
+                              style={styles.actionBtn}
+                            // onPress={() =>
+                            //   navigation.navigate("RaiseNotice", {
+                            //     notificationId: item.requestId,
+                            //     item: item,
+                            //   })
+                            // }
+                            >
+                              <Text style={styles.actionBtnText}>Notice</Text>
+                            </TouchableOpacity>
+                          )}
+
+                          {/* Complaint */}
+                          {item.typeCode === 4 && (
+                            <TouchableOpacity
+                              style={styles.actionBtn}
+                              onPress={() =>
+                                navigation.navigate("HistoryAndComments", {
+                                  notificationId: item.requestId,
+                                  item: item,
+                                })
+                              }
+                            >
+                              <Text style={styles.actionBtnText}>Review</Text>
+                            </TouchableOpacity>
+                          )}
+
+                        </View>
+                      )}
                   </View>
                 </View>
               );
             })}
 
           {notifications.length === 0 && (
-            <View style={{ flex: 1,alignItems:'center',justifyContent:'center' }}>
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
               <Image source={NoResultFound} style={{ width: 310, height: 220 }} />
-              <Text style={{fontSize:20,fontWeight:600,}}>
+              <Text style={{ fontSize: 20, fontWeight: 600, }}>
                 No Result Found !
               </Text>
-               <Text style={{fontSize:16,fontWeight:400,color:'#4B4B4B',paddingHorizontal:20,
-                            textAlign:'center',marginTop:10, lineHeight: 24,}}>
+              <Text style={{
+                fontSize: 16, fontWeight: 400, color: '#4B4B4B', paddingHorizontal: 20,
+                textAlign: 'center', marginTop: 10, lineHeight: 24,
+              }}>
                 Try adjusting your search or filters to see {"\n"}more options.
               </Text>
             </View>
@@ -554,18 +615,18 @@ const insets = useSafeAreaInsets();
 
 const styles = StyleSheet.create({
   container: {
-  flex: 1,
-  backgroundColor: "#fff",
-  paddingTop: Platform.OS === "ios" ? 0 : 10,
-},
- header: {
-  flexDirection: "row",
-  justifyContent: "space-between",
-  alignItems: "center",
-  paddingHorizontal: 16,
-  paddingTop: 10,  
-  paddingBottom: 10
-},
+    flex: 1,
+    backgroundColor: "#fff",
+    paddingTop: Platform.OS === "ios" ? 0 : 10,
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 10
+  },
   backArrow: {
     width: 25,
     height: 25
@@ -575,9 +636,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "700",
     color: "#000",
-      marginLeft: 8,
-  textAlignVertical: "center", // 🔥 Android
-  includeFontPadding: false, 
+    marginLeft: 8,
+    textAlignVertical: "center", // 🔥 Android
+    includeFontPadding: false,
   },
   filterIcon: {
     width: 25,
@@ -587,7 +648,7 @@ const styles = StyleSheet.create({
   leftRow: {
     flexDirection: "row",
     alignItems: "center",
-    
+
   },
 
 
@@ -642,7 +703,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     fontWeight: "700",
-     includeFontPadding: false,
+    includeFontPadding: false,
   },
 
   desc: {
@@ -777,7 +838,25 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
   datePickerBox: { width: "90%", backgroundColor: "#fff", padding: 12, borderRadius: 15, alignSelf: "center", marginBottom: 30 },
+  actionButtonRow: {
+    marginTop: 12,
+    alignItems: "flex-end",
+  },
 
+  actionBtn: {
+    backgroundColor: "#2F80ED",
+    paddingVertical: 8,
+    paddingHorizontal: 18,
+    borderRadius: 8,
+    minWidth: 90,
+    alignItems: "center",
+  },
+
+  actionBtnText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 13,
+  },
 
 
 });

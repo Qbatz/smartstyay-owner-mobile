@@ -405,7 +405,8 @@ const CreateInvoice = ({ }) => {
     ]);
 
 
-   
+    console.log("seletedtenant", selectedTenant);
+
 
 
 
@@ -485,7 +486,7 @@ const CreateInvoice = ({ }) => {
             setIsSubmitClicked(true);
 
 
-         
+
 
             const payload = {
                 invoiceNumber: transactionId || "",
@@ -755,7 +756,7 @@ const CreateInvoice = ({ }) => {
                                 </View>
 
                                 {/* ADDRESS */}
-                                <Text style={styles.tenantAddressText}>
+                                {/* <Text style={styles.tenantAddressText}>
                                     {[
                                         selectedTenant?.addressInfo?.houseNo,
                                         selectedTenant?.addressInfo?.street,
@@ -772,6 +773,38 @@ const CreateInvoice = ({ }) => {
                                                 String(value).trim()
                                         )
                                         .join(", ") || "N/A"}
+                                </Text> */}
+
+                                <Text style={styles.tenantAddressText}>
+                                    {(() => {
+                                        const address = selectedTenant?.addressInfo;
+
+                                        const houseNo = String(address?.houseNo ?? "").trim();
+                                        const street = String(address?.street ?? "").trim();
+                                        const landmark = String(address?.landmark ?? "").trim();
+                                        const city = String(address?.city ?? "").trim();
+                                        const state = String(address?.state ?? "").trim();
+
+                                        const pincode = String(address?.pincode ?? "").trim();
+
+                                        // Pincode should be exactly 6 digits
+                                        const validPincode = /^\d{6}$/.test(pincode)
+                                            ? pincode
+                                            : "";
+
+                                        const addressParts = [
+                                            houseNo,
+                                            street,
+                                            landmark,
+                                            city,
+                                            state,
+                                            validPincode,
+                                        ].filter(Boolean);
+
+                                        return addressParts.length > 0
+                                            ? addressParts.join(", ")
+                                            : "N/A";
+                                    })()}
                                 </Text>
 
                                 {/* MOBILE */}
