@@ -158,16 +158,33 @@ const GetExpenseList = async (
     setLoading(true);
 
     const axios = getAxios();
+    const params = {
+  name: filters.name,
+  page: filters.page,
+  size: filters.size,
+  paymentStatus: filters.paymentStatus,
+  vendorId: filters?.vendorId,
+  paymentMode: filters?.paymentMode,
+  createdBy: filters?.createdBy,
+  minAmount:filters?.minAmount,
+  maxAmount: filters?.maxAmount
+};
+
+if (filters.categoryId && filters.categoryId !== 0) {
+  params.categoryId = filters.categoryId;
+}
 
     const res = await axios.get(
       `/v2/expense/${hostelId}`,
       {
-        params: {
-          name: filters.name,
-          categoryId: filters.categoryId,
-          page: filters.page,
-          size: filters.size,
-        },
+        // params: {
+        //   name: filters.name,
+        //   categoryId: filters.categoryId,
+        //   page: filters.page,
+        //   size: filters.size,
+        //   paymentStatus:filters?.paymentStatus,
+        // },
+        params,
          paramsSerializer: (params) =>
           Object.keys(params)
             .map((key) => {
@@ -186,7 +203,7 @@ const GetExpenseList = async (
     );
 
     if (res.status === 200) {
-      console.log("response", res.data);
+      console.log("responseFilt", res);
       
       setExpensesList(res.data);
       return {

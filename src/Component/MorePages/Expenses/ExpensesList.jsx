@@ -46,6 +46,7 @@ import LocationIcon from "../../../Assets/Images/LocatIcon.png";
 import TickIcon from "../../../Assets/Images/tickgreen.png";
 import FilterBottomSheet from "../Reports/FilterBottomSheet";
 import MultiSelectDropdown from "../Bills/MultiSelectDropdown";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
 
 
@@ -168,6 +169,14 @@ export default function ExpensesList({ navigation }) {
     const [searchOpen, setSearchOpen] = useState(false);
     const [showCategoryFilter, setShowCatergoryFilter] = useState(false)
     const [tempCatgory, setTempCategory] = useState("")
+    const [selectedCategory, setSelectedCategory] = useState([])
+    const [selectedVendor, setSelectedVendor] = useState([])
+    const [paymentMode, setPaymentMode] = useState([])
+    const [selectedCreatedBy, setSelectedCreatedBy] = useState([])
+    const [minAmount, setMinAmount] = useState(null)
+    const [maxAmount, setMaxAmount] = useState(null)
+
+    const [errorMsg, setErrorMsg] = useState("")
 
     const staticExpenses = [
         {
@@ -508,6 +517,26 @@ export default function ExpensesList({ navigation }) {
         value: item?.type,
     }))
 
+    const paymentStatusOptions = expensesList?.filterOptions?.status.map(item => ({
+        label: item?.name,
+        value: item?.type,
+    }))
+
+    const vendorOptions = expensesList?.filterOptions?.vendor.map(item => ({
+        label: item?.name,
+        value: item?.type,
+    }))
+
+    const paymentModeOptions = expensesList?.filterOptions?.paymentMode?.map(item => ({
+        label: item?.paymentMode,
+        value: item?.paymentMethod,
+    }))
+
+    const createdByOptions = expensesList?.filterOptions?.createdBy.map(item => ({
+        label: item?.name,
+        value: item?.type,
+    }))
+
     const renderExpensesItem = ({ item }) => (
         <TouchableOpacity
             activeOpacity={0.8}
@@ -563,17 +592,29 @@ export default function ExpensesList({ navigation }) {
         </TouchableOpacity>
     );
 
+    console.log("knatha", paymentStatus)
     const applyToFilter = async ({
-        newCategory = tempCatgory,
+        newCategory = selectedCategory ?? tempCatgory,
+        newPaymentStatus = paymentStatus,
+        newVendor=selectedVendor,
+        newPaymentMode = paymentMode,
+        newCreatedBy= selectedCreatedBy,
     } = {}) => {
 
         const filters = {
-            categoryId: newCategory ? Number(newCategory) : undefined,
+            categoryId: newCategory?.length ? newCategory : undefined,
+            paymentStatus: newPaymentStatus?.length ? newPaymentStatus : undefined,
+            vendorId: newVendor?.length ? newVendor : undefined,
+            paymentMode: newPaymentMode?.length ? newPaymentMode : undefined,
+            createdBy: newCreatedBy?.length ? newCreatedBy : undefined,
+            minAmount: minAmount || undefined,
+            maxAmount: maxAmount || undefined,
         }
 
         console.log("lolopop", filters)
 
-        await GetExpenseList(activeHostelId, filters)
+        const res = await GetExpenseList(activeHostelId, filters)
+        console.log("sithar", res)
     }
 
     if (!canReadExpense && !loading) {
@@ -888,8 +929,8 @@ export default function ExpensesList({ navigation }) {
                                 placeholder="Select Payment Status"
                                 activeDropdown={activeDropdown}
                                 setActiveDropdown={setActiveDropdown}
-                                //   options={billStatusOptions}
-                                //   selected={billStatus}
+                                options={paymentStatusOptions}
+                                selected={paymentStatus}
                                 onChange={(values) => {
                                     setPaymentStatus(values);
                                     // setFilterError("");
@@ -937,10 +978,10 @@ export default function ExpensesList({ navigation }) {
                                 placeholder="Select Category"
                                 activeDropdown={activeDropdown}
                                 setActiveDropdown={setActiveDropdown}
-                                //   options={billStatusOptions}
-                                //   selected={billStatus}
+                                options={CategoryOptions}
+                                selected={selectedCategory}
                                 onChange={(values) => {
-                                    setPaymentStatus(values);
+                                    setSelectedCategory(values);
                                     // setFilterError("");
                                 }}
                             />
@@ -951,10 +992,10 @@ export default function ExpensesList({ navigation }) {
                                 placeholder="Select Vendor"
                                 activeDropdown={activeDropdown}
                                 setActiveDropdown={setActiveDropdown}
-                                //   options={billStatusOptions}
-                                //   selected={billStatus}
+                                options={vendorOptions}
+                                selected={selectedVendor}
                                 onChange={(values) => {
-                                    setPaymentStatus(values);
+                                    setSelectedVendor(values);
                                     // setFilterError("");
                                 }}
                             />
@@ -965,10 +1006,10 @@ export default function ExpensesList({ navigation }) {
                                 placeholder="Select Payment Mode"
                                 activeDropdown={activeDropdown}
                                 setActiveDropdown={setActiveDropdown}
-                                //   options={billStatusOptions}
-                                //   selected={billStatus}
+                                options={paymentModeOptions}
+                                selected={paymentMode}
                                 onChange={(values) => {
-                                    setPaymentStatus(values);
+                                    setPaymentMode(values);
                                     // setFilterError("");
                                 }}
                             />
@@ -985,10 +1026,10 @@ export default function ExpensesList({ navigation }) {
                                         placeholder="Select CreatedBy"
                                         activeDropdown={activeDropdown}
                                         setActiveDropdown={setActiveDropdown}
-                                        //   options={billStatusOptions}
-                                        //   selected={billStatus}
+                                        options={createdByOptions}
+                                        selected={selectedCreatedBy}
                                         onChange={(values) => {
-                                            setPaymentStatus(values);
+                                            setSelectedCreatedBy(values);
                                             // setFilterError("");
                                         }}
                                     />
@@ -996,7 +1037,58 @@ export default function ExpensesList({ navigation }) {
 
                                     <Text style={[styles.label, { marginTop: 18 }]}>Amount</Text>
 
-                                    <View
+
+                                    <View style={styles.amountRow}>
+
+                                        {/* Minimum Amount */}
+                                        <View style={[styles.amountInputContainer, { marginRight: 5 }]}>
+                                            <Text style={styles.currency}>₹</Text>
+
+                                            <TextInput
+                                                value={minAmount}
+                                                onChangeText={(text) => {
+                                                    if (text > maxAmount) {
+                                                        setErrorMsg("Min Amount should not be greater than max")
+                                                    } else {
+                                                        setErrorMsg("")
+                                                    }
+                                                    const cleanText = text.replace(/[^0-9]/g, "");
+                                                    setMinAmount(cleanText)
+                                                }}
+                                                placeholder="Min"
+                                                placeholderTextColor="#999"
+                                                keyboardType="numeric"
+                                                style={styles.amountInput}
+                                            />
+                                        </View>
+
+                                        {/* Maximum Amount */}
+                                        <View style={[styles.amountInputContainer, { marginLeft: 5 }, !minAmount && { opacity: 0.4 }]}>
+                                            <Text style={styles.currency}>₹</Text>
+
+                                            <TextInput
+                                                value={maxAmount}
+                                                editable={minAmount ? true : false}
+                                                onChangeText={(text) => {
+                                                    if (minAmount > text) {
+                                                        setErrorMsg("Min Amount should not be greater than max")
+                                                    } else {
+                                                        setErrorMsg("")
+                                                    }
+                                                    const cleanText = text.replace(/[^0-9]/g, "");
+                                                    setMaxAmount(cleanText)
+                                                }}
+                                                placeholder="Max"
+                                                placeholderTextColor="#999"
+                                                keyboardType="numeric"
+                                                style={styles.amountInput}
+                                            />
+                                        </View>
+                                    </View>
+
+                                       {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
+
+                                    {/* <View
                                         style={styles.selectWrapper}
                                         onLayout={(event) => {
                                             const { y, height } = event.nativeEvent.layout;
@@ -1027,7 +1119,7 @@ export default function ExpensesList({ navigation }) {
                                                 </ScrollView>
                                             </View>
                                         )}
-                                    </View>
+                                    </View> */}
                                 </>
                             )}
                         </ScrollView>
@@ -1037,13 +1129,25 @@ export default function ExpensesList({ navigation }) {
                                 onPress={() => {
                                     setFromDate(dayjs());
                                     setToDate(dayjs());
-                                    setAmountSelected(amountOptions[0]);
+                                    // setAmountSelected(amountOptions[0]);
+                                    setMinAmount("")
+                                    setSelectedCategory(null)
+                                    setPaymentStatus(null)
+                                    setPaymentMode(null)
+                                    setSelectedVendor(null)
+                                    setSelectedCreatedBy(null)
+                                    setMaxAmount("")
+                                    applyToFilter([],[],[],[],[])
+                                     setShowFilter(false)
                                 }}
                             >
                                 <Text style={styles.resetBtnText}>Reset All</Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
+                            <TouchableOpacity style={styles.applyBtn} onPress={() => {
+                                setShowFilter(false)
+                                applyToFilter()
+                            }}>
                                 <Text style={styles.applyBtnText}>Apply</Text>
                             </TouchableOpacity>
                         </View>
@@ -1939,6 +2043,41 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: "Gilroy-Medium",
     },
+    amountRow: {
+        flexDirection: "row",
+        marginTop: 8
+    },
+
+    amountInputContainer: {
+        flex: 1,
+        height: 42,
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 9,
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 14,
+    },
+
+    currency: {
+        fontSize: 16,
+        color: "#999",
+        marginRight: 6,
+    },
+
+    amountInput: {
+        flex: 1,
+        fontSize: 16,
+        color: "#222",
+        paddingVertical: 0,
+    },
+    moreFilterHeader: {
+        marginTop: 16, flexDirection: 'row',
+        alignItems: 'center'
+    },
+    moreFilterText: {
+        fontSize: 16, fontFamily: 'Gilroy-Bold'
+    }
 })
 
 

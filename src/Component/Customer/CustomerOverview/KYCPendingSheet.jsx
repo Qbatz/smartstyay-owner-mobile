@@ -41,9 +41,9 @@ export default function KycPendingSheet({
     const [message, setMessage] = useState("");
 
 
-    const { RequestKYC } = useCustomer();
+    const { RequestKYC, RequestKYCAgain } = useCustomer();
 
-    console.log("customerDetails",customerDetails)
+    console.log("customerDetails", customerDetails)
 
     const { activeHostelId } = useContext(CommonContexts);
 
@@ -63,20 +63,20 @@ export default function KycPendingSheet({
     const [amenityError, setAmenityError] = useState("");
     const [loading, setLoading] = useState(false);
 
- const kycStatus = customerDetails?.kycInfo?.status;
+    const kycStatus = customerDetails?.kycInfo?.status;
 
-const isPending = kycStatus === "PENDING";
-const isRequested = kycStatus === "REQUESTED";
-const isVerified = kycStatus === "VERIFIED";
+    const isPending = kycStatus === "PENDING";
+    const isRequested = kycStatus === "REQUESTED";
+    const isVerified = kycStatus === "VERIFIED";
 
 
     const handleKYCRequest = async () => {
- if (isVerified || isRequested) return;
+        if (isVerified || isRequested) return;
 
         const res = await RequestKYC(customerDetails?.customerId);
 
         console.log("kycresponse", res);
-        
+
 
         if (res?.success) {
             setModalType("success");
@@ -90,7 +90,7 @@ const isVerified = kycStatus === "VERIFIED";
             }, 800);
 
         } else {
-           setModalType("error");
+            setModalType("error");
             setMessage("KYC request failed")
             setShowSuccess(true);
 
@@ -100,6 +100,38 @@ const isVerified = kycStatus === "VERIFIED";
             }, 800);
         }
     };
+
+    const handleKYCRe_Request = async () => {
+        if (isVerified || isRequested) return;
+
+        const res = await RequestKYCAgain(customerDetails?.customerId);
+
+        console.log("kycresponse", res);
+
+
+        if (res?.success) {
+            setModalType("success");
+            setMessage("KYC request sent successfully")
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+                onClose()
+
+            }, 800);
+
+        } else {
+            setModalType("error");
+            setMessage("KYC request failed")
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+
+            }, 800);
+        }
+    };
+
 
 
 
@@ -167,7 +199,7 @@ const isVerified = kycStatus === "VERIFIED";
         })
     ).current;
 
-   
+
 
     const initials =
         (customerDetails?.initials || customerDetails?.firstName?.[0] || "U") +
@@ -182,9 +214,9 @@ const isVerified = kycStatus === "VERIFIED";
     const ProfilePic = customerDetails?.profilePic
 
 
-console.log("KYC visible", visible);
+    console.log("KYC visible", visible);
 
-if (!visible) return null;
+    if (!visible) return null;
 
 
 
@@ -272,36 +304,36 @@ if (!visible) return null;
                                 </Text>
                             </View>
 
-                           <Text style={styles.description}>
-  {isVerified
-    ? "Tenant has successfully completed KYC verification."
-    : isRequested
-    ? "KYC reminder has already been sent to the tenant."
-    : "Verify the tenant's KYC through the Smartstay Tenant App."}
-</Text>
+                            <Text style={styles.description}>
+                                {isVerified
+                                    ? "Tenant has successfully completed KYC verification."
+                                    : isRequested
+                                        ? "KYC reminder has already been sent to the tenant."
+                                        : "Verify the tenant's KYC through the Smartstay Tenant App."}
+                            </Text>
 
-                           <TouchableOpacity
-  style={[
-    styles.reminderBtn,
-    isVerified && styles.completedBtn,
-    isRequested && styles.requestedBtn,
-  ]}
-  disabled={isVerified || isRequested}
-  onPress={handleKYCRequest}
->
-  <Text
-    style={[
-      styles.reminderText,
-      isVerified && styles.completedText,
-    ]}
-  >
-    {isVerified
-      ? "Completed"
-      : isRequested
-      ? "Reminder Sent"
-      : "Send Reminder"}
-  </Text>
-</TouchableOpacity>
+                            <TouchableOpacity
+                                style={[
+                                    styles.reminderBtn,
+                                    isVerified && styles.completedBtn,
+                                    isRequested && styles.requestedBtn,
+                                ]}
+                                disabled={isVerified || isRequested}
+                                onPress={handleKYCRequest}
+                            >
+                                <Text
+                                    style={[
+                                        styles.reminderText,
+                                        isVerified && styles.completedText,
+                                    ]}
+                                >
+                                    {isVerified
+                                        ? "Completed"
+                                        : isRequested
+                                            ? "Reminder Sent"
+                                            : "Send Reminder"}
+                                </Text>
+                            </TouchableOpacity>
 
                         </View>
 
@@ -349,9 +381,9 @@ const styles = StyleSheet.create({
     },
     wrapper: {
         ...StyleSheet.absoluteFillObject,
-    justifyContent: "flex-end",
-    zIndex: 1000,
-    elevation: 1000,
+        justifyContent: "flex-end",
+        zIndex: 1000,
+        elevation: 1000,
     },
 
     dropdownBackdrop: {
@@ -372,7 +404,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 28,
         borderTopRightRadius: 28,
         zIndex: 1001,
-    elevation: 1001,
+        elevation: 1001,
     },
 
     handle: {
@@ -707,14 +739,14 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Bold",
     },
     requestedBtn: {
-  backgroundColor: "#E8F1FF",
-},
+        backgroundColor: "#E8F1FF",
+    },
 
-completedBtn: {
-  backgroundColor: "#E8F8EE",
-},
+    completedBtn: {
+        backgroundColor: "#E8F8EE",
+    },
 
-completedText: {
-  color: "#16A34A",
-},
+    completedText: {
+        color: "#16A34A",
+    },
 });

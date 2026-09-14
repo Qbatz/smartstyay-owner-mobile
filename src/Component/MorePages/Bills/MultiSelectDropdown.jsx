@@ -11,6 +11,124 @@ import {
 const CloseIcon = require("../../../Assets/Images/close_circle.png")
 const DownArrow = require("../../../Assets/Images/direction_down.png");
 
+// export default function MultiSelectDropdown({
+//   label,
+//   options = [],
+//   selected = [],
+//   onChange,
+//   placeholder = "Select",
+//   activeDropdown,
+//   setActiveDropdown,
+//   dropdownKey,
+// }) {
+
+
+//   // const [open, setOpen] = useState(false);
+
+//   const isOpen = activeDropdown === dropdownKey;
+
+//   const toggleDropdown = () => {
+//     if (isOpen) {
+//       setActiveDropdown(null);
+//     } else {
+//       setActiveDropdown(dropdownKey);
+//     }
+//   };
+
+//   const toggleItem = (item) => {
+//     if (selected.includes(item.value)) {
+//       onChange(selected.filter((v) => v !== item.value));
+//     } else {
+//       onChange([...selected, item.value]);
+//     }
+//   };
+
+//   const removeChip = (value) => {
+//     onChange(selected.filter((v) => v !== value));
+//   };
+
+
+//   return (
+//     <View style={{ marginTop: 16 }}>
+//       <Text style={styles.label}>{label}</Text>
+
+//       <TouchableOpacity
+//         style={[
+//           styles.selectBox,
+//           selected.length > 0 && styles.selectBoxActive
+//         ]}
+//         // onPress={() => setOpen(!open)}
+//         onPress={toggleDropdown}
+//       >
+//         <View style={styles.chipWrap}>
+//           {selected.length === 0 ? (
+//             <Text style={styles.placeholder}>{placeholder}</Text>
+//           ) : selected.length === 1 ? (
+//             <Text
+//               style={[
+//                 styles.singleText,
+//                 selected.length > 0 && { color: "#fff" }
+//               ]}
+//             >
+//               {options.find(o => o.value === selected[0])?.label}
+//             </Text>
+//           ) : (
+//             <Text
+//               style={[
+//                 styles.singleText,
+//                 selected.length > 0 && { color: "#fff" }
+//               ]}
+//             >
+//               {options.find(o => o.value === selected[0])?.label} +{selected.length - 1} more
+//             </Text>
+//           )}
+//         </View>
+
+//         <Image
+//           source={DownArrow}
+//           style={[
+//             styles.arrow,
+//             selected.length > 0 && { tintColor: "#fff" }
+//           ]}
+//         />
+//       </TouchableOpacity>
+
+//       {/* DROPDOWN */}
+//       {isOpen && (
+//         <View style={styles.dropdown}>
+//           <ScrollView
+//             nestedScrollEnabled
+//             keyboardShouldPersistTaps="handled"
+//             // showsVerticalScrollIndicator={false}
+//             style={{ maxHeight: 140 }}
+//           >
+//             {options.map((item) => {
+//               const checked = selected.includes(item.value);
+//               return (
+//                 <TouchableOpacity
+//                   key={item.value}
+//                   style={styles.optionRow}
+//                   onPress={() => {
+//                     toggleItem(item);
+//                     setActiveDropdown(null)
+//                   }}
+//                 >
+//                   <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
+//                     {checked && <Text style={styles.tick}>✓</Text>}
+//                   </View>
+//                   <Text style={styles.optionText}>{item.label}</Text>
+//                 </TouchableOpacity>
+//               );
+//             })}
+
+
+//           </ScrollView>
+//         </View>
+//       )}
+//     </View>
+//   );
+// }
+
 export default function MultiSelectDropdown({
   label,
   options = [],
@@ -22,8 +140,11 @@ export default function MultiSelectDropdown({
   dropdownKey,
 }) {
 
-
-  // const [open, setOpen] = useState(false);
+  const selectedValues = Array.isArray(selected)
+    ? selected
+    : selected
+      ? [selected]
+      : [];
 
   const isOpen = activeDropdown === dropdownKey;
 
@@ -36,17 +157,16 @@ export default function MultiSelectDropdown({
   };
 
   const toggleItem = (item) => {
-    if (selected.includes(item.value)) {
-      onChange(selected.filter((v) => v !== item.value));
+    if (selectedValues.includes(item.value)) {
+      onChange(selectedValues.filter((v) => v !== item.value));
     } else {
-      onChange([...selected, item.value]);
+      onChange([...selectedValues, item.value]);
     }
   };
 
   const removeChip = (value) => {
-    onChange(selected.filter((v) => v !== value));
+    onChange(selectedValues.filter((v) => v !== value));
   };
-
 
   return (
     <View style={{ marginTop: 16 }}>
@@ -55,73 +175,91 @@ export default function MultiSelectDropdown({
       <TouchableOpacity
         style={[
           styles.selectBox,
-          selected.length > 0 && styles.selectBoxActive
+          selectedValues.length > 0 && styles.selectBoxActive
         ]}
-        // onPress={() => setOpen(!open)}
         onPress={toggleDropdown}
       >
         <View style={styles.chipWrap}>
-          {selected.length === 0 ? (
-            <Text style={styles.placeholder}>{placeholder}</Text>
-          ) : selected.length === 1 ? (
+
+          {selectedValues.length === 0 ? (
+            <Text style={styles.placeholder}>
+              {placeholder}
+            </Text>
+
+          ) : selectedValues.length === 1 ? (
             <Text
               style={[
                 styles.singleText,
-                selected.length > 0 && { color: "#fff" }
+                { color: "#fff" }
               ]}
             >
-              {options.find(o => o.value === selected[0])?.label}
+              {options.find(
+                o => o.value === selectedValues[0]
+              )?.label}
             </Text>
+
           ) : (
             <Text
               style={[
                 styles.singleText,
-                selected.length > 0 && { color: "#fff" }
+                { color: "#fff" }
               ]}
             >
-              {options.find(o => o.value === selected[0])?.label} +{selected.length - 1} more
+              {options.find(
+                o => o.value === selectedValues[0]
+              )?.label}{" "}
+              +{selectedValues.length - 1} more
             </Text>
           )}
+
         </View>
 
         <Image
           source={DownArrow}
           style={[
             styles.arrow,
-            selected.length > 0 && { tintColor: "#fff" }
+            selectedValues.length > 0 && { tintColor: "#fff" }
           ]}
         />
       </TouchableOpacity>
 
-      {/* DROPDOWN */}
       {isOpen && (
         <View style={styles.dropdown}>
           <ScrollView
             nestedScrollEnabled
             keyboardShouldPersistTaps="handled"
-            // showsVerticalScrollIndicator={false}
             style={{ maxHeight: 140 }}
           >
             {options.map((item) => {
-              const checked = selected.includes(item.value);
+
+              const checked = selectedValues.includes(item.value);
+
               return (
                 <TouchableOpacity
                   key={item.value}
                   style={styles.optionRow}
                   onPress={() => {
                     toggleItem(item);
-                    setActiveDropdown(null)
+                    setActiveDropdown(null);
                   }}
                 >
-                  <View style={[styles.checkbox, checked && styles.checkboxChecked]}>
-                    {checked && <Text style={styles.tick}>✓</Text>}
+                  <View
+                    style={[
+                      styles.checkbox,
+                      checked && styles.checkboxChecked
+                    ]}
+                  >
+                    {checked && (
+                      <Text style={styles.tick}>✓</Text>
+                    )}
                   </View>
-                  <Text style={styles.optionText}>{item.label}</Text>
+
+                  <Text style={styles.optionText}>
+                    {item.label}
+                  </Text>
                 </TouchableOpacity>
               );
             })}
-
-
           </ScrollView>
         </View>
       )}
