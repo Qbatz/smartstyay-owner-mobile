@@ -2288,188 +2288,229 @@ export default function AddTenantNewform({ navigation, route }) {
     console.log("PAN URI", pancardImage);
 
 
-    const handleStepThree = async () => {
-        if (!validateStepThree()) {
+  const handleStepThree = async () => {
+
+    if (!validateStepThree()) {
+        return;
+    }
+
+    if (isSubmittingRef.current) {
+        return;
+    }
+
+    isSubmittingRef.current = true;
+
+    try {
+
+        if (!draftCustomerId) {
+            setModalType("error");
+            setMessage("Customer ID is missing");
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 1000);
+
             return;
         }
 
-        if (isSubmittingRef.current) return;
-        isSubmittingRef.current = true;
+
+        const jobDetails = {
+            employmentStatus:
+                employmentStatus?.value || "",
+
+            companyName:
+                companyName?.trim() || "",
+
+            collegeName:
+                "",
+
+            jobRole:
+                jobRole?.value || "",
+
+            workLocation:
+                worklocation?.trim() || "",
+
+            shiftType:
+                shiftType?.value || "",
+
+            shiftFrom:
+                startTime
+                    ? formatTime(startTime)
+                    : "",
+
+            shiftTo:
+                endTime
+                    ? formatTime(endTime)
+                    : "",
+        };
 
 
-        try {
+        const guardianDetails = guardians.map((item) => ({
+            guardianFullName:
+                item?.fullName?.trim() || "",
 
-            // const payload = {
-            //     request: {
-            //         firstName: basicDetails.firstName,
-            //         lastName: basicDetails.lastName,
-            //         mobile: basicDetails.mobile,
-            //         emailId: basicDetails.email,
+            relationshipToTenant:
+                item?.relationship || "",
 
-            //         joiningDate: joiningDate
-            //             ? dayjs(joiningDate).format("DD-MM-YYYY")
-            //             : "",
+            guardianOccupation:
+                item?.occupation || "",
 
-            //         bookingDate: purchaseDate
-            //             ? dayjs(purchaseDate).format("DD-MM-YYYY")
-            //             : "",
+            mobileNo:
+                item?.mobile?.trim() || "",
+        }));
 
-            //         bookingAmount: Number(bookingAmount || 0),
+        const customerJobs = [
+            {
+                hostelId:
+                    activeHostelId || "",
 
-            //         floorId: floorSelected?.id || null,
-            //         roomId: roomSelected?.id || null,
-            //         bedId: bedSelected?.bedId || null,
+                customerId:
+                    draftCustomerId || "",
 
-            //         bankId: accountSelected?.bankingId || "",
-            //         referenceNumber: referenceNumber || "",
+                employmentStatus:
+                    employmentStatus?.value || "",
 
-            //         advanceAmount: Number(advanceAmount || 0),
-            //         rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
+                organizationName:
+                    companyName?.trim() || "",
 
-            //         stayType: "LONG",
+                role:
+                    jobRole?.value || "",
 
-            //         deductions: extraCharges.map(item => ({
-            //             type:
-            //                 item.type === "Others"
-            //                     ? item.title
-            //                     : item.type,
-            //             amount: Number(item.amount || 0),
-            //         })),
+                workLocation:
+                    worklocation?.trim() || "",
 
-            //         proRate: false,
+                shiftType:
+                    shiftType?.value || "",
 
-            //         idProof: {
-            //             type: IdproofType || "",
-            //             number: IdprooNumber || "",
-            //         },
+                shiftStartsFrom:
+                    startTime
+                        ? formatTime(startTime)
+                        : "",
 
-            //         address: {
-            //             flat: addressDetails.flat,
-            //             house: "",
-            //             building: "",
-            //             company: "",
-            //             apartment: "",
-            //             area: addressDetails.area,
-            //             street: "",
-            //             sector: "",
-            //             village: "",
-            //             landmark: addressDetails.landmark,
-            //             pincode: addressDetails.pincode,
-            //             city: addressDetails.city,
-            //             state: selectedState,
-            //         },
-
-            //         booking: {
-            //             joiningDateTentative: "",
-            //             refuseAdvanceAmount: refuseAdvanceAmount,
-            //         },
-
-            //         jobDetails: {
-            //             employmentStatus: employmentStatus?.value || "",
-            //             companyName: companyName || "",
-            //             collegeName: "",
-            //             jobRole: jobRole?.value || "",
-            //             workLocation: worklocation || "",
-            //             shiftType: shiftType?.value || "",
-            //             shiftFrom: startTime || "",
-            //             shiftTo: endTime || "",
-            //         },
-
-            //         guardians: guardians.map(item => ({
-            //             guardianFullName: item.fullName,
-            //             relationshipToTenant: item.relationship,
-            //             guardianOccupation: item.occupation,
-            //             mobileNo: item.mobile,
-            //         })),
-
-            //         shouldCollectFullRent: collectFullRent,
-            //         customRent: Number(savedCustomRent || 0),
-            //         oneTimeDeduction: [],
-
-            //         vehicleDetails: {
-            //             vehicleType: hasVehicle ? vehicleType : "",
-            //             vehicleNumber: hasVehicle ? vehicleNumber : "",
-            //             isParkingSpaceRequired: hasVehicle,
-            //         },
-            //     },
-            // }
-
-            const payload = {
-                additionalData: {
-                    jobDetails: {
-                        employmentStatus: employmentStatus?.value || "",
-                        companyName: companyName || "",
-                        collegeName: companyName || "",
-                        jobRole: jobRole?.value || "",
-                        workLocation: worklocation || "",
-                        shiftType: shiftType?.value || "",
-                        shiftFrom: startTime ? formatTime(startTime) : "",
-                        shiftTo: endTime ? formatTime(endTime) : "",
-                        // shiftFrom: startTime || "",
-                        // shiftTo: endTime || "",
-                    },
-
-                    guardians: guardians.map(item => ({
-                        guardianFullName: item.fullName || "",
-                        relationshipToTenant: item.relationship || "",
-                        guardianOccupation: item.occupation || "",
-                        mobileNo: item.mobile || "",
-                    })),
-                },
-            };
+                shiftEndsAt:
+                    endTime
+                        ? formatTime(endTime)
+                        : "",
+            },
+        ];
 
 
+        const payload = {
+            additionalData: {
+                jobDetails,
+                guardians: guardianDetails,
+                customerJobs,
+            },
+        };
 
-            // console.log("UPDATE", guardians);
-            // console.log("UPDATE DRAFT", typeof hasVehicle, hasVehicle);
-            // console.log("UPDATE DRAFT", typeof collectFullRent, collectFullRent);
 
-            console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
-            console.log("UPDATE DRAFT PAYLOAD", draftCustomerId)
+        console.log(
+            "=========================================="
+        );
+
+        console.log(
+            "UPDATE ADDITIONAL DRAFT PAYLOAD =>",
+            JSON.stringify(payload, null, 2)
+        );
+
+        console.log(
+            "HOSTEL ID =>",
+            activeHostelId
+        );
+
+        console.log(
+            "CUSTOMER ID =>",
+            draftCustomerId
+        );
+
+        console.log(
+            "AADHAAR IMAGE =>",
+            aadhaarImage
+        );
+
+        console.log(
+            "PAN IMAGE =>",
+            pancardImage
+        );
+
+        console.log(
+            "=========================================="
+        );
+
+        // ==========================================
+        // API CALL
+        // ==========================================
+        const res = await UpdateAdditionalDraftDetails(
+            activeHostelId,
+            draftCustomerId,
+            payload,
+            aadhaarImage,
+            pancardImage
+        );
+
+        console.log(
+            "UPDATE ADDITIONAL DRAFT RESPONSE =>",
+            res
+        );
 
 
-            // const res = await UpdateAdditionalDraftDetails(
-            //     activeHostelId,
-            //     draftCustomerId,
-            //     payload,
-            // );
+        if (res?.success) {
+            setModalType("success");
 
-            const res = await UpdateAdditionalDraftDetails(
-                activeHostelId,
-                draftCustomerId,
-                payload,
-                aadhaarImage,
-                pancardImage
+            setMessage(
+                res?.data?.message ||
+                "Draft updated successfully"
             );
 
-            console.log("updateres", res);
+            setShowSuccess(true);
 
+            setTimeout(() => {
+                setShowSuccess(false);
 
-            if (res.success) {
-                setModalType("success");
-                setMessage(res?.data?.message || "Draft updated successfully");
-                setShowSuccess(true);
+                navigation.goBack();
+            }, 800);
 
-                setTimeout(() => {
-                    setShowSuccess(false);
-                    navigation.goBack();
-                }, 800);
-            } else {
-                setModalType("error");
-                setMessage(res?.message || "Draft update failed");
-                setShowSuccess(true);
-
-                setTimeout(() => {
-                    setShowSuccess(false);
-                }, 800);
-            }
-
-        }
-        finally {
-            isSubmittingRef.current = false;
+            return;
         }
 
-    };
+
+        setModalType("error");
+
+        setMessage(
+            res?.message ||
+            "Draft update failed"
+        );
+
+        setShowSuccess(true);
+
+        setTimeout(() => {
+            setShowSuccess(false);
+        }, 1000);
+
+    } catch (error) {
+        console.log(
+            "HANDLE STEP THREE ERROR 👉",
+            error
+        );
+
+        setModalType("error");
+
+        setMessage(
+            error?.message ||
+            "Something went wrong"
+        );
+
+        setShowSuccess(true);
+
+        setTimeout(() => {
+            setShowSuccess(false);
+        }, 1000);
+
+    } finally {
+        isSubmittingRef.current = false;
+    }
+};
 
 
     const renderFooterButtons = () => {
@@ -2520,11 +2561,11 @@ export default function AddTenantNewform({ navigation, route }) {
             return (
                 <View style={styles.row}>
 
-                    {/* {!hideBookingSaveDraft && (
+                    {!hideBookingSaveDraft && (
                         <TouchableOpacity style={styles.secondaryBtn} onPress={UpdateDraft}>
                             <Text>Save Draft</Text>
                         </TouchableOpacity>
-                    )} */}
+                    )}
 
                     <TouchableOpacity
                         style={[

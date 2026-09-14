@@ -2202,96 +2202,134 @@ export const CustomerProvider = ({ children }) => {
   };
 
 
-  const UpdateAdditionalDraftDetails = async (
-    hostelId,
-    customerId,
-    payload,
-    aadhaarImage = null,
-    pancardImage = null
-  ) => {
-    if (!hostelId || !customerId) {
-      return {
-        success: false,
-        message: "Missing hostelId or customerId",
-      };
-    }
+ const UpdateAdditionalDraftDetails = async (
+  hostelId,
+  customerId,
+  payload,
+  aadhaarImage = null,
+  pancardImage = null
+) => {
+  if (!hostelId || !customerId) {
+    return {
+      success: false,
+      message: "Missing hostelId or customerId",
+    };
+  }
 
-    try {
-      setLoading(true);
-      setErrorMsg("");
+  try {
+    setLoading(true);
+    setErrorMsg("");
 
-      const token = await retriveData("token");
-      const axios = getAxios();
+    const token = await retriveData("token");
+    const axios = getAxios();
 
-      const formData = new FormData();
+    const formData = new FormData();
 
-      // JSON Part (same as Web)
-      formData.append("additionalData", {
-        string: JSON.stringify(payload.additionalData),
-        type: "application/json",
-        name: "blob",
+ 
+    formData.append("additionalData", {
+      string: JSON.stringify(payload?.additionalData || {}),
+      type: "application/json",
+      name: "blob",
+    });
+
+
+    if (aadhaarImage?.uri) {
+      formData.append("aadhaarPic", {
+        uri: aadhaarImage.uri,
+        type: aadhaarImage.type || "image/jpeg",
+        name: aadhaarImage.fileName || "aadhaar.jpg",
       });
-
-      // Aadhaar Image
-      if (aadhaarImage?.uri) {
-        formData.append("aadhaarPic", {
-          uri: aadhaarImage.uri,
-          type: aadhaarImage.type || "image/jpeg",
-          name: aadhaarImage.fileName || "aadhaar.jpg",
-        });
-      }
-
-      // PAN Image
-      if (pancardImage?.uri) {
-        formData.append("panPic", {
-          uri: pancardImage.uri,
-          type: pancardImage.type || "image/jpeg",
-          name: pancardImage.fileName || "pan.jpg",
-        });
-      }
-
-      const res = await axios.put(
-        `/v3/customers/additional-details/${hostelId}/${customerId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (res.status === 200 || res.status === 201) {
-        await GetParticularCustomerDetails(customerId);
-
-        return {
-          success: true,
-          data: res.data,
-        };
-      }
-
-      return {
-        success: false,
-        message: "Additional details update failed",
-      };
-    } catch (error) {
-      console.log("UPDATE ADDITIONAL DETAILS ERROR 👉", error?.response?.data);
-
-      if (error?.response?.status === 401) {
-        await AutoLogout(loginContext);
-      }
-
-      return {
-        success: false,
-        message:
-          error?.response?.data?.message ||
-          JSON.stringify(error?.response?.data) ||
-          "Something went wrong",
-      };
-    } finally {
-      setLoading(false);
     }
-  };
+
+    if (pancardImage?.uri) {
+      formData.append("panPic", {
+        uri: pancardImage.uri,
+        type: pancardImage.type || "image/jpeg",
+        name: pancardImage.fileName || "pan.jpg",
+      });
+    }
+
+    console.log(
+      "UPDATE ADDITIONAL DETAILS URL =>",
+      `/v3/customers/additional-details/${hostelId}/${customerId}`
+    );
+
+    console.log(
+      "UPDATE ADDITIONAL DETAILS JSON =>",
+      JSON.stringify(payload?.additionalData, null, 2)
+    );
+
+    console.log(
+      "UPDATE ADDITIONAL DETAILS FORMDATA =>",
+      formData?._parts
+    );
+
+    // ==========================================
+    // API
+    // ==========================================
+    const res = await axios.put(
+      `/v3/customers/additional-details/${hostelId}/${customerId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    console.log(
+      "UPDATE ADDITIONAL DETAILS RESPONSE =>",
+      res?.data
+    );
+
+
+    if (res?.status === 200 || res?.status === 201) {
+      await GetParticularCustomerDetails(customerId);
+
+      return {
+        success: true,
+        data: res?.data,
+      };
+    }
+
+
+    return {
+      success: false,
+      message:
+        res?.data?.message ||
+        "Additional details update failed",
+    };
+  } catch (error) {
+    console.log(
+      "UPDATE ADDITIONAL DETAILS ERROR 👉",
+      error?.response?.data
+    );
+
+    console.log(
+      "UPDATE ADDITIONAL DETAILS STATUS 👉",
+      error?.response?.status
+    );
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
+    }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        (typeof error?.response?.data === "string"
+          ? error.response.data
+          : null) ||
+        error?.message ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const retainerCustomerList = async (hostelId, purpose) => {
   try {

@@ -887,7 +887,7 @@ useEffect(() => {
                         >
                             <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Tenant Check-Infofdfdf</Text>
+                        <Text style={styles.headerTitle}>Tenant Check-In</Text>
                     </View>
 
                     <View style={styles.segmentRow}>
