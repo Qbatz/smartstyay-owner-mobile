@@ -101,6 +101,13 @@ export default function LongStay({ navigation }) {
         canReadModule: canReadRecurring,
     } = useHasPermission("Bills");
 
+    const {
+        canWriteModule: canWritePayingGuests,
+        canReadModule: canReadPayingGuests,
+        canUpdateModule: canUpdatePayingGuests,
+        canDeleteModule: canDeletePayingGuests,
+    } = useHasPermission("Paying Guests");
+
     //     useEffect(() => {
 
     // if(billingData){
@@ -120,38 +127,81 @@ export default function LongStay({ navigation }) {
     // },[billingData])
 
 
+    // useEffect(() => {
+
+    //     if (billingData) {
+    //         console.log("billingdata", billingData);
+
+
+    //         const billingStart = billingData?.billStartDate
+    //         const dueDate = billingData?.billDueDate
+    //         const grace = billingData?.gracePeriod
+    //         const reminders = billingData?.reminderDays || []
+    //         const notice = billingData?.noticePeriod
+    //         const billingschedule = billingData?.billingModel
+
+    //         setBillingStartDate(billingStart)
+    //         setDueDate(dueDate)
+    //         setGraceDate(grace)
+    //         setReminderDays(reminders)
+    //         setNoticePeriod(notice)
+    //         setBillingSchedule(billingschedule)
+
+    //         setInitialValues({
+    //             billingstartDate: billingStart,
+    //             duedate: dueDate,
+    //             gracedate: grace,
+    //             reminderDays: reminders,
+    //             noticeperiod: notice,
+    //             billingschedule: billingschedule
+    //         })
+
+    //     }
+
+    // }, [billingData])
+
     useEffect(() => {
+        if (!billingData) return;
 
-        if (billingData) {
-            console.log("billingdata", billingData);
+        console.log("billingdata", billingData);
 
+        const billingStart = billingData?.billStartDate ?? null;
+        const dueDate = billingData?.billDueDate ?? null;
+        const grace = billingData?.gracePeriod ?? null;
+        const reminders = billingData?.reminderDays || [];
+        const notice = billingData?.noticePeriod ?? null;
 
-            const billingStart = billingData?.billStartDate
-            const dueDate = billingData?.billDueDate
-            const grace = billingData?.gracePeriod
-            const reminders = billingData?.reminderDays || []
-            const notice = billingData?.noticePeriod
-            const billingschedule = billingData?.billingModel
+        // SAME AS WEB
+        const billingType =
+            billingData?.typeOfBilling?.toLowerCase()?.trim() === "fixed"
+                ? "fixed"
+                : "joining_date_based";
 
-            setBillingStartDate(billingStart)
-            setDueDate(dueDate)
-            setGraceDate(grace)
-            setReminderDays(reminders)
-            setNoticePeriod(notice)
-            setBillingSchedule(billingschedule)
+        const billingModel =
+            billingData?.billingModel?.toLowerCase()?.trim() === "prepaid"
+                ? "PREPAID"
+                : "POSTPAID";
 
-            setInitialValues({
-                billingstartDate: billingStart,
-                duedate: dueDate,
-                gracedate: grace,
-                reminderDays: reminders,
-                noticeperiod: notice,
-                billingschedule: billingschedule
-            })
+        setBillingMethod(billingType);
+        setBillingStartDate(billingStart);
+        setDueDate(dueDate);
+        setGraceDate(grace);
+        setReminderDays(reminders);
+        setNoticePeriod(notice);
+        setBillingSchedule(billingModel);
 
-        }
+        setInitialValues({
+            billingstartDate: billingStart,
+            billingMethod: billingType,
+            duedate: dueDate,
+            gracedate: grace,
+            reminderDays: reminders,
+            noticeperiod: notice,
+            billingschedule: billingModel,
+        });
 
-    }, [billingData])
+    }, [billingData]);
+
 
     const FIXED_DAYS = 28;
     const days = Array.from({ length: FIXED_DAYS }, (_, i) => i + 1);
@@ -224,6 +274,9 @@ export default function LongStay({ navigation }) {
         setSlabs(slabs.filter((item) => item.id !== id));
     };
 
+    console.log("billingMethod", billingMethod);
+
+
 
     const handleSaveConfiguration = async () => {
 
@@ -245,12 +298,19 @@ export default function LongStay({ navigation }) {
 
         if (Object.keys(newErrors).length === 0) {
 
+            // const res = await addBillingRecurring({
+            //     hostelId: activeHostelId,
+            //     startDate: billingstartDate,
+            //     calculationType: billingMethod === "joining_date_based" ? "joining_date_based" : "FIXED",
+            //     billingModel: billingSchedule === "PREPAID" ? "PREPAID" : "POSTPAID",
+            // })
+
             const res = await addBillingRecurring({
                 hostelId: activeHostelId,
                 startDate: billingstartDate,
-                calculationType: billingMethod === "joining_date_based" ? "JOINING_DATE_BASED" : "FIXED",
-                billingModel: billingSchedule === "PREPAID" ? "PREPAID" : "POSTPAID",
-            })
+                calculationType: billingMethod,
+                billingModel: billingSchedule.toLowerCase(),
+            });
 
             if (res?.success) {
                 setModalType("success");
@@ -276,7 +336,7 @@ export default function LongStay({ navigation }) {
 
     const isLocked = PGDetails && !PGDetails?.canModifyBilling;
     const isValidSubscription = PGDetails?.isSubscriptionActive;
-    const isSubscriptionAllow = isValidSubscription && canWriteBills;
+    const isSubscriptionAllow = isValidSubscription && canUpdatePayingGuests;
 
     const [noticedayErr, setNoticeDayErr] = useState("")
 
@@ -611,10 +671,6 @@ export default function LongStay({ navigation }) {
                         </View>
                         {/* Button */}
                         <View style={styles.BtnRow} >
-
-
-
-
 
                         </View>
 
@@ -1216,7 +1272,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#F4F6F8",
         paddingHorizontal: 16,
-        paddingInline:16
+        paddingInline: 16
     },
 
     headerRow: {

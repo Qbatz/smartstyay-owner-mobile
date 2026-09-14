@@ -29,7 +29,7 @@ import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import FilterBottomSheet from "../Reports/FilterBottomSheet";
-
+import ConfirmReassignSheet from "../../PG/OccupiedBed/ReAssignBottomSheet";
 
 
 
@@ -82,21 +82,49 @@ export default function CheckAvailableBedDetailsSheet({
 
 
 
+    // useEffect(() => {
+    //     if (!visible || !activeHostelId || !joiningDate) return;
+
+    //     loadAvailableBeds(joiningDate);
+    // }, [visible, activeHostelId, joiningDate]);
+
+    // const loadAvailableBeds = async (date) => {
+    //     const formattedDate = dayjs(date).format("DD-MM-YYYY");
+
+    //     const res = await getBedsByHostelAndDate(
+    //         activeHostelId,
+    //         formattedDate
+    //     );
+
+    //     if (res.success) {
+    //         setAvailableBeds(res.data?.listBeds || []);
+    //     } else {
+    //         setAvailableBeds([]);
+    //     }
+    // };
+
     useEffect(() => {
-        if (!visible || !activeHostelId || !joiningDate) return;
+        if (!visible || !activeHostelId) return;
 
-        loadAvailableBeds(joiningDate);
-    }, [visible, activeHostelId, joiningDate]);
+        // Always use local current date for availability
+        loadAvailableBeds();
+    }, [visible, activeHostelId]);
 
-    const loadAvailableBeds = async (date) => {
-        const formattedDate = dayjs(date).format("DD-MM-YYYY");
+    const loadAvailableBeds = async () => {
+        // Local current date
+        const currentDate = dayjs().format("DD-MM-YYYY");
+
+        console.log("Availability Current Date:", currentDate);
+        console.log("Availability Hostel ID:", activeHostelId);
 
         const res = await getBedsByHostelAndDate(
             activeHostelId,
-            formattedDate
+            currentDate
         );
 
-        if (res.success) {
+        console.log("Availability Bed Response:", res);
+
+        if (res?.success) {
             setAvailableBeds(res.data?.listBeds || []);
         } else {
             setAvailableBeds([]);
@@ -221,6 +249,9 @@ export default function CheckAvailableBedDetailsSheet({
     const [bedUserDetails, setBedUserDetails] = useState("")
     const [showCheckout, setShowCheckout] = useState(false);
     const [inactiveTenant, setInactiveTenant] = useState(null);
+
+    const [showConfirmChangeBed, setShowConfirmChangeBed] = useState(false);
+    const [selectedNewBed, setSelectedNewBed] = useState(null);
 
 
     // Sharing
@@ -1079,7 +1110,7 @@ export default function CheckAvailableBedDetailsSheet({
         <>
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
 
-               <FilterBottomSheet
+            <FilterBottomSheet
                 visible={sharingSheetOpen}
                 title="Select Sharing Type"
                 options={sharingOptions}
@@ -1117,7 +1148,7 @@ export default function CheckAvailableBedDetailsSheet({
                 onClose={() => setDateRegionSheetOpen(false)}
             />
 
-            
+
             <View style={styles.wrapper} pointerEvents="box-none">
                 <TouchableOpacity
                     style={styles.backdrop}
@@ -1536,7 +1567,7 @@ export default function CheckAvailableBedDetailsSheet({
                                 </Text>
                             </View>
 
-                            <TouchableOpacity
+                            {/* <TouchableOpacity
                                 style={styles.continueBtn}
                                 onPress={() => {
                                     onSelect?.(selectedBed);
@@ -1555,6 +1586,30 @@ export default function CheckAvailableBedDetailsSheet({
                                         tintColor: "#fff",
                                     }}
                                 />
+                            </TouchableOpacity> */}
+
+                            <TouchableOpacity
+                                style={styles.continueBtn}
+                                onPress={() => {
+                                    if (!selectedBed) return;
+
+                                    console.log("Selected New Bed:", selectedBed);
+
+                                    setSelectedNewBed({
+                                        bed: {
+                                            id: selectedBed.bedId,
+                                            floorName: selectedBed.floorName,
+                                            roomName: selectedBed.roomName,
+                                            bedName: selectedBed.bedName,
+                                        },
+                                    });
+
+                                    setLastActiveTab(type);
+
+                                    setShowConfirmChangeBed(true);
+                                }}
+                            >
+                                <Text style={styles.continueTxt}>Continue</Text>
                             </TouchableOpacity>
 
                         </View>
@@ -1564,8 +1619,16 @@ export default function CheckAvailableBedDetailsSheet({
                 </Animated.View>
             </View>
 
-         
-
+            {showConfirmChangeBed && (
+                <View style={styles.confirmSheetLayer}>
+                    <ConfirmReassignSheet
+                        visible={showConfirmChangeBed}
+                        onClose={() => setShowConfirmChangeBed(false)}
+                        selectedNewBed={selectedNewBed}
+                        selectedBed={selectedBed}
+                    />
+                </View>
+            )}
 
         </>
     );
@@ -1573,6 +1636,16 @@ export default function CheckAvailableBedDetailsSheet({
 
 /* ================= STYLES ================= */
 const styles = StyleSheet.create({
+
+    confirmSheetLayer: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9999,
+        elevation: 9999,
+    },
     backdrop: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: "rgba(0,0,0,0.35)",
@@ -2557,7 +2630,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "space-between",
         marginBottom: 4,
-        marginTop:12,
+        marginTop: 12,
         gap: 8,
     },
 

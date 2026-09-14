@@ -275,12 +275,19 @@ const showFullRentOption = React.useMemo(() => {
     ).trim().toUpperCase();
 
     // PREPAID + FIXED => Always show
-    if (
-        billingModel === "PREPAID" &&
-        typeOfBilling === "FIXED"
-    ) {
-        return true;
-    }
+    // if (
+    //     billingModel === "PREPAID" &&
+    //     typeOfBilling === "FIXED"
+    // ) {
+    //     return true;
+    // }
+
+     if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!joiningDate && isCurrentMonth;
+        }
 
     // PREPAID + JOINING DATE BASED => Hide
     if (
@@ -880,7 +887,7 @@ useEffect(() => {
                         >
                             <Image source={ArrowLeft} style={{ height: 20, width: 20 }} />
                         </TouchableOpacity>
-                        <Text style={styles.headerTitle}>Tenant Check-Infofdfdf</Text>
+                        <Text style={styles.headerTitle}>Tenant Check-In</Text>
                     </View>
 
                     <View style={styles.segmentRow}>

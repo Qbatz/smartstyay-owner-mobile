@@ -23,6 +23,8 @@ import ColorPicker, { HueSlider, OpacitySlider, Panel1 } from "reanimated-color-
 import { runOnJS } from "react-native-reanimated";
 import tinycolor from "tinycolor2"
 import QuestionMarkHelp from "../../../Assets/Images/QuestionMarkHelp.png"
+import { useHasPermission } from "../../../Utils/useHasPermission";
+
 
 
 const EditIcon = require("../../../Assets/Images/edit.png");
@@ -75,6 +77,13 @@ export default function SecurityDepositTemplate({ handleAddBank, onChange }) {
 
     const [isEditable,setIsEditable]=useState(false)
     const [editPopup,setEditPopUp]=useState(false)
+
+      const {
+        canWriteModule: canWriteInvoice,
+        canReadModule: canReadInvoice,
+        canUpdateModule: canUpdateInvoice,
+        canDeleteModule: canDeleteInvoice,
+      } = useHasPermission("Bills")
 
 
   useEffect(() => {
@@ -628,7 +637,13 @@ export default function SecurityDepositTemplate({ handleAddBank, onChange }) {
           </View>
         </View>
 
-        <TouchableOpacity onPress={handleSaveTemplate}
+        <TouchableOpacity 
+            //         style={[
+            //   styles.saveBtn,
+            //   !canWriteInvoice && { opacity: 0.4 },
+            // ]}
+            disabled={!canWriteInvoice}
+        onPress={handleSaveTemplate}
           style={{ alignSelf: 'flex-end', marginTop: 20, padding: 15, backgroundColor: '#2044e2', borderRadius: 8 }}>
           <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Semibold', color: '#ffffff' }}>Save Template</Text>
         </TouchableOpacity>

@@ -35,7 +35,7 @@ import RoomIcon from "../../../Assets/Images/Room_Icon.png"
 import BedIcon from "../../../Assets/Images/Bed_Icon.png"
 import { useCustomer } from "../../../Context/CustomerContext";
 import DownArrow from "../../../Assets/Images/direction-down.png";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const sampleUsersInit = [
   {
@@ -66,7 +66,7 @@ const sampleUsersInit = [
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 export default function AmenitySettings({ navigation }) {
 
-
+  const insets = useSafeAreaInsets();
 
   const { activeHostelId } = useContext(CommonContexts);
 
@@ -115,7 +115,7 @@ export default function AmenitySettings({ navigation }) {
   const [selectAmenityError, setSelectAmenityError] = useState("")
   const [showUnassigned, setShowUnassigned] = useState(true);
   const [showAssigned, setShowAssigned] = useState(true);
-
+  const [showAssign, setShowAssign] = useState(false);
 
 
   useEffect(() => {
@@ -175,7 +175,9 @@ export default function AmenitySettings({ navigation }) {
       return false;
     });
     return () => backHandler.remove();
-  }, [showSheet, showAssign]);
+  }, [showSheet, showAssign])
+
+  
 
   useEffect(() => {
     const backHandler = BackHandler.addEventListener(
@@ -484,7 +486,7 @@ export default function AmenitySettings({ navigation }) {
 
 
 
-  const [showAssign, setShowAssign] = useState(false);
+
   const assignY = useRef(new Animated.Value(900)).current;
   const assignPan = useRef(
     PanResponder.create({
@@ -1124,7 +1126,15 @@ export default function AmenitySettings({ navigation }) {
             <View style={styles.sheetOverlayDim} />
           </TouchableWithoutFeedback>
 
-          <Animated.View style={[styles.sheet, { transform: [{ translateY: sheetY }] }]}>
+          <Animated.View
+            style={[
+              styles.sheet,
+              {
+                marginBottom: insets.bottom,
+                transform: [{ translateY: sheetY }],
+              },
+            ]}
+          >
             <View style={styles.handleWrapper} {...sheetPan.panHandlers}>
               <View style={styles.sheetHandle} />
             </View>
@@ -1192,7 +1202,12 @@ export default function AmenitySettings({ navigation }) {
             </ScrollView>
 
             <TouchableOpacity
-              style={styles.addTypeBtn}
+              style={[
+                styles.addTypeBtn,
+                {
+                  marginBottom: Math.max(insets.bottom, 10),
+                },
+              ]}
               onPress={saveAmenity}
             >
               <Text style={styles.addTypeText}>
@@ -1343,7 +1358,7 @@ export default function AmenitySettings({ navigation }) {
                 position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "#fff",
                 flexDirection: "row", padding: 15, borderTopWidth: 1,
                 borderColor: "#EAEAEA", shadowColor: "#000", shadowOffset: { width: 0, height: -3 }, shadowOpacity: 0.08,
-                shadowRadius: 6, elevation: 8,
+                shadowRadius: 6, elevation: 8, paddingTop:5 
               }}>
 
                 <View style={styles.assignActionsRow}>
@@ -1556,7 +1571,7 @@ const styles = StyleSheet.create({
     color: "#1D5DFF",
     fontWeight: "900",
   },
-  assignActionsRow: { flexDirection: "row", flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 14 },
+  assignActionsRow: { flexDirection: "row", flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 25 , paddingTop:5, },
   downBtn: {
     flex: 1, borderRadius: 10, backgroundColor: "#1D5DFF", alignItems: "center", justifyContent: "center", marginHorizontal: 6,
     flexDirection: 'row', paddingHorizontal: 20, paddingVertical: 15, elevation: 2, shadowColor: "#000", shadowOpacity: 0.25,
@@ -1586,19 +1601,19 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     paddingHorizontal: 10,
 
- borderWidth: 1,
-  borderColor: "#E5E7EB",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
 
-  
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 4,
-  },
-  shadowOpacity: 0.12,
-  shadowRadius: 12,
 
-  elevation: 8, 
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+
+    elevation: 8,
 
   },
 

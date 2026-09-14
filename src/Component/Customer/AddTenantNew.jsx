@@ -42,6 +42,9 @@ import BedDetailsSheet from "./BedDetailsBottomsheet"
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 // import DatePicker from "react-native-date-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { UseSetting } from "../../Context/SettingContext";
+
+
 
 
 export default function AddTenantNewform({ navigation, route }) {
@@ -59,6 +62,8 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const { getBankListByHostel } = useContext(BankingContext);
 
+    const { getBillingConfig, billingRuleData } = UseSetting();
+
     const isSubmittingRef = useRef(false);
     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
@@ -67,6 +72,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const isEditMode = route?.params?.mode === "EDIT";
     const isAddMode = route?.params?.mode === "Add";
+    const isBookingMode = route?.params?.mode === "BOOKING";
 
     console.log("MODE", route?.params?.mode);
     console.log("DRAFT", draftDetails);
@@ -230,6 +236,85 @@ export default function AddTenantNewform({ navigation, route }) {
     const [customRentError, setCustomRentError] = useState("");
 
     console.log("savedCustomRent", savedCustomRent);
+
+    useEffect(() => {
+        if (activeHostelId) {
+            getBillingConfig(activeHostelId);
+        }
+    }, [activeHostelId]);
+
+
+    const isCurrentMonth = checkJoiningDate
+        ? dayjs(checkJoiningDate).isSame(dayjs(), "month")
+        : false;
+
+    const isPreviousMonth = checkJoiningDate
+        ? dayjs(checkJoiningDate).isSame(
+            dayjs().subtract(1, "month"),
+            "month"
+        )
+        : false;
+
+    const showFullRentOption = React.useMemo(() => {
+        if (!billingRuleData) {
+            return false;
+        }
+
+        const billingModel = String(
+            billingRuleData?.billingModel || ""
+        ).trim().toUpperCase();
+
+        const typeOfBilling = String(
+            billingRuleData?.typeOfBilling || ""
+        ).trim().toUpperCase();
+
+        // PREPAID + FIXED => Always show
+        // if (
+        //     billingModel === "PREPAID" &&
+        //     typeOfBilling === "FIXED"
+        // ) {
+        //     return true;
+        // }
+
+        if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!checkJoiningDate && isCurrentMonth;
+        }
+
+        if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "JOINING DATE BASED"
+        ) {
+            return false
+        }
+
+        if (
+            billingModel === "POSTPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!checkJoiningDate && (isCurrentMonth || isPreviousMonth)
+        }
+
+        return false;
+    }, [
+        billingRuleData,
+        checkJoiningDate,
+        isCurrentMonth,
+        isPreviousMonth,
+    ])
+
+    useEffect(() => {
+        if (!showFullRentOption) {
+            setCollectFullRent(false);
+            setShowCustomRentEditor(false);
+            setCustomRentAmount("");
+            setSavedCustomRent("");
+            setIsCustomRentSaved(false);
+            setCustomRentError("");
+        }
+    }, [showFullRentOption]);
 
 
 
@@ -704,7 +789,11 @@ export default function AddTenantNewform({ navigation, route }) {
     };
 
 
-
+    useEffect(() => {
+        if (isBookingMode) {
+            setActiveTab("Booking");
+        }
+    }, [isBookingMode]);
 
 
 
@@ -1742,10 +1831,22 @@ export default function AddTenantNewform({ navigation, route }) {
 
                 setDraftCustomerId(res?.data?.customerId)
 
+                // setTimeout(() => {
+                //     setCurrentStep(2);
+                //     setShowSuccess(false);
+                //     setIsSubmitClicked(false)
+                // }, 800);
+
                 setTimeout(() => {
-                    setCurrentStep(2);
-                    setShowSuccess(false);
+                    setShowSuccess(false)
+
+                    if (isBookingMode) {
+                        setActiveTab("Booking")
+                        setCurrentStep(2)
+                        return
+                    }
                     setIsSubmitClicked(false)
+                    setCurrentStep(2);
                 }, 800);
             }
             else {
@@ -2187,188 +2288,229 @@ export default function AddTenantNewform({ navigation, route }) {
     console.log("PAN URI", pancardImage);
 
 
-    const handleStepThree = async () => {
-        if (!validateStepThree()) {
+  const handleStepThree = async () => {
+
+    if (!validateStepThree()) {
+        return;
+    }
+
+    if (isSubmittingRef.current) {
+        return;
+    }
+
+    isSubmittingRef.current = true;
+
+    try {
+
+        if (!draftCustomerId) {
+            setModalType("error");
+            setMessage("Customer ID is missing");
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 1000);
+
             return;
         }
 
-        if (isSubmittingRef.current) return;
-        isSubmittingRef.current = true;
+
+        const jobDetails = {
+            employmentStatus:
+                employmentStatus?.value || "",
+
+            companyName:
+                companyName?.trim() || "",
+
+            collegeName:
+                "",
+
+            jobRole:
+                jobRole?.value || "",
+
+            workLocation:
+                worklocation?.trim() || "",
+
+            shiftType:
+                shiftType?.value || "",
+
+            shiftFrom:
+                startTime
+                    ? formatTime(startTime)
+                    : "",
+
+            shiftTo:
+                endTime
+                    ? formatTime(endTime)
+                    : "",
+        };
 
 
-        try {
+        const guardianDetails = guardians.map((item) => ({
+            guardianFullName:
+                item?.fullName?.trim() || "",
 
-            // const payload = {
-            //     request: {
-            //         firstName: basicDetails.firstName,
-            //         lastName: basicDetails.lastName,
-            //         mobile: basicDetails.mobile,
-            //         emailId: basicDetails.email,
+            relationshipToTenant:
+                item?.relationship || "",
 
-            //         joiningDate: joiningDate
-            //             ? dayjs(joiningDate).format("DD-MM-YYYY")
-            //             : "",
+            guardianOccupation:
+                item?.occupation || "",
 
-            //         bookingDate: purchaseDate
-            //             ? dayjs(purchaseDate).format("DD-MM-YYYY")
-            //             : "",
+            mobileNo:
+                item?.mobile?.trim() || "",
+        }));
 
-            //         bookingAmount: Number(bookingAmount || 0),
+        const customerJobs = [
+            {
+                hostelId:
+                    activeHostelId || "",
 
-            //         floorId: floorSelected?.id || null,
-            //         roomId: roomSelected?.id || null,
-            //         bedId: bedSelected?.bedId || null,
+                customerId:
+                    draftCustomerId || "",
 
-            //         bankId: accountSelected?.bankingId || "",
-            //         referenceNumber: referenceNumber || "",
+                employmentStatus:
+                    employmentStatus?.value || "",
 
-            //         advanceAmount: Number(advanceAmount || 0),
-            //         rentalAmount: Number(checkinrentalAmount || rentalAmount || 0),
+                organizationName:
+                    companyName?.trim() || "",
 
-            //         stayType: "LONG",
+                role:
+                    jobRole?.value || "",
 
-            //         deductions: extraCharges.map(item => ({
-            //             type:
-            //                 item.type === "Others"
-            //                     ? item.title
-            //                     : item.type,
-            //             amount: Number(item.amount || 0),
-            //         })),
+                workLocation:
+                    worklocation?.trim() || "",
 
-            //         proRate: false,
+                shiftType:
+                    shiftType?.value || "",
 
-            //         idProof: {
-            //             type: IdproofType || "",
-            //             number: IdprooNumber || "",
-            //         },
+                shiftStartsFrom:
+                    startTime
+                        ? formatTime(startTime)
+                        : "",
 
-            //         address: {
-            //             flat: addressDetails.flat,
-            //             house: "",
-            //             building: "",
-            //             company: "",
-            //             apartment: "",
-            //             area: addressDetails.area,
-            //             street: "",
-            //             sector: "",
-            //             village: "",
-            //             landmark: addressDetails.landmark,
-            //             pincode: addressDetails.pincode,
-            //             city: addressDetails.city,
-            //             state: selectedState,
-            //         },
-
-            //         booking: {
-            //             joiningDateTentative: "",
-            //             refuseAdvanceAmount: refuseAdvanceAmount,
-            //         },
-
-            //         jobDetails: {
-            //             employmentStatus: employmentStatus?.value || "",
-            //             companyName: companyName || "",
-            //             collegeName: "",
-            //             jobRole: jobRole?.value || "",
-            //             workLocation: worklocation || "",
-            //             shiftType: shiftType?.value || "",
-            //             shiftFrom: startTime || "",
-            //             shiftTo: endTime || "",
-            //         },
-
-            //         guardians: guardians.map(item => ({
-            //             guardianFullName: item.fullName,
-            //             relationshipToTenant: item.relationship,
-            //             guardianOccupation: item.occupation,
-            //             mobileNo: item.mobile,
-            //         })),
-
-            //         shouldCollectFullRent: collectFullRent,
-            //         customRent: Number(savedCustomRent || 0),
-            //         oneTimeDeduction: [],
-
-            //         vehicleDetails: {
-            //             vehicleType: hasVehicle ? vehicleType : "",
-            //             vehicleNumber: hasVehicle ? vehicleNumber : "",
-            //             isParkingSpaceRequired: hasVehicle,
-            //         },
-            //     },
-            // }
-
-            const payload = {
-                additionalData: {
-                    jobDetails: {
-                        employmentStatus: employmentStatus?.value || "",
-                        companyName: companyName || "",
-                        collegeName: companyName || "",
-                        jobRole: jobRole?.value || "",
-                        workLocation: worklocation || "",
-                        shiftType: shiftType?.value || "",
-                        shiftFrom: startTime ? formatTime(startTime) : "",
-                        shiftTo: endTime ? formatTime(endTime) : "",
-                        // shiftFrom: startTime || "",
-                        // shiftTo: endTime || "",
-                    },
-
-                    guardians: guardians.map(item => ({
-                        guardianFullName: item.fullName || "",
-                        relationshipToTenant: item.relationship || "",
-                        guardianOccupation: item.occupation || "",
-                        mobileNo: item.mobile || "",
-                    })),
-                },
-            };
+                shiftEndsAt:
+                    endTime
+                        ? formatTime(endTime)
+                        : "",
+            },
+        ];
 
 
+        const payload = {
+            additionalData: {
+                jobDetails,
+                guardians: guardianDetails,
+                customerJobs,
+            },
+        };
 
-            // console.log("UPDATE", guardians);
-            // console.log("UPDATE DRAFT", typeof hasVehicle, hasVehicle);
-            // console.log("UPDATE DRAFT", typeof collectFullRent, collectFullRent);
 
-            console.log("UPDATE DRAFT PAYLOAD", JSON.stringify(payload, null, 2));
-            console.log("UPDATE DRAFT PAYLOAD", draftCustomerId)
+        console.log(
+            "=========================================="
+        );
+
+        console.log(
+            "UPDATE ADDITIONAL DRAFT PAYLOAD =>",
+            JSON.stringify(payload, null, 2)
+        );
+
+        console.log(
+            "HOSTEL ID =>",
+            activeHostelId
+        );
+
+        console.log(
+            "CUSTOMER ID =>",
+            draftCustomerId
+        );
+
+        console.log(
+            "AADHAAR IMAGE =>",
+            aadhaarImage
+        );
+
+        console.log(
+            "PAN IMAGE =>",
+            pancardImage
+        );
+
+        console.log(
+            "=========================================="
+        );
+
+        // ==========================================
+        // API CALL
+        // ==========================================
+        const res = await UpdateAdditionalDraftDetails(
+            activeHostelId,
+            draftCustomerId,
+            payload,
+            aadhaarImage,
+            pancardImage
+        );
+
+        console.log(
+            "UPDATE ADDITIONAL DRAFT RESPONSE =>",
+            res
+        );
 
 
-            // const res = await UpdateAdditionalDraftDetails(
-            //     activeHostelId,
-            //     draftCustomerId,
-            //     payload,
-            // );
+        if (res?.success) {
+            setModalType("success");
 
-            const res = await UpdateAdditionalDraftDetails(
-                activeHostelId,
-                draftCustomerId,
-                payload,
-                aadhaarImage,
-                pancardImage
+            setMessage(
+                res?.data?.message ||
+                "Draft updated successfully"
             );
 
-            console.log("updateres", res);
+            setShowSuccess(true);
 
+            setTimeout(() => {
+                setShowSuccess(false);
 
-            if (res.success) {
-                setModalType("success");
-                setMessage(res?.data?.message || "Draft updated successfully");
-                setShowSuccess(true);
+                navigation.goBack();
+            }, 800);
 
-                setTimeout(() => {
-                    setShowSuccess(false);
-                    navigation.goBack();
-                }, 800);
-            } else {
-                setModalType("error");
-                setMessage(res?.message || "Draft update failed");
-                setShowSuccess(true);
-
-                setTimeout(() => {
-                    setShowSuccess(false);
-                }, 800);
-            }
-
-        }
-        finally {
-            isSubmittingRef.current = false;
+            return;
         }
 
-    };
+
+        setModalType("error");
+
+        setMessage(
+            res?.message ||
+            "Draft update failed"
+        );
+
+        setShowSuccess(true);
+
+        setTimeout(() => {
+            setShowSuccess(false);
+        }, 1000);
+
+    } catch (error) {
+        console.log(
+            "HANDLE STEP THREE ERROR 👉",
+            error
+        );
+
+        setModalType("error");
+
+        setMessage(
+            error?.message ||
+            "Something went wrong"
+        );
+
+        setShowSuccess(true);
+
+        setTimeout(() => {
+            setShowSuccess(false);
+        }, 1000);
+
+    } finally {
+        isSubmittingRef.current = false;
+    }
+};
 
 
     const renderFooterButtons = () => {
@@ -2419,11 +2561,11 @@ export default function AddTenantNewform({ navigation, route }) {
             return (
                 <View style={styles.row}>
 
-                    {/* {!hideBookingSaveDraft && (
+                    {!hideBookingSaveDraft && (
                         <TouchableOpacity style={styles.secondaryBtn} onPress={UpdateDraft}>
                             <Text>Save Draft</Text>
                         </TouchableOpacity>
-                    )} */}
+                    )}
 
                     <TouchableOpacity
                         style={[
@@ -3298,10 +3440,13 @@ export default function AddTenantNewform({ navigation, route }) {
                                     currentStep === 1
                                         ? "Basic Details"
                                         : currentStep === 2
-                                            ? "Onboard"
+                                            ? isBookingMode
+                                                ? "Booking"
+                                                : "Onboard"
                                             : "Documents & Job Details"
                                 }
                             </Text>
+                
 
                             <Text style={styles.subTitle}>
                                 {
@@ -4006,32 +4151,33 @@ export default function AddTenantNewform({ navigation, route }) {
                                 <>
 
                                     <View style={styles.tabRow}>
+                                        {!isBookingMode && (
+                                            <TouchableOpacity
+                                                style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
+                                                onPress={() => {
+                                                    setActiveTab("CheckIn");
+                                                    setCheckinTenantSelected(null);
+                                                    setCheckinTenantsopen(false);
+                                                    setJoiningDate(null)
+                                                    setcheckJoiningDate(null);
+                                                    setRentalAmount("")
+                                                    setCheckinRentalAmount("")
+                                                    setAdvanceAmount("");
+                                                    setTenantsError("")
+                                                    clearAllErrors();
+                                                    resetBookingState();
+                                                    clearAllErrors();
+                                                    setFloorSelected(null)
+                                                    setRoomSelected(null)
+                                                    setBedSelected(null)
+                                                }}
 
-                                        <TouchableOpacity
-                                            style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
-                                            onPress={() => {
-                                                setActiveTab("CheckIn");
-                                                setCheckinTenantSelected(null);
-                                                setCheckinTenantsopen(false);
-                                                setJoiningDate(null)
-                                                setcheckJoiningDate(null);
-                                                setRentalAmount("")
-                                                setCheckinRentalAmount("")
-                                                setAdvanceAmount("");
-                                                setTenantsError("")
-                                                clearAllErrors();
-                                                resetBookingState();
-                                                clearAllErrors();
-                                                setFloorSelected(null)
-                                                setRoomSelected(null)
-                                                setBedSelected(null)
-                                            }}
-
-                                        >
-                                            <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
-                                                Check-In
-                                            </Text>
-                                        </TouchableOpacity>
+                                            >
+                                                <Text style={[styles.tabText, activeTab === "CheckIn" && styles.tabTextActive]}>
+                                                    Check-In
+                                                </Text>
+                                            </TouchableOpacity>
+                                        )}
 
                                         <TouchableOpacity
                                             style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
@@ -4978,175 +5124,179 @@ export default function AddTenantNewform({ navigation, route }) {
                                             )}
 
 
-                                            <View style={styles.fullRentRow}>
-                                                <TouchableOpacity
-                                                    style={[
-                                                        styles.checkbox,
-                                                        collectFullRent && styles.checkboxSelected,
-                                                    ]}
-                                                    onPress={() => {
-                                                        const value = !collectFullRent;
-
-                                                        setCollectFullRent(value);
-
-                                                        if (!value) {
-                                                            setShowCustomRentEditor(false);
-                                                            setCustomRentAmount("");
-                                                            setSavedCustomRent("");
-                                                            setIsCustomRentSaved(false);
-                                                            setCustomRentError("");
-                                                        }
-                                                    }}
-                                                >
-                                                    {collectFullRent && <Text style={styles.tick}>✓</Text>}
-                                                </TouchableOpacity>
-
-                                                <Text style={styles.fullRentText}>
-                                                    Do you want to collect Full Rent for current month?
-                                                </Text>
-                                            </View>
-
-                                            {collectFullRent && (
+                                            {showFullRentOption && (
                                                 <>
-                                                    <TouchableOpacity
-                                                        style={[
-                                                            styles.customRentBtn,
-                                                            (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
-                                                        ]}
-                                                        onPress={() => {
-
-                                                            if (showCustomRentEditor || isCustomRentSaved) {
-                                                                setShowCustomRentEditor(false);
-                                                                setIsCustomRentSaved(false)
-                                                            } else {
-                                                                setShowCustomRentEditor(true);
-                                                            }
-                                                        }}
-                                                    >
-                                                        <Text
+                                                    <View style={styles.fullRentRow}>
+                                                        <TouchableOpacity
                                                             style={[
-                                                                styles.customRentBtnText,
-                                                                (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                                                                styles.checkbox,
+                                                                collectFullRent && styles.checkboxSelected,
                                                             ]}
+                                                            onPress={() => {
+                                                                const value = !collectFullRent;
+
+                                                                setCollectFullRent(value);
+
+                                                                if (!value) {
+                                                                    setShowCustomRentEditor(false);
+                                                                    setCustomRentAmount("");
+                                                                    setSavedCustomRent("");
+                                                                    setIsCustomRentSaved(false);
+                                                                    setCustomRentError("");
+                                                                }
+                                                            }}
                                                         >
-                                                            {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                                                            {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                                                        </TouchableOpacity>
+
+                                                        <Text style={styles.fullRentText}>
+                                                            Do you want to collect Full Rent for current month?
                                                         </Text>
-                                                        <Image source={(showCustomRentEditor || isCustomRentSaved) ? RemoveIcon : DirectionBottom} style={{ height: 8, width: 8, marginLeft: 13 }} />
-                                                    </TouchableOpacity>
+                                                    </View>
 
-                                                    {(showCustomRentEditor || isCustomRentSaved) && (
-                                                        <View style={styles.customRentCard}>
+                                                    {collectFullRent && (
+                                                        <>
+                                                            <TouchableOpacity
+                                                                style={[
+                                                                    styles.customRentBtn,
+                                                                    (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
+                                                                ]}
+                                                                onPress={() => {
 
-                                                            <Text style={styles.customRentTitle}>
-                                                                Custom Rent Amount
-                                                            </Text>
+                                                                    if (showCustomRentEditor || isCustomRentSaved) {
+                                                                        setShowCustomRentEditor(false);
+                                                                        setIsCustomRentSaved(false)
+                                                                    } else {
+                                                                        setShowCustomRentEditor(true);
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <Text
+                                                                    style={[
+                                                                        styles.customRentBtnText,
+                                                                        (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                                                                    ]}
+                                                                >
+                                                                    {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                                                                </Text>
+                                                                <Image source={(showCustomRentEditor || isCustomRentSaved) ? RemoveIcon : DirectionBottom} style={{ height: 8, width: 8, marginLeft: 13 }} />
+                                                            </TouchableOpacity>
 
-                                                            <Text style={styles.customRentSubTitle}>
-                                                                This amount reflects First month Rent only.
-                                                            </Text>
+                                                            {(showCustomRentEditor || isCustomRentSaved) && (
+                                                                <View style={styles.customRentCard}>
 
-                                                            {!isCustomRentSaved ? (
-
-                                                                <>
-                                                                    <View style={styles.amountRow}>
-
-                                                                        <TextInput
-                                                                            style={styles.amountInput}
-                                                                            placeholder="₹ 0.00"
-                                                                            keyboardType="numeric"
-                                                                            value={customRentAmount}
-                                                                            onChangeText={(text) => {
-                                                                                setCustomRentAmount(
-                                                                                    text.replace(/[^0-9]/g, "")
-                                                                                );
-                                                                                setCustomRentError("");
-                                                                            }}
-                                                                            onFocus={(e) => scrollInputIntoView(e)}
-                                                                        />
-
-                                                                        <TouchableOpacity
-                                                                            style={styles.setBtn}
-                                                                            onPress={() => {
-
-                                                                                if (!customRentAmount) {
-                                                                                    setCustomRentError(
-                                                                                        "Please enter custom rent amount"
-                                                                                    );
-                                                                                    return;
-                                                                                }
-
-                                                                                if (Number(customRentAmount) <= 0) {
-                                                                                    setCustomRentError(
-                                                                                        "Amount should be greater than zero"
-                                                                                    );
-                                                                                    return;
-                                                                                }
-
-                                                                                // if (
-                                                                                //     Number(customRentAmount) >
-                                                                                //     Number(checkinrentalAmount || 0)
-                                                                                // ) {
-                                                                                //     setCustomRentError(
-                                                                                //         "Custom rent cannot exceed total rent"
-                                                                                //     );
-                                                                                //     return;
-                                                                                // }
-
-                                                                                setSavedCustomRent(customRentAmount);
-
-                                                                                setIsCustomRentSaved(true);
-
-                                                                                setShowCustomRentEditor(false);
-
-                                                                                setCustomRentError("");
-                                                                            }}
-                                                                        >
-                                                                            <Text style={styles.setBtnText}>
-                                                                                ✓ Set
-                                                                            </Text>
-                                                                        </TouchableOpacity>
-
-                                                                    </View>
-
-                                                                    {customRentError ? (
-                                                                        <ErrorMessage message={customRentError} />
-                                                                    ) : null}
-                                                                </>
-
-                                                            ) : (
-
-                                                                <View style={styles.savedRow}>
-
-                                                                    <Text style={styles.savedAmount}>
-                                                                        ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                                                                    <Text style={styles.customRentTitle}>
+                                                                        Custom Rent Amount
                                                                     </Text>
 
-                                                                    <TouchableOpacity
-                                                                        onPress={() => {
+                                                                    <Text style={styles.customRentSubTitle}>
+                                                                        This amount reflects First month Rent only.
+                                                                    </Text>
 
-                                                                            setCustomRentAmount(savedCustomRent);
+                                                                    {!isCustomRentSaved ? (
 
-                                                                            setIsCustomRentSaved(false);
+                                                                        <>
+                                                                            <View style={styles.amountRow}>
 
-                                                                            setShowCustomRentEditor(true);
+                                                                                <TextInput
+                                                                                    style={styles.amountInput}
+                                                                                    placeholder="₹ 0.00"
+                                                                                    keyboardType="numeric"
+                                                                                    value={customRentAmount}
+                                                                                    onChangeText={(text) => {
+                                                                                        setCustomRentAmount(
+                                                                                            text.replace(/[^0-9]/g, "")
+                                                                                        );
+                                                                                        setCustomRentError("");
+                                                                                    }}
+                                                                                    onFocus={(e) => scrollInputIntoView(e)}
+                                                                                />
 
-                                                                        }}
-                                                                    >
-                                                                        <Image
-                                                                            source={require("../../Assets/Images/edit.png")}
-                                                                            style={{
-                                                                                width: 24,
-                                                                                height: 24,
-                                                                                tintColor: "#6B7280",
-                                                                            }}
-                                                                        />
-                                                                    </TouchableOpacity>
+                                                                                <TouchableOpacity
+                                                                                    style={styles.setBtn}
+                                                                                    onPress={() => {
+
+                                                                                        if (!customRentAmount) {
+                                                                                            setCustomRentError(
+                                                                                                "Please enter custom rent amount"
+                                                                                            );
+                                                                                            return;
+                                                                                        }
+
+                                                                                        if (Number(customRentAmount) <= 0) {
+                                                                                            setCustomRentError(
+                                                                                                "Amount should be greater than zero"
+                                                                                            );
+                                                                                            return;
+                                                                                        }
+
+                                                                                        // if (
+                                                                                        //     Number(customRentAmount) >
+                                                                                        //     Number(checkinrentalAmount || 0)
+                                                                                        // ) {
+                                                                                        //     setCustomRentError(
+                                                                                        //         "Custom rent cannot exceed total rent"
+                                                                                        //     );
+                                                                                        //     return;
+                                                                                        // }
+
+                                                                                        setSavedCustomRent(customRentAmount);
+
+                                                                                        setIsCustomRentSaved(true);
+
+                                                                                        setShowCustomRentEditor(false);
+
+                                                                                        setCustomRentError("");
+                                                                                    }}
+                                                                                >
+                                                                                    <Text style={styles.setBtnText}>
+                                                                                        ✓ Set
+                                                                                    </Text>
+                                                                                </TouchableOpacity>
+
+                                                                            </View>
+
+                                                                            {customRentError ? (
+                                                                                <ErrorMessage message={customRentError} />
+                                                                            ) : null}
+                                                                        </>
+
+                                                                    ) : (
+
+                                                                        <View style={styles.savedRow}>
+
+                                                                            <Text style={styles.savedAmount}>
+                                                                                ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                                                                            </Text>
+
+                                                                            <TouchableOpacity
+                                                                                onPress={() => {
+
+                                                                                    setCustomRentAmount(savedCustomRent);
+
+                                                                                    setIsCustomRentSaved(false);
+
+                                                                                    setShowCustomRentEditor(true);
+
+                                                                                }}
+                                                                            >
+                                                                                <Image
+                                                                                    source={require("../../Assets/Images/edit.png")}
+                                                                                    style={{
+                                                                                        width: 24,
+                                                                                        height: 24,
+                                                                                        tintColor: "#6B7280",
+                                                                                    }}
+                                                                                />
+                                                                            </TouchableOpacity>
+
+                                                                        </View>
+
+                                                                    )}
 
                                                                 </View>
-
                                                             )}
-
-                                                        </View>
+                                                        </>
                                                     )}
                                                 </>
                                             )}
@@ -8002,7 +8152,7 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Bold",
         color: "#222",
     },
-     clockIcon: {
+    clockIcon: {
         width: 22,
         height: 22,
         tintColor: "#222",

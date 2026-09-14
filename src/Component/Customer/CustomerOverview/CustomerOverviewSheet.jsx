@@ -6,7 +6,7 @@ import {
   ScrollView,
   TouchableOpacity, TouchableWithoutFeedback,
   Image, BackHandler,
-  NativeModules, Animated, Linking , Modal
+  NativeModules, Animated, Linking, Modal
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
@@ -83,7 +83,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, loading, DeleteTenantDraft } = useCustomer();
-  console.log("customer", customer)
+  console.log("customer", customer, customerId)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails, setCustomerDetails] = useState("")
   const [showEdit, setShowEdit] = useState(false);
@@ -125,6 +125,12 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showPendingAction, setShowPendingAction] = useState(false)
 
   const [showkycPendingSheet, setShowKYCPendingSheet] = useState(false);
+
+  const [jobModalData, setJobModalData] = useState({
+    job: null,
+    index: null,
+    isEdit: false,
+  });
 
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -171,6 +177,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
 
+  const { canWriteModule: canWriteBooking, canUpdateModule: canUpdateBooking } =
+    useHasPermission("Booking");
+
   console.log("custosus", customerId)
 
 
@@ -211,9 +220,19 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     setShowKYCPendingSheet(true)
   }
 
-  const handleshowJobdetails = () => {
-    setShowJobDetails(true)
-  }
+  // const handleshowJobdetails = () => {
+  //   setShowJobDetails(true)
+  // }
+
+  const handleshowJobdetails = (data = {}) => {
+    setJobModalData({
+      job: data?.job || null,
+      index: data?.index ?? null,
+      isEdit: !!data?.job,
+    });
+
+    setShowJobDetails(true);
+  };
   const handleshowVechiledetails = () => {
     setShowVechileDetails(true)
   }
@@ -263,13 +282,25 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   };
 
 
+  // const fetchCustomerDetails = async () => {
+  //   const res = await getCustomerDetails(customer.customerId || customerId);
+  //   console.log("fetchCustomerDetails", res)
+  //   if (res.success) {
+  //     setCustomerDetails(res.data)
+  //   }
+  // }
+
   const fetchCustomerDetails = async () => {
-    const res = await getCustomerDetails(customer.customerId || customerId);
-    console.log("fetchCustomerDetails", res)
+    const res = await getCustomerDetails(
+      customer?.customerId || customerId
+    );
+
+    console.log("fetchCustomerDetails", res);
+
     if (res.success) {
-      setCustomerDetails(res.data)
+      setCustomerDetails(res.data);
     }
-  }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -924,7 +955,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
 
 
 
-              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING" ) && (
+              {(customerDetails?.customerCurrentStatus != "VACATED" && customerDetails?.customerCurrentStatus != "CANCELLED_BOOKING") && (
                 <TouchableOpacity onPress={(e) => {
                   openMenu(e, customerDetails);
                 }}>
@@ -1240,8 +1271,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         // style={styles.popupRow}
                         style={[
                           styles.popupRow,
-                          !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                          !canUpdateBooking && { opacity: 0.4 }]}
+                        disabled={!canUpdateBooking}
                         onPress={() => {
                           setReassignCustomer(selectedItem);
                           handleShowReAssignBed();
@@ -1316,7 +1347,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                     selectedItem && selectedItem.customerCurrentStatus === "BOOKED" &&
                     <>
 
-                     <TouchableOpacity
+                      <TouchableOpacity
                         // style={styles.popupRow}
                         style={[
                           styles.popupRow,
@@ -1343,11 +1374,11 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                         <Image source={ReAssignIcon} style={styles.popupIcon} />
                         <Text style={styles.popupText}>Make Us InActive</Text>
                       </TouchableOpacity>
-                     
+
                     </>
                   }
                   {selectedItem &&
-                    !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED","DRAFT"].includes(selectedItem.customerCurrentStatus) && (
+                    !["CHECK_IN", "SETTLEMENT_GENERATED", "BOOKED", "DRAFT"].includes(selectedItem.customerCurrentStatus) && (
 
                       <>
                         {/* <TouchableOpacity
@@ -1411,7 +1442,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
                     )}
 
                   {selectedItem &&
-                    !["BOOKED","DRAFT"].includes(selectedItem.customerCurrentStatus) && (
+                    !["BOOKED", "DRAFT"].includes(selectedItem.customerCurrentStatus) && (
                       <TouchableOpacity
                         style={[
                           styles.popupRow,
@@ -1449,7 +1480,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         )}
 
 
- {deleteTenants && (
+        {deleteTenants && (
           <Modal
             transparent
             animationType="fade"
@@ -1633,12 +1664,22 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         customerDetails={customerDetails}
       />
 
-      <AddJobDetails
+      {/* <AddJobDetails
         visible={showJobdetails}
         onClose={() => setShowJobDetails(false)}
         customerDetails={customerDetails}
         onSuccess={fetchCustomerDetails}
-      />
+      /> */}
+
+    <AddJobDetails
+  visible={showJobdetails}
+  onClose={() => setShowJobDetails(false)}
+  customerDetails={customerDetails}
+  onSuccess={fetchCustomerDetails}
+  selectedJob={jobModalData?.job || null}
+  selectedJobIndex={jobModalData?.index ?? null}
+  isEditMode={jobModalData?.isEdit || false}
+/>
 
       <AddVechileSheet
         visible={showVechiledetails}

@@ -8,7 +8,7 @@ import {
     PanResponder,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard, Image , BackHandler
+    TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard, Image, BackHandler
 } from "react-native";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -24,13 +24,21 @@ const SHEET_HEIGHT = height * 0.80;
 export default function JobDetailsSheet({
     visible,
     onClose,
-    customerDetails, onSuccess,
+    customerDetails,
+    onSuccess,
+    selectedJob = null,
+    selectedJobIndex = null,
+    isEditMode = false,
 }) {
+
+
     const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
     const { UpdateJobDetails } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
 
     const scrollRef = useRef(null);
+
+    const isEdit = isEditMode && !!selectedJob;
 
     const [firstName, setFirstName] = useState("")
     const [lastName, setLastName] = useState("")
@@ -301,36 +309,86 @@ export default function JobDetailsSheet({
         }
     }, [visible, customerDetails]);
 
-
     useEffect(() => {
-        if (visible && customerDetails?.jobDetails) {
-            const job = customerDetails?.jobDetails;
+        if (!visible) return;
 
+        const job = selectedJob;
+
+        if (isEditMode && job) {
             setCompanyName(job?.organizationName || "");
+
             setEmploymentStatus(
-                jobOptions?.find(x => x?.value === job?.employmentStatus) || null
+                jobOptions.find(
+                    x => x.value === job?.employmentStatus
+                ) || null
             );
+
             setJobRole(
-                jobRoleOptions.find(x => x.value === job?.role) || null
+                jobRoleOptions.find(
+                    x => x.value === job?.role
+                ) || null
             );
-            setWorkLocations(job?.workLocation || "");
+
+            setWorkLocations(
+                job?.workLocation || ""
+            );
+
             setShiftType(
-                shiftTypeOptions?.find(x => x?.value === job?.shiftType) || null
+                shiftTypeOptions.find(
+                    x => x.value === job?.shiftType
+                ) || null
             );
-            const { start, end } = splitShiftTiming(job?.shiftTiming);
 
+            // API already gives separate fields
+            setStartTime(
+                convertTimeToDate(job?.shiftStartsFrom)
+            );
 
+            setEndTime(
+                convertTimeToDate(job?.shiftEndsAt)
+            );
 
-            setStartTime(start);
-            setEndTime(end);
-
-            console.log("shiftTiming =>", job?.shiftTiming);
-
-
-            console.log("start =>", start);
-            console.log("end =>", end);
+            console.log("EDIT JOB =>", job);
+        } else {
+            // ADD MODE
+            resetForm();
         }
-    }, [visible, customerDetails]);
+    }, [
+        visible,
+        selectedJob,
+        isEditMode,
+    ]);
+
+
+    // useEffect(() => {
+    //     if (visible && customerDetails?.jobDetails) {
+    //         const job = customerDetails?.jobDetails;
+
+    //         setCompanyName(job?.organizationName || "");
+    //         setEmploymentStatus(
+    //             jobOptions?.find(x => x?.value === job?.employmentStatus) || null
+    //         );
+    //         setJobRole(
+    //             jobRoleOptions.find(x => x.value === job?.role) || null
+    //         );
+    //         setWorkLocations(job?.workLocation || "");
+    //         setShiftType(
+    //             shiftTypeOptions?.find(x => x?.value === job?.shiftType) || null
+    //         );
+    //         const { start, end } = splitShiftTiming(job?.shiftTiming);
+
+
+
+    //         setStartTime(start);
+    //         setEndTime(end);
+
+    //         console.log("shiftTiming =>", job?.shiftTiming);
+
+
+    //         console.log("start =>", start);
+    //         console.log("end =>", end);
+    //     }
+    // }, [visible, customerDetails]);
 
 
 
@@ -364,22 +422,22 @@ export default function JobDetailsSheet({
     }
 
     useEffect(() => {
-    const backAction = () => {
-        if (visible) {
-            closeSheet()
-            return true
-        }
+        const backAction = () => {
+            if (visible) {
+                closeSheet()
+                return true
+            }
 
-        return false; 
-    };
+            return false;
+        };
 
-    const backHandler = BackHandler.addEventListener(
-        "hardwareBackPress",
-        backAction
-    );
+        const backHandler = BackHandler.addEventListener(
+            "hardwareBackPress",
+            backAction
+        );
 
-    return () => backHandler.remove();
-}, [visible])
+        return () => backHandler.remove();
+    }, [visible])
 
 
     // const panResponder = useRef(
@@ -437,14 +495,22 @@ export default function JobDetailsSheet({
     if (!visible) return null;
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    const hasJobDetails = Boolean(
-        customerDetails?.jobDetails?.organizationName ||
-        customerDetails?.jobDetails?.employmentStatus ||
-        customerDetails?.jobDetails?.role ||
-        customerDetails?.jobDetails?.workLocation ||
-        customerDetails?.jobDetails?.shiftType ||
-        customerDetails?.jobDetails?.shiftTiming
-    );
+    // const hasJobDetails = Boolean(
+    //     customerDetails?.jobDetails?.organizationName ||
+    //     customerDetails?.jobDetails?.employmentStatus ||
+    //     customerDetails?.jobDetails?.role ||
+    //     customerDetails?.jobDetails?.workLocation ||
+    //     customerDetails?.jobDetails?.shiftType ||
+    //     customerDetails?.jobDetails?.shiftTiming
+    // );
+
+    const customerJobs = Array.isArray(
+        customerDetails?.customerJobs
+    )
+        ? customerDetails.customerJobs
+        : [];
+
+    const hasJobDetails = customerJobs.length > 0;
 
 
 
@@ -584,61 +650,206 @@ export default function JobDetailsSheet({
 
 
     const handleUpdate = async () => {
+        if (!validateJobDetails()) {
+            return;
+        }
 
-        const currentPayload = {
-            employmentStatus: employmentStatus?.value || "",
-            organizationName: companyName.trim(),
-            role: jobRole?.value || "",
-            workLocation: worklocation.trim(),
-            shiftType: shiftType?.value || "",
-            shiftStartsFrom: startTime ? formatTime(startTime) : "",
-            shiftEndsAt: endTime ? formatTime(endTime) : "",
+        // Existing jobs from GET API
+        const existingJobs = Array.isArray(
+            customerDetails?.customerJobs
+        )
+            ? customerDetails.customerJobs
+            : [];
+
+        // Current form value
+        const newJob = {
+            hostelId: activeHostelId,
+            customerId: customerDetails?.customerId,
+
+            employmentStatus:
+                employmentStatus?.value || "",
+
+            organizationName:
+                companyName.trim(),
+
+            role:
+                jobRole?.value || "",
+
+            workLocation:
+                worklocation.trim(),
+
+            shiftType:
+                shiftType?.value || "",
+
+            shiftStartsFrom:
+                startTime
+                    ? formatTime(startTime)
+                    : "",
+
+            shiftEndsAt:
+                endTime
+                    ? formatTime(endTime)
+                    : "",
         };
 
-        // ✅ only compare in Edit mode
-        if (hasJobDetails) {
-            const oldPayload = {
-                employmentStatus: customerDetails?.jobDetails?.employmentStatus || "",
-                organizationName: customerDetails?.jobDetails?.organizationName || "",
-                role: customerDetails?.jobDetails?.role || "",
-                workLocation: customerDetails?.jobDetails?.workLocation || "",
-                shiftType: customerDetails?.jobDetails?.shiftType || "",
-                shiftStartsFrom: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start
-                    ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).start)
-                    : "",
-                shiftEndsAt: splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end
-                    ? formatTime(splitShiftTiming(customerDetails?.jobDetails?.shiftTiming).end)
-                    : "",
+        let updatedJobs;
+
+        // =====================================================
+        // EDIT EXISTING JOB
+        // =====================================================
+        if (
+            isEditMode &&
+            selectedJobIndex !== null &&
+            selectedJobIndex !== undefined
+        ) {
+            updatedJobs = existingJobs.map((job, index) => {
+                if (index === selectedJobIndex) {
+                    return {
+                        ...job,      // OLD JOB values preserve
+                        ...newJob,   // EDITED values overwrite
+                    };
+                }
+
+                // Other jobs untouched
+                return job;
+            });
+        }
+
+        // =====================================================
+        // ADD NEW JOB
+        // =====================================================
+        else {
+            updatedJobs = [
+                ...existingJobs,
+                newJob,
+            ];
+        }
+
+        // =====================================================
+        // FINAL PAYLOAD
+        // =====================================================
+        const currentPayload = {
+            customerJobs: updatedJobs,
+        };
+
+        console.log(
+            "FINAL JOB PAYLOAD =>",
+            JSON.stringify(currentPayload, null, 2)
+        );
+
+        // =====================================================
+        // EDIT - NO CHANGE CHECK
+        // =====================================================
+        if (
+            isEditMode &&
+            selectedJobIndex !== null &&
+            selectedJobIndex !== undefined
+        ) {
+            const oldJob = existingJobs[selectedJobIndex];
+
+            const oldJobPayload = {
+                hostelId: oldJob?.hostelId || "",
+                customerId: oldJob?.customerId || "",
+
+                employmentStatus:
+                    oldJob?.employmentStatus || "",
+
+                organizationName:
+                    oldJob?.organizationName || "",
+
+                role:
+                    oldJob?.role || "",
+
+                workLocation:
+                    oldJob?.workLocation || "",
+
+                shiftType:
+                    oldJob?.shiftType || "",
+
+                shiftStartsFrom:
+                    oldJob?.shiftStartsFrom || "",
+
+                shiftEndsAt:
+                    oldJob?.shiftEndsAt || "",
             };
 
-            if (JSON.stringify(currentPayload) === JSON.stringify(oldPayload)) {
+            const newJobPayload = {
+                hostelId: newJob?.hostelId || "",
+                customerId: newJob?.customerId || "",
+
+                employmentStatus:
+                    newJob?.employmentStatus || "",
+
+                organizationName:
+                    newJob?.organizationName || "",
+
+                role:
+                    newJob?.role || "",
+
+                workLocation:
+                    newJob?.workLocation || "",
+
+                shiftType:
+                    newJob?.shiftType || "",
+
+                shiftStartsFrom:
+                    newJob?.shiftStartsFrom || "",
+
+                shiftEndsAt:
+                    newJob?.shiftEndsAt || "",
+            };
+
+            if (
+                JSON.stringify(oldJobPayload) ===
+                JSON.stringify(newJobPayload)
+            ) {
                 setMessage("No changes detected");
                 setModalType("warning");
                 setShowSuccess(true);
-                setTimeout(() => setShowSuccess(false), 1200);
+
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 1200);
+
                 return;
             }
         }
 
+        // =====================================================
+        // SAME API FOR ADD + EDIT
+        // =====================================================
         const res = await UpdateJobDetails(
             activeHostelId,
-            customerDetails.customerId,
+            customerDetails?.customerId,
             currentPayload
         );
 
+        console.log("UpdateJobDetails RESPONSE =>", res);
+
         if (res?.success) {
-            setMessage(hasJobDetails ? "Updated Successfully" : "Saved Successfully");
+            setMessage(
+                isEditMode
+                    ? "Updated Successfully"
+                    : "Saved Successfully"
+            );
+
             setModalType("success");
             setShowSuccess(true);
 
             setTimeout(() => {
                 setShowSuccess(false);
+
                 onSuccess?.();
+
                 closeSheet();
-            }, 2000);
+            }, 1500);
 
         } else {
-            setMessage(res?.message || "Job Details update Failed");
+            setMessage(
+                res?.message ||
+                "Job Details update failed"
+            );
+
             setModalType("error");
             setShowSuccess(true);
 
@@ -661,15 +872,15 @@ export default function JobDetailsSheet({
 
                 {/* BOTTOM SHEET */}
 
-<Animated.View
-    {...panResponder.panHandlers}
-    style={[
-        styles.sheet,
-        {
-            transform: [{ translateY }],
-        },
-    ]}
->
+                <Animated.View
+                    {...panResponder.panHandlers}
+                    style={[
+                        styles.sheet,
+                        {
+                            transform: [{ translateY }],
+                        },
+                    ]}
+                >
 
 
                     <KeyboardAvoidingView
@@ -685,12 +896,12 @@ export default function JobDetailsSheet({
                             scrollEnabled={!employmentOpen && !jobRoleOpen && !shiftOpen}
                             nestedScrollEnabled={true}
                         >
-                         <View
-    style={styles.handle}
-    // {...(panResponder?.panHandlers || {})}
-/>
+                            <View
+                                style={styles.handle}
+                            // {...(panResponder?.panHandlers || {})}
+                            />
                             <Text style={styles.title}>
-                                {hasJobDetails ? "Edit Job Details" : "Add Job Details"}
+                                {isEditMode ? "Edit Job Details" : "Add Job Details"}
                             </Text>
 
                             <Text style={styles.label}>Company / College Name </Text>
@@ -763,7 +974,7 @@ export default function JobDetailsSheet({
                                     <View style={styles.dropdownList}>
                                         <ScrollView
                                             style={{ maxHeight: 150 }} nestedScrollEnabled
-  onStartShouldSetResponder={() => true}
+                                            onStartShouldSetResponder={() => true}
                                         >
                                             {jobOptions.map(item => (
                                                 <TouchableOpacity
@@ -820,7 +1031,7 @@ export default function JobDetailsSheet({
                                     <View style={styles.dropdownList}>
                                         <ScrollView
                                             style={{ maxHeight: 150 }} nestedScrollEnabled
-                                              onStartShouldSetResponder={() => true}>
+                                            onStartShouldSetResponder={() => true}>
                                             {jobRoleOptions.map(item => (
                                                 <TouchableOpacity
                                                     key={item.value}
@@ -906,7 +1117,7 @@ export default function JobDetailsSheet({
                                     <View style={styles.dropdownList}>
                                         <ScrollView
                                             style={{ maxHeight: 150 }} nestedScrollEnabled
-                                              onStartShouldSetResponder={() => true}>
+                                            onStartShouldSetResponder={() => true}>
                                             {shiftTypeOptions.map(item => (
                                                 <TouchableOpacity
                                                     key={item.value}
@@ -970,7 +1181,7 @@ export default function JobDetailsSheet({
                                 </TouchableOpacity>
 
                                 <TouchableOpacity style={styles.updateBtn} onPress={handleUpdate}>
-                                    <Text style={styles.updateText}> {hasJobDetails ? "Update" : "Save"}</Text>
+                                    <Text style={styles.updateText}> {isEditMode ? "Update" : "Save"}</Text>
                                 </TouchableOpacity>
                             </View>
                         </ScrollView>

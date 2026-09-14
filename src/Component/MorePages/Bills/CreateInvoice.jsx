@@ -69,7 +69,6 @@ const CreateInvoice = ({ }) => {
     const detailOptions = [
         "Advance",
         "Room Rent",
-        "EB",
         "Other",
     ]
 
@@ -86,13 +85,13 @@ const CreateInvoice = ({ }) => {
             (item, index) => index !== currentIndex && item?.itemDetail === "Room Rent"
         );
 
-        const hasEB = items.some(
-            (item, index) => index !== currentIndex && item?.itemDetail === "EB"
-        );
+        // const hasEB = items.some(
+        //     (item, index) => index !== currentIndex && item?.itemDetail === "EB"
+        // );
 
         return detailOptions.filter(option => {
             if (option === "Room Rent") return !hasRoomRent;
-            if (option === "EB") return !hasEB;
+            // if (option === "EB") return !hasEB;
             return true;
         });
     }
@@ -210,7 +209,7 @@ const CreateInvoice = ({ }) => {
         const duplicate = items.some(
             (item, itemIndex) =>
                 itemIndex !== index && item?.itemDetail === value &&
-                ["Room Rent", "EB"].includes(value)
+                ["Room Rent"].includes(value)
         );
 
         if (duplicate) {
@@ -406,22 +405,8 @@ const CreateInvoice = ({ }) => {
     ]);
 
 
-    const payload = {
-        invoiceNumber: transactionId || "",
-        invoiceDate: dayjs(paidDate).format("DD/MM/YYYY"),
-        notes: description || "",
-        isDiscounted: Number(discount || 0) > 0,
-        discountAmount: Number(calculatedDiscountAmount || 0),
-        invoiceItems: items.map((item) => ({
-            invoiceItem:
-                item.itemDetail === "Other"
-                    ? (item.am_name || "").trim()
-                    : item.itemDetail,
-            amount: Number(item.amount || 0),
-        })),
-    };
+    console.log("seletedtenant", selectedTenant);
 
-    console.log("Manual Invoice Payload:", payload);
 
 
 
@@ -501,17 +486,35 @@ const CreateInvoice = ({ }) => {
             setIsSubmitClicked(true);
 
 
+
+
             const payload = {
                 invoiceNumber: transactionId || "",
-                invoiceDate: dayjs(paidDate).format("DD/MM/YYYY"),
+                invoiceDate: dayjs(paidDate).format("DD-MM-YYYY"),
                 notes: description || "",
+
                 isDiscounted: Number(discount || 0) > 0,
-                discountAmount: Number(calculatedDiscountAmount || 0),
+
+                discountAmount:
+                    discountType === "amount"
+                        ? Number(discount || 0)
+                        : "",
+
+                discountPercentage:
+                    discountType === "percentage"
+                        ? Number(discount || 0)
+                        : "",
+
                 invoiceItems: items.map((item) => ({
                     invoiceItem:
                         item.itemDetail === "Other"
                             ? (item.am_name || "").trim()
-                            : item.itemDetail,
+                            : item.itemDetail === "Advance"
+                                ? "ADDITIONAL_ADVANCE"
+                                : item.itemDetail === "Room Rent"
+                                    ? "RENT"
+                                    : "OTHER",
+
                     amount: Number(item.amount || 0),
                 })),
             };
@@ -753,7 +756,7 @@ const CreateInvoice = ({ }) => {
                                 </View>
 
                                 {/* ADDRESS */}
-                                <Text style={styles.tenantAddressText}>
+                                {/* <Text style={styles.tenantAddressText}>
                                     {[
                                         selectedTenant?.addressInfo?.houseNo,
                                         selectedTenant?.addressInfo?.street,
@@ -770,6 +773,38 @@ const CreateInvoice = ({ }) => {
                                                 String(value).trim()
                                         )
                                         .join(", ") || "N/A"}
+                                </Text> */}
+
+                                <Text style={styles.tenantAddressText}>
+                                    {(() => {
+                                        const address = selectedTenant?.addressInfo;
+
+                                        const houseNo = String(address?.houseNo ?? "").trim();
+                                        const street = String(address?.street ?? "").trim();
+                                        const landmark = String(address?.landmark ?? "").trim();
+                                        const city = String(address?.city ?? "").trim();
+                                        const state = String(address?.state ?? "").trim();
+
+                                        const pincode = String(address?.pincode ?? "").trim();
+
+                                        // Pincode should be exactly 6 digits
+                                        const validPincode = /^\d{6}$/.test(pincode)
+                                            ? pincode
+                                            : "";
+
+                                        const addressParts = [
+                                            houseNo,
+                                            street,
+                                            landmark,
+                                            city,
+                                            state,
+                                            validPincode,
+                                        ].filter(Boolean);
+
+                                        return addressParts.length > 0
+                                            ? addressParts.join(", ")
+                                            : "N/A";
+                                    })()}
                                 </Text>
 
                                 {/* MOBILE */}

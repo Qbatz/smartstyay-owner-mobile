@@ -44,7 +44,7 @@ import Remainderbtn from "../../../Assets/Images/RemainderIcon.png"
 
 export default function OverviewTab({ customerDetails,
   handleEditBasicDetails, handleEditAdressDetails, handleEditJoining, handleEditMonthlyRent, handleEditAdvance, handleShowAmenities
-  , openAdditionalContact, handleshowKYCPendingSheet, handleJobdetails  , handleVechileDetails , onRentDeleted ,}) {
+  , openAdditionalContact, handleshowKYCPendingSheet, handleJobdetails, handleVechileDetails, onRentDeleted, }) {
   const [addressTab, setAddressTab] = useState("KYC");
   const { GetAllAmenities, amenities, amenitiesAllData } = useContext(AmenityContext);
   const { activeHostelId } = useContext(CommonContexts);
@@ -54,10 +54,12 @@ export default function OverviewTab({ customerDetails,
   const [viewerVisible, setViewerVisible] = useState(false);
   const [viewerIndex, setViewerIndex] = useState(0);
 
+  const [expandedJobIndex, setExpandedJobIndex] = useState(null);
+
   const [deletePopup, setDeletePopup] = useState(false)
   const [deleteDocumentId, setDeleteDocumentId] = useState(null);
 
-  const [deletenewRentshow , setDeleteNewRentShow] = useState(false)
+  const [deletenewRentshow, setDeleteNewRentShow] = useState(false)
 
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
@@ -87,11 +89,20 @@ export default function OverviewTab({ customerDetails,
     handleEditAdressDetails()
   }
 
-  const handleshowJobDetails = () => {
-    handleJobdetails()
+  // const handleshowJobDetails = () => {
+  //   handleJobdetails()
+  // }
+
+
+  const handleshowJobDetails = (job = null, index = null) => {
+    handleJobdetails({
+      job,
+      index,
+      isEdit: !!job,
+    })
   }
 
-   const handleshowVechileDetails = () => {
+  const handleshowVechileDetails = () => {
     handleVechileDetails()
   }
 
@@ -217,15 +228,15 @@ export default function OverviewTab({ customerDetails,
 
     if (res?.success) {
 
-          setDeleteNewRentShow(false)
+      setDeleteNewRentShow(false)
 
-        await onRentDeleted?.();
+      await onRentDeleted?.();
 
-  await GetParticularCustomerDetails(customerDetails?.customerId);
+      await GetParticularCustomerDetails(customerDetails?.customerId);
 
-  //       const updatedCustomer = await getCustomerDetails(
-  //   customerDetails?.customerId
-  // );
+      //       const updatedCustomer = await getCustomerDetails(
+      //   customerDetails?.customerId
+      // );
 
 
       // await GetParticularCustomerDetails(customerDetails?.customerId)
@@ -235,7 +246,7 @@ export default function OverviewTab({ customerDetails,
       setModalType("success");
       setMessage("Upcoming monthly rent cancelled successfully");
       setShowSuccess(true);
-  
+
 
       setTimeout(() => {
         setShowSuccess(false);
@@ -318,7 +329,7 @@ export default function OverviewTab({ customerDetails,
   console.log("customerDetails?.hostelInfo", customerDetails?.hostelInfo)
 
 
-  
+
   const isNewRentApplied = customerDetails?.isNewRentApplied;
   const newRent = customerDetails?.newRentAmount;
   const oldRent = customerDetails?.hostelInfo?.monthlyRent;
@@ -349,13 +360,19 @@ export default function OverviewTab({ customerDetails,
   const isSubscriptionAllow = isValidSubscription
 
 
-  const hasJobDetails =
-    customerDetails?.jobDetails?.employmentStatus ||
-    customerDetails?.jobDetails?.organizationName ||
-    customerDetails?.jobDetails?.role ||
-    customerDetails?.jobDetails?.workLocation ||
-    customerDetails?.jobDetails?.shiftType ||
-    customerDetails?.jobDetails?.shiftTiming;
+  const customerJobs = Array.isArray(customerDetails?.customerJobs)
+    ? customerDetails.customerJobs
+    : [];
+
+  const hasJobDetails = customerJobs.length > 0;
+
+  // const hasJobDetails =
+  //   customerDetails?.jobDetails?.employmentStatus ||
+  //   customerDetails?.jobDetails?.organizationName ||
+  //   customerDetails?.jobDetails?.role ||
+  //   customerDetails?.jobDetails?.workLocation ||
+  //   customerDetails?.jobDetails?.shiftType ||
+  //   customerDetails?.jobDetails?.shiftTiming;
 
   const { shiftStartTime, shiftEndTime } = customerDetails?.jobDetails || {};
 
@@ -831,7 +848,7 @@ export default function OverviewTab({ customerDetails,
               )}
 
               {
-               ["VACATED","SETTLEMENT_GENERATED"].includes(customerDetails?.customerCurrentStatus)  && (
+                ["VACATED", "SETTLEMENT_GENERATED"].includes(customerDetails?.customerCurrentStatus) && (
                   <View style={styles.detailBox}>
                     <Text style={styles.detailLabel}>Checkout Date</Text>
                     <View style={styles.valueWithIcon}>
@@ -923,7 +940,7 @@ export default function OverviewTab({ customerDetails,
                               opacity: 0.4,
                             }
                           }
-                          onPress={()=> setDeleteNewRentShow(true)}
+                          onPress={() => setDeleteNewRentShow(true)}
                         >
 
                           <Image
@@ -1363,12 +1380,12 @@ export default function OverviewTab({ customerDetails,
                 <TouchableOpacity
                   style={[
                     styles.addSmallBtn,
-                    (!isSubscriptionAllow || disabledocEdit || !canWriteTenant || disableAssignBtn) && { opacity: 0.4 }
+                    (!isSubscriptionAllow || disabledocEdit || !canUpdateTenant || disableAssignBtn) && { opacity: 0.4 }
                   ]}
                   // disabled={disableAssignBtn}
                   disabled={
                     disableAssignBtn || disabledocEdit ||
-                    !canWriteTenant || !isSubscriptionAllow
+                    !canUpdateTenant || !isSubscriptionAllow
                   }
                   // style={styles.addSmallBtn}
                   onPress={handleshowAdditionalContact}>
@@ -1502,24 +1519,39 @@ export default function OverviewTab({ customerDetails,
 
           </View>
 
-
           <View style={styles.sectionBox}>
 
+            {/* HEADER */}
             <View style={styles.sectionHeaderRow}>
               <Text style={styles.sectionTitle}>Job Details</Text>
 
               {hasJobDetails && (
                 <TouchableOpacity
-                  disabled={!canUpdateTenant || disableAssignBtn}
-
-                  style={(!canUpdateTenant || disableAssignBtn) && { opacity: 0.4 }}
-                  onPress={handleshowJobDetails}
+                  style={[
+                    styles.addNowBtn,
+                    (disableAssignBtn || !canWriteTenant) && {
+                      opacity: 0.4,
+                    },
+                  ]}
+                  onPress={() => handleshowJobDetails()}
+                  disabled={
+                    disableAssignBtn ||
+                    !canWriteTenant
+                  }
                 >
-                  <Image source={EditIcon} style={styles.editIcon} />
+                  <Image
+                    source={AddIcon} style={{ height: 15, width: 15, marginRight: 4 }}
+                  />
+                  <Text style={styles.addNowText}>
+                    Add
+                  </Text>
+
+
                 </TouchableOpacity>
               )}
             </View>
 
+            {/* EMPTY */}
             {!hasJobDetails ? (
               <View style={styles.jobEmptyContainer}>
                 <Image
@@ -1532,12 +1564,14 @@ export default function OverviewTab({ customerDetails,
                 </Text>
 
                 <View style={styles.jobButtonRow}>
-
-
-
                   <TouchableOpacity
-                    style={[styles.addNowBtn, (disableAssignBtn || !canWriteTenant) && { opacity: 0.4 }]}
-                    onPress={handleshowJobDetails}
+                    style={[
+                      styles.addNowBtn,
+                      (disableAssignBtn || !canWriteTenant) && {
+                        opacity: 0.4,
+                      },
+                    ]}
+                    onPress={() => handleshowJobDetails()}
                     disabled={
                       disableAssignBtn ||
                       !canWriteTenant
@@ -1546,81 +1580,183 @@ export default function OverviewTab({ customerDetails,
                     <Text style={styles.addNowText}>
                       Add Now
                     </Text>
-                    <Image source={RighArrow} style={{
-                      width: 16,
-                      height: 16,
-                      marginRight: 6,
-                      marginLeft: 6,
-                      resizeMode: "contain", transform: 'rotate(90deg)'
-                    }} />
-                  </TouchableOpacity>
 
+                    <Image
+                      source={RighArrow}
+                      style={{
+                        width: 16,
+                        height: 16,
+                        marginRight: 6,
+                        marginLeft: 6,
+                        resizeMode: "contain",
+                        transform: "rotate(90deg)",
+                      }}
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
             ) : (
+
+              /* JOB LIST */
               <>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Employment Status</Text>
-                  <Text style={styles.detailValue}>
-                    {customerDetails?.jobDetails?.employmentStatus || "N/A"}
-                  </Text>
-                </View>
+                {customerJobs.map((job, index) => {
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Company/College Name</Text>
-                  <Text style={styles.detailValue}>
-                    {customerDetails?.jobDetails?.organizationName || "N/A"}
-                  </Text>
-                </View>
+                  const isOpen = expandedJobIndex === index;
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Job Role</Text>
-                  <View style={styles.valueWithIcon}>
-                    {/* <Image source={Mail} style={styles.detailIcon} /> */}
-                    <Text style={styles.detailValue}>
-                      {customerDetails?.jobDetails?.role || "N/A"}
-                    </Text>
-                  </View>
-                </View>
+                  const shiftTiming =
+                    job?.shiftStartsFrom && job?.shiftEndsAt
+                      ? `${job.shiftStartsFrom} - ${job.shiftEndsAt}`
+                      : "N/A";
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Work Location</Text>
-                  <View style={styles.valueWithIcon}>
-                    {/* <Image source={Phone} style={styles.detailIcon} /> */}
-                    <Text style={styles.detailValue}>
-                      {customerDetails?.jobDetails?.workLocation || "N/A"}
-                      {/* +{customerDetails?.countryCode} {customerDetails?.mobileNo || "N/A"} */}
-                    </Text>
-                  </View>
-                </View>
+                  return (
+                    <View
+                      key={job?.jobId || `${job?.customerId}-${index}`}
+                      style={styles.accordionCard}
+                    >
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Shift Type</Text>
-                  <View style={styles.valueWithIcon}>
-                    {/* <Image source={Phone} style={styles.detailIcon} /> */}
-                    <Text style={styles.detailValue}>
-                      {customerDetails?.jobDetails?.shiftType || "N/A"}
-                    </Text>
-                  </View>
-                </View>
+                      {/* JOB HEADER */}
+                      <TouchableOpacity
+                        style={styles.accordionHeader}
+                        onPress={() =>
+                          setExpandedJobIndex(
+                            isOpen ? null : index
+                          )
+                        }
+                      >
 
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Shift Timing</Text>
-                  <View style={styles.valueWithIcon}>
-                    {/* <Image source={Phone} style={styles.detailIcon} /> */}
-                    <Text style={styles.detailValue}>
-                      {shiftTiming}
-                    </Text>
-                  </View>
-                </View>
+                        <View style={{ flex: 1 }}>
+
+                          {/* TOP ROW */}
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text style={styles.name}>
+                              {job?.organizationName || "N/A"}
+                            </Text>
+
+                            <View style={styles.badge}>
+                              <Text style={styles.badgeText}>
+                                Job {String(index + 1).padStart(2, "0")}
+                              </Text>
+                            </View>
+                          </View>
+
+                          {/* ROLE */}
+                          <Text style={styles.phoneText}>
+                            {job?.role || "N/A"}
+                          </Text>
+
+                        </View>
+
+                        <TouchableOpacity
+                          disabled={!canUpdateTenant || disableAssignBtn}
+                          style={
+                            (!canUpdateTenant || disableAssignBtn) && {
+                              opacity: 0.4,
+                            }
+                          }
+                          onPress={() => handleshowJobDetails(job, index)}
+                        >
+                          <Image
+                            source={EditIcon}
+                            style={styles.editIcon}
+                          />
+                        </TouchableOpacity>
+
+                        {/* ARROW */}
+                        <Image
+                          source={DownArrow}
+                          style={[
+                            styles.arrowIcon,
+                            isOpen && {
+                              transform: [{ rotate: "180deg" }],
+                            },
+                          ]}
+                        />
+
+                      </TouchableOpacity>
+
+                      {/* EXPANDED DETAILS */}
+                      {isOpen && (
+                        <View style={styles.accordionBody}>
+
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>
+                              Employment Status
+                            </Text>
+
+                            <Text style={styles.detailValue}>
+                              {job?.employmentStatus || "N/A"}
+                            </Text>
+                          </View>
+
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>
+                              Company / College Name
+                            </Text>
+
+                            <Text style={styles.detailValue}>
+                              {job?.organizationName || "N/A"}
+                            </Text>
+                          </View>
+
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>
+                              Job Role
+                            </Text>
+
+                            <Text style={styles.detailValue}>
+                              {job?.role || "N/A"}
+                            </Text>
+                          </View>
+
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>
+                              Work Location
+                            </Text>
+
+                            <Text style={styles.detailValue}>
+                              {job?.workLocation || "N/A"}
+                            </Text>
+                          </View>
+
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>
+                              Shift Type
+                            </Text>
+
+                            <Text style={styles.detailValue}>
+                              {job?.shiftType || "N/A"}
+                            </Text>
+                          </View>
+
+                          <View style={styles.detailRow}>
+                            <Text style={styles.detailLabel}>
+                              Shift Timing
+                            </Text>
+
+                            <Text style={styles.detailValue}>
+                              {shiftTiming}
+                            </Text>
+                          </View>
+
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
               </>
             )}
 
-
-
           </View>
 
-           {/* <View style={{ backgroundColor: "#fff",
+
+          
+
+          {/* <View style={{ backgroundColor: "#fff",
     borderRadius: 16,
     padding: 10,
     marginTop: 14,
@@ -1901,40 +2037,40 @@ export default function OverviewTab({ customerDetails,
       </Modal>
 
       {deletenewRentshow && (
-                <Modal
-                  transparent
-                  animationType="fade"
-                  visible={deletenewRentshow}
-                  onRequestClose={() => setDeleteNewRentShow(false)}
+        <Modal
+          transparent
+          animationType="fade"
+          visible={deletenewRentshow}
+          onRequestClose={() => setDeleteNewRentShow(false)}
+        >
+          <View style={styles.deleteOverlay}>
+            <View style={styles.deleteBox}>
+
+              <Text style={styles.deleteTitle}>Delete Monthly New Rent?</Text>
+              <Text style={styles.deleteSub}>
+                Are you sure you want to delete New Rent?
+              </Text>
+
+              <View style={styles.deleteBtnRow}>
+                <TouchableOpacity
+                  style={styles.cancelBtn}
+                  onPress={() => setDeleteNewRentShow(false)}
                 >
-                  <View style={styles.deleteOverlay}>
-                    <View style={styles.deleteBox}>
-      
-                      <Text style={styles.deleteTitle}>Delete Monthly New Rent?</Text>
-                      <Text style={styles.deleteSub}>
-                        Are you sure you want to delete New Rent?
-                      </Text>
-      
-                      <View style={styles.deleteBtnRow}>
-                        <TouchableOpacity
-                          style={styles.cancelBtn}
-                          onPress={() => setDeleteNewRentShow(false)}
-                        >
-                          <Text style={styles.cancelText}>Cancel</Text>
-                        </TouchableOpacity>
-      
-                        <TouchableOpacity
-                          style={styles.deleteBtn}
-                          onPress={handleDeleteNewRent}
-                        >
-                          <Text style={styles.deleteBtnText}>Delete</Text>
-                        </TouchableOpacity>
-                      </View>
-      
-                    </View>
-                  </View>
-                </Modal>
-              )}
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={handleDeleteNewRent}
+                >
+                  <Text style={styles.deleteBtnText}>Delete</Text>
+                </TouchableOpacity>
+              </View>
+
+            </View>
+          </View>
+        </Modal>
+      )}
 
 
 

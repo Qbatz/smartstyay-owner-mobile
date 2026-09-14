@@ -117,16 +117,16 @@ export default function TenantsScreen({ route }) {
 
   // const { handleScroll } = useHideTabbarOnScroll(setShowTabBar);
 
-   const [environment, setEnvironment] = useState("")
-  
-  
-    useEffect(() => {
-      CommonModule.fetchEnvironment().then(r => {
-        setEnvironment(r)
-      })
-    }, [])
+  const [environment, setEnvironment] = useState("")
 
-      const isProd = environment?.toUpperCase() === "PROD";
+
+  useEffect(() => {
+    CommonModule.fetchEnvironment().then(r => {
+      setEnvironment(r)
+    })
+  }, [])
+
+  const isProd = environment?.toUpperCase() === "PROD";
 
 
   const sheetTranslateY = useRef(
@@ -146,6 +146,9 @@ export default function TenantsScreen({ route }) {
     canUpdateModule: canUpdateTenant,
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
+
+    const { canWriteModule: canWriteBooking, canUpdateModule: canUpdateBooking } =
+    useHasPermission("Booking");
 
 
   useEffect(() => {
@@ -277,17 +280,56 @@ export default function TenantsScreen({ route }) {
 
   console.log("selectedCustomer", selectedCustomer);
 
+  const fetchCustomers = async (
+    status = tenantStatusFilter,
+    month = selectedMonth,
+    sharing = sharingTypeFilter
+  ) => {
+    if (!activeHostelId) return;
 
-  const fetchCustomers = async () => {
-    if (activeHostelId) {
-      const data = await getCustomersByHostel(activeHostelId);
-      setCustomers(data || []);
-    }
+    const data = await getCustomersByHostel(
+      activeHostelId,
+      searchText,
+      status,
+      month ? [month] : [],
+      sharing
+    );
+
+    setCustomers(data || []);
   };
+
+  // const fetchCustomers = async () => {
+  //   if (activeHostelId) {
+  //     const data = await getCustomersByHostel(activeHostelId);
+  //     setCustomers(data || []);
+  //   }
+  // };
   const handleCheckoutSuccess = async () => {
     await fetchCustomers();
     setShowCheckout(false);
   };
+
+  const tenantFilterOptions = customers?.filterOption || {};
+
+  const tenantStatusOptions =
+    tenantFilterOptions?.status?.map(item => ({
+      label: item?.name,
+      value: item?.type,
+    })) || [];
+
+  const sharingTypeOptions =
+    tenantFilterOptions?.sharingType?.map(item => ({
+      label: item?.name,
+      value: item?.type,
+    })) || [];
+
+  const monthOptions =
+    tenantFilterOptions?.periods?.map(item => ({
+      label: item?.name,
+      value: item?.type,
+    })) || [];
+
+
 
 
 
@@ -307,8 +349,27 @@ export default function TenantsScreen({ route }) {
   const [deleteTenants, setDeleteTenants] = useState(false)
   const [selectedItem, setSelectedItem] = useState(null);
   const [customerExpectedJoiningDate, setexpectedJoiiningDate] = useState()
+  const [tempStatus, setTempStatus] = useState([]);
+  const [tempType, setTempType] = useState([]);
+  const [tempsharingType, setTempSharingype] = useState([]);
+
+  const [tempFilterStatus, setTempFilterStatus] = useState([]);
+  const [tempFilterSharing, setTempFilterSharing] = useState([]);
+  const [tempFilterMonth, setTempFilterMonth] = useState("");
+
   console.log("selectedCustomer", selectedCustomer)
+
+  // const handleWalkinFilter = () => {
+  //   setShowFilter(true);
+  // };
+
   const handleWalkinFilter = () => {
+    setTempFilterStatus(tenantStatusFilter);
+    setTempFilterSharing(sharingTypeFilter);
+    setTempFilterMonth(selectedMonth);
+
+    setFilterError("");
+    setActiveDropdown(null);
     setShowFilter(true);
   };
 
@@ -390,7 +451,7 @@ export default function TenantsScreen({ route }) {
 
 
 
-  
+
 
   const [fromDate, setFromDate] = useState(dayjs());
   const [toDate, setToDate] = useState(dayjs());
@@ -405,24 +466,42 @@ export default function TenantsScreen({ route }) {
   const [mode, setMode] = useState([]);
   const [sharingtype, setSharingTypes] = useState([]);
   const [filterError, setFilterError] = useState("");
-  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  // const [statusSheetOpen, setStatusSheetOpen] = useState(false);
   const [typeSheetOpen, setTypeSheetOpen] = useState(false);
   const [sharingtypeOpen, setSharingTypeOpen] = useState(false);
 
-  const [tempStatus, setTempStatus] = useState([]);
-  const [tempType, setTempType] = useState([]);
-  const [tempsharingType, setTempSharingype] = useState([]);
 
-  const [monthSheetOpen, setMonthSheetOpen] = useState(false);
+
+  // const [monthSheetOpen, setMonthSheetOpen] = useState(false);
+  // const [selectedMonth, setSelectedMonth] = useState("");
+  // const [tempMonth, setTempMonth] = useState("");
+
+
+  const [tenantStatusFilter, setTenantStatusFilter] = useState([]);
+  const [sharingTypeFilter, setSharingTypeFilter] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState("");
+
+  const [tempTenantStatus, setTempTenantStatus] = useState([]);
+  const [tempSharingType, setTempSharingType] = useState([]);
   const [tempMonth, setTempMonth] = useState("");
 
+  const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+  const [sharingTypeSheetOpen, setSharingTypeSheetOpen] = useState(false);
+  const [monthSheetOpen, setMonthSheetOpen] = useState(false);
+
   const isTabBarVisible = useRef(true);
+
+
 
   const [filterOptions, setFilterOptions] = useState([])
   // const [openedRow, setOpenedRow] = useState(null);
   const swipeRefs = useRef({});
   const openedRow = useRef(null);
+
+
+  const selectedMonthLabel =
+    monthOptions.find(item => item.value === selectedMonth)?.label ||
+    "Select Month";
 
   const closePrevious = (id) => {
     if (openedRow.current && openedRow.current !== id) {
@@ -441,6 +520,111 @@ export default function TenantsScreen({ route }) {
     label: i?.name,
     value: i?.type,
   }));
+
+  const renderFilterDropdown = (
+    label,
+    value,
+    setValue,
+    options,
+    keyName,
+    isSingle = false
+  ) => (
+    <View style={{ marginBottom: 12 }}>
+      <Text style={styles.label}>{label}</Text>
+
+      <View style={{ position: "relative" }}>
+        <TouchableOpacity
+          style={[
+            styles.dropdownBox,
+            filterError && !value?.length && {
+              borderColor: "#FF3B30",
+            },
+          ]}
+          onPress={() => {
+            setFilterError("");
+            setActiveDropdown(
+              activeDropdown === keyName ? null : keyName
+            );
+          }}
+        >
+          <Text
+            style={[
+              styles.dropdownText,
+              !value?.length && { color: "#9CA3AF" },
+            ]}
+            numberOfLines={1}
+          >
+            {isSingle
+              ? value || "Select"
+              : value?.length > 0
+                ? options
+                  .filter(item => value.includes(item.value))
+                  .map(item => item.label)
+                  .join(", ")
+                : "Select"}
+          </Text>
+
+          <Text style={styles.arrow}>⌄</Text>
+        </TouchableOpacity>
+
+        {activeDropdown === keyName && (
+          <View style={styles.dropdownMenu}>
+            <ScrollView
+              nestedScrollEnabled
+              showsVerticalScrollIndicator={false}
+            >
+              {options.map((item) => {
+                const isSelected = isSingle
+                  ? value === item.value
+                  : value?.includes(item.value);
+
+                return (
+                  <TouchableOpacity
+                    key={item.value}
+                    style={[
+                      styles.dropdownItem,
+                      isSelected && styles.activeItem,
+                    ]}
+                    onPress={() => {
+                      if (isSingle) {
+                        setValue(item.value);
+                        setActiveDropdown(null);
+                      } else {
+                        if (isSelected) {
+                          setValue(
+                            value.filter(v => v !== item.value)
+                          );
+                        } else {
+                          setValue([
+                            ...(value || []),
+                            item.value,
+                          ]);
+                        }
+                      }
+
+                      setFilterError("");
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.dropdownItemText,
+                        isSelected && {
+                          fontWeight: "600",
+                          color: "#1E45E1",
+                        },
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+      </View>
+    </View>
+  );
 
   //   const applyFilters = (
   //   newMonth = selectedMonth,
@@ -647,15 +831,35 @@ export default function TenantsScreen({ route }) {
   //   lastScrollY.current = currentY;
   // };
 
-  const handleApply = () => {
-    console.log({
-      tenantFilter,
-      viewType,
-      tenantStatus,
-      period,
-      sharingType,
-    });
+  const handleApply = async () => {
+    setFilterError("");
 
+    // if (!tempFilterSharing?.length) {
+    //   setFilterError("Please select Sharing Type");
+    //   return;
+    // }
+
+    // if (!tempFilterMonth) {
+    //   setFilterError("Please select Month");
+    //   return;
+    // }
+
+    const finalStatus =
+      tempFilterStatus?.includes("ALL")
+        ? []
+        : tempFilterStatus;
+
+    setTenantStatusFilter(finalStatus);
+    setSharingTypeFilter(tempFilterSharing);
+    setSelectedMonth(tempFilterMonth);
+
+    await fetchCustomers(
+      finalStatus,
+      tempFilterMonth,
+      tempFilterSharing
+    );
+
+    setActiveDropdown(null);
     setShowFilter(false);
   };
 
@@ -814,8 +1018,8 @@ export default function TenantsScreen({ route }) {
   const handleDeleteDraft = async () => {
     const result = await DeleteTenantDraft(activeHostelId, selectedCustomer?.customerId,);
 
-    console.log("draftdelete", result , activeHostelId, selectedCustomer?.customerId,);
-    
+    console.log("draftdelete", result, activeHostelId, selectedCustomer?.customerId,);
+
 
     if (result?.success) {
       await fetchCustomers()
@@ -1043,103 +1247,138 @@ export default function TenantsScreen({ route }) {
                 )}
 
 
-                 {!isProd && 
-                 (
-                 <ScrollView horizontal persistentScrollbar={false} showsHorizontalScrollIndicator={false}
-                  style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}>
-                  <>
-                    {customers?.listCustomers?.length > 0 && (
-                      <View style={styles.filterRow}>
+                {!isProd &&
+                  (
+                    <ScrollView
+                      horizontal persistentScrollbar={false}
+                      showsHorizontalScrollIndicator={false}
+                      style={{ flexGrow: 0 }} contentContainerStyle={{ paddingLeft: 4, paddingRight: 20 }}>
+                      <>
+                        {customers?.listCustomers?.length > 0 && (
+                          <View style={styles.filterRow}>
 
-                                 <TouchableOpacity
-                            style={[
-                              styles.filterBox,
-                              billStatus.length > 0 && styles.filterBoxActive,
-                            ]}
-                            onPress={() => {
-                              setTempStatus(billStatus);
-                              setStatusSheetOpen(true);
-                            }}
-                          >
-                            <Text
-                              style={[
-                                styles.filterText,
-                                billStatus.length > 0 && styles.filterTextActive,
-                              ]}
-                            >
-                              {billStatus.length === 0
-                                ? "Status"
-                                : `${billStatus[0]} ${
-                                    billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
-                                  }`}
-                            </Text>
-                              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-                          </TouchableOpacity>
+                            {/* STATUS */}
                             <TouchableOpacity
-                            style={[
-                              styles.filterBox,
-                              billStatus.length > 0 && styles.filterBoxActive,
-                            ]}
-                            onPress={() => {
-                              setTempStatus(billStatus);
-                              setStatusSheetOpen(true);
-                            }}
-                          >
-                            <Text
                               style={[
-                                styles.filterText,
-                                billStatus.length > 0 && styles.filterTextActive,
+                                styles.filterBox,
+                                tenantStatusFilter.length > 0 && styles.filterBoxActive,
                               ]}
+                              onPress={() => {
+                                setTempTenantStatus(tenantStatusFilter);
+                                setStatusSheetOpen(true);
+                              }}
                             >
-                              {billStatus.length === 0
-                                ? "Sharing"
-                                : `${billStatus[0]} ${
-                                    billStatus.length > 1 ? `+${billStatus.length - 1} more` : ""
+                              <Text
+                                style={[
+                                  styles.filterText,
+                                  tenantStatusFilter.length > 0 && styles.filterTextActive,
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {tenantStatusFilter.length === 0
+                                  ? "Status"
+                                  : `${tenantStatusOptions.find(
+                                    x => x.value === tenantStatusFilter[0]
+                                  )?.label || tenantStatusFilter[0]}${tenantStatusFilter.length > 1
+                                    ? ` +${tenantStatusFilter.length - 1}`
+                                    : ""
                                   }`}
-                            </Text>
-                              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-                          </TouchableOpacity>
+                              </Text>
+
+                              <Image
+                                source={DownArrow}
+                                style={{ width: 16, height: 16, marginLeft: 6 }}
+                              />
+                            </TouchableOpacity>
 
 
-                 
-                        
-                          <TouchableOpacity
-                            style={[
-                              styles.filterBox,
-                              type.length > 0 && styles.filterBoxActive,
-                            ]}
-                            onPress={() => {
-                              setTempType(type);
-                              setTypeSheetOpen(true);
-                            }}
-                          >
-                            <Text
+                            {/* SHARING TYPE */}
+                            <TouchableOpacity
                               style={[
-                                styles.filterText,
-                                type.length > 0 && styles.filterTextActive,
+                                styles.filterBox,
+                                sharingTypeFilter.length > 0 && styles.filterBoxActive,
                               ]}
+                              onPress={() => {
+                                setTempSharingType(sharingTypeFilter);
+                                setSharingTypeSheetOpen(true);
+                              }}
                             >
-                              {type.length === 0
-                                ? "stay Type"
-                                : `${type[0]} ${
-                                    type.length > 1 ? `+${type.length - 1} more` : ""
+                              <Text
+                                style={[
+                                  styles.filterText,
+                                  sharingTypeFilter.length > 0 && styles.filterTextActive,
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {sharingTypeFilter.length === 0
+                                  ? "Sharing Type"
+                                  : `${sharingTypeOptions.find(
+                                    x => x.value === sharingTypeFilter[0]
+                                  )?.label || sharingTypeFilter[0]}${sharingTypeFilter.length > 1
+                                    ? ` +${sharingTypeFilter.length - 1}`
+                                    : ""
                                   }`}
-                            </Text>
-                              <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-                          </TouchableOpacity>
+                              </Text>
+
+                              <Image
+                                source={DownArrow}
+                                style={{ width: 16, height: 16, marginLeft: 6 }}
+                              />
+                            </TouchableOpacity>
 
 
-                        <TouchableOpacity style={[styles.filterIconBtn, { marginLeft: 5 }]} disabled={!canReadTenant}
-                          onPress={() => setShowFilter(true)}
-                          >
-                          <Image source={Filter} style={{ width: 18, height: 18 }} />
-                        </TouchableOpacity>
-                      </View>
-                    )
-                    }
-                  </>
-                </ScrollView> 
-                )
+                            {/* SELECT MONTH */}
+                            <TouchableOpacity
+                              style={[
+                                styles.filterBox,
+                                selectedMonth && styles.filterBoxActive,
+                              ]}
+                              onPress={() => {
+                                setTempMonth(selectedMonth);
+                                setMonthSheetOpen(true);
+                              }}
+                            >
+                              {/* <Text
+                                style={[
+                                  styles.filterText,
+                                  selectedMonth && styles.filterTextActive,
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {selectedMonth || "Select Month"}
+                              </Text> */}
+
+                              <Text
+                                style={[
+                                  styles.filterText,
+                                  selectedMonth && styles.filterTextActive,
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {selectedMonthLabel}
+                              </Text>
+
+                              <Image
+                                source={DownArrow}
+                                style={{ width: 16, height: 16, marginLeft: 6 }}
+                              />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity style={[styles.filterIconBtn, { marginLeft: 5 }]} disabled={!canReadTenant}
+                              onPress={() => setShowFilter(true)}
+                            >
+                              <Image source={Filter} style={{ width: 18, height: 18 }} />
+                            </TouchableOpacity>
+
+                          </View>
+
+
+
+                        )
+                        }
+                      </>
+                    </ScrollView>
+                  )
                 }
 
 
@@ -1984,8 +2223,8 @@ export default function TenantsScreen({ route }) {
                         // style={styles.popupRow}
                         style={[
                           styles.popupRow,
-                          !canUpdateTenant && { opacity: 0.4 }]}
-                        disabled={!canUpdateTenant}
+                          !canUpdateBooking && { opacity: 0.4 }]}
+                        disabled={!canUpdateBooking}
                         onPress={() => {
                           console.log("allwin", selectedItem);
 
@@ -2271,24 +2510,42 @@ export default function TenantsScreen({ route }) {
               </View>
 
 
-              {renderDropdown(
+              {renderFilterDropdown(
                 "Tenant Status",
-                tenantStatus,
-                setTenantStatus,
-                ["All", "Checkin", "Booking", "Checked Out", "Notice"],
-                "status"
+                tempFilterStatus,
+                setTempFilterStatus,
+                tenantStatusOptions,
+                "filterStatus"
+              )}
+
+              {renderFilterDropdown(
+                "Sharing Type",
+                tempFilterSharing,
+                setTempFilterSharing,
+                sharingTypeOptions,
+                "filterSharing"
+              )}
+
+              {renderFilterDropdown(
+                "Month",
+                tempFilterMonth,
+                setTempFilterMonth,
+                monthOptions,
+                "filterMonth",
+                true
               )}
 
 
-              {renderDropdown(
+
+              {/* {renderDropdown(
                 "View",
                 viewType,
                 setViewType,
                 ["List View", "Room View"],
                 "view"
-              )}
+              )} */}
 
-              <View style={styles.dateRow}>
+              {/* <View style={styles.dateRow}>
                 <View style={{ flexDirection: 'column', flex: 1 }}>
                   <Text>From</Text>
                   <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
@@ -2305,10 +2562,10 @@ export default function TenantsScreen({ route }) {
                     <Image source={CalendarIcon} style={styles.calIcon} />
                   </TouchableOpacity>
                 </View>
-              </View>
+              </View> */}
 
 
-              <View style={styles.quickRow}>
+              {/* <View style={styles.quickRow}>
                 <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
                   <Text style={styles.quickText}>Today</Text>
                 </TouchableOpacity>
@@ -2320,27 +2577,21 @@ export default function TenantsScreen({ route }) {
                 <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
                   <Text style={styles.quickText}>This Month</Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
 
 
 
-              {renderDropdown(
+              {/* {renderDropdown(
                 "stay type",
                 period,
                 setPeriod,
                 ["Long Stay", "Short Stay",],
                 "stay type"
-              )}
+              )} */}
 
-              {renderDropdown(
-                "Sharing Type",
-                sharingType,
-                setSharingType,
-                ["Single", "Double", "Triple"],
-                "sharing"
-              )}
 
-              <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }} onPress={() => setMoreFilters(!morefilters)}>
+
+              {/* <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }} onPress={() => setMoreFilters(!morefilters)}>
                 <Text style={{ fontFamily: "Gilroy-Semibold", fontSize: 16 }}>More Filters</Text>
                 <Image
                   source={DirectionImage}
@@ -2375,7 +2626,7 @@ export default function TenantsScreen({ route }) {
                   )}
 
                 </>
-              )}
+              )} */}
 
 
 
@@ -2383,10 +2634,32 @@ export default function TenantsScreen({ route }) {
 
               {/* Buttons */}
               <View style={styles.bottomButtons}>
-                <TouchableOpacity style={styles.resetBtn}>
-                  <Text style={styles.resetText}>Reset All</Text>
+                <TouchableOpacity
+                  style={styles.resetBtn}
+                  onPress={async () => {
+                    setTempFilterStatus([]);
+                    setTempFilterSharing([]);
+                    setTempFilterMonth("");
+
+                    setTenantStatusFilter([]);
+                    setSharingTypeFilter([]);
+                    setSelectedMonth("");
+
+                    setFilterError("");
+                    setActiveDropdown(null);
+
+                    await fetchCustomers([], "", []);
+
+                    setShowFilter(false);
+                  }}
+                >
+                  <Text style={styles.resetText}>
+                    Reset All
+                  </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.applyBtn}>
+                <TouchableOpacity style={styles.applyBtn}
+                  onPress={handleApply}
+                >
                   <Text style={styles.applyText}>Apply</Text>
                 </TouchableOpacity>
               </View>
@@ -2463,75 +2736,104 @@ export default function TenantsScreen({ route }) {
         <FilterBottomSheet
           visible={statusSheetOpen}
           title="Tenant Status"
-          options={billStatusOptions || []}
-          selectedValues={tempStatus}
-          setSelectedValues={setTempStatus}
+          options={tenantStatusOptions}
+          selectedValues={tempTenantStatus}
+          setSelectedValues={setTempTenantStatus}
 
-          onReset={() => {
-            setTempStatus([]);
-            setBillStatus([]);
+          onReset={async () => {
+            setTempTenantStatus([]);
+            setTenantStatusFilter([]);
             setStatusSheetOpen(false);
 
-            // applyFilters(selectedMonth, [], type);
+            await fetchCustomers(
+              [],
+              selectedMonth,
+              sharingTypeFilter
+            );
           }}
 
-          onApply={() => {
-            setBillStatus(tempStatus);
+          onApply={async () => {
+            setTenantStatusFilter(tempTenantStatus);
             setStatusSheetOpen(false);
 
-            // applyFilters(selectedMonth, tempStatus, type);
+            await fetchCustomers(
+              tempTenantStatus,
+              selectedMonth,
+              sharingTypeFilter
+            );
           }}
 
           onClose={() => setStatusSheetOpen(false)}
         />
 
         <FilterBottomSheet
-          visible={sharingtypeOpen}
+          visible={sharingTypeSheetOpen}
           title="Sharing Type"
-          options={billStatusOptions || []}
-          selectedValues={tempsharingType}
-          setSelectedValues={setSharingTypeOpen}
+          options={sharingTypeOptions}
+          selectedValues={tempSharingType}
+          setSelectedValues={setTempSharingType}
 
-          onReset={() => {
-            setTempSharingype([]);
-            setSharingTypes([]);
-            setSharingTypeOpen(false);
-            // applyFilters(selectedMonth, [], type);
+          onReset={async () => {
+            setTempSharingType([]);
+            setSharingTypeFilter([]);
+            setSharingTypeSheetOpen(false);
+
+            await fetchCustomers(
+              tenantStatusFilter,
+              selectedMonth,
+              []
+            );
           }}
 
-          onApply={() => {
-            setSharingTypes(tempsharingType);
-            setSharingTypeOpen(false);
+          onApply={async () => {
+            setSharingTypeFilter(tempSharingType);
+            setSharingTypeSheetOpen(false);
 
-            // applyFilters(selectedMonth, tempStatus, type);
+            await fetchCustomers(
+              tenantStatusFilter,
+              selectedMonth,
+              tempSharingType
+            );
           }}
 
-          onClose={() => setSharingTypeOpen(false)}
+          onClose={() => setSharingTypeSheetOpen(false)}
         />
 
         <FilterBottomSheet
-          visible={typeSheetOpen}
-          title="Stay Type"
-          options={typeOptions || []}
-          selectedValues={tempType}
-          setSelectedValues={setTempType}
+          visible={monthSheetOpen}
+          title="Select Month"
+          options={monthOptions}
+          selectedValues={tempMonth ? [tempMonth] : []}
+          setSelectedValues={(values) => setTempMonth(values[0] || "")}
+          isSingleSelect={true}
 
-          onReset={() => {
-            setTempType([]);
-            setType([]);
-            setTypeSheetOpen(false);
+          onReset={async () => {
+            setTempMonth("");
+            setSelectedMonth("");
+            setMonthSheetOpen(false);
 
-            // applyFilters(selectedMonth, billStatus, []);
+            await fetchCustomers(
+              tenantStatusFilter,
+              "",
+              sharingTypeFilter
+            );
           }}
 
-          onApply={() => {
-            setType(tempType);
-            setTypeSheetOpen(false);
+          onApply={async () => {
+            setSelectedMonth(tempMonth);
+            setMonthSheetOpen(false);
+            console.log("monthfilter", tenantStatusFilter,
+              tempMonth,
+              sharingTypeFilter);
 
-            // applyFilters(selectedMonth, billStatus, tempType);
+            await fetchCustomers(
+              tenantStatusFilter,
+              tempMonth,
+              sharingTypeFilter
+            );
           }}
 
-          onClose={() => setTypeSheetOpen(false)}
+          onClose={() => setMonthSheetOpen(false)}
         />
 
 
@@ -2570,7 +2872,6 @@ export default function TenantsScreen({ route }) {
             </View>
           </Modal>
         )}
-
 
 
         {showNotice && (
@@ -3438,12 +3739,12 @@ const styles = StyleSheet.create({
   filterBox: {
     flex: 1,
     paddingVertical: 4,
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
     borderRadius: 20,
     // borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E5E7EB",
-    marginRight: 8,
+    marginRight: 3,
     marginLeft: 8,
     backgroundColor: "#fff",
     flexDirection: "row", justifyContent: "center", alignItems: "center"
