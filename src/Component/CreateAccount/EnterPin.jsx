@@ -332,7 +332,8 @@ const EnterMPin = (props) => {
             {
                 incorrectMpin &&
                 <View style={{ alignItems: 'flex-end', paddingTop: 20, paddingRight: 20,marginTop:20 }}>
-                    <TouchableOpacity onPress={() => setForgotMpinPopup(true)}
+                    <TouchableOpacity onPress={forgotMpinClick}
+                    // onPress={() => setForgotMpinPopup(true)}
                     >
                         <Text style={{ color: '#1E45E1', fontSize: 14, fontFamily: "Gilroy-Regular", textDecorationLine: 'underline', }}>
                             Forgot Mpin</Text>
