@@ -269,7 +269,7 @@ export default function ExpensesList({ navigation }) {
     ];
     const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
     const [activeDropdown, setActiveDropdown] = useState(null)
-    const [paymentStatus, setPaymentStatus] = useState(null)
+    const [paymentStatus, setPaymentStatus] = useState([])
     const [showMoreFilterOptions, setShowMoreFilterOption] = useState(true)
     const translateY = useRef(new Animated.Value(0)).current;
     const panResponder = useRef(
@@ -611,10 +611,10 @@ export default function ExpensesList({ navigation }) {
             maxAmount: maxAmount || undefined,
         }
 
-        console.log("lolopop", filters)
+     
 
         const res = await GetExpenseList(activeHostelId, filters)
-        console.log("sithar", res)
+       
     }
 
     if (!canReadExpense && !loading) {

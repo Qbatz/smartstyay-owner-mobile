@@ -236,6 +236,7 @@ const resetEBMeterReading=async(hostelId,payload)=>{
     console.log(res)
     return res;
   }catch(error){
+    console.log("kaliie",error)
     const msg = getErrorMessage(error);
     console.log("error", error , msg);
     

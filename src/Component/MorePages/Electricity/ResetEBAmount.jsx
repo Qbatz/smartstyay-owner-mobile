@@ -131,21 +131,21 @@ export default function ResetEBAmount({
 
     const handleResetReading = async () => {
 
-        let hasError = false;
+        // let hasError = false;
 
-        if (!selectedStartDate) {
-            setDateError("Please select starting date");
-            hasError = true;
-        }
+        // if (!selectedStartDate) {
+        //     setDateError("Please select starting date");
+        //     hasError = true;
+        // }
 
-        if (!meterReading) {
-            setReadingError("Provide reading");
-            hasError = true;
-        }
+        // if (!meterReading) {
+        //     setReadingError("Provide reading");
+        //     hasError = true;
+        // }
 
-        if (hasError) {
-            return;
-        }
+        // if (hasError) {
+        //     return;
+        // }
 
         if (isSubmitClicked) return;
 
