@@ -115,6 +115,7 @@ import { initBaseUrl } from './src/Utils/Constant';
 import { Text, TextInput } from "react-native";
 import { NotificationProvider } from "./src/Context/NotificationContext";
 import NoInternetIcon from "./src/Assets/Images/noInternet.png"
+import NetInfo from '@react-native-community/netinfo';
 
 const { width, height } = Dimensions.get("window");
 
@@ -236,24 +237,127 @@ function AppContent(props) {
 
   }, [])
 
-  useEffect(() => {
-    if (Platform.OS === "android") {
-      if (emitter !== null) {
+  // useEffect(() => {
+  //   if (Platform.OS === "android") {
+  //     if (emitter !== null) {
 
 
-        const subscription = emitter.addListener("networkStatus", (status) => {
-          // setIsConnected(status);
-          loginContext.internet(status)
-          console.log(status)
+  //       const subscription = emitter.addListener("networkStatus", (status) => {
+  //         // setIsConnected(status);
+  //         loginContext.internet(status)
+  //         console.log(status)
 
+  //       });
+  //       return () => subscription.remove();
+  //     }
+
+
+  //   }
+
+  // }, [])
+
+
+//   const updateNetworkStatus = async () => {
+//     try {
+//         const state = await NetInfo.fetch();
+
+//         const connected =
+//             state.isConnected === true &&
+//             state.isInternetReachable !== false;
+
+//         console.log("Internet status:", {
+//             type: state.type,
+//             isConnected: state.isConnected,
+//             isInternetReachable: state.isInternetReachable,
+//             connected,
+//         });
+
+//         loginContext.internet(connected);
+
+//         return connected;
+//     } catch (error) {
+//         console.log("Network status error:", error);
+//         loginContext.internet(false);
+//         return false;
+//     }
+// }
+
+// useEffect(() => {
+//     updateNetworkStatus();
+// }, []);
+
+const updateNetworkStatus = async () => {
+    try {
+        const state = await NetInfo.fetch();
+
+        const connected =
+            state.isConnected === true &&
+            state.isInternetReachable !== false;
+
+        console.log("iOS Network status:", {
+            type: state.type,
+            isConnected: state.isConnected,
+            isInternetReachable: state.isInternetReachable,
+            connected,
         });
-        return () => subscription.remove();
-      }
 
+        loginContext.internet(connected);
 
+        return connected;
+    } catch (error) {
+        console.log("Network status error:", error);
+        loginContext.internet(false);
+        return false;
     }
+};
 
-  }, []);
+
+
+//   useEffect(() => {
+//     const unsubscribe = NetInfo.addEventListener(state => {
+//         const connected =
+//             state.isConnected === true &&
+//             state.isInternetReachable !== false;
+
+//         console.log("Network changed:", {
+//             isConnected: state.isConnected,
+//             isInternetReachable: state.isInternetReachable,
+//             connected,
+//         });
+
+//         loginContext.internet(connected);
+//     });
+
+//     return () => {
+//         unsubscribe();
+//     };
+// }, []);
+
+useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener(state => {
+
+        const connected =
+            state.isConnected === true &&
+            state.isInternetReachable !== false;
+
+        console.log("Network changed:", {
+            type: state.type,
+            isConnected: state.isConnected,
+            isInternetReachable: state.isInternetReachable,
+            connected,
+        });
+
+        loginContext.internet(connected);
+    });
+
+    updateNetworkStatus();
+
+    return () => {
+        unsubscribe();
+    };
+}, []);
+
+
   useEffect(() => {
     retriveData(LOGGEDIN).then(r => {
       if (r === "true") {
@@ -306,21 +410,59 @@ function AppContent(props) {
   console.log(loginContext)
   console.log(commonContext)
 
-  useEffect(() => {
-    CommonModule.checkInternet().then(r => {
-      console.log("internet check")
-      console.log(r)
-      loginContext.internet(r)
-    }).catch(error => {
-      console.log(error)
-    })
+  // useEffect(() => {
+  //   CommonModule.checkInternet().then(r => {
+  //     console.log("internet check")
+  //     console.log(r)
+  //     loginContext.internet(r)
+  //   }).catch(error => {
+  //     console.log(error)
+  //   })
 
 
+  //   if (loginContext?.LoggedIN) {
+  //     setIsLoggedIn(loginContext?.LoggedIN)
+
+  //   }
+  // }, [loginContext?.LoggedIN])
+
+
+
+//   useEffect(() => {
+//     const checkInitialNetwork = async () => {
+//         try {
+//             const state = await NetInfo.fetch();
+
+//             const connected =
+//                 state.isConnected === true &&
+//                 state.isInternetReachable !== false;
+
+//             console.log("Initial network status:", {
+//                 isConnected: state.isConnected,
+//                 isInternetReachable: state.isInternetReachable,
+//                 connected,
+//             });
+
+//             loginContext.internet(connected);
+//         } catch (error) {
+//             console.log("Initial network check error:", error);
+//             loginContext.internet(false);
+//         }
+//     };
+
+//     checkInitialNetwork();
+
+//     if (loginContext?.LoggedIN) {
+//         setIsLoggedIn(loginContext.LoggedIN);
+//     }
+// }, [loginContext?.LoggedIN]);
+
+
+useEffect(() => {
     if (loginContext?.LoggedIN) {
-      setIsLoggedIn(loginContext?.LoggedIN)
-
+        setIsLoggedIn(loginContext.LoggedIN);
     }
-  }, [loginContext?.LoggedIN])
+}, [loginContext?.LoggedIN]);
 
   useEffect(() => {
     if (!loginContext?.requiredPinSetup) {
@@ -329,17 +471,47 @@ function AppContent(props) {
     setPinVerify(false)
   }, [loginContext?.requiredPinSetup])
 
-  const checkInternet = () => {
 
-    if (Platform.OS == "android") {
-      CommonModule.checkInternet().then(r => {
-        loginContext.internet(r)
-        console.log(r)
-      }).catch((error) => {
-        console.log(error)
-      })
-    }
-  }
+
+  // const checkInternet = () => {
+
+  //   if (Platform.OS == "android") {
+  //     CommonModule.checkInternet().then(r => {
+  //       loginContext.internet(r)
+  //       console.log(r)
+  //     }).catch((error) => {
+  //       console.log(error)
+  //     })
+  //   }
+  // }
+
+//   const checkInternet = async () => {
+//     try {
+//         console.log("Try again clicked");
+
+//         const state = await NetInfo.fetch();
+
+//         const connected =
+//             state.isConnected === true &&
+//             state.isInternetReachable !== false;
+
+//         console.log("Try again network status:", {
+//             isConnected: state.isConnected,
+//             isInternetReachable: state.isInternetReachable,
+//             connected,
+//         });
+
+//         loginContext.internet(connected);
+//     } catch (error) {
+//         console.log("Internet check error:", error);
+//         loginContext.internet(false);
+//     }
+// };
+
+const checkInternet = async () => {
+    console.log("Try again clicked");
+    await updateNetworkStatus();
+};
 
 
   return (
@@ -367,7 +539,8 @@ function AppContent(props) {
 
 
 
-      {loginContext?.getNetworkConnectivity != true && <View style={styles.noInternetContainer}>
+      {loginContext?.getNetworkConnectivity === false  && 
+      <View style={styles.noInternetContainer}>
         <View style={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
 
           <Image source={NoInternetIcon} style={{ width: 350, height: 246 }} />

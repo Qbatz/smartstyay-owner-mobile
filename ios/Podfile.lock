@@ -1900,6 +1900,34 @@ PODS:
     - Yoga
   - react-native-month-year-picker (1.9.0):
     - React
+  - react-native-netinfo (12.0.1):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - react-native-safe-area-context (5.7.0):
     - boost
     - DoubleConversion
@@ -3018,6 +3046,7 @@ DEPENDENCIES:
   - "react-native-document-picker (from `../node_modules/@react-native-documents/picker`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-month-year-picker (from `../node_modules/react-native-month-year-picker`)
+  - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
@@ -3165,6 +3194,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-picker"
   react-native-month-year-picker:
     :path: "../node_modules/react-native-month-year-picker"
+  react-native-netinfo:
+    :path: "../node_modules/@react-native-community/netinfo"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   react-native-webview:
@@ -3302,6 +3333,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: ca6edbcee0abb1b92a06d34fc42ee31e9d559534
   react-native-image-picker: 43e6cd4231e670030fe09b079d696fa5a634ccfc
   react-native-month-year-picker: 948797e981ca502427024a34b17f545eb321bbff
+  react-native-netinfo: cd30f7af707b4ac085374cc4896fe605d9aab51f
   react-native-safe-area-context: 0f4986a88ec555aff660503b483d6e4bd6980a9a
   react-native-webview: 278eeb4df23d6202b559ceb21bd4088dbde30090
   React-NativeModulesApple: c4bee6aa736092cd347456488a4f97a8e7517604

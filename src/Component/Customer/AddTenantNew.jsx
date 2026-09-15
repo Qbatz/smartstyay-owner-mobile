@@ -6,7 +6,7 @@ import {
     TextInput,
     Image,
     StyleSheet,
-    ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard, BackHandler
+    ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard, BackHandler, Platform
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 // import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -152,6 +152,7 @@ export default function AddTenantNewform({ navigation, route }) {
     const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India", });
 
 
+    const [jobErrors, setJobErrors] = useState([]);
 
 
     const [date, setDate] = useState(null);
@@ -361,6 +362,9 @@ export default function AddTenantNewform({ navigation, route }) {
     const [startTime, setStartTime] = useState(null);
     const [endTime, setEndTime] = useState(null);
 
+    const [iosPickerType, setIosPickerType] = useState(null);
+    const [iosTempTime, setIosTempTime] = useState(new Date());
+
     console.log("time", startTime, endTime);
 
 
@@ -379,6 +383,29 @@ export default function AddTenantNewform({ navigation, route }) {
         });
     };
 
+    const openStartTimePicker = () => {
+        const initialTime = startTime || new Date();
+
+        if (Platform.OS === "ios") {
+            setIosTempTime(initialTime);
+            setIosPickerType("start");
+        } else {
+            setShowStartPicker(true);
+        }
+    };
+
+    const openEndTimePicker = () => {
+        const initialTime = endTime || new Date();
+
+        if (Platform.OS === "ios") {
+            setIosTempTime(initialTime);
+            setIosPickerType("end");
+        } else {
+            setShowEndPicker(true);
+        }
+    };
+
+  
     const convertTimeToDate = (time) => {
         if (!time) return null;
 
@@ -658,6 +685,104 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const [initialState, setInitialState] = useState(null);
     const [isSubmitClicked, setIsSubmitClicked] = useState(false);
+
+
+    const createEmptyJob = () => ({
+        id: `job-${Date.now()}-${Math.random()}`,
+        employmentStatus: null,
+        companyName: "",
+        jobRole: null,
+        worklocation: "",
+        shiftType: null,
+        startTime: null,
+        endTime: null,
+    });
+
+    const [jobDetailsList, setJobDetailsList] = useState([
+        createEmptyJob()
+    ]);
+
+    const [activeJobIndex, setActiveJobIndex] = useState(0);
+
+    const [jobDropdown, setJobDropdown] = useState({
+        index: null,
+        type: null,
+    });
+
+    const addNewJob = () => {
+        setJobDetailsList(prev => [
+            ...prev,
+            createEmptyJob(),
+        ]);
+    };
+
+   const updateJob = (index, field, value) => {
+    setJobDetailsList(prev => {
+        const updated = [...prev];
+
+        updated[index] = {
+            ...updated[index],
+            [field]: value,
+        };
+
+        return updated;
+    });
+
+    setJobErrors(prev => {
+        const updated = [...prev];
+
+        updated[index] = {
+            ...(updated[index] || {}),
+            [field]: "",
+        };
+
+        return updated;
+    });
+};
+
+
+
+    const removeJob = (index) => {
+        setJobDetailsList(prev => {
+            if (prev.length === 1) {
+                return prev;
+            }
+
+            return prev.filter((_, i) => i !== index);
+        });
+    };
+
+
+      const closeIosTimePicker = () => {
+        setIosPickerType(null);
+    };
+
+    const confirmIosTimePicker = () => {
+        if (
+            activeJobIndex === null ||
+            activeJobIndex === undefined
+        ) {
+            return;
+        }
+
+        if (iosPickerType === "start") {
+            updateJob(
+                activeJobIndex,
+                "startTime",
+                iosTempTime
+            );
+        }
+
+        if (iosPickerType === "end") {
+            updateJob(
+                activeJobIndex,
+                "endTime",
+                iosTempTime
+            );
+        }
+
+        setIosPickerType(null);
+    };
 
     const [companyName, setCompanyName] = useState("")
     const [employementstatus, setEmployementStatus] = useState("")
@@ -1603,6 +1728,24 @@ export default function AddTenantNewform({ navigation, route }) {
         setEndTime(null);
         setShowStartPicker(false);
         setShowEndPicker(false);
+        setIosPickerType(null);
+        setIosTempTime(new Date());
+
+        setJobDetailsList([
+            createEmptyJob()
+        ]);
+
+        setActiveJobIndex(0);
+
+        setJobDropdown({
+            index: null,
+            type: null,
+        });
+
+        // setShowStartPicker(false);
+        // setShowEndPicker(false);
+        // setIosPickerType(null);
+        // setIosTempTime(new Date());
 
         setGuardians([]);
         setExtraCharges([]);
@@ -2163,55 +2306,101 @@ export default function AddTenantNewform({ navigation, route }) {
 
         const guardianValidation = [];
 
-        /* -------------------------------
-            JOB DETAILS
-        --------------------------------*/
+        const jobValidation = [];
 
-        const hasJobData =
-            companyName.trim() ||
-            employmentStatus ||
-            jobRole ||
-            worklocation.trim() ||
-            shiftType ||
-            startTime ||
-            endTime
+        jobDetailsList.forEach((job, index) => {
+            const errors = {};
 
-        if (hasJobData) {
-            if (!companyName.trim()) {
-                setCompanyError("Please enter Company / College Name");
+            const hasJobData =
+                job.companyName?.trim() ||
+                job.employmentStatus ||
+                job.jobRole ||
+                job.worklocation?.trim() ||
+                job.shiftType ||
+                job.startTime ||
+                job.endTime;
+
+            if (!hasJobData) {
+                jobValidation[index] = {};
+                return;
+            }
+
+            if (!job.companyName?.trim()) {
+                errors.companyName = "Please enter Company / College Name";
                 valid = false;
             }
 
-            if (!employmentStatus) {
-                setEmploymentError("Please select Employment Status");
+            if (!job.employmentStatus) {
+                errors.employmentStatus = "Please select Employment Status";
                 valid = false;
             }
 
-            if (!jobRole) {
-                setJobRoleError("Please select Job Role");
+            if (!job.jobRole) {
+                errors.jobRole = "Please select Job Role";
                 valid = false;
             }
 
-            if (!worklocation.trim()) {
-                setWorkLocationError("Please enter Work Location");
+            if (!job.worklocation?.trim()) {
+                errors.worklocation = "Please enter Work Location";
                 valid = false;
             }
 
-            if (!shiftType) {
-                setShiftTypeError("Please select Shift Type");
+            if (!job.shiftType) {
+                errors.shiftType = "Please select Shift Type";
                 valid = false;
             }
 
-            if (!startTime) {
-                setStartTimeError("Please enter Shift From");
+            if (!job.startTime) {
+                errors.startTime = "Please enter Shift From";
                 valid = false;
             }
 
-            if (!endTime) {
-                setEndTimeError("Please enter Shift To");
+            if (!job.endTime) {
+                errors.endTime = "Please enter Shift To";
                 valid = false;
             }
-        }
+
+            jobValidation[index] = errors;
+        });
+
+        setJobErrors(jobValidation);
+
+        // if (hasJobData) {
+        //     if (!companyName.trim()) {
+        //         setCompanyError("Please enter Company / College Name");
+        //         valid = false;
+        //     }
+
+        //     if (!employmentStatus) {
+        //         setEmploymentError("Please select Employment Status");
+        //         valid = false;
+        //     }
+
+        //     if (!jobRole) {
+        //         setJobRoleError("Please select Job Role");
+        //         valid = false;
+        //     }
+
+        //     if (!worklocation.trim()) {
+        //         setWorkLocationError("Please enter Work Location");
+        //         valid = false;
+        //     }
+
+        //     if (!shiftType) {
+        //         setShiftTypeError("Please select Shift Type");
+        //         valid = false;
+        //     }
+
+        //     if (!startTime) {
+        //         setStartTimeError("Please enter Shift From");
+        //         valid = false;
+        //     }
+
+        //     if (!endTime) {
+        //         setEndTimeError("Please enter Shift To");
+        //         valid = false;
+        //     }
+        // }
 
         /* -------------------------------
             GUARDIAN DETAILS
@@ -2288,93 +2477,44 @@ export default function AddTenantNewform({ navigation, route }) {
     console.log("PAN URI", pancardImage);
 
 
-  const handleStepThree = async () => {
+    const handleStepThree = async () => {
 
-    if (!validateStepThree()) {
-        return;
-    }
-
-    if (isSubmittingRef.current) {
-        return;
-    }
-
-    isSubmittingRef.current = true;
-
-    try {
-
-        if (!draftCustomerId) {
-            setModalType("error");
-            setMessage("Customer ID is missing");
-            setShowSuccess(true);
-
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 1000);
-
+        if (!validateStepThree()) {
             return;
         }
 
+        if (isSubmittingRef.current) {
+            return;
+        }
 
-        const jobDetails = {
-            employmentStatus:
-                employmentStatus?.value || "",
+        isSubmittingRef.current = true;
 
-            companyName:
-                companyName?.trim() || "",
+        try {
 
-            collegeName:
-                "",
+            if (!draftCustomerId) {
+                setModalType("error");
+                setMessage("Customer ID is missing");
+                setShowSuccess(true);
 
-            jobRole:
-                jobRole?.value || "",
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 1000);
 
-            workLocation:
-                worklocation?.trim() || "",
-
-            shiftType:
-                shiftType?.value || "",
-
-            shiftFrom:
-                startTime
-                    ? formatTime(startTime)
-                    : "",
-
-            shiftTo:
-                endTime
-                    ? formatTime(endTime)
-                    : "",
-        };
+                return;
+            }
 
 
-        const guardianDetails = guardians.map((item) => ({
-            guardianFullName:
-                item?.fullName?.trim() || "",
-
-            relationshipToTenant:
-                item?.relationship || "",
-
-            guardianOccupation:
-                item?.occupation || "",
-
-            mobileNo:
-                item?.mobile?.trim() || "",
-        }));
-
-        const customerJobs = [
-            {
-                hostelId:
-                    activeHostelId || "",
-
-                customerId:
-                    draftCustomerId || "",
-
+            const jobDetails = {
                 employmentStatus:
                     employmentStatus?.value || "",
 
-                organizationName:
+                companyName:
                     companyName?.trim() || "",
 
-                role:
+                collegeName:
+                    "",
+
+                jobRole:
                     jobRole?.value || "",
 
                 workLocation:
@@ -2383,134 +2523,191 @@ export default function AddTenantNewform({ navigation, route }) {
                 shiftType:
                     shiftType?.value || "",
 
-                shiftStartsFrom:
+                shiftFrom:
                     startTime
                         ? formatTime(startTime)
                         : "",
 
-                shiftEndsAt:
+                shiftTo:
                     endTime
                         ? formatTime(endTime)
                         : "",
-            },
-        ];
+            };
 
 
-        const payload = {
-            additionalData: {
-                jobDetails,
-                guardians: guardianDetails,
-                customerJobs,
-            },
-        };
+            const guardianDetails = guardians.map((item) => ({
+                guardianFullName:
+                    item?.fullName?.trim() || "",
+
+                relationshipToTenant:
+                    item?.relationship || "",
+
+                guardianOccupation:
+                    item?.occupation || "",
+
+                mobileNo:
+                    item?.mobile?.trim() || "",
+            }));
+
+            const customerJobs = jobDetailsList
+                .filter(job => {
+                    return (
+                        job.companyName?.trim() ||
+                        job.employmentStatus ||
+                        job.jobRole ||
+                        job.worklocation?.trim() ||
+                        job.shiftType ||
+                        job.startTime ||
+                        job.endTime
+                    );
+                })
+                .map(job => ({
+                    hostelId: activeHostelId || "",
+
+                    customerId: draftCustomerId || "",
+
+                    employmentStatus:
+                        job.employmentStatus?.value || "",
+
+                    organizationName:
+                        job.companyName?.trim() || "",
+
+                    role:
+                        job.jobRole?.value || "",
+
+                    workLocation:
+                        job.worklocation?.trim() || "",
+
+                    shiftType:
+                        job.shiftType?.value || "",
+
+                    shiftStartsFrom:
+                        job.startTime
+                            ? formatTime(job.startTime)
+                            : "",
+
+                    shiftEndsAt:
+                        job.endTime
+                            ? formatTime(job.endTime)
+                            : "",
+                }));
 
 
-        console.log(
-            "=========================================="
-        );
-
-        console.log(
-            "UPDATE ADDITIONAL DRAFT PAYLOAD =>",
-            JSON.stringify(payload, null, 2)
-        );
-
-        console.log(
-            "HOSTEL ID =>",
-            activeHostelId
-        );
-
-        console.log(
-            "CUSTOMER ID =>",
-            draftCustomerId
-        );
-
-        console.log(
-            "AADHAAR IMAGE =>",
-            aadhaarImage
-        );
-
-        console.log(
-            "PAN IMAGE =>",
-            pancardImage
-        );
-
-        console.log(
-            "=========================================="
-        );
-
-        // ==========================================
-        // API CALL
-        // ==========================================
-        const res = await UpdateAdditionalDraftDetails(
-            activeHostelId,
-            draftCustomerId,
-            payload,
-            aadhaarImage,
-            pancardImage
-        );
-
-        console.log(
-            "UPDATE ADDITIONAL DRAFT RESPONSE =>",
-            res
-        );
+            const payload = {
+                additionalData: {
+                    jobDetails,
+                    guardians: guardianDetails,
+                    customerJobs,
+                },
+            };
 
 
-        if (res?.success) {
-            setModalType("success");
+            console.log(
+                "=========================================="
+            );
+
+            console.log(
+                "UPDATE ADDITIONAL DRAFT PAYLOAD =>",
+                JSON.stringify(payload, null, 2)
+            );
+
+            console.log(
+                "HOSTEL ID =>",
+                activeHostelId
+            );
+
+            console.log(
+                "CUSTOMER ID =>",
+                draftCustomerId
+            );
+
+            console.log(
+                "AADHAAR IMAGE =>",
+                aadhaarImage
+            );
+
+            console.log(
+                "PAN IMAGE =>",
+                pancardImage
+            );
+
+            console.log(
+                "=========================================="
+            );
+
+            // ==========================================
+            // API CALL
+            // ==========================================
+            const res = await UpdateAdditionalDraftDetails(
+                activeHostelId,
+                draftCustomerId,
+                payload,
+                aadhaarImage,
+                pancardImage
+            );
+
+            console.log(
+                "UPDATE ADDITIONAL DRAFT RESPONSE =>",
+                res
+            );
+
+
+            if (res?.success) {
+                setModalType("success");
+
+                setMessage(
+                    res?.data?.message ||
+                    "Draft updated successfully"
+                );
+
+                setShowSuccess(true);
+
+                setTimeout(() => {
+                    setShowSuccess(false);
+
+                    navigation.goBack();
+                }, 800);
+
+                return;
+            }
+
+
+            setModalType("error");
 
             setMessage(
-                res?.data?.message ||
-                "Draft updated successfully"
+                res?.message ||
+                "Draft update failed"
             );
 
             setShowSuccess(true);
 
             setTimeout(() => {
                 setShowSuccess(false);
+            }, 1000);
 
-                navigation.goBack();
-            }, 800);
+        } catch (error) {
+            console.log(
+                "HANDLE STEP THREE ERROR 👉",
+                error
+            );
 
-            return;
+            setModalType("error");
+
+            setMessage(
+                error?.message ||
+                "Something went wrong"
+            );
+
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 1000);
+
+        } finally {
+            isSubmittingRef.current = false;
         }
-
-
-        setModalType("error");
-
-        setMessage(
-            res?.message ||
-            "Draft update failed"
-        );
-
-        setShowSuccess(true);
-
-        setTimeout(() => {
-            setShowSuccess(false);
-        }, 1000);
-
-    } catch (error) {
-        console.log(
-            "HANDLE STEP THREE ERROR 👉",
-            error
-        );
-
-        setModalType("error");
-
-        setMessage(
-            error?.message ||
-            "Something went wrong"
-        );
-
-        setShowSuccess(true);
-
-        setTimeout(() => {
-            setShowSuccess(false);
-        }, 1000);
-
-    } finally {
-        isSubmittingRef.current = false;
-    }
-};
+    };
 
 
     const renderFooterButtons = () => {
@@ -3446,7 +3643,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                             : "Documents & Job Details"
                                 }
                             </Text>
-                
+
 
                             <Text style={styles.subTitle}>
                                 {
@@ -6167,252 +6364,506 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                         <View style={styles.sectionHeader}>
                                             <View style={styles.blueBar} />
+
                                             <Text style={styles.headerTitle}>
                                                 Job Details
                                             </Text>
                                         </View>
 
-
-
-                                        <Text style={styles.label}>Company / College Name </Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Enter name"
-                                            value={companyName}
-                                            onChangeText={(t) => {
-
-                                                const cleaned = t.replace(/[^A-Za-z\s]/g, "");
-                                                setCompanyName(cleaned);
-                                                setCompanyError("");
-                                            }}
-                                            onFocus={(e) => scrollInputIntoView(e)}
-
-                                        />
-
-                                        {companyError ? <ErrorMessage message={companyError} /> : null}
-
-
-
-
-
-
-
-
-                                        <Text style={styles.label}>Employment Status</Text>
-
-                                        <View style={{ zIndex: employmentOpen ? 30 : 1 }}>
-                                            <TouchableOpacity
-                                                style={styles.dropdown}
-                                                activeOpacity={0.8}
-                                                onPress={() => {
-                                                    setEmploymentOpen(!employmentOpen);
-                                                    setJobRoleOpen(false);
-                                                    setShiftOpen(false);
-                                                }}>
-                                                <Text
-                                                    style={[
-                                                        styles.dropdownText,
-                                                        !employmentStatus && { color: "#9CA3AF" },
-                                                    ]}>
-                                                    {employmentStatus?.label || "Select Employment Status"}
-                                                </Text>
-
-                                                <Image
-                                                    source={DownArrow}
-                                                    style={[
-                                                        styles.arrow,
-                                                        employmentOpen && { transform: [{ rotate: "180deg" }] },
-                                                    ]}
-                                                />
-                                            </TouchableOpacity>
-
-                                            {employmentOpen && (
-                                                <View style={styles.dropdownList}>
-                                                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                                                        {jobOptions.map(item => (
-                                                            <TouchableOpacity
-                                                                key={item.value}
-                                                                style={styles.option}
-                                                                onPress={() => {
-                                                                    setEmploymentStatus(item);
-                                                                    setEmploymentOpen(false);
-                                                                    setEmploymentError("");
-                                                                }}>
-                                                                <Text style={styles.optionText}>{item.label}</Text>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </ScrollView>
-                                                </View>
-                                            )}
-                                        </View>
-                                        {employmentError ? <ErrorMessage message={employmentError} /> : null}
-
-                                        <Text style={styles.label}>Job Role </Text>
-                                        <View style={{ zIndex: jobRoleOpen ? 30 : 1 }}>
-                                            <TouchableOpacity
-                                                style={styles.dropdown}
-                                                activeOpacity={0.8}
-                                                onPress={() => {
-                                                    setJobRoleOpen(!jobRoleOpen);
-                                                    // setJobRoleOpen(false);
-                                                    setShiftOpen(false);
-                                                }}>
-                                                <Text
-
-                                                    style={[
-                                                        styles.dropdownText,
-                                                        // !jobRoleOpen && { color: "#9CA3AF" },
-                                                    ]}>
-                                                    {jobRole?.label || "Select Job Role"}
-                                                </Text>
-
-                                                <Image
-                                                    source={DownArrow}
-                                                    style={[
-                                                        styles.arrow,
-                                                        jobRoleOpen && { transform: [{ rotate: "180deg" }] },
-                                                    ]}
-                                                />
-                                            </TouchableOpacity>
-
-                                            {jobRoleOpen && (
-                                                <View style={styles.dropdownList}>
-                                                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                                                        {jobRoleOptions.map(item => (
-                                                            <TouchableOpacity
-                                                                key={item.value}
-                                                                style={styles.option}
-                                                                onPress={() => {
-                                                                    setJobRole(item);
-                                                                    setJobRoleOpen(false);
-                                                                    setJobRoleError("");
-                                                                }}>
-                                                                <Text style={styles.optionText}>{item.label}</Text>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </ScrollView>
-                                                </View>
-                                            )}
-                                        </View>
-                                        {jobRoleError ? <ErrorMessage message={jobRoleError} /> : null}
-
-
-                                        <Text style={styles.label}>Work Location </Text>
-                                        <TextInput
-                                            style={styles.input}
-                                            placeholder="Enter name"
-                                            value={worklocation}
-                                            onChangeText={(t) => {
-                                                const cleaned = t.replace(/[^A-Za-z\s]/g, "");
-                                                setWorkLocations(cleaned);
-                                                setWorkLocationError("");
-                                            }}
-                                            onFocus={(e) => scrollInputIntoView(e)}
-
-                                        />
-                                        {workLocationError ? <ErrorMessage message={workLocationError} /> : null}
-
-
-                                        <Text style={styles.label}>Shift Type </Text>
-                                        <View style={{ zIndex: shiftOpen ? 30 : 1 }}>
-                                            <TouchableOpacity
-                                                style={styles.dropdown}
-                                                activeOpacity={0.8}
-                                                onPress={() => {
-                                                    setShiftOpen(!shiftOpen);
-                                                    setJobRoleOpen(false);
-                                                }}>
-                                                <Text
-                                                    style={[
-                                                        styles.dropdownText,
-                                                        !employmentStatus && { color: "#9CA3AF" },
-                                                    ]}>
-                                                    {shiftType?.label || "Select Shift Type"}
-                                                </Text>
-
-                                                <Image
-                                                    source={DownArrow}
-                                                    style={[
-                                                        styles.arrow,
-                                                        shiftOpen && { transform: [{ rotate: "180deg" }] },
-                                                    ]}
-                                                />
-                                            </TouchableOpacity>
-
-                                            {shiftOpen && (
-                                                <View style={styles.dropdownList}>
-                                                    <ScrollView nestedScrollEnabled showsVerticalScrollIndicator={false}>
-                                                        {shiftTypeOptions.map(item => (
-                                                            <TouchableOpacity
-                                                                key={item.value}
-                                                                style={styles.option}
-                                                                onPress={() => {
-                                                                    setShiftType(item);
-                                                                    setShiftOpen(false);
-                                                                    setShiftTypeError("");
-                                                                }}>
-                                                                <Text style={styles.optionText}>{item.label}</Text>
-                                                            </TouchableOpacity>
-                                                        ))}
-                                                    </ScrollView>
-                                                </View>
-                                            )}
-                                        </View>
-                                        {shiftTypeError ? <ErrorMessage message={shiftTypeError} /> : null}
-
-                                        <Text style={styles.label}>Shift Timing</Text>
-
-                                        <View style={styles.shiftRow}>
-
-                                            <TouchableOpacity
-                                                style={styles.shiftInput}
-                                                activeOpacity={0.8}
-                                                onPress={() => setShowStartPicker(true)}
+                                        {jobDetailsList.map((job, index) => (
+                                            <View
+                                                key={job.id}
+                                                style={styles.guardianCard}
                                             >
-                                                <Text
-                                                    style={[
-                                                        styles.timeText,
-                                                        !startTime && styles.placeholder,
-                                                    ]}
-                                                >
-                                                    {startTime ? formatTime(startTime) : "From"}
+
+
+                                                <View style={styles.cardHeader}>
+                                                    <Text style={styles.cardTitle}>
+                                                        Item {String(index + 1).padStart(2, "0")}
+                                                    </Text>
+
+                                                    {jobDetailsList.length > 1 && (
+                                                        <TouchableOpacity
+                                                            onPress={() => removeJob(index)}
+                                                        >
+                                                            <Image
+                                                                source={require("../../Assets/Images/DeleteIcon.png")}
+                                                                style={{
+                                                                    width: 18,
+                                                                    height: 18,
+                                                                }}
+                                                            />
+                                                        </TouchableOpacity>
+                                                    )}
+                                                </View>
+
+
+
+                                                <Text style={styles.label}>
+                                                    Company / College Name
                                                 </Text>
 
-                                                <Image
-                                                    source={require("../../Assets/Images/timer.png")}
-                                                    style={styles.clockIcon}
-                                                />
-                                            </TouchableOpacity>
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder="Enter name"
+                                                    value={job.companyName}
+                                                    onChangeText={(text) => {
+                                                        const cleaned = text.replace(
+                                                            /[^A-Za-z\s]/g,
+                                                            ""
+                                                        );
 
+                                                        updateJob(
+                                                            index,
+                                                            "companyName",
+                                                            cleaned
+                                                        );
+                                                    }}
+                                                    onFocus={(e) =>
+                                                        scrollInputIntoView(e)
+                                                    }
+                                                />
+
+                                                {jobErrors[index]?.companyName && (
+                                                    <ErrorMessage message={jobErrors[index].companyName} />
+                                                )}
+
+
+
+                                                <Text style={styles.label}>
+                                                    Employment Status
+                                                </Text>
+
+                                                <View
+                                                    style={{
+                                                        zIndex:
+                                                            jobDropdown.index === index &&
+                                                                jobDropdown.type === "employment"
+                                                                ? 30
+                                                                : 1,
+                                                    }}
+                                                >
+                                                    <TouchableOpacity
+                                                        style={styles.dropdown}
+                                                        activeOpacity={0.8}
+                                                        onPress={() => {
+                                                            setJobDropdown(
+                                                                jobDropdown.index === index &&
+                                                                    jobDropdown.type === "employment"
+                                                                    ? {
+                                                                        index: null,
+                                                                        type: null,
+                                                                    }
+                                                                    : {
+                                                                        index,
+                                                                        type: "employment",
+                                                                    }
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.dropdownText,
+                                                                !job.employmentStatus && {
+                                                                    color: "#9CA3AF",
+                                                                },
+                                                            ]}
+                                                        >
+                                                            {job.employmentStatus?.label ||
+                                                                "Select Employment Status"}
+                                                        </Text>
+
+                                                        <Image
+                                                            source={DownArrow}
+                                                            style={styles.arrow}
+                                                        />
+                                                    </TouchableOpacity>
+
+                                                    {jobDropdown.index === index &&
+                                                        jobDropdown.type === "employment" && (
+                                                            <View style={styles.dropdownList}>
+                                                                <ScrollView
+                                                                    nestedScrollEnabled
+                                                                    showsVerticalScrollIndicator={false}
+                                                                >
+                                                                    {jobOptions.map(item => (
+                                                                        <TouchableOpacity
+                                                                            key={item.value}
+                                                                            style={styles.option}
+                                                                            onPress={() => {
+                                                                                updateJob(
+                                                                                    index,
+                                                                                    "employmentStatus",
+                                                                                    item
+                                                                                );
+
+                                                                                setJobDropdown({
+                                                                                    index: null,
+                                                                                    type: null,
+                                                                                });
+                                                                            }}
+                                                                        >
+                                                                            <Text
+                                                                                style={
+                                                                                    styles.optionText
+                                                                                }
+                                                                            >
+                                                                                {item.label}
+                                                                            </Text>
+                                                                        </TouchableOpacity>
+                                                                    ))}
+                                                                </ScrollView>
+                                                            </View>
+                                                        )}
+                                                </View>
+
+
+                                                {jobErrors[index]?.employmentStatus && (
+                                                    <ErrorMessage message={jobErrors[index].employmentStatus} />
+                                                )}
+
+
+
+                                                <Text style={styles.label}>
+                                                    Job Role
+                                                </Text>
+
+                                                <View
+                                                    style={{
+                                                        zIndex:
+                                                            jobDropdown.index === index &&
+                                                                jobDropdown.type === "role"
+                                                                ? 30
+                                                                : 1,
+                                                    }}
+                                                >
+                                                    <TouchableOpacity
+                                                        style={styles.dropdown}
+                                                        activeOpacity={0.8}
+                                                        onPress={() => {
+                                                            setJobDropdown(
+                                                                jobDropdown.index === index &&
+                                                                    jobDropdown.type === "role"
+                                                                    ? {
+                                                                        index: null,
+                                                                        type: null,
+                                                                    }
+                                                                    : {
+                                                                        index,
+                                                                        type: "role",
+                                                                    }
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Text style={styles.dropdownText}>
+                                                            {job.jobRole?.label ||
+                                                                "Select Job Role"}
+                                                        </Text>
+
+                                                        <Image
+                                                            source={DownArrow}
+                                                            style={styles.arrow}
+                                                        />
+                                                    </TouchableOpacity>
+
+                                                    {jobDropdown.index === index &&
+                                                        jobDropdown.type === "role" && (
+                                                            <View style={styles.dropdownList}>
+                                                                <ScrollView
+                                                                    nestedScrollEnabled
+                                                                    showsVerticalScrollIndicator={false}
+                                                                >
+                                                                    {jobRoleOptions.map(item => (
+                                                                        <TouchableOpacity
+                                                                            key={item.value}
+                                                                            style={styles.option}
+                                                                            onPress={() => {
+                                                                                updateJob(
+                                                                                    index,
+                                                                                    "jobRole",
+                                                                                    item
+                                                                                );
+
+                                                                                setJobDropdown({
+                                                                                    index: null,
+                                                                                    type: null,
+                                                                                });
+                                                                            }}
+                                                                        >
+                                                                            <Text
+                                                                                style={
+                                                                                    styles.optionText
+                                                                                }
+                                                                            >
+                                                                                {item.label}
+                                                                            </Text>
+                                                                        </TouchableOpacity>
+                                                                    ))}
+                                                                </ScrollView>
+                                                            </View>
+                                                        )}
+                                                </View>
+
+                                                {jobErrors[index]?.jobRole && (
+                                                    <ErrorMessage message={jobErrors[index].jobRole} />
+                                                )}
+
+
+
+                                                <Text style={styles.label}>
+                                                    Work Location
+                                                </Text>
+
+                                                <TextInput
+                                                    style={styles.input}
+                                                    placeholder="Enter name"
+                                                    value={job.worklocation}
+                                                    onChangeText={(text) => {
+                                                        const cleaned = text.replace(
+                                                            /[^A-Za-z\s]/g,
+                                                            ""
+                                                        );
+
+                                                        updateJob(
+                                                            index,
+                                                            "worklocation",
+                                                            cleaned
+                                                        );
+                                                    }}
+                                                    onFocus={(e) =>
+                                                        scrollInputIntoView(e)
+                                                    }
+                                                />
+
+                                                {jobErrors[index]?.worklocation && (
+                                                    <ErrorMessage message={jobErrors[index].worklocation} />
+                                                )}
+
+
+
+                                                <Text style={styles.label}>
+                                                    Shift Type
+                                                </Text>
+
+                                                <View
+                                                    style={{
+                                                        zIndex:
+                                                            jobDropdown.index === index &&
+                                                                jobDropdown.type === "shift"
+                                                                ? 30
+                                                                : 1,
+                                                    }}
+                                                >
+                                                    <TouchableOpacity
+                                                        style={styles.dropdown}
+                                                        activeOpacity={0.8}
+                                                        onPress={() => {
+                                                            setJobDropdown(
+                                                                jobDropdown.index === index &&
+                                                                    jobDropdown.type === "shift"
+                                                                    ? {
+                                                                        index: null,
+                                                                        type: null,
+                                                                    }
+                                                                    : {
+                                                                        index,
+                                                                        type: "shift",
+                                                                    }
+                                                            );
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.dropdownText,
+                                                                !job.shiftType && {
+                                                                    color: "#9CA3AF",
+                                                                },
+                                                            ]}
+                                                        >
+                                                            {job.shiftType?.label ||
+                                                                "Select Shift Type"}
+                                                        </Text>
+
+                                                        <Image
+                                                            source={DownArrow}
+                                                            style={styles.arrow}
+                                                        />
+                                                    </TouchableOpacity>
+
+                                                    {jobDropdown.index === index &&
+                                                        jobDropdown.type === "shift" && (
+                                                            <View style={styles.dropdownList}>
+                                                                <ScrollView
+                                                                    nestedScrollEnabled
+                                                                    showsVerticalScrollIndicator={false}
+                                                                >
+                                                                    {shiftTypeOptions.map(item => (
+                                                                        <TouchableOpacity
+                                                                            key={item.value}
+                                                                            style={styles.option}
+                                                                            onPress={() => {
+                                                                                updateJob(
+                                                                                    index,
+                                                                                    "shiftType",
+                                                                                    item
+                                                                                );
+
+                                                                                setJobDropdown({
+                                                                                    index: null,
+                                                                                    type: null,
+                                                                                });
+                                                                            }}
+                                                                        >
+                                                                            <Text
+                                                                                style={
+                                                                                    styles.optionText
+                                                                                }
+                                                                            >
+                                                                                {item.label}
+                                                                            </Text>
+                                                                        </TouchableOpacity>
+                                                                    ))}
+                                                                </ScrollView>
+                                                            </View>
+                                                        )}
+                                                </View>
+
+                                                {jobErrors[index]?.shiftType && (
+                                                    <ErrorMessage message={jobErrors[index].shiftType} />
+                                                )}
+
+
+                                                <Text style={styles.label}>
+                                                    Shift Timing
+                                                </Text>
+
+                                                <View style={styles.shiftRow}>
+
+                                                    <TouchableOpacity
+                                                        style={styles.shiftInput}
+                                                        activeOpacity={0.8}
+                                                        onPress={() => {
+                                                            setActiveJobIndex(index);
+
+                                                            const initialTime =
+                                                                job.startTime || new Date();
+
+                                                            if (Platform.OS === "ios") {
+                                                                setIosTempTime(initialTime);
+                                                                setIosPickerType("start");
+                                                            } else {
+                                                                setShowStartPicker(true);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.timeText,
+                                                                !job.startTime &&
+                                                                styles.placeholder,
+                                                            ]}
+                                                        >
+                                                            {job.startTime
+                                                                ? formatTime(job.startTime)
+                                                                : "From"}
+                                                        </Text>
+
+                                                        <Image
+                                                            source={require("../../Assets/Images/timer.png")}
+                                                            style={styles.clockIcon}
+                                                        />
+                                                    </TouchableOpacity>
+
+                                                    <TouchableOpacity
+                                                        style={styles.shiftInput}
+                                                        activeOpacity={0.8}
+                                                        onPress={() => {
+                                                            setActiveJobIndex(index);
+
+                                                            const initialTime =
+                                                                job.endTime || new Date();
+
+                                                            if (Platform.OS === "ios") {
+                                                                setIosTempTime(initialTime);
+                                                                setIosPickerType("end");
+                                                            } else {
+                                                                setShowEndPicker(true);
+                                                            }
+                                                        }}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.timeText,
+                                                                !job.endTime &&
+                                                                styles.placeholder,
+                                                            ]}
+                                                        >
+                                                            {job.endTime
+                                                                ? formatTime(job.endTime)
+                                                                : "To"}
+                                                        </Text>
+
+                                                        <Image
+                                                            source={require("../../Assets/Images/timer.png")}
+                                                            style={styles.clockIcon}
+                                                        />
+                                                    </TouchableOpacity>
+
+                                                </View>
+
+                                                {jobErrors[index]?.startTime && (
+                                                    <ErrorMessage message={jobErrors[index].startTime} />
+                                                )}
+
+                                                {jobErrors[index]?.endTime && (
+                                                    <ErrorMessage message={jobErrors[index].endTime} />
+                                                )}
+
+                                            </View>
+                                        ))}
+
+
+
+
+                                        <View
+                                            style={{
+                                                flexDirection: "row",
+                                                justifyContent: "flex-end",
+                                                marginTop: 10,
+                                                marginBottom: 15,
+                                            }}
+                                        >
                                             <TouchableOpacity
-                                                style={styles.shiftInput}
-                                                activeOpacity={0.8}
-                                                onPress={() => setShowEndPicker(true)}
+                                                style={{
+                                                    flexDirection: "row",
+                                                    backgroundColor: "#2D6CDF",
+                                                    paddingHorizontal: 18,
+                                                    paddingVertical: 10,
+                                                    borderRadius: 8,
+                                                    alignItems: "center",
+                                                }}
+                                                onPress={addNewJob}
                                             >
-                                                <Text
-                                                    style={[
-                                                        styles.timeText,
-                                                        !endTime && styles.placeholder,
-                                                    ]}
-                                                >
-                                                    {endTime ? formatTime(endTime) : "To"}
-                                                </Text>
-
                                                 <Image
-                                                    source={require("../../Assets/Images/timer.png")}
-                                                    style={styles.clockIcon}
+                                                    source={PlusIcon}
+                                                    style={{
+                                                        width: 20,
+                                                        height: 20,
+                                                        marginRight: 5,
+                                                    }}
                                                 />
+
+                                                <Text
+                                                    style={{
+                                                        color: "#fff",
+                                                        fontSize: 12,
+                                                        fontFamily: "Gilroy-Semibold",
+                                                    }}
+                                                >
+                                                    Additional
+                                                </Text>
                                             </TouchableOpacity>
-
                                         </View>
-
-                                        {startTimeError ? (
-                                            <ErrorMessage message={startTimeError} />
-                                        ) : null}
-
-                                        {endTimeError ? (
-                                            <ErrorMessage message={endTimeError} />
-                                        ) : null}
 
 
 
@@ -6740,39 +7191,124 @@ export default function AddTenantNewform({ navigation, route }) {
 
             </View>
 
-            {showStartPicker && (
+
+            {Platform.OS === "android" && showStartPicker && (
                 <DateTimePicker
-                    value={startTime || new Date()}
+                    value={
+                        jobDetailsList[activeJobIndex]?.startTime ||
+                        new Date()
+                    }
                     mode="time"
                     display="default"
                     is24Hour={false}
                     onChange={(event, date) => {
                         setShowStartPicker(false);
 
+                        if (event?.type === "dismissed") {
+                            return;
+                        }
+
                         if (date) {
-                            setStartTime(date);
-                            setStartTimeError("");
+                            updateJob(
+                                activeJobIndex,
+                                "startTime",
+                                date
+                            );
                         }
                     }}
                 />
             )}
 
-            {showEndPicker && (
+            {Platform.OS === "android" && showEndPicker && (
                 <DateTimePicker
-                    value={endTime || new Date()}
+                    value={
+                        jobDetailsList[activeJobIndex]?.endTime ||
+                        new Date()
+                    }
                     mode="time"
                     display="default"
                     is24Hour={false}
                     onChange={(event, date) => {
                         setShowEndPicker(false);
 
+                        if (event?.type === "dismissed") {
+                            return;
+                        }
+
                         if (date) {
-                            setEndTime(date);
-                            setEndTimeError("");
+                            updateJob(
+                                activeJobIndex,
+                                "endTime",
+                                date
+                            );
                         }
                     }}
                 />
             )}
+
+
+            {Platform.OS === "ios" && iosPickerType !== null && (
+                <Modal
+                    visible={iosPickerType !== null}
+                    transparent
+                    animationType="slide"
+                    presentationStyle="overFullScreen"
+                    onRequestClose={closeIosTimePicker}
+                >
+                    <View style={styles.iosPickerOverlay}>
+
+                        <View style={styles.iosPickerContainer}>
+
+                            <View style={styles.iosPickerHeader}>
+
+                                <TouchableOpacity
+                                    onPress={closeIosTimePicker}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={styles.iosCancelText}>
+                                        Cancel
+                                    </Text>
+                                </TouchableOpacity>
+
+
+                                <Text style={styles.iosPickerTitle}>
+                                    {iosPickerType === "start"
+                                        ? "Select From Time"
+                                        : "Select To Time"}
+                                </Text>
+
+
+                                <TouchableOpacity
+                                    onPress={confirmIosTimePicker}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={styles.iosDoneText}>
+                                        Done
+                                    </Text>
+                                </TouchableOpacity>
+
+                            </View>
+
+
+                            <DateTimePicker
+                                value={iosTempTime}
+                                mode="time"
+                                display="spinner"
+                                locale="en_IN"
+                                onChange={(event, date) => {
+                                    if (date) {
+                                        setIosTempTime(date);
+                                    }
+                                }}
+                                style={styles.iosDatePicker}
+                            />
+
+                        </View>
+
+                    </View>
+                </Modal>
+            )}
+
 
             <LeavePageScreen
                 visible={showLeavePageScreen}
@@ -8036,6 +8572,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 14,
         flexDirection: "row",
         alignItems: "center",
+        justifyContent: "space-between",
         backgroundColor: "#FFF",
     },
 
@@ -8156,5 +8693,50 @@ const styles = StyleSheet.create({
         width: 22,
         height: 22,
         tintColor: "#222",
+    },
+    iosPickerOverlay: {
+        flex: 1,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0,0,0,0.45)",
+    },
+
+    iosPickerContainer: {
+        backgroundColor: "#FFFFFF",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: 25,
+    },
+
+    iosPickerHeader: {
+        height: 60,
+        paddingHorizontal: 18,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderBottomWidth: 1,
+        borderBottomColor: "#E5E7EB",
+    },
+
+    iosPickerTitle: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+        color: "#111827",
+    },
+
+    iosCancelText: {
+        fontSize: 15,
+        color: "#6B7280",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    iosDoneText: {
+        fontSize: 15,
+        color: "#2563EB",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    iosDatePicker: {
+        width: "100%",
+        height: 210,
     },
 });
