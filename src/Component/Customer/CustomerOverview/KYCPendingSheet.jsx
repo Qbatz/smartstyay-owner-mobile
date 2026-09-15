@@ -68,6 +68,7 @@ export default function KycPendingSheet({
     const isPending = kycStatus === "PENDING";
     const isRequested = kycStatus === "REQUESTED";
     const isVerified = kycStatus === "VERIFIED";
+    const canRiseRequestAgain = customerDetails?.kycInfo?.canRequestAgain
 
 
     const handleKYCRequest = async () => {
@@ -319,7 +320,7 @@ export default function KycPendingSheet({
                                     isRequested && styles.requestedBtn,
                                 ]}
                                 disabled={isVerified || isRequested}
-                                onPress={handleKYCRequest}
+                                onPress={canRiseRequestAgain ? handleKYCRe_Request : handleKYCRequest}
                             >
                                 <Text
                                     style={[

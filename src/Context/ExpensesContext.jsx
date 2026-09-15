@@ -153,7 +153,6 @@ const GetExpenseList = async (
   hostelId,
   filters = {}
 ) => {
-  console.log("keetha",filters)
   try {
     setLoading(true);
 
