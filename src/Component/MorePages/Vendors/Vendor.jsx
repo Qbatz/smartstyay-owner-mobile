@@ -758,7 +758,7 @@ export default function Vendors({ navigation }) {
 
                                 style={styles.searchInput}
                                 placeholderTextColor="#9CA3AF"
-                                autoFocus
+                                // autoFocus
                                 editable={canReadVendor}
                             />
                         </View>

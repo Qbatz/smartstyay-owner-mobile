@@ -8,7 +8,7 @@ import {
     PanResponder,
     TouchableOpacity,
     TouchableWithoutFeedback,
-    TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard, Image, BackHandler
+    TextInput, KeyboardAvoidingView, Platform, ScrollView, Keyboard, Image, BackHandler, Modal
 } from "react-native";
 import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -60,9 +60,7 @@ export default function JobDetailsSheet({
 
     const [companyName, setCompanyName] = useState("")
     const [employementstatus, setEmployementStatus] = useState("")
-    //   const [jobrole, setJobRole] = useState("")
     const [worklocation, setWorkLocations] = useState("")
-    //   const [shifttype, setShiftType] = useState("")
 
     const [employmentOpen, setEmploymentOpen] = useState(false);
     const [jobRoleOpen, setJobRoleOpen] = useState(false);
@@ -97,6 +95,9 @@ export default function JobDetailsSheet({
     const [startTime, setStartTime] = useState(null);
     const [endTime, setEndTime] = useState(null);
 
+    const [iosPickerType, setIosPickerType] = useState(null);
+    const [iosTempTime, setIosTempTime] = useState(new Date());
+
     const formatTime = (date) => {
         if (!date) return "";
 
@@ -105,6 +106,46 @@ export default function JobDetailsSheet({
             minute: "2-digit",
             hour12: true,
         });
+    };
+
+    const openStartTimePicker = () => {
+        const initialTime = startTime || new Date();
+
+        if (Platform.OS === "ios") {
+            setIosTempTime(initialTime);
+            setIosPickerType("start");
+        } else {
+            setShowStartPicker(true);
+        }
+    };
+
+    const openEndTimePicker = () => {
+        const initialTime = endTime || new Date();
+
+        if (Platform.OS === "ios") {
+            setIosTempTime(initialTime);
+            setIosPickerType("end");
+        } else {
+            setShowEndPicker(true);
+        }
+    };
+
+    const closeIosTimePicker = () => {
+        setIosPickerType(null);
+    };
+
+    const confirmIosTimePicker = () => {
+        if (iosPickerType === "start") {
+            setStartTime(iosTempTime);
+            setStartTimeError("");
+        }
+
+        if (iosPickerType === "end") {
+            setEndTime(iosTempTime);
+            setEndTimeError("");
+        }
+
+        setIosPickerType(null);
     };
 
 
@@ -277,12 +318,12 @@ export default function JobDetailsSheet({
 
     const [keyboardHeight, setKeyboardHeight] = useState(0);
     const safeKeyboardHeight = keyboardHeight > 0 ? 260 : 0;
-    Keyboard.addListener("keyboardDidShow", (e) => {
-        setKeyboardHeight(e.endCoordinates.height);
-    });
-    Keyboard.addListener("keyboardDidHide", () => {
-        setKeyboardHeight(0);
-    })
+    // Keyboard.addListener("keyboardDidShow", (e) => {
+    //     setKeyboardHeight(e.endCoordinates.height);
+    // });
+    // Keyboard.addListener("keyboardDidHide", () => {
+    //     setKeyboardHeight(0);
+    // })
 
 
     useEffect(() => {
@@ -358,6 +399,8 @@ export default function JobDetailsSheet({
         selectedJob,
         isEditMode,
     ]);
+
+
 
 
     // useEffect(() => {
@@ -438,6 +481,29 @@ export default function JobDetailsSheet({
 
         return () => backHandler.remove();
     }, [visible])
+
+      useEffect(() => {
+        const keyboardShowListener = Keyboard.addListener(
+            "keyboardDidShow",
+            (e) => {
+                setKeyboardHeight(e.endCoordinates.height);
+            }
+        );
+
+        const keyboardHideListener = Keyboard.addListener(
+            "keyboardDidHide",
+            () => {
+                setKeyboardHeight(0);
+            }
+        );
+
+        return () => {
+            keyboardShowListener.remove();
+            keyboardHideListener.remove();
+        };
+    }, []);
+
+
 
 
     // const panResponder = useRef(
@@ -1141,7 +1207,8 @@ export default function JobDetailsSheet({
                             <View style={styles.shiftRow}>
                                 <TouchableOpacity
                                     style={styles.shiftInput}
-                                    onPress={() => setShowStartPicker(true)}
+                                    activeOpacity={0.7}
+                                    onPress={openStartTimePicker}
                                 >
                                     <Text
                                         style={[
@@ -1158,7 +1225,8 @@ export default function JobDetailsSheet({
 
                                 <TouchableOpacity
                                     style={styles.shiftInput}
-                                    onPress={() => setShowEndPicker(true)}
+                                    activeOpacity={0.7}
+                                    onPress={openEndTimePicker}
                                 >
                                     <Text
                                         style={[
@@ -1190,7 +1258,7 @@ export default function JobDetailsSheet({
             </View>
 
 
-            {showStartPicker && (
+            {/* {showStartPicker && (
                 <DateTimePicker
                     value={startTime || new Date()}
                     mode="time"
@@ -1222,7 +1290,111 @@ export default function JobDetailsSheet({
                         }
                     }}
                 />
+            )} */}
+
+            {Platform.OS === "android" && showStartPicker && (
+                <DateTimePicker
+                    value={startTime || new Date()}
+                    mode="time"
+                    display="default"
+                    is24Hour={false}
+                    onChange={(event, date) => {
+                        setShowStartPicker(false);
+
+                        if (event?.type === "dismissed") {
+                            return;
+                        }
+
+                        if (date) {
+                            setStartTime(date);
+                            setStartTimeError("");
+                        }
+                    }}
+                />
             )}
+
+            {Platform.OS === "android" && showEndPicker && (
+                <DateTimePicker
+                    value={endTime || new Date()}
+                    mode="time"
+                    display="default"
+                    is24Hour={false}
+                    onChange={(event, date) => {
+                        setShowEndPicker(false);
+
+                        if (event?.type === "dismissed") {
+                            return;
+                        }
+
+                        if (date) {
+                            setEndTime(date);
+                            setEndTimeError("");
+                        }
+                    }}
+                />
+            )}
+
+
+            {Platform.OS === "ios" && iosPickerType !== null && (
+                <Modal
+                    visible={iosPickerType !== null}
+                    transparent={true}
+                    animationType="slide"
+                    presentationStyle="overFullScreen"
+                    onRequestClose={closeIosTimePicker}
+                >
+                    <View style={styles.iosPickerOverlay}>
+
+                        <View style={styles.iosPickerContainer}>
+
+                            {/* HEADER */}
+                            <View style={styles.iosPickerHeader}>
+                                <TouchableOpacity
+                                    onPress={closeIosTimePicker}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={styles.iosCancelText}>
+                                        Cancel
+                                    </Text>
+                                </TouchableOpacity>
+
+                                <Text style={styles.iosPickerTitle}>
+                                    {iosPickerType === "start"
+                                        ? "Select From Time"
+                                        : "Select To Time"}
+                                </Text>
+
+                                <TouchableOpacity
+                                    onPress={confirmIosTimePicker}
+                                    activeOpacity={0.7}
+                                >
+                                    <Text style={styles.iosDoneText}>
+                                        Done
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* TIME PICKER */}
+                            <DateTimePicker
+                                value={iosTempTime}
+                                mode="time"
+                                display="spinner"
+                                locale="en_IN"
+                                onChange={(event, date) => {
+                                    if (date) {
+                                        setIosTempTime(date);
+                                    }
+                                }}
+                                style={styles.iosDatePicker}
+                            />
+
+                        </View>
+
+                    </View>
+                </Modal>
+            )}
+
+
         </>
     );
 }
@@ -1448,5 +1620,49 @@ const styles = StyleSheet.create({
         height: 22,
         tintColor: "#222",
     },
+    iosPickerOverlay: {
+        flex: 1,
+        justifyContent: "flex-end",
+        backgroundColor: "rgba(0,0,0,0.45)",
+    },
 
+    iosPickerContainer: {
+        backgroundColor: "#FFFFFF",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: 25,
+    },
+
+    iosPickerHeader: {
+        height: 60,
+        paddingHorizontal: 18,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderBottomWidth: 1,
+        borderBottomColor: "#E5E7EB",
+    },
+
+    iosPickerTitle: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+        color: "#111827",
+    },
+
+    iosCancelText: {
+        fontSize: 15,
+        color: "#6B7280",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    iosDoneText: {
+        fontSize: 15,
+        color: "#2563EB",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    iosDatePicker: {
+        width: "100%",
+        height: 210,
+    },
 });
