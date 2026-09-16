@@ -9,7 +9,8 @@ import {
     Image,
     StyleSheet,
     TouchableWithoutFeedback, Keyboard,
-    ScrollView
+    ScrollView,
+    Modal
 } from "react-native";
 import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
@@ -45,7 +46,7 @@ export default function ResetEBAmount({
     const [meterReading, setMeterReading] = useState("")
     const [dateError, setDateError] = useState("")
     const [readingError, setReadingError] = useState("")
-
+    
     const reasonType = [{ id: 1, type: "Meter Replaced" }, { id: 2, type: "Meter Reset" }, { id: 3, type: "Other" }
     ]
 
@@ -149,12 +150,14 @@ export default function ResetEBAmount({
 
         if (isSubmitClicked) return;
 
+    
         const payload = {
             roomId: roomInfo?.roomId,
-            resetOn: dayjs(selectedStartDate).format("DD-MM-YYYY") || "",
-            startReading: Number(meterReading),
+            resetOn: selectedStartDate != null ? dayjs(selectedStartDate).format("DD-MM-YYYY") : "",
+            startReading: meterReading != 0 ? Number(meterReading) : "",
             resetReason: selectedReason,
         }
+        console.log("maritha",payload)
 
         try {
             setIsSubmitClicked(true)
@@ -169,10 +172,12 @@ export default function ResetEBAmount({
                 setMessage(res?.data || "Reset Success")
                 setModalType("success")
 
+
                 setTimeout(() => {
                     setShowSuccess(false)
                     handleClose()
                     setIsSubmitClicked(false)
+                    setShowPopUp(true)
                 }, 1100);
             } else {
                 setShowSuccess(true)
@@ -327,7 +332,7 @@ export default function ResetEBAmount({
                             //     : undefined
                             // }
                             // minDate={dayjs().format("YYYY-MM-DD")}
-                            maxDate={dayjs().format("YYYY-MM-DD")}   
+                            maxDate={dayjs().format("YYYY-MM-DD")}
                             onDayPress={(day) => {
                                 const selected = dayjs(day.dateString);
 
@@ -357,6 +362,8 @@ export default function ResetEBAmount({
                     </View>
                 </View>
             )}
+
+           
         </>
     );
 }
@@ -428,4 +435,5 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 70,
     },
+  
 })

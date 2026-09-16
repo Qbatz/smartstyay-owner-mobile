@@ -592,7 +592,6 @@ export default function ExpensesList({ navigation }) {
         </TouchableOpacity>
     );
 
-    console.log("knatha", paymentStatus)
     const applyToFilter = async ({
         newCategory = selectedCategory ?? tempCatgory,
         newPaymentStatus = paymentStatus,
@@ -601,8 +600,10 @@ export default function ExpensesList({ navigation }) {
         newCreatedBy= selectedCreatedBy,
     } = {}) => {
 
+        const finalCategory= newCategory.length ? newCategory : tempCatgory
+
         const filters = {
-            categoryId: newCategory?.length ? newCategory : undefined,
+            categoryId: finalCategory?.length ? finalCategory : undefined,
             paymentStatus: newPaymentStatus?.length ? newPaymentStatus : undefined,
             vendorId: newVendor?.length ? newVendor : undefined,
             paymentMode: newPaymentMode?.length ? newPaymentMode : undefined,
@@ -615,6 +616,13 @@ export default function ExpensesList({ navigation }) {
 
         const res = await GetExpenseList(activeHostelId, filters)
        
+    }
+
+    const handleResetFilter=()=>{
+       
+         if (activeHostelId) {
+                GetExpenseList(activeHostelId);
+            }
     }
 
     if (!canReadExpense && !loading) {
@@ -1131,13 +1139,14 @@ export default function ExpensesList({ navigation }) {
                                     setToDate(dayjs());
                                     // setAmountSelected(amountOptions[0]);
                                     setMinAmount("")
-                                    setSelectedCategory(null)
-                                    setPaymentStatus(null)
-                                    setPaymentMode(null)
-                                    setSelectedVendor(null)
-                                    setSelectedCreatedBy(null)
+                                    setSelectedCategory([])
+                                    setPaymentStatus([])
+                                    setPaymentMode([])
+                                    setSelectedVendor([])
+                                    setSelectedCreatedBy([])
                                     setMaxAmount("")
-                                    applyToFilter([],[],[],[],[])
+                                    // applyToFilter([],[],[],[],[])
+                                    handleResetFilter()
                                      setShowFilter(false)
                                 }}
                             >
@@ -1245,7 +1254,8 @@ export default function ExpensesList({ navigation }) {
                     setTempCategory("")
                     setShowCatergoryFilter(false);
 
-                    applyToFilter("")
+                    // applyToFilter("")
+                    handleResetFilter()
                 }}
 
                 onApply={async () => {
