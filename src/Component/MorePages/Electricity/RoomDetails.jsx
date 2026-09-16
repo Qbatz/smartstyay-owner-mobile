@@ -53,7 +53,7 @@ export default function RoomDetails({ route, navigation }) {
 
   console.log("particular_EbRoomReading", particular_EbRoomReading);
   console.log("EbRoomReading", EbRoomReading);
- 
+
 
 
   const {
@@ -125,8 +125,10 @@ export default function RoomDetails({ route, navigation }) {
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const dotsRefs = useRef({});
   const today = dayjs();
-  const [showResetEbSheet,setShowResetEbSheet]=useState(false)
-  
+  const [showResetEbSheet, setShowResetEbSheet] = useState(false)
+  const [showPopUp, setShowPopUp] = useState(false)
+
+
 
   const isDisabledReadingDate = (d) => {
     if (!d) return false;
@@ -168,7 +170,7 @@ export default function RoomDetails({ route, navigation }) {
   useEffect(() => {
     if (particular_EbRoomReading?.readings?.length > 0) {
       setReadings(particular_EbRoomReading?.readings)
-    }else{
+    } else {
       setReadings("")
     }
   }, [particular_EbRoomReading])
@@ -176,7 +178,7 @@ export default function RoomDetails({ route, navigation }) {
   useEffect(() => {
     if (particular_EbRoomReading?.customers?.length > 0) {
       setOccupants(particular_EbRoomReading?.customers)
-    }else{
+    } else {
       setOccupants("")
     }
   }, [particular_EbRoomReading])
@@ -498,34 +500,34 @@ export default function RoomDetails({ route, navigation }) {
   console.log("deleteData", deleteData);
 
   const formatDateRange = (start, end) => {
-  if (!start) return "--";
+    if (!start) return "--";
 
-  const startDate = dayjs(start, ["DD/MM/YYYY", "DD-MM-YYYY"]);
-  const endDate = end
-    ? dayjs(end, ["DD/MM/YYYY", "DD-MM-YYYY"])
-    : null;
+    const startDate = dayjs(start, ["DD/MM/YYYY", "DD-MM-YYYY"]);
+    const endDate = end
+      ? dayjs(end, ["DD/MM/YYYY", "DD-MM-YYYY"])
+      : null;
 
-  // If no end date → show single date
-  if (!endDate) {
-    return startDate.format("DD MMM");
-  }
+    // If no end date → show single date
+    if (!endDate) {
+      return startDate.format("DD MMM");
+    }
 
-  // Same day
-  if (startDate.isSame(endDate, "day")) {
-    return startDate.format("DD MMM");
-  }
+    // Same day
+    if (startDate.isSame(endDate, "day")) {
+      return startDate.format("DD MMM");
+    }
 
-  // Same month
-  if (
-    startDate.month() === endDate.month() &&
-    startDate.year() === endDate.year()
-  ) {
-    return `${startDate.format("DD")} - ${endDate.format("DD")} ${endDate.format("MMMM")}`;
-  }
+    // Same month
+    if (
+      startDate.month() === endDate.month() &&
+      startDate.year() === endDate.year()
+    ) {
+      return `${startDate.format("DD")} - ${endDate.format("DD")} ${endDate.format("MMMM")}`;
+    }
 
-  // Different month
-  return `${startDate.format("DD MMM")} - ${endDate.format("DD MMM")}`;
-};
+    // Different month
+    return `${startDate.format("DD MMM")} - ${endDate.format("DD MMM")}`;
+  };
 
 
   const handleConfirmReadingDelete = async () => {
@@ -558,7 +560,7 @@ export default function RoomDetails({ route, navigation }) {
     }
   }
 
-  console.log("roomRed",EbRoomReading)
+  console.log("roomRed", EbRoomReading)
 
 
   //  const handleSubmit = async () => {
@@ -655,7 +657,7 @@ export default function RoomDetails({ route, navigation }) {
   //     Alert.alert("Error", res.message || "Something went wrong");
   //   }
   // };
-  console.log("binthu",occupants,readings)
+  console.log("binthu", occupants, readings)
 
 
   return (
@@ -734,7 +736,7 @@ export default function RoomDetails({ route, navigation }) {
               />
             </TouchableOpacity>
 
-           
+
 
             <Modal
               transparent
@@ -766,7 +768,7 @@ export default function RoomDetails({ route, navigation }) {
                           setShowResetEbSheet(true)
                         }}
                       >
-                        <Image source={ResetIcon} style={[styles.popupIcon,{tintColor:'#1E45E1'}]} />
+                        <Image source={ResetIcon} style={[styles.popupIcon, { tintColor: '#1E45E1' }]} />
                         <Text style={styles.popupText}>Reset EB</Text>
                       </TouchableOpacity>
 
@@ -880,7 +882,7 @@ export default function RoomDetails({ route, navigation }) {
 
           </View>
 
-           <View style={{height:1,backgroundColor:'#EFEFEF',marginTop:8,marginBottom:8}}/>
+          <View style={{ height: 1, backgroundColor: '#EFEFEF', marginTop: 8, marginBottom: 8 }} />
 
           <View style={styles.detailsRow}>
             <View>
@@ -969,104 +971,104 @@ export default function RoomDetails({ route, navigation }) {
 
 
 
-          {/* ===== PREVIOUS READING TAB ===== */}
-          {activeTab === "Previous Reading" && (
-            <>
-              {readings && readings.length > 0 ? (
-                <FlatList
-                  data={readings}
-                  keyExtractor={(item, index) => index.toString()}
-                  showsVerticalScrollIndicator={false}
-                  renderItem={({ item, index }) => (
-                    <View key={index} style={styles.listRow}>
-                      <View style={styles.arrowCircle}>
-                        <Text style={{ color: "#3F6AFF" }}>➤</Text>
-                      </View>
-
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.monthText}>{formatApiMonth(item?.entryDate)}</Text>
-                        <View style={styles.unitTag}>
-                          <Text style={styles.unitText}>
-                            {item?.consumption} Units
-                          </Text>
-                        </View>
-                      </View>
-
-                      <View style={{ alignItems: "flex-end" }}>
-                        <Text style={styles.price}>
-                          ₹ {item?.amount ?? 0}
-                        </Text>
-                       <Text style={styles.date}>
-  {formatDateRange(item?.startDate, item?.endDate)}
-</Text>
-                      </View>
-                    </View>
-                  )} />
-              ) : (
-                activeTab === "Previous Reading" && (
-                  <View style={styles.centerContainer}>
-                    <Image source={EmptyState} style={styles.image} />
-                    <Text style={styles.noFloorText}>No Room Reading Found!</Text>
-                  </View>
-                )
-
-              )}
-            </>
-          )}
-
-
-          {/* ===== OCCUPANTS TAB ===== */}
-          {activeTab === "Occupants" && (
-            occupants && occupants.length > 0 ? (
+        {/* ===== PREVIOUS READING TAB ===== */}
+        {activeTab === "Previous Reading" && (
+          <>
+            {readings && readings.length > 0 ? (
               <FlatList
-                data={occupants} 
+                data={readings}
                 keyExtractor={(item, index) => index.toString()}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{paddingBottom:120}}
-                renderItem={({ item, index }) =>
-                (
-
+                renderItem={({ item, index }) => (
                   <View key={index} style={styles.listRow}>
-                    {/* <Image source={ProfileIcon} style={styles.avatar} /> */}
-                    <View>
-                    {item?.profilePic ? <Image source={{uri:item?.profilePic}} style={styles.avatar} /> : 
-                      <View style={[styles.avatar,{alignItems:'center',justifyContent:'center',backgroundColor:'#e6e7eb'}]}>
-                        <Text style={{fontSize:16,fontFamily:'Gilroy-Bold'}}>{item?.initials}</Text>
-                      </View>}
-                      </View>
+                    <View style={styles.arrowCircle}>
+                      <Text style={{ color: "#3F6AFF" }}>➤</Text>
+                    </View>
 
-                    <View style={{ flex: 1, paddingLeft: 10 }}>
-                      <Text style={styles.monthText}>{item?.fullName}</Text>
-
-                      <View style={styles.occRow}>
-                        <Image source={BedIcon} style={styles.smallIcon} />
-                        <Text style={styles.bedText}>{item?.bedName}</Text>
-
-                        <View style={styles.unitTag2}>
-                          <Text style={styles.unitText}>{item?.totalUnits} Units</Text>
-                        </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.monthText}>{formatApiMonth(item?.entryDate)}</Text>
+                      <View style={styles.unitTag}>
+                        <Text style={styles.unitText}>
+                          {item?.consumption} Units
+                        </Text>
                       </View>
                     </View>
 
                     <View style={{ alignItems: "flex-end" }}>
-                      <Text style={styles.price}>₹ {item?.totalAmount}</Text>
-                      {/* <Text style={styles.date}>{item?.billingDate}</Text> */}
+                      <Text style={styles.price}>
+                        ₹ {item?.amount ?? 0}
+                      </Text>
                       <Text style={styles.date}>
-                  {formatDateRange(item?.startDate || item?.billingDate, item?.endDate)}
-                  </Text>
+                        {formatDateRange(item?.startDate, item?.endDate)}
+                      </Text>
                     </View>
                   </View>
                 )} />
             ) : (
+              activeTab === "Previous Reading" && (
+                <View style={styles.centerContainer}>
+                  <Image source={EmptyState} style={styles.image} />
+                  <Text style={styles.noFloorText}>No Room Reading Found!</Text>
+                </View>
+              )
 
-              <View style={styles.centerContainer}>
-                <Image source={EmptyState} style={styles.image} />
-                <Text style={styles.noFloorText}> No Occupants Found!</Text>
+            )}
+          </>
+        )}
 
 
-              </View>
-            )
-          )}
+        {/* ===== OCCUPANTS TAB ===== */}
+        {activeTab === "Occupants" && (
+          occupants && occupants.length > 0 ? (
+            <FlatList
+              data={occupants}
+              keyExtractor={(item, index) => index.toString()}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 120 }}
+              renderItem={({ item, index }) =>
+              (
+
+                <View key={index} style={styles.listRow}>
+                  {/* <Image source={ProfileIcon} style={styles.avatar} /> */}
+                  <View>
+                    {item?.profilePic ? <Image source={{ uri: item?.profilePic }} style={styles.avatar} /> :
+                      <View style={[styles.avatar, { alignItems: 'center', justifyContent: 'center', backgroundColor: '#e6e7eb' }]}>
+                        <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold' }}>{item?.initials}</Text>
+                      </View>}
+                  </View>
+
+                  <View style={{ flex: 1, paddingLeft: 10 }}>
+                    <Text style={styles.monthText}>{item?.fullName}</Text>
+
+                    <View style={styles.occRow}>
+                      <Image source={BedIcon} style={styles.smallIcon} />
+                      <Text style={styles.bedText}>{item?.bedName}</Text>
+
+                      <View style={styles.unitTag2}>
+                        <Text style={styles.unitText}>{item?.totalUnits} Units</Text>
+                      </View>
+                    </View>
+                  </View>
+
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={styles.price}>₹ {item?.totalAmount}</Text>
+                    {/* <Text style={styles.date}>{item?.billingDate}</Text> */}
+                    <Text style={styles.date}>
+                      {formatDateRange(item?.startDate || item?.billingDate, item?.endDate)}
+                    </Text>
+                  </View>
+                </View>
+              )} />
+          ) : (
+
+            <View style={styles.centerContainer}>
+              <Image source={EmptyState} style={styles.image} />
+              <Text style={styles.noFloorText}> No Occupants Found!</Text>
+
+
+            </View>
+          )
+        )}
 
 
 
@@ -1239,9 +1241,39 @@ export default function RoomDetails({ route, navigation }) {
       />
 
       <ResetEBAmount
-       visible={showResetEbSheet}
-       onClose={()=>setShowResetEbSheet(false)}
-       roomInfo={roomData}/> 
+        visible={showResetEbSheet}
+        onClose={() => {
+          setShowResetEbSheet(false);
+          setShowPopUp(true);
+        }}
+        roomInfo={roomData} />
+
+      <Modal
+        transparent
+        visible={showPopUp}
+        animationType="fade"
+
+      >
+        <View style={styles.popupLayout}>
+          <TouchableOpacity
+            style={styles.outsideTouch}
+            activeOpacity={1}
+            onPress={() => setShowPopUp(false)}
+          />
+          <View style={styles.popUpBox}>
+            <View style={{ backgroundColor: '#f4f7fe', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 14 }}>
+              <Text style={styles.mainTxt}>New EB calculations will start from - using the reading 0 kWh.
+              </Text>
+              <Text style={styles.subCntTxt}> Previous meter readings and calculations will remain in history.</Text>
+            </View>
+
+            <TouchableOpacity onPress={() => setShowPopUp(false)}
+              style={styles.cancelPopupBtn}>
+              <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
     </>
   );
@@ -1813,7 +1845,7 @@ const styles = StyleSheet.create({
 
   popupText: {
     fontSize: 14,
-    fontFamily:'Gilroy-Medium',
+    fontFamily: 'Gilroy-Medium',
     color: "#333",
   },
 
@@ -1826,6 +1858,40 @@ const styles = StyleSheet.create({
     bottom: 0,
     zIndex: 998,
   },
+    popupLayout: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    outsideTouch: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+    },
+
+    popUpBox: {
+        width: "90%",
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        paddingHorizontal: 12,
+        paddingVertical:20,
+        elevation: 10,
+        zIndex: 999,
+    },
+    mainTxt:{
+        fontSize:15,fontFamily:'Gilroy-Semibold',textAlign:'center'
+    },
+    subCntTxt:{
+         fontSize:14,fontFamily:'Gilroy-Medium',marginTop:10,textAlign:'center',
+         marginBottom:10
+    },
+    cancelPopupBtn:{
+        borderColor:'#ececec',borderRadius:10,paddingVertical:14,
+        borderWidth:1,marginTop:18,alignItems:'center'
+    }
 
 
 });
