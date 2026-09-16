@@ -370,7 +370,9 @@ export default function Vendors({ navigation }) {
         }, 300);
     };
 
-    const vendors = vendorList?.vendors ?? [];
+  const vendors = Array.isArray(vendorList)
+    ? vendorList
+    : vendorList?.vendors ?? [];
 
     const hasActiveVendorFilter =
         searchText?.trim()?.length > 0 ||
@@ -772,7 +774,7 @@ export default function Vendors({ navigation }) {
 
 
 
-                {!loading && vendorList?.vendors?.length === 0 &&
+                {!loading && vendors?.length === 0 &&
                     !hasActiveVendorFilter ? (
 
                     <View style={styles.emptyContainer}>

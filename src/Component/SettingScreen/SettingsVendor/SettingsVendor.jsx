@@ -432,7 +432,7 @@ export default function vendorSettings({ navigation }) {
     };
 
 
-    const vendors = vendorCategories || [];
+    const vendors =  activeHostelId ? vendorCategories : [];
 
     console.log("vendorCategories", vendorCategories);
 
@@ -557,7 +557,7 @@ export default function vendorSettings({ navigation }) {
 
                 {canReadVendor && (
                     <View style={{ flex: 1 }}>
-                        {!loading && vendorCategories?.length === 0 ? (
+                        {!loading && vendors?.length === 0 ? (
                             <View style={styles.emptyContainer}>
                                 <Image source={EmptyComplaint} style={styles.emptyImg} />
                                 <Text style={styles.emptyTitle}>No Vendors are there!</Text>
@@ -576,7 +576,7 @@ export default function vendorSettings({ navigation }) {
                             </View>
                         ) : (
                             <FlatList
-                                data={vendorCategories}
+                                data={vendors}
                                 renderItem={renderComplaint}
                                 keyExtractor={(i) => i?.id.toString()}
                                 contentContainerStyle={{ paddingBottom: 140 }}
@@ -589,7 +589,7 @@ export default function vendorSettings({ navigation }) {
 
 
 
-                {canReadVendor && !loading && vendorCategories?.length > 0 && (
+                {canReadVendor && !loading && vendors?.length > 0 && (
                     <TouchableOpacity
                         style={[
                             styles.addBtn,
@@ -619,7 +619,7 @@ export default function vendorSettings({ navigation }) {
                                 style={[styles.menuItem, { opacity: canUpdateVendor ? 1 : 0.4 }]}
                                 disabled={!canUpdateVendor}
                                 onPress={() => {
-                                    const category = vendorCategories.find(
+                                    const category = vendors.find(
                                         (c) => c.id === menuComplaintId
                                     );
                                     setShowMenu(false);

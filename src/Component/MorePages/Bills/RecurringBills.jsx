@@ -411,7 +411,7 @@ const RecurringBills = ({onSelectRecurringBill , setShowTabBar}) => {
 
 
       <View style={styles.container}>
-        <View style={styles.headerRow}>
+        {/* <View style={styles.headerRow}>
           <Text style={styles.monthText}>This Month</Text>
 
           <View style={{ position: "relative" }}>
@@ -449,7 +449,7 @@ const RecurringBills = ({onSelectRecurringBill , setShowTabBar}) => {
             )}
           </View>
 
-        </View>
+        </View> */}
 
         {/* <FlatList
   data={recurringBills?.customers || []}

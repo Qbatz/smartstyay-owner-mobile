@@ -3210,8 +3210,13 @@ export default function BillsDesign({ route }) {
 
 
 
-                  {(
-                    !loading && BillDetails && BillDetails?.listInvoices?.length === 0  &&
+                 {(
+  !loading &&
+  (
+    Array.isArray(BillDetails)
+      ? BillDetails?.length === 0
+      : BillDetails?.listInvoices?.length === 0
+  ) &&
                     <View style={styles.centerContainer}>
                       <Image source={EmptyFloor} style={styles.image} />
                       <Text style={styles.noFloorText}>No bills are there!</Text>

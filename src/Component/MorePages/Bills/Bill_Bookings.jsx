@@ -8,7 +8,7 @@ import {
   StyleSheet, TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, TextInput, ScrollView, Dimensions , Platform
+  BackHandler, TextInput, ScrollView, Dimensions, Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -51,8 +51,8 @@ const CARD_WIDTH = width * 0.44
 const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFiltersheet }) => {
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
-    UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, GetAdvanceBookingBills } = useContext(BillContext);
-  const { activeHostelId,hostelList} = useContext(CommonContexts);
+    UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, setBookingBills, GetAdvanceBookingBills } = useContext(BillContext);
+  const { activeHostelId, hostelList } = useContext(CommonContexts);
 
   const {
     canWriteModule: canWriteBooking,
@@ -128,8 +128,20 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
   const [amountDropdownVisible, setAmountDropdownVisible] = useState(false)
 
-  const Advancebookingbills = bookingBills?.advanceInvoiceList
-  
+  // const Advancebookingbills = bookingBills?.advanceInvoiceList
+
+  const Advancebookingbills = Array.isArray(bookingBills?.advanceInvoiceList)
+    ? bookingBills.advanceInvoiceList
+    : Array.isArray(bookingBills)
+      ? bookingBills
+      : [];
+
+  const hasBookings = Advancebookingbills.length > 0;
+
+  console.log("bookingBills", bookingBills);
+  console.log("Advancebookingbills", Advancebookingbills);
+  console.log("hasBookings", hasBookings);
+
 
   console.log("bookingList", bookingBills)
 
@@ -205,6 +217,9 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
   useEffect(() => {
     if (activeHostelId && canReadBooking) {
       GetAdvanceBookingBills(activeHostelId);
+    }
+    else {
+      setBookingBills([])
     }
   }, [activeHostelId, canReadBooking]);
 
@@ -495,70 +510,70 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
     );
   };
 
- const SummaryCard = ({
-  icon,
-  title,
-  value,
-  prefix,
-  suffix,
-  valueColor = "#111827",
-  linearcolor
-}) => (
-  <LinearGradient
-    colors={["#FFFFFF", linearcolor]}
-    start={{ x: 0, y: 0 }}
-    end={{ x: 1, y: 1 }}
-    style={styles.summaryCard}
-  >
-    <View style={styles.cardTopRow}>
-      <View style={styles.cardContent}>
-        <Text style={styles.cardTitle}>
-          {title}
-        </Text>
+  const SummaryCard = ({
+    icon,
+    title,
+    value,
+    prefix,
+    suffix,
+    valueColor = "#111827",
+    linearcolor
+  }) => (
+    <LinearGradient
+      colors={["#FFFFFF", linearcolor]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.summaryCard}
+    >
+      <View style={styles.cardTopRow}>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>
+            {title}
+          </Text>
 
-        <Text style={[styles.cardValue, { color: valueColor }]}>
-          ₹ {prefix && <Text>{prefix}</Text>}
+          <Text style={[styles.cardValue, { color: valueColor }]}>
+            ₹ {prefix && <Text>{prefix}</Text>}
 
-          <AnimatedNumber value={value} />
+            <AnimatedNumber value={value} />
 
-          {suffix && <Text>{suffix}</Text>}
-        </Text>
+            {suffix && <Text>{suffix}</Text>}
+          </Text>
+        </View>
+
+        <View style={styles.iconBox}>
+          <Image
+            source={icon}
+            style={styles.cardIcon}
+          />
+        </View>
       </View>
+    </LinearGradient>
+  );
 
-      <View style={styles.iconBox}>
-        <Image
-          source={icon}
-          style={styles.cardIcon}
-        />
-      </View>
-    </View>
-  </LinearGradient>
-);
+  const AnimatedNumber = ({ value, duration = 800 }) => {
+    const animatedValue = useRef(new Animated.Value(0)).current;
+    const [displayValue, setDisplayValue] = useState(0);
 
-   const AnimatedNumber = ({ value, duration = 800 }) => {
-          const animatedValue = useRef(new Animated.Value(0)).current;
-          const [displayValue, setDisplayValue] = useState(0);
-  
-          useEffect(() => {
-              animatedValue.setValue(0);
-  
-              Animated.timing(animatedValue, {
-                  toValue: Number(value) || 0,
-                  duration,
-                  useNativeDriver: false,
-              }).start();
-  
-              const listener = animatedValue.addListener(({ value }) => {
-                  setDisplayValue(Math.floor(value));
-              });
-  
-              return () => {
-                  animatedValue.removeListener(listener);
-              };
-          }, [value]);
-  
-          return <Text>{displayValue}</Text>;
+    useEffect(() => {
+      animatedValue.setValue(0);
+
+      Animated.timing(animatedValue, {
+        toValue: Number(value) || 0,
+        duration,
+        useNativeDriver: false,
+      }).start();
+
+      const listener = animatedValue.addListener(({ value }) => {
+        setDisplayValue(Math.floor(value));
+      });
+
+      return () => {
+        animatedValue.removeListener(listener);
       };
+    }, [value]);
+
+    return <Text>{displayValue}</Text>;
+  };
 
 
 
@@ -625,62 +640,84 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
                 paddingBottom: 120,
               }}
               ListEmptyComponent={
-                !loading && <EmptyReceiptState />
+                !loading ? <EmptyReceiptState /> : null
               }
               onScroll={handleScroll}
-              ListHeaderComponent={() => (
-                <>
-                <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between',marginVertical:8}}>
-                  <Text style={{fontSize:13,fontFamily:'Gilroy-Medium',color:'#64748B'}}>
-                    Total Retainer Amount</Text>
-                  <Text style={{fontSize:18,fontFamily:'Gilroy-Semibold'}}>
-                    ₹ {bookingBills?.retainerSummary?.totalRetainerAmount}</Text>
-                </View>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.cardRow}
-                  >
-                    <SummaryCard
-                      title="Booking"
-                      value={bookingBills?.retainerSummary?.totalBookingAmount}
-                      icon={TickGreenIcon}
-                       valueColor="#00A651"
-                      linearcolor="#F4FFF7"
-                    />
+              ListHeaderComponent={() =>
+                hasBookings ? (
+                  <>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        marginVertical: 8,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          fontFamily: "Gilroy-Medium",
+                          color: "#64748B",
+                        }}
+                      >
+                        Total Retainer Amount
+                      </Text>
 
-                    <SummaryCard
-                      title="Advance"
-                      value={bookingBills?.retainerSummary?.totalAdvanceAmount}
-                      icon={RupeeIcon}                     
-                      linearcolor="#FFF4F4"
-                    />
+                      <Text
+                        style={{
+                          fontSize: 18,
+                          fontFamily: "Gilroy-Semibold",
+                        }}
+                      >
+                        ₹ {bookingBills?.retainerSummary?.totalRetainerAmount || 0}
+                      </Text>
+                    </View>
 
-                    <SummaryCard
-                      title="Rent"
-                      value={bookingBills?.retainerSummary?.totalRentAmount}
-                      icon={RupeeIcon}
-                      linearcolor="#FFF4F4"
-                    />
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={styles.cardRow}
+                    >
+                      <SummaryCard
+                        title="Booking"
+                        value={bookingBills?.retainerSummary?.totalBookingAmount || 0}
+                        icon={TickGreenIcon}
+                        valueColor="#00A651"
+                        linearcolor="#F4FFF7"
+                      />
 
-                    <SummaryCard
-                      title="EB"
-                      value={bookingBills?.retainerSummary?.totalEbAmount}
-                      icon={RupeeIcon}
-                      linearcolor="#FFF4F4"
-                    />
-                    <SummaryCard
-                      title="General"
-                      value={bookingBills?.retainerSummary?.otherAmount}
-                      icon={RupeeIcon}
-                      linearcolor="#FFF4F4"
-                    />
+                      <SummaryCard
+                        title="Advance"
+                        value={bookingBills?.retainerSummary?.totalAdvanceAmount || 0}
+                        icon={RupeeIcon}
+                        linearcolor="#FFF4F4"
+                      />
 
-                  </ScrollView>
+                      <SummaryCard
+                        title="Rent"
+                        value={bookingBills?.retainerSummary?.totalRentAmount || 0}
+                        icon={RupeeIcon}
+                        linearcolor="#FFF4F4"
+                      />
 
+                      <SummaryCard
+                        title="EB"
+                        value={bookingBills?.retainerSummary?.totalEbAmount || 0}
+                        icon={RupeeIcon}
+                        linearcolor="#FFF4F4"
+                      />
 
-                </>
-              )}
+                      <SummaryCard
+                        title="General"
+                        value={bookingBills?.retainerSummary?.otherAmount || 0}
+                        icon={RupeeIcon}
+                        linearcolor="#FFF4F4"
+                      />
+                    </ScrollView>
+                  </>
+                ) : null
+              }
             />
 
           </>
@@ -688,13 +725,13 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
         )}
 
 
-        {!loading && hostelList?.length > 0 && (
+        {!loading && hasBookings && hostelList?.length > 0 && (
           <>
 
 
             <TouchableOpacity
               style={[
-                styles.addButton, !canWriteBooking && {opacity:0.4}
+                styles.addButton, !canWriteBooking && { opacity: 0.4 }
 
               ]}
               disabled={!canWriteBooking}
@@ -709,7 +746,7 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
         )
         }
 
-         {!loading && hostelList?.length > 0 && (
+        {!loading && hasBookings && hostelList?.length > 0 && (
           <TouchableOpacity
             style={[styles.filterButton, !canReadBooking && { opacity: 0.4 }]}
             disabled={!canReadBooking}
@@ -1557,11 +1594,11 @@ const styles = StyleSheet.create({
     height: 180,
   },
   cardRow: {
-        paddingLeft: 5,
-        paddingTop: 8,
-        // paddingBottom: 0,
-        marginBottom:5
-    },
+    paddingLeft: 5,
+    paddingTop: 8,
+    // paddingBottom: 0,
+    marginBottom: 5
+  },
 
 
   emptyText: {
@@ -1582,74 +1619,74 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   summaryCard: {
-        width: CARD_WIDTH,
-        height: Platform.OS === "ios" ? 100 :  90,
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        // paddingHorizontal: 14,
-        // paddingVertical: 12,
-            paddingTop: Platform.OS === "ios" ? 0 : 5,
+    width: CARD_WIDTH,
+    height: Platform.OS === "ios" ? 100 : 90,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    // paddingHorizontal: 14,
+    // paddingVertical: 12,
+    paddingTop: Platform.OS === "ios" ? 0 : 5,
     paddingRight: Platform.OS === "ios" ? 0 : 15,
     paddingBottom: Platform.OS === "ios" ? 0 : 1,
     paddingLeft: Platform.OS === "ios" ? 0 : 15,
 
-        borderWidth: 1,
-        borderColor: "#EEF2F6",
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
 
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 4,
-        elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
 
-        marginRight: 12,
-        marginBottom: 10, marginTop: 5
-    },
-    cardTopRow: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        flex: 1,
+    marginRight: 12,
+    marginBottom: 10, marginTop: 5
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flex: 1,
 
-    },
-    cardContent:{
+  },
+  cardContent: {
     paddingLeft: Platform.OS === "ios" ? 12 : 0,
     paddingTop: Platform.OS === "ios" ? 5 : 0,
     paddingRight: Platform.OS === "ios" ? 18 : 15,
-    },
+  },
 
-    iconBox: {
-        width: 42,
-        height: 42,
-        borderRadius: 12,
-        backgroundColor: "#fff",
+  iconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#fff",
 
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight:10,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
 
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
 
-        shadowColor: "#000",
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
-    },
-    cardIcon: { width: 20, height: 20 },
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardIcon: { width: 20, height: 20 },
 
-    cardTitle: {
-        fontSize: 13,
-        color: "#64748B",
-        fontFamily: "Gilroy-Medium",
-    },
+  cardTitle: {
+    fontSize: 13,
+    color: "#64748B",
+    fontFamily: "Gilroy-Medium",
+  },
 
-    cardValue: {
-        marginTop: 12,
-        fontSize: 18,
-        color: "#111827",
-        fontFamily: "Gilroy-Bold",
-    },
+  cardValue: {
+    marginTop: 12,
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
 
 
 });
