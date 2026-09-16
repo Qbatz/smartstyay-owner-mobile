@@ -109,8 +109,8 @@ export default function VendorProvider({ children }) {
             name: filters?.name || undefined,
             categoryId: filters?.categoryId || undefined,
             paymentStatus: filters?.paymentStatus || undefined,
-            page: filters?.page || 1,
-            size: filters?.size || 10,
+            page: filters?.page ,
+            size: filters?.size ,
           },
         }
       );
@@ -119,6 +119,8 @@ export default function VendorProvider({ children }) {
       
 
       if (res.status === 200) {
+        console.log("vendorres", res.data);
+        
         setVendorList(res.data || []);
 
         return {

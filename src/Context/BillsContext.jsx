@@ -1624,6 +1624,7 @@ export default function BillsProvider({ children }) {
         BillPdfdetails,
         ReceiptPdfdetails,
         bookingBills,
+        setBookingBills,
         InitializebookingBills,
         advanceCreditDetails,
         InitializeRecordPaymentDetails,

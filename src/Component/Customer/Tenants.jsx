@@ -147,7 +147,7 @@ export default function TenantsScreen({ route }) {
     canDeleteModule: canDeleteTenant,
   } = useHasPermission("Customers");
 
-    const { canWriteModule: canWriteBooking, canUpdateModule: canUpdateBooking } =
+  const { canWriteModule: canWriteBooking, canUpdateModule: canUpdateBooking } =
     useHasPermission("Booking");
 
 
@@ -1055,6 +1055,23 @@ export default function TenantsScreen({ route }) {
     );
   });
 
+  const appliedFilters = tenantStatusFilter?.length > 0 || sharingTypeFilter?.length > 0 ||
+    !!selectedMonth;
+
+  const handleResetFilters = async () => {
+    setTenantStatusFilter([]);
+    setSharingTypeFilter([]);
+    setSelectedMonth("");
+
+    setTempTenantStatus([]);
+    setTempSharingType([]);
+    setTempMonth("");
+
+    setSearchText("");
+
+    await fetchCustomers([], "", []);
+  };
+
   // const getStatusColor = (status) => {
   //   switch (status) {
   //     case "Checked In":
@@ -1221,7 +1238,7 @@ export default function TenantsScreen({ route }) {
 
             {canReadTenant && (
               <>
-                {!loading && (customers?.listCustomers?.length ?? 0) === 0 && (
+                {/* {!loading && (customers?.listCustomers?.length ?? 0) === 0 && (
                   <View style={styles.emptyContainer}>
                     <Image source={EmptyState} style={styles.emptyImage} />
                     <Text style={styles.emptyText}>
@@ -1243,6 +1260,54 @@ export default function TenantsScreen({ route }) {
                         + Add Tenant
                       </Text>
                     </TouchableOpacity>
+                  </View>
+                )} */}
+
+                {!loading && (customers?.listCustomers?.length ?? 0) === 0 && (
+                  <View style={styles.emptyContainer}>
+                    <Image source={EmptyState} style={styles.emptyImage} />
+
+                    {appliedFilters ? (
+                      <>
+                        <Text style={styles.emptyText}>
+                          No tenants found{"\n"}
+                          Try changing or resetting your filters.
+                        </Text>
+
+                        <TouchableOpacity
+                          style={styles.addBtnAdd}
+                          onPress={handleResetFilters}
+                        >
+                          <Text style={styles.addBtnText}>
+                            Reset Filters
+                          </Text>
+                        </TouchableOpacity>
+                      </>
+                    ) : (
+                      <>
+                        <Text style={styles.emptyText}>
+                          No Tenant available{"\n"}
+                          There are no tenant added.
+                        </Text>
+
+                        <TouchableOpacity
+                          style={[
+                            styles.addBtnAdd,
+                            !canWriteTenant && { opacity: 0.4 }
+                          ]}
+                          disabled={!canWriteTenant}
+                          onPress={() =>
+                            navigation.navigate("AddTenantNew", {
+                              mode: "Add",
+                            })
+                          }
+                        >
+                          <Text style={styles.addBtnText}>
+                            + Add Tenant
+                          </Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
                   </View>
                 )}
 

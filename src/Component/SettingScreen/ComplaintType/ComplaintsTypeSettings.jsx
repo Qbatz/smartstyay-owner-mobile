@@ -434,7 +434,8 @@ export default function ComplaintsSettings({ navigation }) {
 
 
 
-  const complaints = complaintTypes;
+  // const complaints = activeHostelId ?  complaintTypes : []
+  const complaints = activeHostelId ? complaintTypes : [];
 
   const renderPopupMenu = (item) => {
     if (showMenuId !== item.id) return null;
