@@ -31,7 +31,8 @@ import BedIcon from "../../Assets/Images/bed_NewIcon.png";
 import { Switch } from "react-native";
 import BedDetailsSheet from "./BedDetailsBottomsheet"
 import { UseSetting } from "../../Context/SettingContext";
-
+import CloseIcon from "../../Assets/Images/remove.png";
+import AddRentIcon from "../../Assets/Images/directionbottom.png";
 
 
 
@@ -51,7 +52,7 @@ export default function BookingCheckIn({ navigation, route }) {
     const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel,
         initializeCheckIn, bookedCheckInCustomer,
         BookedTenantCheckIn } = useCustomer();
-        const { getBillingConfig, billingRuleData } = UseSetting();
+    const { getBillingConfig, billingRuleData } = UseSetting();
 
     const isSubmittingRef = useRef(false);
     const [floors, setFloors] = useState([]);
@@ -91,6 +92,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
     const [refuseAdvanceAmount, setRefuseAdvanceAmount] = useState(false);
+    const [isAdvanceDetailsOpen, setIsAdvanceDetailsOpen] = useState(!refuseAdvanceAmount)
     const [collectFullRent, setCollectFullRent] = useState(false);
     const [showCustomRentEditor, setShowCustomRentEditor] = useState(false);
     const [customRentAmount, setCustomRentAmount] = useState("");
@@ -120,10 +122,10 @@ export default function BookingCheckIn({ navigation, route }) {
     };
 
     useEffect(() => {
-    if (activeHostelId) {
-        getBillingConfig(activeHostelId);
-    }
-}, [activeHostelId]);
+        if (activeHostelId) {
+            getBillingConfig(activeHostelId);
+        }
+    }, [activeHostelId]);
 
 
     const loadRooms = async (floorId) => {
@@ -251,81 +253,81 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
     const isCurrentMonth = joiningDate
-    ? dayjs(joiningDate).isSame(dayjs(), "month")
-    : false;
+        ? dayjs(joiningDate).isSame(dayjs(), "month")
+        : false;
 
-const isPreviousMonth = joiningDate
-    ? dayjs(joiningDate).isSame(
-        dayjs().subtract(1, "month"),
-        "month"
-    )
-    : false;
+    const isPreviousMonth = joiningDate
+        ? dayjs(joiningDate).isSame(
+            dayjs().subtract(1, "month"),
+            "month"
+        )
+        : false;
 
-const showFullRentOption = React.useMemo(() => {
-    if (!billingRuleData) {
-        return false;
-    }
+    const showFullRentOption = React.useMemo(() => {
+        if (!billingRuleData) {
+            return false;
+        }
 
-    const billingModel = String(
-        billingRuleData?.billingModel || ""
-    ).trim().toUpperCase();
+        const billingModel = String(
+            billingRuleData?.billingModel || ""
+        ).trim().toUpperCase();
 
-    const typeOfBilling = String(
-        billingRuleData?.typeOfBilling || ""
-    ).trim().toUpperCase();
+        const typeOfBilling = String(
+            billingRuleData?.typeOfBilling || ""
+        ).trim().toUpperCase();
 
-    // PREPAID + FIXED => Always show
-    // if (
-    //     billingModel === "PREPAID" &&
-    //     typeOfBilling === "FIXED"
-    // ) {
-    //     return true;
-    // }
+        // PREPAID + FIXED => Always show
+        // if (
+        //     billingModel === "PREPAID" &&
+        //     typeOfBilling === "FIXED"
+        // ) {
+        //     return true;
+        // }
 
-     if (
+        if (
             billingModel === "PREPAID" &&
             typeOfBilling === "FIXED"
         ) {
             return !!joiningDate && isCurrentMonth;
         }
 
-    // PREPAID + JOINING DATE BASED => Hide
-    if (
-        billingModel === "PREPAID" &&
-        typeOfBilling === "JOINING DATE BASED"
-    ) {
+        // PREPAID + JOINING DATE BASED => Hide
+        if (
+            billingModel === "PREPAID" &&
+            typeOfBilling === "JOINING DATE BASED"
+        ) {
+            return false;
+        }
+
+        // POSTPAID + FIXED => Current / Previous month only
+        if (
+            billingModel === "POSTPAID" &&
+            typeOfBilling === "FIXED"
+        ) {
+            return !!joiningDate && (
+                isCurrentMonth || isPreviousMonth
+            );
+        }
+
+        // Other combinations => Hide
         return false;
-    }
+    }, [
+        billingRuleData,
+        joiningDate,
+        isCurrentMonth,
+        isPreviousMonth,
+    ]);
 
-    // POSTPAID + FIXED => Current / Previous month only
-    if (
-        billingModel === "POSTPAID" &&
-        typeOfBilling === "FIXED"
-    ) {
-        return !!joiningDate && (
-            isCurrentMonth || isPreviousMonth
-        );
-    }
-
-    // Other combinations => Hide
-    return false;
-}, [
-    billingRuleData,
-    joiningDate,
-    isCurrentMonth,
-    isPreviousMonth,
-]);
-
-useEffect(() => {
-    if (!showFullRentOption) {
-        setCollectFullRent(false);
-        setShowCustomRentEditor(false);
-        setCustomRentAmount("");
-        setSavedCustomRent("");
-        setIsCustomRentSaved(false);
-        setCustomRentError("");
-    }
-}, [showFullRentOption]);
+    useEffect(() => {
+        if (!showFullRentOption) {
+            setCollectFullRent(false);
+            setShowCustomRentEditor(false);
+            setCustomRentAmount("");
+            setSavedCustomRent("");
+            setIsCustomRentSaved(false);
+            setCustomRentError("");
+        }
+    }, [showFullRentOption]);
 
     // const filteredBeds = beds.filter(bed => {
     //     if (!selectedFloor || !selectedRoom) return false;
@@ -452,10 +454,10 @@ useEffect(() => {
 
 
 
-    console.log("slectTa",selectedFloor)
+    console.log("slectTa", selectedFloor)
     console.log(isPGBooking)
 
-    console.log("seetha",selectedBedReserv)
+    console.log("seetha", selectedBedReserv)
 
 
 
@@ -864,7 +866,10 @@ useEffect(() => {
 
     const summaryAmount = summaryAdvanceAmount + deductionTotal + summaryRent;
 
-
+    const totalFixedCharges = extraCharges.reduce((total, item) => {
+        const amount = Number(item.amount || 0);
+        return total + amount;
+    }, 0);
 
 
     return (
@@ -1005,10 +1010,10 @@ useEffect(() => {
                                     <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
                                     <TouchableOpacity style={{
                                         flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10,
-                                        opacity: isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect ? 0.5 : 1,
+                                        opacity: isDashboardCheckIn || bookingDetails?.bedName != null && styles.disabledSelect ? 0.5 : 1,
                                     }}
                                         onPress={handleshowBedDetailsheet}
-                                        disabled={isDashboardCheckIn ||bookingDetails?.bedName !=null}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName != null}
                                     >
 
                                         <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
@@ -1029,10 +1034,10 @@ useEffect(() => {
                                         // ]}
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
+                                            isDashboardCheckIn || bookingDetails?.bedName != null && styles.disabledSelect,
                                         ]}
                                         onPress={() => setFloorOpen(!floorOpen)}
-                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName != null}
                                     // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
@@ -1095,9 +1100,9 @@ useEffect(() => {
                                         // ]}
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
+                                            isDashboardCheckIn || bookingDetails?.bedName != null && styles.disabledSelect,
                                         ]}
-                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName != null}
                                         onPress={() => {
                                             if (selectedFloor) {
                                                 setRoomOpen(!roomOpen);
@@ -1140,9 +1145,9 @@ useEffect(() => {
                                     <TouchableOpacity
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn || bookingDetails?.bedName !=null && styles.disabledSelect,
+                                            isDashboardCheckIn || bookingDetails?.bedName != null && styles.disabledSelect,
                                         ]}
-                                        disabled={isDashboardCheckIn || bookingDetails?.bedName !=null}
+                                        disabled={isDashboardCheckIn || bookingDetails?.bedName != null}
                                         onPress={() => {
                                             if (selectedRoom) {
                                                 setBedOpen(!bedOpen);
@@ -1202,7 +1207,13 @@ useEffect(() => {
 
 
 
-
+                                <Text style={{
+                                    fontSize: 14,
+                                    color: "#111827",
+                                    fontFamily: "Gilroy-Medium", marginTop: 10
+                                }}>
+                                    Total Advance / Security deposit amount  ₹(INR)  <Text style={{ color: "red", }}>*</Text>
+                                </Text>
 
 
                                 <View style={styles.switchRow}>
@@ -1214,6 +1225,7 @@ useEffect(() => {
                                         value={refuseAdvanceAmount}
                                         onValueChange={(value) => {
                                             setRefuseAdvanceAmount(value);
+                                            setIsAdvanceDetailsOpen(!value);
 
                                             if (value) {
                                                 setAdvanceAmount("");
@@ -1225,162 +1237,219 @@ useEffect(() => {
                                     />
                                 </View>
 
-                                <View style={styles.field}>
-                                    <Text style={styles.label}>Advance Amount <Text style={{ color: "red" }}>*</Text></Text>
-                                    <TextInput
-                                        // style={styles.input}
-                                        style={[
-                                            styles.input,
-                                            refuseAdvanceAmount && styles.disabledInput,
-                                        ]}
-                                        keyboardType="numeric"
-                                        value={advanceAmount}
-                                        editable={!refuseAdvanceAmount}
-                                        selectTextOnFocus={!refuseAdvanceAmount}
-                                        placeholder='Enter AdvanceAmount'
-                                        // onChangeText={setAdvanceAmount}
-                                        onChangeText={(text) => {
-                                            const onlyNumbers = text.replace(/[^0-9]/g, "");
-                                            setAdvanceAmount(onlyNumbers);
-                                            setAdvanceError("");
-                                        }}
-
-                                    />
-                                </View>
-                                {advanceError && (
-                                    <ErrorMessage message={advanceError} type="error" />
-                                )}
-
-
                                 <View style={styles.nonRefund}>
-                                    <View style={styles.extraHeader}>
-                                        <Text style={styles.label}>Non Refundable Amount</Text>
 
-                                        <TouchableOpacity
-                                            disabled={refuseAdvanceAmount}
+                                    {/* COLLAPSIBLE HEADER */}
+                                    <TouchableOpacity
+                                        activeOpacity={0.8}
+                                        style={styles.advanceDetailsHeader}
+                                        onPress={() =>
+                                            setIsAdvanceDetailsOpen(prev => !prev)
+                                        }
+                                    >
+                                        <Text style={styles.advanceDetailsTitle}>
+                                            {!isAdvanceDetailsOpen ? "Refundable + Non Refundable Amount" : "Refundable Amount"}
+                                        </Text>
+
+                                        <Image
+                                            source={DownArrow}
                                             style={[
-                                                styles.addBtn,
-                                                refuseAdvanceAmount && { opacity: 0.5 }
+                                                styles.advanceDetailsArrow,
+                                                isAdvanceDetailsOpen && styles.advanceDetailsArrowOpen,
                                             ]}
-                                            // style={styles.addBtn} 
-                                            onPress={addCharge}>
-                                            <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Add</Text>
-                                        </TouchableOpacity>
-                                    </View>
+                                        />
+                                    </TouchableOpacity>
 
-                                    {extraCharges.map((item) => (
-                                        <View key={item.id} style={styles.figmaRowWrapper}>
 
-                                            {/* CLOSE BTN */}
+                                    {/* CONTENT */}
+                                    {isAdvanceDetailsOpen && (
+                                        <View style={styles.advanceDetailsContent}>
+
+                                            {/* <Text style={styles.label}>Refundable Amount </Text> */}
+
+                                            <TextInput
+                                                style={[
+                                                    styles.input,
+                                                    refuseAdvanceAmount && styles.disabledInput,
+                                                ]}
+                                                keyboardType="numeric"
+                                                value={advanceAmount}
+                                                editable={!refuseAdvanceAmount}
+                                                selectTextOnFocus={!refuseAdvanceAmount}
+                                                placeholder='Enter AdvanceAmount'
+                                                onChangeText={(text) => {
+                                                    const onlyNumbers = text.replace(/[^0-9]/g, "");
+                                                    setAdvanceAmount(onlyNumbers);
+                                                    setAdvanceError("");
+                                                }}
+
+                                            />
+                                            {advanceError && (
+                                                <ErrorMessage message={advanceError} type="error" />
+                                            )}
+
+
+                                            <View style={styles.extraHeader}>
+                                                <Text
+                                                    // style={{
+                                                    //     fontWeight: "600",
+                                                    //     color: "#444",
+                                                    //     marginBottom: 1,
+                                                    // }}
+                                                    style={styles.advanceDetailsTitle}
+                                                >
+                                                    Non Refundable Amount
+                                                </Text>
+                                            </View>
+
+                                            {extraCharges.map((item) => (
+                                                <View key={item.id} style={styles.figmaRowWrapper}>
+
+                                                    {/* CLOSE BTN */}
+                                                    <TouchableOpacity
+                                                        onPress={() => removeCharge(item.id, item.type)}
+                                                        style={styles.figmaCloseBtn}
+                                                    >
+
+                                                        <Image
+                                                            source={Delete}
+                                                            style={styles.figmaCloseText}
+                                                        />
+                                                    </TouchableOpacity>
+
+
+                                                    <View style={styles.figmaRow}>
+
+
+                                                        {item.type === "" ? (
+                                                            <TouchableOpacity
+                                                                style={styles.figmaLeftBox}
+                                                                onPress={() =>
+                                                                    setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                                                                }
+                                                            >
+                                                                <Text style={{ color: "#777" }}>Select...</Text>
+                                                                <Image source={DownArrow} style={styles.arrow} />
+                                                            </TouchableOpacity>
+                                                        ) : item.type === "Others" ? (
+                                                            <TextInput
+                                                                style={styles.figmaLeftBox}
+                                                                placeholder="Enter reason"
+                                                                value={item.title}
+                                                                // onChangeText={(t) => updateTitle(item.id, t)}
+                                                                onChangeText={(t) => {
+                                                                    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                                                    updateTitle(item.id, onlyLetters);
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                                                                <Text>Maintenance</Text>
+                                                            </View>
+                                                        )}
+
+                                                        {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                                                        {item.type === "" ? (
+                                                            <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                                                                <Text style={{ color: "#999" }}>Enter amount</Text>
+                                                            </View>
+                                                        ) : (
+                                                            <TextInput
+                                                                style={styles.figmaRightBox}
+                                                                placeholder="Enter amount"
+                                                                keyboardType="numeric"
+                                                                value={item.amount}
+                                                                onChangeText={(t) => {
+
+                                                                    let cleaned = t.replace(/[^0-9.]/g, "");
+
+                                                                    const parts = cleaned.split(".");
+
+                                                                    if (parts.length > 2) {
+                                                                        cleaned = parts[0] + "." + parts[1];
+                                                                    }
+
+                                                                    if (parts[1]?.length > 2) {
+                                                                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                                                                    }
+                                                                    updateAmount(item.id, cleaned)
+                                                                }
+                                                                }
+
+                                                            />
+                                                        )}
+
+                                                    </View>
+                                                    {item.titleError && (
+                                                        <ErrorMessage message={item.titleError} type="error" />
+                                                    )}
+                                                    {item.amountError && (
+                                                        <ErrorMessage message={item.amountError} type="error" />
+                                                    )}
+
+                                                    {openDropdownId === item.id && item.type === "" && (
+                                                        <View style={styles.nonRefundDropdown}>
+                                                            {TYPE_OPTIONS.map((t) => {
+
+                                                                const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
+
+                                                                return (
+                                                                    <TouchableOpacity
+                                                                        key={t}
+                                                                        disabled={disabled}
+                                                                        onPress={() => !disabled && selectType(item.id, t)}
+                                                                        style={{ opacity: disabled ? 0.3 : 1 }}
+                                                                    >
+                                                                        <Text style={styles.dropdownItem}>{t}</Text>
+                                                                    </TouchableOpacity>
+                                                                );
+                                                            })}
+                                                        </View>
+                                                    )}
+
+                                                </View>
+                                            ))}
+
                                             <TouchableOpacity
-                                                onPress={() => removeCharge(item.id, item.type)}
-                                                style={styles.figmaCloseBtn}
+                                                // style={styles.addNewButton}
+                                                // onPress={addCharge}
+                                                disabled={refuseAdvanceAmount}
+                                                style={[
+                                                    styles.addNewButton,
+                                                    refuseAdvanceAmount && { opacity: 0.5 }
+                                                ]}
+                                                onPress={addCharge}
                                             >
 
-                                                <Image
-                                                    source={Delete}
-                                                    style={styles.figmaCloseText}
-                                                />
+                                                <View style={styles.addNewContent}>
+                                                    <View style={styles.plusCircle}>
+                                                        <Text style={styles.plusText}>+</Text>
+                                                    </View>
+
+                                                    <Text style={styles.addNewText}>
+                                                        Add
+                                                    </Text>
+                                                </View>
                                             </TouchableOpacity>
 
 
-                                            <View style={styles.figmaRow}>
-
-
-                                                {item.type === "" ? (
-                                                    <TouchableOpacity
-                                                        style={styles.figmaLeftBox}
-                                                        onPress={() =>
-                                                            setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                                                        }
-                                                    >
-                                                        <Text style={{ color: "#777" }}>Select...</Text>
-                                                        <Image source={DownArrow} style={styles.arrow} />
-                                                    </TouchableOpacity>
-                                                ) : item.type === "Others" ? (
-                                                    <TextInput
-                                                        style={styles.figmaLeftBox}
-                                                        placeholder="Enter reason"
-                                                        value={item.title}
-                                                        // onChangeText={(t) => updateTitle(item.id, t)}
-                                                        onChangeText={(t) => {
-                                                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                                                            updateTitle(item.id, onlyLetters);
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
-                                                        <Text>Maintenance</Text>
-                                                    </View>
-                                                )}
-
-                                                {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
-                                                {item.type === "" ? (
-                                                    <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                                                        <Text style={{ color: "#999" }}>Enter amount</Text>
-                                                    </View>
-                                                ) : (
-                                                    <TextInput
-                                                        style={styles.figmaRightBox}
-                                                        placeholder="Enter amount"
-                                                        keyboardType="numeric"
-                                                        value={item.amount}
-                                                        onChangeText={(t) => {
-
-                                                            let cleaned = t.replace(/[^0-9.]/g, "");
-
-                                                            const parts = cleaned.split(".");
-
-                                                            if (parts.length > 2) {
-                                                                cleaned = parts[0] + "." + parts[1];
-                                                            }
-
-                                                            if (parts[1]?.length > 2) {
-                                                                cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                                                            }
-                                                            updateAmount(item.id, cleaned)
-                                                        }
-                                                        }
-
-                                                    />
-                                                )}
-
-                                            </View>
-                                            {item.titleError && (
-                                                <ErrorMessage message={item.titleError} type="error" />
-                                            )}
-                                            {item.amountError && (
-                                                <ErrorMessage message={item.amountError} type="error" />
-                                            )}
-
-                                            {openDropdownId === item.id && item.type === "" && (
-                                                <View style={styles.nonRefundDropdown}>
-                                                    {TYPE_OPTIONS.map((t) => {
-
-                                                        const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
-
-                                                        return (
-                                                            <TouchableOpacity
-                                                                key={t}
-                                                                disabled={disabled}
-                                                                onPress={() => !disabled && selectType(item.id, t)}
-                                                                style={{ opacity: disabled ? 0.3 : 1 }}
-                                                            >
-                                                                <Text style={styles.dropdownItem}>{t}</Text>
-                                                            </TouchableOpacity>
-                                                        );
-                                                    })}
-                                                </View>
-                                            )}
 
                                         </View>
-                                    ))}
+                                    )}
+                                    <View style={styles.fixedChargeFooter}>
+                                        <Text style={styles.fixedChargeTitle}>
+                                            TOTAL AMOUNT TO GET COLLECT
+                                        </Text>
 
-
-
-
+                                        <Text style={styles.fixedChargeAmount}>
+                                            ₹ {totalFixedCharges.toLocaleString("en-IN")}
+                                        </Text>
+                                    </View>
 
                                 </View>
+
+
+
 
                                 <View style={styles.field}>
                                     <Text style={styles.label}>Total Rent <Text style={{ color: "red" }}>*</Text></Text>
@@ -1409,82 +1478,90 @@ useEffect(() => {
                                 )}
 
 
-            {showFullRentOption && (
-    <>
-                                <View style={styles.fullRentRow}>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.checkbox,
-                                            collectFullRent && styles.checkboxSelected,
-                                        ]}
-                                        onPress={() => {
-                                            const value = !collectFullRent;
-
-                                            setCollectFullRent(value);
-
-                                            if (!value) {
-                                                setShowCustomRentEditor(false);
-                                                setCustomRentAmount("");
-                                                setSavedCustomRent("");
-                                                setIsCustomRentSaved(false);
-                                                setCustomRentError("");
-                                            }
-                                        }}
-                                    >
-                                        {collectFullRent && <Text style={styles.tick}>✓</Text>}
-                                    </TouchableOpacity>
-
-                                    <Text style={styles.fullRentText}>
-                                        Do you want to collect Full Rent for current month?
-                                    </Text>
-                                </View>
-
-                                {collectFullRent && (
+                                {showFullRentOption && (
                                     <>
-                                        <TouchableOpacity
-                                            style={[
-                                                styles.customRentBtn,
-                                                (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
-                                            ]}
-                                            onPress={() => {
-
-                                                if (showCustomRentEditor || isCustomRentSaved) {
-                                                    setShowCustomRentEditor(false);
-                                                    setIsCustomRentSaved(false)
-                                                } else {
-                                                    setShowCustomRentEditor(true);
-                                                }
-                                            }}
-                                        >
-                                            <Text
+                                        <View style={styles.fullRentRow}>
+                                            <TouchableOpacity
                                                 style={[
-                                                    styles.customRentBtnText,
-                                                    (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                                                    styles.checkbox,
+                                                    collectFullRent && styles.checkboxSelected,
                                                 ]}
+                                                onPress={() => {
+                                                    const value = !collectFullRent;
+
+                                                    setCollectFullRent(value);
+
+                                                    if (!value) {
+                                                        setShowCustomRentEditor(false);
+                                                        setCustomRentAmount("");
+                                                        setSavedCustomRent("");
+                                                        setIsCustomRentSaved(false);
+                                                        setCustomRentError("");
+                                                    }
+                                                }}
                                             >
-                                                {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                                                {collectFullRent && <Text style={styles.tick}>✓</Text>}
+                                            </TouchableOpacity>
+
+                                            <Text style={styles.fullRentText}>
+                                                Do you want to collect Full Rent for current month?
                                             </Text>
-                                        </TouchableOpacity>
+                                        </View>
 
-                                        {(showCustomRentEditor || isCustomRentSaved) && (
-                                            <View style={styles.customRentCard}>
+                                        {collectFullRent && (
+                                            <>
+                                                <TouchableOpacity
+                                                    style={[
+                                                        styles.customRentBtn,
+                                                        (showCustomRentEditor || isCustomRentSaved) && styles.closeBtn,
+                                                    ]}
+                                                    onPress={() => {
 
-                                                <Text style={styles.customRentTitle}>
-                                                    Custom Rent Amount
-                                                </Text>
+                                                        if (showCustomRentEditor || isCustomRentSaved) {
+                                                            setShowCustomRentEditor(false);
+                                                            setIsCustomRentSaved(false)
+                                                        } else {
+                                                            setShowCustomRentEditor(true);
+                                                        }
+                                                    }}
+                                                >
+                                                    <Text
+                                                        style={[
+                                                            styles.customRentBtnText,
+                                                            (showCustomRentEditor || isCustomRentSaved) && { color: "#fff" },
+                                                        ]}
+                                                    >
+                                                        {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
+                                                      
+                                                    </Text>
+                                                      {(showCustomRentEditor || isCustomRentSaved) ?
+                                                        <Image source={CloseIcon} style={{ height: 10, width: 10, marginLeft: 5 }} /> : 
+                                                        <Image source={AddRentIcon} style={{ height: 10, width: 10, marginLeft: 5 }} />}
+                                                </TouchableOpacity>
 
-                                                <Text style={styles.customRentSubTitle}>
-                                                    This amount reflects First month Rent only.
-                                                </Text>
+                                                {(showCustomRentEditor || isCustomRentSaved) && (
+                                                    <View style={styles.customRentCard}>
+                                                         <View style={styles.customRentArrow} />
 
-                                                {!isCustomRentSaved ? (
+                                                        <Text style={styles.customRentTitle}>
+                                                            Custom Rent Amount
+                                                        </Text>
+
+                                                        <Text style={styles.customRentSubTitle}>
+                                                            This amount reflects First month Rent only.
+                                                        </Text>
+
+                                                             {!isCustomRentSaved ? (
 
                                                     <>
-                                                        <View style={styles.amountRow}>
+                            
+
+                                                        <View style={styles.amountInputWrapper}>
 
                                                             <TextInput
-                                                                style={styles.amountInput}
+                                                                style={styles.customRentInput}
                                                                 placeholder="₹ 0.00"
+                                                                placeholderTextColor="#9CA3AF"
                                                                 keyboardType="numeric"
                                                                 value={customRentAmount}
                                                                 onChangeText={(text) => {
@@ -1496,7 +1573,7 @@ useEffect(() => {
                                                             />
 
                                                             <TouchableOpacity
-                                                                style={styles.setBtn}
+                                                                style={styles.setBtnInside}
                                                                 onPress={() => {
 
                                                                     if (!customRentAmount) {
@@ -1513,22 +1590,9 @@ useEffect(() => {
                                                                         return;
                                                                     }
 
-                                                                    // if (
-                                                                    //     Number(customRentAmount) >
-                                                                    //     Number(checkinrentalAmount || 0)
-                                                                    // ) {
-                                                                    //     setCustomRentError(
-                                                                    //         "Custom rent cannot exceed total rent"
-                                                                    //     );
-                                                                    //     return;
-                                                                    // }
-
                                                                     setSavedCustomRent(customRentAmount);
-
                                                                     setIsCustomRentSaved(true);
-
                                                                     setShowCustomRentEditor(false);
-
                                                                     setCustomRentError("");
                                                                 }}
                                                             >
@@ -1564,7 +1628,7 @@ useEffect(() => {
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../Assets/Images/edit.png")}
+                                                                source={require("../../Assets/Images/EditRent.png")}
                                                                 style={{
                                                                     width: 24,
                                                                     height: 24,
@@ -1577,14 +1641,16 @@ useEffect(() => {
 
                                                 )}
 
-                                            </View>
+                                                       
+
+                                                    </View>
+                                                )}
+                                            </>
                                         )}
+
+
                                     </>
                                 )}
-
-
-</>
-)}
 
                                 {/* <View style={styles.nonRefund}>
                                     <View style={styles.extraHeader}>
@@ -2220,6 +2286,36 @@ const styles = StyleSheet.create({
         borderRadius: 20
     },
 
+
+    advanceDetailsHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 6,
+    },
+
+    advanceDetailsTitle: {
+        fontSize: 16,
+        color: "#111827",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    advanceDetailsArrow: {
+        width: 22,
+        height: 22,
+        tintColor: "#111827",
+        transform: [{ rotate: "0deg" }],
+    },
+
+    advanceDetailsArrowOpen: {
+        transform: [{ rotate: "180deg" }],
+    },
+
+    advanceDetailsContent: {
+        marginTop: 8,
+    },
+
+
     addBtn: {
         backgroundColor: "#2D6CDF",
         paddingHorizontal: 18,
@@ -2428,11 +2524,12 @@ const styles = StyleSheet.create({
     },
 
     customRentBtn: {
-        marginTop: 15,
+         marginTop: 15,
         backgroundColor: "#EEF2FF",
         paddingVertical: 14,
         borderRadius: 10,
-        alignItems: "center",
+        flexDirection: 'row',
+        alignItems: "center", justifyContent: 'center'
     },
 
     closeBtn: {
@@ -2445,14 +2542,31 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Semibold"
     },
 
-    customRentCard: {
-        marginTop: 12,
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#C8D3FF",
-        padding: 18,
-    },
+     customRentCard: {
+    marginTop: 12,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#C8D3FF",
+    padding: 16,
+    position: "relative",
+},
+customRentArrow: {
+    position: "absolute",
+    top: -12,
+    right: 38,
+
+    width: 0,
+    height: 0,
+
+    borderLeftWidth: 12,
+    borderRightWidth: 12,
+    borderBottomWidth: 12,
+
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderBottomColor: "#C8D3FF",
+},
 
     customRentTitle: {
         fontSize: 18,
@@ -2537,8 +2651,72 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Medium",
     },
     disabledSelect: {
-  backgroundColor: "#F3F4F6",
-  opacity: 0.7,
-},
+        backgroundColor: "#F3F4F6",
+        opacity: 0.7,
+    },
+    fixedChargeFooter: {
+        marginTop: 12,
+        backgroundColor: "#F4F6FA",
+        borderBottomLeftRadius: 14,
+        borderBottomRightRadius: 14,
+        paddingHorizontal: 14,
+        paddingVertical: 18,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        borderTopWidth: 1,
+        borderTopColor: "#E7EAF0",
+    },
+
+    fixedChargeTitle: {
+        fontSize: 13,
+        color: "#64748B",
+        fontFamily: "Gilroy-Semibold",
+        textTransform: "uppercase",
+    },
+
+    fixedChargeAmount: {
+        fontSize: 18,
+        color: "#111827",
+        fontFamily: "Gilroy-Bold",
+    },
+
+    amountInputWrapper: {
+        marginTop: 20,
+        height: 52,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 12,
+        backgroundColor: "#fff",
+        flexDirection: "row",
+        alignItems: "center",
+        paddingLeft: 14,
+        paddingRight: 6,
+    },
+
+    customRentInput: {
+        flex: 1,
+        height: "100%",
+        paddingHorizontal: 0,
+        fontSize: 15,
+        color: "#111827",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    setBtnInside: {
+        height: 40,
+        minWidth: 65,
+        paddingHorizontal: 12,
+        backgroundColor: "#EEF2FF",
+        borderRadius: 10,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    setBtnText: {
+        color: "#1E45E1",
+        fontSize: 14,
+        fontFamily: "Gilroy-Semibold",
+    },
 
 });

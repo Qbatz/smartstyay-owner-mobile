@@ -37,6 +37,10 @@ import PlusIcon from "../../Assets/Images/add-circle.png";
 import { Switch } from "react-native";
 import BedDetailsSheet from "./BedDetailsBottomsheet"
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
+import CloseIcon from "../../Assets/Images/remove.png";
+import AddRentIcon from "../../Assets/Images/directionbottom.png";
+
+
 
 
 export default function NewTenantCheckIn({ navigation, route }) {
@@ -74,6 +78,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
     const [openDatePicker, setOpenDatePicker] = useState(false)
 
     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+
+    const [isAdvanceDetailsOpen, setIsAdvanceDetailsOpen] = useState(!refuseAdvanceAmount)
 
     // const [joiningDate, setJoiningDate] = useState(new Date());
     // const [advanceAmount, setAdvanceAmount] = useState("");
@@ -1531,7 +1537,13 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                 )}
 
 
-
+                                <Text style={{
+                                    fontSize: 14,
+                                    color: "#111827",
+                                    fontFamily: "Gilroy-Medium", marginTop: 10
+                                }}>
+                                    Total Advance / Security deposit amount  ₹(INR)  <Text style={{ color: "red", }}>*</Text>
+                                </Text>
 
                                 <View style={styles.switchRow}>
                                     <Text style={{
@@ -1546,6 +1558,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                         value={refuseAdvanceAmount}
                                         onValueChange={(value) => {
                                             setRefuseAdvanceAmount(value);
+                                            setIsAdvanceDetailsOpen(!value);
 
                                             if (value) {
                                                 setAdvanceAmount("");
@@ -1560,196 +1573,235 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                     />
                                 </View>
-                                <Text style={styles.label}>Advance Amount <Text style={{ color: "red" }}>*</Text></Text>
-
-                                <TextInput
-                                    style={[
-                                        styles.input,
-                                        refuseAdvanceAmount && styles.disabledInput,
-                                    ]}
-                                    placeholder="Enter Amount"
-                                    keyboardType="numeric"
-                                    value={advanceAmount}
-                                    editable={!refuseAdvanceAmount}
-                                    selectTextOnFocus={!refuseAdvanceAmount}
-                                    placeholderTextColor="#9CA3AF"
-                                    onChangeText={(text) => {
-                                        const onlyNum = text.replace(/[^0-9]/g, "");
-                                        setAdvanceAmount(onlyNum);
-                                        setAdvanceError("");
-                                    }}
-
-
-                                />
-
-                                {advanceError && (
-                                    <ErrorMessage message={advanceError} type="error" />
-                                )}
-
 
                                 <View style={styles.nonRefund}>
-                                    <View style={styles.extraHeader}>
-                                        <Text style={{ fontWeight: "600", color: "#444", marginBottom: 1 }}>Deductions</Text>
+
+                                    {/* COLLAPSIBLE HEADER */}
+                                    <TouchableOpacity
+                                        activeOpacity={0.8}
+                                        style={styles.advanceDetailsHeader}
+                                        onPress={() =>
+                                            setIsAdvanceDetailsOpen(prev => !prev)
+                                        }
+                                    >
+                                        <Text style={styles.advanceDetailsTitle}>
+                                            {!isAdvanceDetailsOpen ? "Refundable + Non Refundable Amount" : "Refundable Amount"}
+                                        </Text>
+
+                                        <Image
+                                            source={DownArrow}
+                                            style={[
+                                                styles.advanceDetailsArrow,
+                                                isAdvanceDetailsOpen && styles.advanceDetailsArrowOpen,
+                                            ]}
+                                        />
+                                    </TouchableOpacity>
 
 
-                                    </View>
+                                    {/* CONTENT */}
+                                    {isAdvanceDetailsOpen && (
+                                        <View style={styles.advanceDetailsContent}>
 
-                                    {extraCharges.map((item) => (
-                                        <View key={item.id} style={styles.figmaRowWrapper}>
+                                            {/* <Text style={styles.label}>Refundable Amount </Text> */}
 
-                                            {/* CLOSE BTN */}
+                                            <TextInput
+                                                style={[
+                                                    styles.input,
+                                                    refuseAdvanceAmount && styles.disabledInput,
+                                                ]}
+                                                placeholder="Enter Amount"
+                                                keyboardType="numeric"
+                                                value={advanceAmount}
+                                                editable={!refuseAdvanceAmount}
+                                                selectTextOnFocus={!refuseAdvanceAmount}
+                                                placeholderTextColor="#9CA3AF"
+                                                onChangeText={(text) => {
+                                                    const onlyNum = text.replace(/[^0-9]/g, "");
+                                                    setAdvanceAmount(onlyNum);
+                                                    setAdvanceError("");
+                                                }}
+
+
+                                            />
+
+                                            {advanceError && (
+                                                <ErrorMessage message={advanceError} type="error" />
+                                            )}
+
+
+                                            <View style={styles.extraHeader}>
+                                                <Text
+                                                    // style={{
+                                                    //     fontWeight: "600",
+                                                    //     color: "#444",
+                                                    //     marginBottom: 1,
+                                                    // }}
+                                                    style={styles.advanceDetailsTitle}
+                                                >
+                                                    Non Refundable Amount
+                                                </Text>
+                                            </View>
+
+                                            {extraCharges.map((item) => (
+                                                <View key={item.id} style={styles.figmaRowWrapper}>
+
+                                                    {/* CLOSE BTN */}
+                                                    <TouchableOpacity
+                                                        onPress={() => removeCharge(item.id, item.type)}
+                                                        style={styles.figmaCloseBtn}
+                                                    >
+
+                                                        <Image
+                                                            source={Delete}
+                                                            style={styles.figmaCloseText}
+                                                        />
+                                                    </TouchableOpacity>
+
+
+                                                    <View style={styles.figmaRow}>
+
+
+                                                        {item.type === "" ? (
+                                                            <TouchableOpacity
+                                                                style={styles.figmaLeftBox}
+                                                                onPress={() =>
+                                                                    setOpenDropdownId(openDropdownId === item.id ? null : item.id)
+                                                                }
+                                                            >
+                                                                <Text style={{ color: "#777" }}>Select...</Text>
+                                                                <Image source={DownArrow} style={styles.arrow} />
+                                                            </TouchableOpacity>
+                                                        ) : item.type === "Others" ? (
+                                                            <TextInput
+                                                                ref={(r) => {
+                                                                    inputRefs.current[`reason-${item.id}`] = r;
+                                                                }}
+                                                                style={styles.figmaLeftBox}
+                                                                placeholder="Enter reason"
+
+                                                                value={item.title}
+                                                                onFocus={() => {
+                                                                    setOpenDropdownId(null);
+                                                                    scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                                                                }}
+
+                                                                // onChangeText={(t) => updateTitle(item.id, t)}
+                                                                onChangeText={(t) => {
+                                                                    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                                                    updateTitle(item.id, onlyLetters);
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
+                                                                <Text>Maintenance</Text>
+                                                            </View>
+                                                        )}
+
+                                                        {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
+                                                        {item.type === "" ? (
+                                                            <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
+                                                                <Text style={{ color: "#999" }}>Enter amount</Text>
+                                                            </View>
+                                                        ) : (
+                                                            <TextInput
+                                                                ref={(r) => {
+                                                                    inputRefs.current[`amount-${item.id}`] = r;
+                                                                }}
+                                                                style={styles.figmaRightBox}
+                                                                placeholder="Enter amount"
+                                                                keyboardType="numeric"
+                                                                value={item.amount}
+                                                                onFocus={() => {
+                                                                    setOpenDropdownId(null);
+                                                                    scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+                                                                }}
+
+                                                                onChangeText={(t) => {
+
+                                                                    let cleaned = t.replace(/[^0-9.]/g, "");
+
+                                                                    const parts = cleaned.split(".");
+
+                                                                    if (parts.length > 2) {
+                                                                        cleaned = parts[0] + "." + parts[1];
+                                                                    }
+
+                                                                    if (parts[1]?.length > 2) {
+                                                                        cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                                                                    }
+
+                                                                    updateAmount(item.id, cleaned)
+                                                                }
+
+                                                                }
+                                                            />
+                                                        )}
+
+                                                    </View>
+
+                                                    {item.titleError && (
+                                                        <ErrorMessage message={item.titleError} type="error" />
+                                                    )}
+
+                                                    {item.typeError && (
+                                                        <ErrorMessage message={item.typeError} type="error" />
+                                                    )}
+
+                                                    {item.amountError && (
+                                                        <ErrorMessage message={item.amountError} type="error" />
+                                                    )}
+                                                    {openDropdownId === item.id && item.type === "" && (
+                                                        <View style={styles.nonRefundDropdown}>
+                                                            {TYPE_OPTIONS.map((t) => {
+
+                                                                const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
+
+                                                                return (
+                                                                    <TouchableOpacity
+                                                                        key={t}
+                                                                        disabled={disabled}
+                                                                        onPress={() => !disabled && selectType(item.id, t)}
+                                                                        style={{ opacity: disabled ? 0.3 : 1 }}
+                                                                    >
+                                                                        <Text style={styles.dropdownItem}>{t}</Text>
+                                                                    </TouchableOpacity>
+                                                                );
+                                                            })}
+                                                        </View>
+                                                    )}
+
+                                                </View>
+                                            ))}
+
                                             <TouchableOpacity
-                                                onPress={() => removeCharge(item.id, item.type)}
-                                                style={styles.figmaCloseBtn}
+                                                // style={styles.addNewButton}
+                                                // onPress={addCharge}
+                                                disabled={refuseAdvanceAmount}
+                                                style={[
+                                                    styles.addNewButton,
+                                                    refuseAdvanceAmount && { opacity: 0.5 }
+                                                ]}
+                                                onPress={addCharge}
                                             >
 
-                                                <Image
-                                                    source={Delete}
-                                                    style={styles.figmaCloseText}
-                                                />
+                                                <View style={styles.addNewContent}>
+                                                    <View style={styles.plusCircle}>
+                                                        <Text style={styles.plusText}>+</Text>
+                                                    </View>
+
+                                                    <Text style={styles.addNewText}>
+                                                        Add
+                                                    </Text>
+                                                </View>
                                             </TouchableOpacity>
 
 
-                                            <View style={styles.figmaRow}>
-
-
-                                                {item.type === "" ? (
-                                                    <TouchableOpacity
-                                                        style={styles.figmaLeftBox}
-                                                        onPress={() =>
-                                                            setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                                                        }
-                                                    >
-                                                        <Text style={{ color: "#777" }}>Select...</Text>
-                                                        <Image source={DownArrow} style={styles.arrow} />
-                                                    </TouchableOpacity>
-                                                ) : item.type === "Others" ? (
-                                                    <TextInput
-                                                        ref={(r) => {
-                                                            inputRefs.current[`reason-${item.id}`] = r;
-                                                        }}
-                                                        style={styles.figmaLeftBox}
-                                                        placeholder="Enter reason"
-
-                                                        value={item.title}
-                                                        onFocus={() => {
-                                                            setOpenDropdownId(null);
-                                                            scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
-                                                        }}
-
-                                                        // onChangeText={(t) => updateTitle(item.id, t)}
-                                                        onChangeText={(t) => {
-                                                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                                                            updateTitle(item.id, onlyLetters);
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
-                                                        <Text>Maintenance</Text>
-                                                    </View>
-                                                )}
-
-                                                {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
-                                                {item.type === "" ? (
-                                                    <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                                                        <Text style={{ color: "#999" }}>Enter amount</Text>
-                                                    </View>
-                                                ) : (
-                                                    <TextInput
-                                                        ref={(r) => {
-                                                            inputRefs.current[`amount-${item.id}`] = r;
-                                                        }}
-                                                        style={styles.figmaRightBox}
-                                                        placeholder="Enter amount"
-                                                        keyboardType="numeric"
-                                                        value={item.amount}
-                                                        onFocus={() => {
-                                                            setOpenDropdownId(null);
-                                                            scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
-                                                        }}
-
-                                                        onChangeText={(t) => {
-
-                                                            let cleaned = t.replace(/[^0-9.]/g, "");
-
-                                                            const parts = cleaned.split(".");
-
-                                                            if (parts.length > 2) {
-                                                                cleaned = parts[0] + "." + parts[1];
-                                                            }
-
-                                                            if (parts[1]?.length > 2) {
-                                                                cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                                                            }
-
-                                                            updateAmount(item.id, cleaned)
-                                                        }
-
-                                                        }
-                                                    />
-                                                )}
-
-                                            </View>
-
-                                            {item.titleError && (
-                                                <ErrorMessage message={item.titleError} type="error" />
-                                            )}
-
-                                            {item.typeError && (
-                                                <ErrorMessage message={item.typeError} type="error" />
-                                            )}
-
-                                            {item.amountError && (
-                                                <ErrorMessage message={item.amountError} type="error" />
-                                            )}
-                                            {openDropdownId === item.id && item.type === "" && (
-                                                <View style={styles.nonRefundDropdown}>
-                                                    {TYPE_OPTIONS.map((t) => {
-
-                                                        const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
-
-                                                        return (
-                                                            <TouchableOpacity
-                                                                key={t}
-                                                                disabled={disabled}
-                                                                onPress={() => !disabled && selectType(item.id, t)}
-                                                                style={{ opacity: disabled ? 0.3 : 1 }}
-                                                            >
-                                                                <Text style={styles.dropdownItem}>{t}</Text>
-                                                            </TouchableOpacity>
-                                                        );
-                                                    })}
-                                                </View>
-                                            )}
 
                                         </View>
-                                    ))}
-
-                                    <TouchableOpacity
-                                        // style={styles.addNewButton}
-                                        // onPress={addCharge}
-                                        disabled={refuseAdvanceAmount}
-                                        style={[
-                                            styles.addNewButton,
-                                            refuseAdvanceAmount && { opacity: 0.5 }
-                                        ]}
-                                        onPress={addCharge}
-                                    >
-
-                                        <View style={styles.addNewContent}>
-                                            <View style={styles.plusCircle}>
-                                                <Text style={styles.plusText}>+</Text>
-                                            </View>
-
-                                            <Text style={styles.addNewText}>
-                                                Add New
-                                            </Text>
-                                        </View>
-                                    </TouchableOpacity>
-
+                                    )}
                                     <View style={styles.fixedChargeFooter}>
                                         <Text style={styles.fixedChargeTitle}>
-                                            TOTAL FIXED CHARGES
+                                            TOTAL AMOUNT TO GET COLLECT
                                         </Text>
 
                                         <Text style={styles.fixedChargeAmount}>
@@ -1757,11 +1809,10 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                         </Text>
                                     </View>
 
-
-
-
-
                                 </View>
+
+
+
 
                                 <Text style={styles.note}>
                                     Note: These charges are deducted from the initial security deposit or collected at the time of check-in and are not refundable in any cost.
@@ -1845,11 +1896,15 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                             >
                                                 {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
                                             </Text>
+                                            {(showCustomRentEditor || isCustomRentSaved) ?
+                                                <Image source={CloseIcon} style={{ height: 10, width: 10, marginLeft: 5 }} /> : <Image source={AddRentIcon} style={{ height: 10, width: 10, marginLeft: 5 }} />}
+
                                         </TouchableOpacity>
 
                                         {(showCustomRentEditor || isCustomRentSaved) && (
                                             <View style={styles.customRentCard}>
 
+                                                <View style={styles.customRentArrow} />
                                                 <Text style={styles.customRentTitle}>
                                                     Custom Rent Amount
                                                 </Text>
@@ -1861,7 +1916,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                 {!isCustomRentSaved ? (
 
                                                     <>
-                                                        <View style={styles.amountRow}>
+                                                        {/* <View style={styles.amountRow}>
 
                                                             <TextInput
                                                                 style={styles.amountInput}
@@ -1910,6 +1965,53 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                                 </Text>
                                                             </TouchableOpacity>
 
+                                                        </View> */}
+
+                                                        <View style={styles.amountInputWrapper}>
+
+                                                            <TextInput
+                                                                style={styles.customRentInput}
+                                                                placeholder="₹ 0.00"
+                                                                placeholderTextColor="#9CA3AF"
+                                                                keyboardType="numeric"
+                                                                value={customRentAmount}
+                                                                onChangeText={(text) => {
+                                                                    setCustomRentAmount(
+                                                                        text.replace(/[^0-9]/g, "")
+                                                                    );
+                                                                    setCustomRentError("");
+                                                                }}
+                                                            />
+
+                                                            <TouchableOpacity
+                                                                style={styles.setBtnInside}
+                                                                onPress={() => {
+
+                                                                    if (!customRentAmount) {
+                                                                        setCustomRentError(
+                                                                            "Please enter custom rent amount"
+                                                                        );
+                                                                        return;
+                                                                    }
+
+                                                                    if (Number(customRentAmount) <= 0) {
+                                                                        setCustomRentError(
+                                                                            "Amount should be greater than zero"
+                                                                        );
+                                                                        return;
+                                                                    }
+
+                                                                    setSavedCustomRent(customRentAmount);
+                                                                    setIsCustomRentSaved(true);
+                                                                    setShowCustomRentEditor(false);
+                                                                    setCustomRentError("");
+                                                                }}
+                                                            >
+                                                                <Text style={styles.setBtnText}>
+                                                                    ✓ Set
+                                                                </Text>
+                                                            </TouchableOpacity>
+
                                                         </View>
 
                                                         {customRentError ? (
@@ -1937,7 +2039,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                             }}
                                                         >
                                                             <Image
-                                                                source={require("../../Assets/Images/edit.png")}
+                                                                source={require("../../Assets/Images/EditRent.png")}
                                                                 style={{
                                                                     width: 24,
                                                                     height: 24,
@@ -2650,6 +2752,35 @@ const styles = StyleSheet.create({
         borderRadius: 20
     },
 
+
+    advanceDetailsHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 6,
+    },
+
+    advanceDetailsTitle: {
+        fontSize: 16,
+        color: "#111827",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    advanceDetailsArrow: {
+        width: 22,
+        height: 22,
+        tintColor: "#111827",
+        transform: [{ rotate: "0deg" }],
+    },
+
+    advanceDetailsArrowOpen: {
+        transform: [{ rotate: "180deg" }],
+    },
+
+    advanceDetailsContent: {
+        marginTop: 8,
+    },
+
     addBtn: {
         backgroundColor: "#2D6CDF",
         paddingHorizontal: 18,
@@ -2755,7 +2886,7 @@ const styles = StyleSheet.create({
     },
 
     fullRentText: {
-        marginLeft: 10,
+        // marginLeft: 10,
         fontSize: 14,
         color: "#222",
         flex: 1,
@@ -2767,7 +2898,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#EEF2FF",
         paddingVertical: 14,
         borderRadius: 10,
-        alignItems: "center",
+        flexDirection: 'row',
+        alignItems: "center", justifyContent: 'center'
+
     },
 
     closeBtn: {
@@ -2780,14 +2913,39 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Semibold"
     },
 
+    // customRentCard: {
+    //     marginTop: 12,
+    //     backgroundColor: "#fff",
+    //     borderRadius: 16,
+    //     borderWidth: 1,
+    //     borderColor: "#C8D3FF",
+    //     padding: 18,
+    // },
     customRentCard: {
-        marginTop: 12,
-        backgroundColor: "#fff",
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: "#C8D3FF",
-        padding: 18,
-    },
+    marginTop: 12,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#C8D3FF",
+    padding: 16,
+    position: "relative",
+},
+customRentArrow: {
+    position: "absolute",
+    top: -12,
+    right: 38,
+
+    width: 0,
+    height: 0,
+
+    borderLeftWidth: 12,
+    borderRightWidth: 12,
+    borderBottomWidth: 12,
+
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    borderBottomColor: "#C8D3FF",
+},
 
     customRentTitle: {
         fontSize: 18,
@@ -2808,6 +2966,44 @@ const styles = StyleSheet.create({
         marginTop: 20,
     },
 
+
+    amountInputWrapper: {
+        marginTop: 20,
+        height: 52,
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 12,
+        backgroundColor: "#fff",
+        flexDirection: "row",
+        alignItems: "center",
+        paddingLeft: 14,
+        paddingRight: 6,
+    },
+
+    customRentInput: {
+        flex: 1,
+        height: "100%",
+        paddingHorizontal: 0,
+        fontSize: 15,
+        color: "#111827",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    setBtnInside: {
+        height: 40,
+        minWidth: 65,
+        paddingHorizontal: 12,
+        backgroundColor: "#EEF2FF",
+        borderRadius: 10,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    setBtnText: {
+        color: "#1E45E1",
+        fontSize: 14,
+        fontFamily: "Gilroy-Semibold",
+    },
     amountInput: {
         flex: 1,
         height: 45,
@@ -2949,9 +3145,9 @@ const styles = StyleSheet.create({
     },
 
     plusCircle: {
-        width: 24,
-        height: 24,
-        borderRadius: 11,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
         borderWidth: 2,
         borderColor: "#1D4ED8",
         justifyContent: "center",
@@ -2963,7 +3159,7 @@ const styles = StyleSheet.create({
         color: "#1D4ED8",
         fontSize: 18,
         fontFamily: "Gilroy-Bold",
-        lineHeight: 22,
+        lineHeight: 12,
     },
 
     addNewText: {
