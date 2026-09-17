@@ -1183,12 +1183,12 @@ const invoiceDetail = BillDetails?.listInvoices?.find(
 
             )}
 
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+            {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
               <Text style={{ fontSize: 14, fontFamily: "Gilroy-Semibold", color: "#777", }}>
                 Invoice Date</Text>
               <Text style={{ fontSize: 13, fontFamily: "Gilroy-Semibold" }}>
                 {BillPdfdetails?.invoiceDate}</Text>
-            </View>
+            </View> */}
 
             {BillPdfdetails?.invoiceInfo?.isCancelled && (
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8 }}>
