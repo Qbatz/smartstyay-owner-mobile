@@ -55,7 +55,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const isApplyTriggeredRef = useRef(false);
 
-      const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const [selectedImage, setSelectedImage] = useState(null);
     const [initialImage, setInitialImage] = useState(null);
@@ -116,6 +116,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const [linkVendor, setLinkVendor] = useState(false);
     const [vendor, setVendor] = useState("");
+
+    const isFromVendorPage = !!route?.params?.vendorData;
 
     // const [paymentStatus, setPaymentStatus] =
     //     useState("fully_paid");
@@ -202,12 +204,20 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
 
 
+    // useEffect(() => {
+    //     if (vendorName) {
+    //         setSelectedVendor(route?.params?.vendorData)
+    //         setVendorId(route?.params?.vendorData?.id)
+    //     }
+    // }, [])
+
     useEffect(() => {
-        if (vendorName) {
-            setSelectedVendor(route?.params?.vendorData)
-            setVendorId(route?.params?.vendorData?.id)
+        if (isFromVendorPage) {
+            setLinkVendor(true);
+            setSelectedVendor(route?.params?.vendorData);
+            setVendorId(route?.params?.vendorData?.id);
         }
-    }, [])
+    }, [isFromVendorPage]);
 
 
 
@@ -884,26 +894,26 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     }, [amount, paidAmount, paymentStatus])
 
 
-  useEffect(() => {
-  const total = Number(amount || 0);
+    useEffect(() => {
+        const total = Number(amount || 0);
 
-  if (paymentStatus === "Fully Paid") {
-    setPaidAmount(String(total));
-    setBalanceAmount("0");
+        if (paymentStatus === "Fully Paid") {
+            setPaidAmount(String(total));
+            setBalanceAmount("0");
 
-    setErrors(prev => ({
-      ...prev,
-      paidAmount: "",
-    }));
-  } else if (paymentStatus === "Partially Paid") {
-    // Clear previous full amount
-    setPaidAmount("");
-    setBalanceAmount("");
-  } else {
-    setPaidAmount("");
-    setBalanceAmount("0");
-  }
-}, [paymentStatus, amount]);
+            setErrors(prev => ({
+                ...prev,
+                paidAmount: "",
+            }));
+        } else if (paymentStatus === "Partially Paid") {
+            // Clear previous full amount
+            setPaidAmount("");
+            setBalanceAmount("");
+        } else {
+            setPaidAmount("");
+            setBalanceAmount("0");
+        }
+    }, [paymentStatus, amount]);
 
     // const itemTotal = items.reduce(
     //     (sum, item) => sum + Number(item.amount || 0),
@@ -929,48 +939,48 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
 
     const handleLeavePage = useCallback(() => {
-    const hasMandatoryValue =
-        !!selectedCategory ||
-        !!selectedSubCategory ||
-        !!amount?.trim() ||
-        !!purchaseDate ||
-        !!selectedMode ||
-        !!selectedVendor ||
-        !!paymentStatus ||
-        !!paidAmount?.trim();
+        const hasMandatoryValue =
+            !!selectedCategory ||
+            !!selectedSubCategory ||
+            !!amount?.trim() ||
+            !!purchaseDate ||
+            !!selectedMode ||
+            !!selectedVendor ||
+            !!paymentStatus ||
+            !!paidAmount?.trim();
 
-    if (hasMandatoryValue) {
-        setShowLeavePageScreen(true);
-    } else {
-        navigation.goBack();
-    }
-}, [
-    selectedCategory,
-    selectedSubCategory,
-    amount,
-    purchaseDate,
-    selectedMode,
-    selectedVendor,
-    paymentStatus,
-    paidAmount,
-    navigation,
-]);
+        if (hasMandatoryValue) {
+            setShowLeavePageScreen(true);
+        } else {
+            navigation.goBack();
+        }
+    }, [
+        selectedCategory,
+        selectedSubCategory,
+        amount,
+        purchaseDate,
+        selectedMode,
+        selectedVendor,
+        paymentStatus,
+        paidAmount,
+        navigation,
+    ]);
 
-useFocusEffect(
-    useCallback(() => {
-        const backAction = () => {
-            handleLeavePage();
-            return true;
-        };
+    useFocusEffect(
+        useCallback(() => {
+            const backAction = () => {
+                handleLeavePage();
+                return true;
+            };
 
-        const subscription = BackHandler.addEventListener(
-            "hardwareBackPress",
-            backAction
-        );
+            const subscription = BackHandler.addEventListener(
+                "hardwareBackPress",
+                backAction
+            );
 
-        return () => subscription.remove();
-    }, [handleLeavePage])
-);
+            return () => subscription.remove();
+        }, [handleLeavePage])
+    );
 
 
     const handleSubmit = async () => {
@@ -1451,7 +1461,14 @@ useFocusEffect(
                                 }}
                             >
                                 <TouchableOpacity
-                                    onPress={() => setLinkVendor(false)}
+                                    disabled={isFromVendorPage}
+                                    onPress={() => {
+                                        if (!isFromVendorPage) {
+                                            setLinkVendor(false);
+                                            setSelectedVendor(null);
+                                            setVendorId(null);
+                                        }
+                                    }}
                                     style={{
                                         flex: 1,
                                         justifyContent: "center",
@@ -1460,6 +1477,7 @@ useFocusEffect(
                                         backgroundColor: !linkVendor
                                             ? "#2F54EB"
                                             : "transparent",
+                                        opacity: isFromVendorPage ? 0.5 : 1,
                                     }}
                                 >
                                     <Text
@@ -1814,7 +1832,7 @@ useFocusEffect(
                                                 type="numberOnly"
                                                 inputType="numeric"
                                                 value={paidAmount}
-                                                 editable={paymentStatus !== "Fully Paid"}
+                                                editable={paymentStatus !== "Fully Paid"}
                                                 onChangeText={(text) => {
                                                     const total = Number(amount || 0);
                                                     const paid = Number(text || 0);
@@ -1830,7 +1848,7 @@ useFocusEffect(
                                                                 ...prev,
                                                                 paidAmount: "",
                                                             }));
-                                                            return; 
+                                                            return;
                                                         }
                                                     }
 
@@ -2512,7 +2530,7 @@ useFocusEffect(
                         <View style={styles.footerRow}>
                             <TouchableOpacity
                                 style={styles.cancelBtn}
-                            onPress={handleLeavePage}
+                                onPress={handleLeavePage}
                             >
                                 <Text
                                     style={{
@@ -2615,17 +2633,17 @@ useFocusEffect(
                 </View>
             )}
 
-              <LeavePageScreen
-        visible={showLeavePageScreen}
-        onClose={() => setShowLeavePageScreen(false)}
-        discardClose={() => {
-          setShowLeavePageScreen(false);
+            <LeavePageScreen
+                visible={showLeavePageScreen}
+                onClose={() => setShowLeavePageScreen(false)}
+                discardClose={() => {
+                    setShowLeavePageScreen(false);
 
-          setTimeout(() => {
-            navigation.goBack();
-          }, 300);
-        }}
-      />
+                    setTimeout(() => {
+                        navigation.goBack();
+                    }, 300);
+                }}
+            />
         </>
 
     )

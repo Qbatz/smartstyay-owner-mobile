@@ -69,6 +69,15 @@ const TenantRegister = ({ navigation }) => {
   const [selectedFloorValue, setSelectedFloorValue] = useState([])
   const [selectedRoomValue, setSelectedRoomValue] = useState([]);
   const [selectedTenantValue, setTenantValue] = useState("")
+
+  const appliedTenantFiltersRef = useRef({
+    period: undefined,
+    status: undefined,
+    sharingType: undefined,
+    floor: undefined,
+    room: undefined,
+    search: undefined,
+  });
   // const [tempSharing, setTempSharing] = useState([]);
 
   const {
@@ -221,81 +230,108 @@ const TenantRegister = ({ navigation }) => {
         ? finalSharing
         : undefined,
 
-      floor: floor?.length ? floor : undefined,
+      floor: floor?.length
+        ? floor
+        : undefined,
 
-      room: room?.length ? room : undefined,
+      room: room?.length
+        ? room
+        : undefined,
 
-      search: search || undefined,
+      search: search?.trim()
+        ? search.trim()
+        : undefined,
 
       page: 1,
       size: 10,
     };
 
+    // Store the exact filters currently applied to the list
+    appliedTenantFiltersRef.current = {
+      period: filters.period,
+      status: filters.status,
+      sharingType: filters.sharingType,
+      floor: filters.floor,
+      room: filters.room,
+      search: filters.search,
+    };
 
-    console.log("filtervalues", filters);
-
+    console.log("APPLIED TENANT FILTERS:", appliedTenantFiltersRef.current);
 
     getTenantRegisterReport(activeHostelId, filters)
       .then(res => {
         if (res.success) {
           console.log("filterres", res);
-
           setTenantData(res.data);
         }
       });
 
+
+    console.log("filtervalues", filters);
+
+
+    // getTenantRegisterReport(activeHostelId, filters)
+    //   .then(res => {
+    //     if (res.success) {
+    //       console.log("filterres", res);
+
+    //       setTenantData(res.data);
+    //     }
+    //   });
+
   };
 
   const handleDownloadReport = async () => {
-
-    const finalMonth = allSelectedMonth !== undefined && allSelectedMonth !== null
-      ? allSelectedMonth
-      : selectedMonth;
-
-    const finalStatus =
-      allSelectedStatus !== undefined && allSelectedStatus !== null
-        ? allSelectedStatus
-        : selectedStatus;
-
-    const finalType =
-      allSelectedSharing !== undefined && allSelectedSharing !== null
-        ? allSelectedSharing
-        : selectedSharing;
-
+  try {
     const filters = {
-      period: finalMonth || undefined,
+      period: selectedMonth || undefined,
 
-      status: finalStatus?.length
-        ? finalStatus
-        : undefined,
+      status:
+        selectedStatus?.length > 0
+          ? selectedStatus
+          : undefined,
 
-      sharingType: finalType?.length
-        ? finalType
-        : undefined,
+      sharingType:
+        selectedSharing?.length > 0
+          ? selectedSharing
+          : undefined,
 
-      floor: selectedFloorValue?.length ? selectedFloorValue : undefined,
+      floor:
+        selectedFloorValue?.length > 0
+          ? selectedFloorValue
+          : undefined,
 
-      room: selectedRoomValue?.length ? selectedRoomValue : undefined,
+      room:
+        selectedRoomValue?.length > 0
+          ? selectedRoomValue
+          : undefined,
 
-      search: selectedTenantValue || undefined,
-
-   
+      search:
+        selectedTenantValue?.trim()
+          ? selectedTenantValue.trim()
+          : undefined,
     };
 
+    console.log("========== TENANT PDF FILTERS ==========");
+    console.log("period:", filters.period);
+    console.log("status:", filters.status);
+    console.log("sharingType:", filters.sharingType);
+    console.log("floor:", filters.floor);
+    console.log("room:", filters.room);
+    console.log("search:", filters.search);
+    console.log("filtervalue", filters);
 
-   
-console.log("========== TENANT PDF FILTERS ==========");
-console.log("period:", filters.period);
-console.log("status:", filters.status);
-console.log("sharingType:", filters.sharingType);
-console.log("floor:", filters.floor);
-console.log("room:", filters.room);
-console.log("search:", filters.search);
-console.log("FULL FILTERS:", filters);
-    
+    const res = await getTenantReportDownload(
+      activeHostelId,
+      filters
+    );
 
-    const res = await getTenantReportDownload(activeHostelId, filters)
-    console.log("billana", res)
+    console.log("TENANT PDF RESPONSE:", res);
+
+    if (!res?.success) {
+      console.log("PDF API failed:", res?.data);
+      return;
+    }
 
     const fileUrl = res?.data;
 
@@ -305,7 +341,16 @@ console.log("FULL FILTERS:", filters);
     }
 
     await CommonModule.downloadAndViewDocument(fileUrl);
+
+  } catch (error) {
+    console.log(
+      "Tenant PDF download error:",
+      error
+    );
   }
+}
+
+
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadReports;
@@ -702,8 +747,20 @@ console.log("FULL FILTERS:", filters);
           applyTenantFilters("", [], [], [], [], [], "")
         }}
         onApply={() => {
-          setAllFilterSheet(false)
-          applyTenantFilters()
+          setSelectedMonth(allSelectedMonth);
+          setSelectedStatus(allSelectedStatus);
+          setSelectedSharing(allSelectedSharing);
+
+          setAllFilterSheet(false);
+
+          applyTenantFilters(
+            allSelectedMonth,
+            allSelectedStatus,
+            allSelectedSharing,
+            selectedFloorValue,
+            selectedRoomValue,
+            selectedTenantValue
+          );
         }}
         onClose={() => setAllFilterSheet(false)}
       />

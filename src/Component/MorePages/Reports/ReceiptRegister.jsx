@@ -139,20 +139,28 @@ console.log(typeOptions)
 
 console.log("selectpayment", selectedPayment);
 
-
-  const applyReceiptFilters = (
+const applyReceiptFilters = (
   month = selectedMonth,
   type = selectedType,
   payment = selectedPayment
 ) => {
-const filters = {
-  period: month || undefined,
-  invoiceType: type?.length ? type[0] : undefined,
-  paymentMode: payment?.length ? payment : undefined,
-  page: 1,
-  size: 10,
-};
+  const filters = {
+    period: month || undefined,
 
+    invoiceType: type?.length
+      ? type
+      : undefined,
+
+    paymentMode: payment?.length
+      ? payment
+      : undefined,
+
+    page: 1,
+    size: 10,
+  };
+
+  console.log("========== RECEIPT APPLY FILTER ==========");
+  console.log(filters);
 
   getReceiptRegisterReport(activeHostelId, filters)
     .then(res => {
@@ -162,21 +170,46 @@ const filters = {
     });
 };
 
+
+
 const handleDownloadReceiptReport = async () => {
+  try {
+    const filters = {
+      period: selectedMonth || undefined,
 
-  const filters = {
-  period: selectedMonth || undefined,
-  invoiceType: selectedType?.length ? selectedType[0] : undefined,
-  paymentMode: selectedPayment?.length ? selectedPayment : undefined,
-  page: 1,
-  size: 10,
-};
+      // IMPORTANT: API expects array
+      invoiceType: selectedType?.length
+        ? selectedType
+        : undefined,
 
+      // API expects array
+      paymentMode: selectedPayment?.length
+        ? selectedPayment
+        : undefined,
 
-  const res = await downloadReceiptReport(activeHostelId,filters);
+      page: 1,
+      size: 10,
+    };
 
-  if (res?.success && res?.url) {
-    await CommonModule.downloadAndViewDocument(res.url);
+    console.log("========== RECEIPT PDF FILTERS ==========");
+    console.log("selectedMonth:", selectedMonth);
+    console.log("selectedType:", selectedType);
+    console.log("selectedPayment:", selectedPayment);
+    console.log("PDF filters:", filters);
+
+    const res = await downloadReceiptReport(
+      activeHostelId,
+      filters
+    );
+
+    console.log("========== RECEIPT PDF RESPONSE ==========");
+    console.log(res);
+
+    if (res?.success && res?.url) {
+      await CommonModule.downloadAndViewDocument(res.url);
+    }
+  } catch (error) {
+    console.log("Receipt PDF download error:", error);
   }
 };
 
@@ -783,7 +816,7 @@ summaryCard: {
   cardIcon: { width: 20, height: 20 },
 
   cardTitle: {
-    fontSize: 13,
+    fontSize: 11,
     color: "#64748B",
     fontFamily: "Gilroy-Medium",
   },
