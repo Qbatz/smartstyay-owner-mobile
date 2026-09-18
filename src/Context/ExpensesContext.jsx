@@ -165,6 +165,10 @@ const GetExpenseList = async (
   vendorId: filters?.vendorId,
   paymentMode: filters?.paymentMode,
   createdBy: filters?.createdBy,
+  subCategoryId: filters?.subCategoryId,
+  startDate:filters?.startDate,
+  endDate:filters?.endDate,
+  period:filters?.period,
   minAmount:filters?.minAmount,
   maxAmount: filters?.maxAmount
 };

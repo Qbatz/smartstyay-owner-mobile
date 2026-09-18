@@ -10,6 +10,7 @@ import {
     BackHandler,
     Image,
     TextInput,
+    KeyboardAvoidingView,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -272,7 +273,7 @@ export default function ReportsAllFilterBottomSheet({
                     styles.sheet,
                     {
                         transform: [{ translateY }],
-                        paddingBottom: 20 + insets.bottom
+                        // paddingBottom: 20 + insets.bottom
                     }
                 ]}
             >
@@ -296,549 +297,538 @@ export default function ReportsAllFilterBottomSheet({
 
                 </View>
 
+                {/* <KeyboardAvoidingView
+                    // style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    // keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+                    >
+   <View style={{ flex: 1 }}> */}
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        keyboardShouldPersistTaps="handled"
+                        nestedScrollEnabled
+                        contentContainerStyle={{
+                            paddingBottom: 100,
+                        }}
+                    >
 
-                <ScrollView
-                    showsVerticalScrollIndicator={false}
-                    nestedScrollEnabled
-                    contentContainerStyle={{
-                        paddingBottom: 50
-                    }}
-                >
+                        {/* ================= INVOICE ================= */}
 
-                    {/* ================= INVOICE ================= */}
+                        {isInvoice && (
+                            <>
+                                <TouchableOpacity onPress={() => setShowInvoiceSystemFilter(!showInvoiceSystemFilter)}
+                                    style={{ flexDirection: 'row', alignItems: 'center', marginTop: 18, marginBottom: 8, }}>
+                                    <Text style={styles.sectionTitle}>
+                                        System Filter
+                                    </Text>
 
-                    {isInvoice && (
-                        <>
-                            <TouchableOpacity onPress={() => setShowInvoiceSystemFilter(!showInvoiceSystemFilter)}
-                                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 18, marginBottom: 8, }}>
+                                    <Image source={DownArrow} style={{ width: 20, height: 20, marginLeft: 8 }} />
+                                </TouchableOpacity>
+
+                                {showInvoiceSystemFilter && (
+                                    <>
+
+                                        <Text style={styles.label}>Bill Status</Text>
+
+                                        <FilterDropdown
+                                            options={filters?.paymentStatus}
+                                            value={selectedStatus}
+                                            multiSelect={true}
+                                            onSelect={(value) => {
+                                                console.log("dropdow", value.id)
+                                                setSelectedStatus(value)
+                                                const statusIds = value.map(item => item?.type);
+
+                                                setSelectedBillStatus(statusIds);
+
+                                            }}
+                                            placeholder="Select Status"
+                                        />
+
+                                        <Text style={styles.label}>Period</Text>
+
+                                        <FilterDropdown
+                                            options={filters?.periods}
+                                            value={selectedPeriod}
+                                            // onSelect={(value) => {
+                                            //     console.log("Perioddropdow", value?.id)
+                                            //     setSelectedPeriod(value)
+                                            //     setSelectedMonth(value?.id || value)
+                                            // }}
+                                            onSelect={(value) => {
+                                                console.log("Perioddropdow", value?.id);
+
+                                                setSelectedPeriod(value);
+                                                setSelectedMonth(value?.id || value);
+
+                                                setStartDate(null);
+                                                setEndDate(null);
+                                                setStartDateValue(null);
+                                                setEndDateValue(null);
+
+                                                if (setHeaderSelectedMonth) {
+                                                    setHeaderSelectedMonth(value?.id || value);
+                                                }
+
+                                                setSelecting("start");
+                                            }}
+                                            placeholder="Select "
+                                        />
+
+                                        <Text style={styles.label}>Custom Date</Text>
+
+                                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                            <TouchableOpacity
+                                                style={[styles.dateField, { marginRight: 5 }]}
+                                                onPress={() => {
+                                                    setSelecting("start");
+                                                    setShowCalendar(true);
+                                                }}
+                                            >
+                                                <Text style={{ color: startDate ? "#222" : "#999" }}>
+                                                    {startDate
+                                                        ? dayjs(startDate).format("DD MMM YYYY")
+                                                        : "Start"}
+                                                </Text>
+
+                                                <Image source={CalenderIcon} style={{ width: 16.5, height: 17, tintColor: '#28303F' }} />
+                                            </TouchableOpacity>
+
+
+                                            {/* END */}
+                                            <TouchableOpacity
+                                                style={[styles.dateField, { marginLeft: 5 }]}
+                                                onPress={() => {
+                                                    setSelecting("end");
+                                                    setShowCalendar(true);
+                                                }}
+                                            >
+                                                <Text style={{ color: endDate ? "#222" : "#999" }}>
+                                                    {endDate
+                                                        ? dayjs(endDate).format("DD MMM YYYY")
+                                                        : "End"}
+                                                </Text>
+
+                                                <Image source={CalenderIcon} style={{ width: 16.5, height: 17, tintColor: '#28303F' }} />
+                                            </TouchableOpacity>
+
+
+                                        </View>
+
+
+                                        <Text style={styles.label}>Type</Text>
+
+                                        <FilterDropdown
+                                            options={filters?.invoiceTypes}
+                                            value={selectedType}
+                                            multiSelect={true}
+                                            onSelect={(value) => {
+                                                setSelectedType(value)
+                                                const statusIds = value.map(item => item.type);
+                                                setSelectedInvoiceType(statusIds)
+                                            }}
+                                            placeholder="Select Invoice type"
+                                        />
+
+                                        <Text style={styles.label}>Created By</Text>
+
+                                        <FilterDropdown
+                                            options={filters?.createdBy}
+                                            value={selectedCreatedBy}
+                                            multiSelect={true}
+                                            onSelect={(value) => {
+                                                setSelectedCreatedBy(value)
+
+                                                const statusIds = value.map(item => item?.userId);
+                                                setCreatedByValue(statusIds)
+                                            }}
+                                            placeholder="Select User"
+                                        />
+
+                                        <Text style={styles.label}>Mode</Text>
+                                        <FilterDropdown
+                                            options={filters?.invoiceModes}
+                                            value={selectedMode}
+                                            multiSelect={true}
+                                            onSelect={(value) => {
+                                                setSelectedMode(value)
+
+                                                const statusIds = value.map(item => item.type);
+                                                setSelectedModeValue(statusIds)
+                                            }}
+                                            placeholder="Select Mode"
+                                        />
+                                    </>
+                                )}
+
+                                <Text style={[styles.sectionTitle, { marginTop: 14 }]}>
+                                    More Filters
+                                </Text>
+
+                                <Text style={styles.label}>Amount Range</Text>
+
+                                <View style={styles.amountRow}>
+
+                                    {/* Minimum Amount */}
+                                    <View style={[styles.amountInputContainer, { marginRight: 5 }]}>
+                                        <Text style={styles.currency}>₹</Text>
+
+                                        <TextInput
+                                            value={minAmount}
+                                            onChangeText={(text) => {
+                                                if (text > maxAmount) {
+                                                    setErrorMsg("Min Amount should not be greater than max")
+                                                } else {
+                                                    setErrorMsg("")
+                                                }
+                                                const cleanText = text.replace(/[^0-9]/g, "");
+                                                setMinAmount(cleanText)
+                                                setMinPaidValue(cleanText)
+                                            }}
+                                            placeholder="Min"
+                                            placeholderTextColor="#999"
+                                            keyboardType="numeric"
+                                            style={styles.amountInput}
+                                        />
+                                    </View>
+
+                                    {/* Maximum Amount */}
+                                    <View style={[styles.amountInputContainer, { marginLeft: 5 }, !minAmount && { opacity: 0.4 }]}>
+                                        <Text style={styles.currency}>₹</Text>
+
+                                        <TextInput
+                                            value={maxAmount}
+                                            editable={minAmount ? true : false}
+                                            onChangeText={(text) => {
+                                                if (minAmount > text) {
+                                                    setErrorMsg("Min Amount should not be greater than max")
+                                                } else {
+                                                    setErrorMsg("")
+                                                }
+                                                const cleanText = text.replace(/[^0-9]/g, "");
+                                                setMaxAmount(cleanText)
+                                                setMaxPaidValue(cleanText)
+                                            }}
+                                            placeholder="Max"
+                                            placeholderTextColor="#999"
+                                            keyboardType="numeric"
+                                            style={styles.amountInput}
+                                        />
+                                    </View>
+                                </View>
+                                {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
+
+                            </>
+                        )}
+
+
+                        {/* ================= RECEIPT ================= */}
+
+                        {isReceipt && (
+                            <>
+
                                 <Text style={styles.sectionTitle}>
                                     System Filter
                                 </Text>
 
-                                <Image source={DownArrow} style={{ width: 20, height: 20, marginLeft: 8 }} />
-                            </TouchableOpacity>
-
-                            {showInvoiceSystemFilter && (
-                                <>
-
-                                    <Text style={styles.label}>Bill Status</Text>
-
-                                    <FilterDropdown
-                                        options={filters?.paymentStatus}
-                                        value={selectedStatus}
-                                        multiSelect={true}
-                                        onSelect={(value) => {
-                                            console.log("dropdow", value.id)
-                                            setSelectedStatus(value)
-                                            const statusIds = value.map(item => item?.type);
-
-                                            setSelectedBillStatus(statusIds);
-
-                                        }}
-                                        placeholder="Select Status"
-                                    />
-
-                                    <Text style={styles.label}>Period</Text>
-
-                                    <FilterDropdown
-                                        options={filters?.periods}
-                                        value={selectedPeriod}
-                                        // onSelect={(value) => {
-                                        //     console.log("Perioddropdow", value?.id)
-                                        //     setSelectedPeriod(value)
-                                        //     setSelectedMonth(value?.id || value)
-                                        // }}
-                                        onSelect={(value) => {
-                                            console.log("Perioddropdow", value?.id);
-
-                                            setSelectedPeriod(value);
-                                            setSelectedMonth(value?.id || value);
-
-                                            setStartDate(null);
-                                            setEndDate(null);
-                                            setStartDateValue(null);
-                                            setEndDateValue(null);
-
-                                            if (setHeaderSelectedMonth) {
-                                                setHeaderSelectedMonth(value?.id || value);
-                                            }
-
-                                            setSelecting("start");
-                                        }}
-                                        placeholder="Select "
-                                    />
-
-                                    <Text style={styles.label}>Custom Date</Text>
-
-                                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                        <TouchableOpacity
-                                            style={[styles.dateField, { marginRight: 5 }]}
-                                            onPress={() => {
-                                                setSelecting("start");
-                                                setShowCalendar(true);
-                                            }}
-                                        >
-                                            <Text style={{ color: startDate ? "#222" : "#999" }}>
-                                                {startDate
-                                                    ? dayjs(startDate).format("DD MMM YYYY")
-                                                    : "Start"}
-                                            </Text>
-
-                                            <Image source={CalenderIcon} style={{ width: 16.5, height: 17, tintColor: '#28303F' }} />
-                                        </TouchableOpacity>
-
-
-                                        {/* END */}
-                                        <TouchableOpacity
-                                            style={[styles.dateField, { marginLeft: 5 }]}
-                                            onPress={() => {
-                                                setSelecting("end");
-                                                setShowCalendar(true);
-                                            }}
-                                        >
-                                            <Text style={{ color: endDate ? "#222" : "#999" }}>
-                                                {endDate
-                                                    ? dayjs(endDate).format("DD MMM YYYY")
-                                                    : "End"}
-                                            </Text>
-
-                                            <Image source={CalenderIcon} style={{ width: 16.5, height: 17, tintColor: '#28303F' }} />
-                                        </TouchableOpacity>
-
-
-                                    </View>
-
-
-                                    <Text style={styles.label}>Type</Text>
-
-                                    <FilterDropdown
-                                        options={filters?.invoiceTypes}
-                                        value={selectedType}
-                                        multiSelect={true}
-                                        onSelect={(value) => {
-                                            setSelectedType(value)
-                                            const statusIds = value.map(item => item.type);
-                                            setSelectedInvoiceType(statusIds)
-                                        }}
-                                        placeholder="Select Invoice type"
-                                    />
-
-                                    <Text style={styles.label}>Created By</Text>
-
-                                    <FilterDropdown
-                                        options={filters?.createdBy}
-                                        value={selectedCreatedBy}
-                                        multiSelect={true}
-                                        onSelect={(value) => {
-                                            setSelectedCreatedBy(value)
-
-                                            const statusIds = value.map(item => item?.userId);
-                                            setCreatedByValue(statusIds)
-                                        }}
-                                        placeholder="Select User"
-                                    />
-
-                                    <Text style={styles.label}>Mode</Text>
-                                    <FilterDropdown
-                                        options={filters?.invoiceModes}
-                                        value={selectedMode}
-                                        multiSelect={true}
-                                        onSelect={(value) => {
-                                            setSelectedMode(value)
-
-                                            const statusIds = value.map(item => item.type);
-                                            setSelectedModeValue(statusIds)
-                                        }}
-                                        placeholder="Select Mode"
-                                    />
-                                </>
-                            )}
-
-                            <Text style={[styles.sectionTitle, { marginTop: 14 }]}>
-                                More Filters
-                            </Text>
-
-                            <Text style={styles.label}>Amount Range</Text>
-
-                            <View style={styles.amountRow}>
-
-                                {/* Minimum Amount */}
-                                <View style={[styles.amountInputContainer, { marginRight: 5 }]}>
-                                    <Text style={styles.currency}>₹</Text>
-
-                                    <TextInput
-                                        value={minAmount}
-                                        onChangeText={(text) => {
-                                            if (text > maxAmount) {
-                                                setErrorMsg("Min Amount should not be greater than max")
-                                            } else {
-                                                setErrorMsg("")
-                                            }
-                                            const cleanText = text.replace(/[^0-9]/g, "");
-                                            setMinAmount(cleanText)
-                                            setMinPaidValue(cleanText)
-                                        }}
-                                        placeholder="Min"
-                                        placeholderTextColor="#999"
-                                        keyboardType="numeric"
-                                        style={styles.amountInput}
-                                    />
-                                </View>
-
-                                {/* Maximum Amount */}
-                                <View style={[styles.amountInputContainer, { marginLeft: 5 }, !minAmount && { opacity: 0.4 }]}>
-                                    <Text style={styles.currency}>₹</Text>
-
-                                    <TextInput
-                                        value={maxAmount}
-                                        editable={minAmount ? true : false}
-                                        onChangeText={(text) => {
-                                            if (minAmount > text) {
-                                                setErrorMsg("Min Amount should not be greater than max")
-                                            } else {
-                                                setErrorMsg("")
-                                            }
-                                            const cleanText = text.replace(/[^0-9]/g, "");
-                                            setMaxAmount(cleanText)
-                                            setMaxPaidValue(cleanText)
-                                        }}
-                                        placeholder="Max"
-                                        placeholderTextColor="#999"
-                                        keyboardType="numeric"
-                                        style={styles.amountInput}
-                                    />
-                                </View>
-                            </View>
-                            {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
-
-                        </>
-                    )}
-
-
-                    {/* ================= RECEIPT ================= */}
-
-                    {isReceipt && (
-                        <>
-
-                            <Text style={styles.sectionTitle}>
-                                System Filter
-                            </Text>
-
-                            <FilterDropdown
-                                title="Period"
-                                options={
-                                    filters?.period
-                                }
-                                value={
-                                    selectedFilters?.period
-                                }
-                                onChange={(value) =>
-                                    setSelectedFilters(prev => ({
-                                        ...prev,
-                                        period: value
-                                    }))
-                                }
-                            />
-
-
-                            <FilterDropdown
-                                title="Payment Mode"
-                                options={
-                                    filters?.paymentMode
-                                }
-                                value={
-                                    selectedFilters?.paymentMode
-                                }
-                                multiple
-                                onChange={(value) =>
-                                    setSelectedFilters(prev => ({
-                                        ...prev,
-                                        paymentMode: value
-                                    }))
-                                }
-                            />
-
-
-                            <FilterDropdown
-                                title="Invoice Type"
-                                options={
-                                    filters?.invoiceType
-                                }
-                                value={
-                                    selectedFilters?.invoiceType
-                                }
-                                onChange={(value) =>
-                                    setSelectedFilters(prev => ({
-                                        ...prev,
-                                        invoiceType: value
-                                    }))
-                                }
-                            />
-
-
-                            <FilterDropdown
-                                title="Collected By"
-                                options={
-                                    filters?.collectedBy
-                                }
-                                value={
-                                    selectedFilters?.collectedBy
-                                }
-                                multiple
-                                onChange={(value) =>
-                                    setSelectedFilters(prev => ({
-                                        ...prev,
-                                        collectedBy: value
-                                    }))
-                                }
-                            />
-
-                        </>
-                    )}
-
-
-                    {/* ================= TENANT ================= */}
-
-                    {isTenant && (
-                        <>
-
-                            <Text style={styles.label}> Tenants</Text>
-
-                            <FilterDropdown
-                                options={tenantList}
-                                value={selectedTenants}
-                                onSelect={(value) => {
-                                    setSelectedTenants(value)
-                                    setTenantValue(value?.name)
-                                }}
-                                placeholder="Select Tenants"
-                            />
-
-                            <Text style={[styles.sectionTitle, { marginTop: 14 }]}>
-                                System Filter
-                            </Text>
-
-                            <Text style={styles.label}>Tenant Status</Text>
-
-                            <FilterDropdown
-                                options={filters?.tenantStatus}
-                                value={selectedStatus}
-                                multiSelect={true}
-                                onSelect={(value) => {
-                                    console.log("dropdow", value.id)
-                                    setSelectedStatus(value)
-                                    const statusIds = value.map(item => item.id);
-
-                                    setSelectedTenantStatus(statusIds);
-
-                                }}
-                                placeholder="Select Status"
-                            />
-
-                            <Text style={styles.label}>Period</Text>
-
-                            <FilterDropdown
-                                options={filters?.period}
-                                value={selectedPeriod}
-                                onSelect={(value) => {
-                                    console.log("Perioddropdow", value.id)
-                                    setSelectedPeriod(value)
-                                    setSelectedMonth(value?.id)
-                                }}
-                                placeholder="Select "
-                            />
-
-                            <Text style={styles.label}>Sharing Type</Text>
-
-                            <FilterDropdown
-                                options={filters?.sharingType}
-                                value={selectedSharing}
-                                multiSelect={true}
-                                onSelect={(value) => {
-                                    setSelectedSharing(value)
-                                    const statusIds = value.map(item => item.id);
-                                    setSelectedSharingValue(statusIds)
-                                }}
-                                placeholder="Select Sharing type"
-                            />
-
-                            <Text style={styles.label}>Floor</Text>
-
-                            <FilterDropdown
-                                options={filters?.floor}
-                                value={selectedFloor}
-                                multiSelect={true}
-                                onSelect={(value) => {
-                                    setSelectedFloor(value)
-                                    // const statusIds = value.map(item => item.id);
-                                    // setSelectedSharingValue(value)
-
-                                    const floorIds = value.map(item => item.id);
-
-                                    setSelectedRoom(prev =>
-                                        prev?.filter(room => floorIds.includes(room.floorId))
-                                    );
-                                    const statusIds = value.map(item => item.id);
-                                    setSelectedFloorValue(statusIds)
-                                }}
-                                placeholder="Select Floor"
-                            />
-
-                            <Text style={styles.label}>Room</Text>
-
-                            <FilterDropdown
-                                options={filteredRooms}
-                                value={selectedRoom}
-                                multiSelect={true}
-                                onSelect={(value) => {
-                                    setSelectedRoom(value)
-                                    const statusIds = value.map(item => item.id);
-                                    setSelectedRoomValue(value)
-                                }}
-                                placeholder="Select Room"
-                            />
-
-
-
-
-
-
-
-                        </>
-                    )}
-
-                    {isExpense && (
-                        <>
-
-
-                            <Text style={styles.sectionTitle}>
-                                System Filter
-                            </Text>
-
-                            <Text style={styles.label}>Category</Text>
-
-                            <FilterDropdown
-                                options={filters?.category}
-                                value={category}
-                                multiSelect={true}
-                                onSelect={(value) => {
-                                    console.log("dropdow", value.categoryId)
-                                    setCategory(value)
-                                    const statusIds = value.map(item => item?.categoryId);
-
-                                    setCategoryValue(statusIds);
-
-                                }}
-                                placeholder="Select Category"
-                            />
-
-                            <Text style={styles.label}>SubCategory</Text>
-
-                            <FilterDropdown
-                                options={filteredSubCategory}
-                                value={subCategory}
-                                multiSelect={true}
-                                onSelect={(value) => {
-                                    setSubcategory(value)
-                                    const statusIds = value.map(item => item?.subCategoryId);
-                                    setSubCategoryValue(statusIds)
-                                }}
-                                placeholder="Select subcategory type"
-                            />
-
-                            <Text style={styles.label}>Period</Text>
-
-                            <FilterDropdown
-                                options={filters?.period}
-                                value={selectedPeriod}
-                                onSelect={(value) => {
-                                    console.log("Perioddropdow", value.id)
-                                    setSelectedPeriod(value)
-                                    setSelectedMonth(value?.id)
-                                }}
-                                placeholder="Select "
-                            />
-
-                            <Text style={styles.label}>Payment Mode</Text>
-
-                            <FilterDropdown
-                                options={filters?.paymentMode}
-                                value={selectedMode}
-                                multiSelect={true}
-                                onSelect={(value) => {
-                                    setSelectedMode(value)
-                                    const statusIds = value.map(item => item.id);
-                                    setPaymentModeValue(value)
-                                }}
-                                placeholder="Select mode"
-                            />
-
-                            <Text style={styles.label}>Paid to</Text>
-
-                            <FilterDropdown
-                                options={filters?.vendors}
-                                value={vendor}
-                                onSelect={(value) => {
-                                    setVendor(value)
-                                    // const statusIds = value.map(item => item.id);
-                                    setVendorValue(value)
-
-                                    // const floorIds = value.map(item => item.id);
-
-                                    // setSelectedRoom(prev =>
-                                    //     prev?.filter(room => floorIds.includes(room.floorId))
-                                    // );
-                                    // const statusIds = value.map(item => item.id);
-                                    // setSelectedFloorValue(statusIds)
-                                }}
-                                placeholder="Select vendor"
-                            />
-
-                            <Text style={styles.label}>Created by</Text>
-
-                            <FilterDropdown
-                                options={filters?.createdBy}
-                                value={selectedCreatedBy}
-                                multiSelect={true}
-                                onSelect={(value) => {
-                                    setSelectedCreatedBy(value)
-                                    const statusIds = value.map(item => item?.userId);
-                                    setCreatedByValue(statusIds)
-                                }}
-                                placeholder="Select createdby"
-                            />
-
-                        </>
-                    )}
-
-                </ScrollView>
-
-
-
-                <View style={styles.bottomButtons}>
-
-                    {/* <TouchableOpacity
-                        style={styles.resetButton}
-                        onPress={() => {
-                            setSelectedTenants("")
-                            setSelectedFloor(null)
-                            setSelectedRoom(null)
-                            setSelectedSharing(null)
-                            setSelectedStatus(null)
-                            setSelectedPeriod(null)
-                            setMaxAmount("")
-                            setMinAmount("")
-                            setCategory([])
-                            setSubcategory([])
-                            setVendor("")
-                            setSelectedMode(null)
-                            onReset()
-                        }}
-                    >
-                        <Text style={styles.resetText}>
-                            Reset
-                        </Text>
-                    </TouchableOpacity> */}
+                                <FilterDropdown
+                                    title="Period"
+                                    options={
+                                        filters?.period
+                                    }
+                                    value={
+                                        selectedFilters?.period
+                                    }
+                                    onChange={(value) =>
+                                        setSelectedFilters(prev => ({
+                                            ...prev,
+                                            period: value
+                                        }))
+                                    }
+                                />
+
+
+                                <FilterDropdown
+                                    title="Payment Mode"
+                                    options={
+                                        filters?.paymentMode
+                                    }
+                                    value={
+                                        selectedFilters?.paymentMode
+                                    }
+                                    multiple
+                                    onChange={(value) =>
+                                        setSelectedFilters(prev => ({
+                                            ...prev,
+                                            paymentMode: value
+                                        }))
+                                    }
+                                />
+
+
+                                <FilterDropdown
+                                    title="Invoice Type"
+                                    options={
+                                        filters?.invoiceType
+                                    }
+                                    value={
+                                        selectedFilters?.invoiceType
+                                    }
+                                    onChange={(value) =>
+                                        setSelectedFilters(prev => ({
+                                            ...prev,
+                                            invoiceType: value
+                                        }))
+                                    }
+                                />
+
+
+                                <FilterDropdown
+                                    title="Collected By"
+                                    options={
+                                        filters?.collectedBy
+                                    }
+                                    value={
+                                        selectedFilters?.collectedBy
+                                    }
+                                    multiple
+                                    onChange={(value) =>
+                                        setSelectedFilters(prev => ({
+                                            ...prev,
+                                            collectedBy: value
+                                        }))
+                                    }
+                                />
+
+                            </>
+                        )}
+
+
+                        {/* ================= TENANT ================= */}
+
+                        {isTenant && (
+                            <>
+
+                                <Text style={styles.label}> Tenants</Text>
+
+                                <FilterDropdown
+                                    options={tenantList}
+                                    value={selectedTenants}
+                                    onSelect={(value) => {
+                                        setSelectedTenants(value)
+                                        setTenantValue(value?.name)
+                                    }}
+                                    placeholder="Select Tenants"
+                                />
+
+                                <Text style={[styles.sectionTitle, { marginTop: 14 }]}>
+                                    System Filter
+                                </Text>
+
+                                <Text style={styles.label}>Tenant Status</Text>
+
+                                <FilterDropdown
+                                    options={filters?.tenantStatus}
+                                    value={selectedStatus}
+                                    multiSelect={true}
+                                    onSelect={(value) => {
+                                        console.log("dropdow", value.id)
+                                        setSelectedStatus(value)
+                                        const statusIds = value.map(item => item.id);
+
+                                        setSelectedTenantStatus(statusIds);
+
+                                    }}
+                                    placeholder="Select Status"
+                                />
+
+                                <Text style={styles.label}>Period</Text>
+
+                                <FilterDropdown
+                                    options={filters?.period}
+                                    value={selectedPeriod}
+                                    onSelect={(value) => {
+                                        console.log("Perioddropdow", value.id)
+                                        setSelectedPeriod(value)
+                                        setSelectedMonth(value?.id)
+                                    }}
+                                    placeholder="Select "
+                                />
+
+                                <Text style={styles.label}>Sharing Type</Text>
+
+                                <FilterDropdown
+                                    options={filters?.sharingType}
+                                    value={selectedSharing}
+                                    multiSelect={true}
+                                    onSelect={(value) => {
+                                        setSelectedSharing(value)
+                                        const statusIds = value.map(item => item.id);
+                                        setSelectedSharingValue(statusIds)
+                                    }}
+                                    placeholder="Select Sharing type"
+                                />
+
+                                <Text style={styles.label}>Floor</Text>
+
+                                <FilterDropdown
+                                    options={filters?.floor}
+                                    value={selectedFloor}
+                                    multiSelect={true}
+                                    onSelect={(value) => {
+                                        setSelectedFloor(value)
+                                        // const statusIds = value.map(item => item.id);
+                                        // setSelectedSharingValue(value)
+
+                                        const floorIds = value.map(item => item.id);
+
+                                        setSelectedRoom(prev =>
+                                            prev?.filter(room => floorIds.includes(room.floorId))
+                                        );
+                                        const statusIds = value.map(item => item.id);
+                                        setSelectedFloorValue(statusIds)
+                                    }}
+                                    placeholder="Select Floor"
+                                />
+
+                                <Text style={styles.label}>Room</Text>
+
+                                <FilterDropdown
+                                    options={filteredRooms}
+                                    value={selectedRoom}
+                                    multiSelect={true}
+                                    onSelect={(value) => {
+                                        setSelectedRoom(value)
+                                        const statusIds = value.map(item => item.id);
+                                        setSelectedRoomValue(value)
+                                    }}
+                                    placeholder="Select Room"
+                                />
+
+
+
+
+
+
+
+                            </>
+                        )}
+
+                        {isExpense && (
+                            <>
+
+
+                                <Text style={styles.sectionTitle}>
+                                    System Filter
+                                </Text>
+
+                                <Text style={styles.label}>Category</Text>
+
+                                <FilterDropdown
+                                    options={filters?.category}
+                                    value={category}
+                                    multiSelect={true}
+                                    onSelect={(value) => {
+                                        console.log("dropdow", value.categoryId)
+                                        setCategory(value)
+                                        const statusIds = value.map(item => item?.categoryId);
+
+                                        setCategoryValue(statusIds);
+
+                                    }}
+                                    placeholder="Select Category"
+                                />
+
+                                <Text style={styles.label}>SubCategory</Text>
+
+                                <FilterDropdown
+                                    options={filteredSubCategory}
+                                    value={subCategory}
+                                    multiSelect={true}
+                                    onSelect={(value) => {
+                                        setSubcategory(value)
+                                        const statusIds = value.map(item => item?.subCategoryId);
+                                        setSubCategoryValue(statusIds)
+                                    }}
+                                    placeholder="Select subcategory type"
+                                />
+
+                                <Text style={styles.label}>Period</Text>
+
+                                <FilterDropdown
+                                    options={filters?.period}
+                                    value={selectedPeriod}
+                                    onSelect={(value) => {
+                                        console.log("Perioddropdow", value.id)
+                                        setSelectedPeriod(value)
+                                        setSelectedMonth(value?.id)
+                                    }}
+                                    placeholder="Select "
+                                />
+
+                                <Text style={styles.label}>Payment Mode</Text>
+
+                                <FilterDropdown
+                                    options={filters?.paymentMode}
+                                    value={selectedMode}
+                                    multiSelect={true}
+                                    onSelect={(value) => {
+                                        setSelectedMode(value)
+                                        const statusIds = value.map(item => item.id);
+                                        setPaymentModeValue(value)
+                                    }}
+                                    placeholder="Select mode"
+                                />
+
+                                <Text style={styles.label}>Paid to</Text>
+
+                                <FilterDropdown
+                                    options={filters?.vendors}
+                                    value={vendor}
+                                    onSelect={(value) => {
+                                        setVendor(value)
+                                        // const statusIds = value.map(item => item.id);
+                                        setVendorValue(value)
+
+                                        // const floorIds = value.map(item => item.id);
+
+                                        // setSelectedRoom(prev =>
+                                        //     prev?.filter(room => floorIds.includes(room.floorId))
+                                        // );
+                                        // const statusIds = value.map(item => item.id);
+                                        // setSelectedFloorValue(statusIds)
+                                    }}
+                                    placeholder="Select vendor"
+                                />
+
+                                <Text style={styles.label}>Created by</Text>
+
+                                <FilterDropdown
+                                    options={filters?.createdBy}
+                                    value={selectedCreatedBy}
+                                    multiSelect={true}
+                                    onSelect={(value) => {
+                                        setSelectedCreatedBy(value)
+                                        const statusIds = value.map(item => item?.userId);
+                                        setCreatedByValue(statusIds)
+                                    }}
+                                    placeholder="Select createdby"
+                                />
+
+                            </>
+                        )}
+
+                    </ScrollView>
+                    
+
+               
+
+           
+                {/* </View>
+                 </KeyboardAvoidingView> */}
+                      <View style={styles.bottomButtons}>
+
+                
 
                     <TouchableOpacity
                         style={styles.resetButton}

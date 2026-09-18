@@ -8,7 +8,8 @@ import {
     TextInput,
     FlatList,
     Platform,
-    Modal, PanResponder, Animated, TouchableWithoutFeedback, Dimensions, ScrollView, BackHandler
+    Modal, PanResponder, Animated, TouchableWithoutFeedback, Dimensions, ScrollView, BackHandler,
+    KeyboardAvoidingView
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -47,6 +48,7 @@ import TickIcon from "../../../Assets/Images/tickgreen.png";
 import FilterBottomSheet from "../Reports/FilterBottomSheet";
 import MultiSelectDropdown from "../Bills/MultiSelectDropdown";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import ExpenseListIcon from "../../../Assets/Images/Receipts.png"
 
 
 
@@ -145,8 +147,8 @@ export default function ExpensesList({ navigation }) {
     const [deletePopup, setDeletePopup] = useState(false)
     const [showFilter, setShowFilter] = useState(false);
 
-    const [fromDate, setFromDate] = useState(dayjs());
-    const [toDate, setToDate] = useState(dayjs());
+    const [fromDate, setFromDate] = useState();
+    const [toDate, setToDate] = useState();
     const [openFrom, setOpenFrom] = useState(false);
     const [openTo, setOpenTo] = useState(false);
     const [openUpward, setOpenUpward] = useState(false);
@@ -175,6 +177,8 @@ export default function ExpensesList({ navigation }) {
     const [selectedCreatedBy, setSelectedCreatedBy] = useState([])
     const [minAmount, setMinAmount] = useState(null)
     const [maxAmount, setMaxAmount] = useState(null)
+    const [selectedSubCategory,setSelectedSubCategory]=useState([])
+    const [selectedMonth,setSelectedMonth]=useState("")
 
     const [errorMsg, setErrorMsg] = useState("")
 
@@ -528,7 +532,7 @@ export default function ExpensesList({ navigation }) {
     }))
 
     const paymentModeOptions = expensesList?.filterOptions?.paymentMode?.map(item => ({
-        label: item?.paymentMode,
+        label:  item?.accountName + " " + "-" + " " + item?.paymentMode,
         value: item?.paymentMethod,
     }))
 
@@ -536,6 +540,12 @@ export default function ExpensesList({ navigation }) {
         label: item?.name,
         value: item?.type,
     }))
+
+    const subCategoryOptions = expensesList?.filterOptions?.subCategory?.map(item => ({
+        label: item?.name,
+        value: item?.type,
+    }))
+
 
     const renderExpensesItem = ({ item }) => (
         <TouchableOpacity
@@ -592,6 +602,8 @@ export default function ExpensesList({ navigation }) {
         </TouchableOpacity>
     );
 
+    console.log("silaana",formatDate(fromDate))
+    console.log(toDate)
     const applyToFilter = async ({
         newCategory = selectedCategory ?? tempCatgory,
         newPaymentStatus = paymentStatus,
@@ -608,6 +620,10 @@ export default function ExpensesList({ navigation }) {
             vendorId: newVendor?.length ? newVendor : undefined,
             paymentMode: newPaymentMode?.length ? newPaymentMode : undefined,
             createdBy: newCreatedBy?.length ? newCreatedBy : undefined,
+            subCategoryId: selectedSubCategory?.length ? selectedSubCategory : undefined,
+            startDate: fromDate ? formatDate(fromDate) : undefined,
+            endDate: toDate ? formatDate(toDate) : undefined,
+            period: selectedMonth ? selectedMonth : undefined,
             minAmount: minAmount || undefined,
             maxAmount: maxAmount || undefined,
         }
@@ -814,6 +830,12 @@ export default function ExpensesList({ navigation }) {
                                         showsHorizontalScrollIndicator={false}
                                         contentContainerStyle={styles.cardRow}
                                     >
+                                         <SummaryCard
+                                            title="Total Expenses"
+                                            value={expensesList?.totalExpenses}
+                                            icon={ExpenseListIcon}
+                                        />
+
                                         <SummaryCard
                                             title="Total Expense Amount"
                                             value={expensesList?.expenseSummary?.totalExpenseAmount}
@@ -928,8 +950,12 @@ export default function ExpensesList({ navigation }) {
                                 <Text style={styles.resetTextSmall}>Reset</Text>
                             </TouchableOpacity>
                         </View> */}
+                        {/* <KeyboardAvoidingView 
+                        style={{flex:1}}
+                          behavior={Platform.OS === "ios" ? "padding" : "height"}> */}
                         <ScrollView showsVerticalScrollIndicator={false}
-                            contentContainerStyle={{ paddingBottom: 40 }}>
+                            contentContainerStyle={{ paddingBottom: 40 }}
+                            keyboardShouldPersistTap="handled">
 
                             <MultiSelectDropdown
                                 label="Payment Status"
@@ -950,7 +976,7 @@ export default function ExpensesList({ navigation }) {
                                     <Text>From</Text>
                                     <TouchableOpacity style={[styles.dateTouchBox]}
                                         onPress={() => setOpenFrom(true)}>
-                                        <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
+                                        <Text style={styles.dateText}>  {fromDate ? formatDate(fromDate) : "DD-MM-YYYY"}</Text>
                                         <Image source={CalendarIcon} style={styles.calIcon} />
                                     </TouchableOpacity>
                                 </View>
@@ -958,7 +984,7 @@ export default function ExpensesList({ navigation }) {
                                 <View style={[styles.dateBox, , { marginLeft: 6 }]}>
                                     <Text>To</Text>
                                     <TouchableOpacity style={styles.dateTouchBox} onPress={() => setOpenTo(true)}>
-                                        <Text style={styles.dateText}>{formatDate(toDate)}</Text>
+                                        <Text style={styles.dateText}>{toDate ? formatDate(toDate) : "DD-MM-YYYY"}</Text>
                                         <Image source={CalendarIcon} style={styles.calIcon} />
                                     </TouchableOpacity>
                                 </View>
@@ -966,16 +992,28 @@ export default function ExpensesList({ navigation }) {
                             </View>
 
                             <View style={styles.quickRow}>
-                                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-                                    <Text style={styles.quickText}>Today</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-                                    <Text style={styles.quickText}>This Week</Text>
-                                </TouchableOpacity>
-
-                                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "THIS_MONTH" &&{backgroundColor:'#e1f1ff'}]}
+                                 onPress={() => {
+                                    //  setFromDate(dayjs()); setToDate(dayjs());
+                                    setSelectedMonth("THIS_MONTH")
+                                      }}>
                                     <Text style={styles.quickText}>This Month</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_3_MONTHS" &&{backgroundColor:'#e1f1ff'}]}
+                                onPress={() => {
+                                    //  setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week"));
+                                    setSelectedMonth("LAST_3_MONTHS")
+                                      }}>
+                                    <Text style={styles.quickText}>Last 3 month</Text>
+                                </TouchableOpacity>
+
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_6_MONTHS" &&{backgroundColor:'#e1f1ff'}]}
+                                onPress={() => { 
+                                    // setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month"));
+                                    setSelectedMonth("LAST_6_MONTHS")
+                                     }}>
+                                    <Text style={styles.quickText}>Last 6 Month</Text>
                                 </TouchableOpacity>
                             </View>
 
@@ -990,6 +1028,20 @@ export default function ExpensesList({ navigation }) {
                                 selected={selectedCategory}
                                 onChange={(values) => {
                                     setSelectedCategory(values);
+                                    // setFilterError("");
+                                }}
+                            />
+
+                               <MultiSelectDropdown
+                                label="Sub Category"
+                                dropdownKey="subCategory"
+                                placeholder="Select Category"
+                                activeDropdown={activeDropdown}
+                                setActiveDropdown={setActiveDropdown}
+                                options={subCategoryOptions}
+                                selected={selectedSubCategory}
+                                onChange={(values) => {
+                                    setSelectedSubCategory(values);
                                     // setFilterError("");
                                 }}
                             />
@@ -1131,15 +1183,17 @@ export default function ExpensesList({ navigation }) {
                                 </>
                             )}
                         </ScrollView>
+                        {/* </KeyboardAvoidingView> */}
 
                         <View style={styles.bottomButtons}>
                             <TouchableOpacity style={styles.resetBtn}
                                 onPress={() => {
-                                    setFromDate(dayjs());
-                                    setToDate(dayjs());
+                                    setFromDate();
+                                    setToDate();
                                     // setAmountSelected(amountOptions[0]);
                                     setMinAmount("")
                                     setSelectedCategory([])
+                                    setSelectedMonth("")
                                     setPaymentStatus([])
                                     setPaymentMode([])
                                     setSelectedVendor([])
@@ -1177,7 +1231,7 @@ export default function ExpensesList({ navigation }) {
                             mode="single"
                             date={fromDate}
                             onChange={(p) => {
-                                setFromDate(p.date || dayjs());
+                                setFromDate(p.date || dayjs() );
                                 setOpenFrom(false);
                             }}
                         />
@@ -1197,7 +1251,7 @@ export default function ExpensesList({ navigation }) {
                             mode="single"
                             date={toDate}
                             onChange={(p) => {
-                                setToDate(p.date || dayjs());
+                                setToDate(p.date || dayjs() );
                                 setOpenTo(false);
                             }}
                         />
@@ -1602,7 +1656,8 @@ const styles = StyleSheet.create({
     optionText: { fontSize: 15, color: "#000" },
 
     quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
-    quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, backgroundColor: "#F5F6FA", alignItems: "center" },
+    quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, 
+        backgroundColor: "#F5F6FA", alignItems: "center" },
     quickText: { color: "#111", fontFamily: "Gilroy-Semibold" },
     bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 30, marginBottom: 20 },
     resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
