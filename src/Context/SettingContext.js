@@ -672,7 +672,7 @@ export const SettingProvider = ({ children }) => {
             }),
         }
       );
-      console.log("realfilte",res)
+      console.log("realfilte", res)
       return {
         success: true,
         data: res.data,
@@ -744,70 +744,107 @@ export const SettingProvider = ({ children }) => {
     }
   };
 
-  const downloadReceiptReport = async (hostelId, filters) => {
-    if (!hostelId) {
-      return { success: false, message: "Invalid hostelId" };
-    }
+ const downloadReceiptReport = async (hostelId, filters = {}) => {
+  if (!hostelId) {
+    return {
+      success: false,
+      message: "Invalid hostelId",
+    };
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const params = {
-        startDate: filters?.startDate,
-        endDate: filters?.endDate,
-        invoiceType: filters?.invoiceType,
-        collectedBy: filters?.collectedBy,
-        period: filters?.period,
-        paymentMode: filters?.paymentMode,
-        page: filters?.page ?? 1,
-        size: filters?.size ?? 10,
-      };
+    console.log("filters", filters);
+    
 
-      const cleanParams = Object.fromEntries(
-        Object.entries(params).filter(
-          ([_, value]) =>
-            value !== undefined &&
-            value !== null &&
-            value !== ""
-        )
-      );
+    const params = {
+      startDate: filters?.startDate,
+      endDate: filters?.endDate,
+      invoiceType: filters?.invoiceType,
+      collectedBy: filters?.collectedBy,
+      paymentMode: filters?.paymentMode,
+      period: filters?.period,
+    };
 
-      const token = await retriveData("token");
-      const axios = getAxios();
+    const cleanParams = Object.fromEntries(
+      Object.entries(params).filter(
+        ([_, value]) =>
+          value !== undefined &&
+          value !== null &&
+          value !== "" &&
+          (!Array.isArray(value) || value.length > 0)
+      )
+    );
 
-      const res = await axios.get(
-        `/v2/reports/download/receipts/${hostelId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          params: cleanParams,
-          paramsSerializer: (params) =>
-            qs.stringify(params, {
-              arrayFormat: "repeat",
-            }),
+    console.log(
+      "========== RECEIPT PDF CLEAN PARAMS =========="
+    );
+    console.log(
+      JSON.stringify(cleanParams, null, 2)
+    );
 
-        }
-      );
+    const queryString = qs.stringify(cleanParams, {
+      arrayFormat: "repeat",
+    });
 
-      if (res.status === 200) {
-        return {
-          success: true,
-          url: res.data,
-        };
-      }
+    console.log(
+      "========== RECEIPT PDF QUERY =========="
+    );
+    console.log("queryString",queryString);
 
-      return { success: false, message: "Download failed" };
+    const token = await retriveData("token");
+    const axios = getAxios();
 
-    } catch (err) {
+    const pdfUrl =
+      `/v2/reports/download/receipts/${hostelId}?${queryString}`;
+
+    console.log(
+      "========== RECEIPT PDF URL =========="
+    );
+    console.log(pdfUrl);
+
+    const res = await axios.get(pdfUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    console.log(
+      "========== RECEIPT PDF RESPONSE =========="
+    );
+    console.log(res);
+
+    if (res.status === 200) {
       return {
-        success: false,
-        message: err.response?.data || err.message,
+        success: true,
+        url: res.data,
       };
-    } finally {
-      setLoading(false);
     }
-  };
+
+    return {
+      success: false,
+      message: "Download failed",
+    };
+
+  } catch (err) {
+    console.log(
+      "========== RECEIPT PDF ERROR =========="
+    );
+    console.log(
+      err.response?.data || err.message
+    );
+
+    return {
+      success: false,
+      message:
+        err.response?.data || err.message,
+    };
+
+  } finally {
+    setLoading(false);
+  }
+};
 
   const downloadExpenseReport = async (hostelId, filters) => {
     if (!hostelId) {
@@ -1110,128 +1147,155 @@ export const SettingProvider = ({ children }) => {
     }
   };
 
-//   try {
-//     setLoading(true);
+  //   try {
+  //     setLoading(true);
 
-//     const token = await retriveData("token");
-//     const axios = getAxios();
+  //     const token = await retriveData("token");
+  //     const axios = getAxios();
 
-//     const params = {
-//       startDate: filters?.startDate,
-//       endDate: filters?.endDate,
-//       period: filters?.period,
-//       status: filters?.status,
-//       floor: filters?.floor,
-//       room: filters?.room,
-//       search: filters?.search,
-//       sharingType: filters?.sharingType,
-//       page: filters?.page ?? 1,
-//       size: filters?.size ?? 10,
-//     };
+  //     const params = {
+  //       startDate: filters?.startDate,
+  //       endDate: filters?.endDate,
+  //       period: filters?.period,
+  //       status: filters?.status,
+  //       floor: filters?.floor,
+  //       room: filters?.room,
+  //       search: filters?.search,
+  //       sharingType: filters?.sharingType,
+  //       page: filters?.page ?? 1,
+  //       size: filters?.size ?? 10,
+  //     };
 
-//     const cleanParams = Object.fromEntries(
-//       Object.entries(params).filter(
-//         ([_, value]) =>
-//           value !== undefined &&
-//           value !== null &&
-//           value !== ""
-//       )
-//     );
+  //     const cleanParams = Object.fromEntries(
+  //       Object.entries(params).filter(
+  //         ([_, value]) =>
+  //           value !== undefined &&
+  //           value !== null &&
+  //           value !== ""
+  //       )
+  //     );
 
-//     const res = await axios.get(
-//       `/v2/reports/tenants/${hostelId}`,
-//       {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//         params: cleanParams,
-//         paramsSerializer: (params) =>
-//           qs.stringify(params, {
-//             arrayFormat: "repeat",
-//           }),
-//       }
-//     );
+  //     const res = await axios.get(
+  //       `/v2/reports/tenants/${hostelId}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //         },
+  //         params: cleanParams,
+  //         paramsSerializer: (params) =>
+  //           qs.stringify(params, {
+  //             arrayFormat: "repeat",
+  //           }),
+  //       }
+  //     );
 
-//     return {
-//       success: true,
-//       data: res.data,
-//     };
-//   } catch (err) {
-//     return {
-//       success: false,
-//       data: err.response?.data || err.message,
-//     };
-//   } finally {
-//     setLoading(false);
-//   }
-// };
-const getTenantReportDownload = async (hostelId, filters = {}) => {
-  try {
-    const token = await retriveData("token");
-    const axios = getAxios();
+  //     return {
+  //       success: true,
+  //       data: res.data,
+  //     };
+  //   } catch (err) {
+  //     return {
+  //       success: false,
+  //       data: err.response?.data || err.message,
+  //     };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const getTenantReportDownload = async (hostelId, filters = {}) => {
+    try {
+      const token = await retriveData("token");
+      const axios = getAxios();
 
-    const params = {
-      search: filters?.search,
-      status: filters?.status,
-      room: filters?.room,
-      floor: filters?.floor,
-      period: filters?.period,
-      startDate: filters?.startDate,
-      endDate: filters?.endDate,
-      sharingType: filters?.sharingType,
-    };
+      const params = {
+        search: filters?.search,
 
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(
-        ([_, value]) =>
-          value !== undefined &&
-          value !== null &&
-          value !== ""
-      )
-    );
+        status: Array.isArray(filters?.status)
+          ? filters.status
+          : filters?.status,
 
-    const res = await axios.get(
-      `/v2/reports/download/${hostelId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        params: cleanParams,
-        paramsSerializer: (params) =>
-          qs.stringify(params, {
-            arrayFormat: "repeat",
-          }),
-      }
-    );
+        room: Array.isArray(filters?.room)
+          ? filters.room
+          : filters?.room,
 
-    console.log("TENANT REPORT DOWNLOAD RESPONSE →", res);
+        floor: Array.isArray(filters?.floor)
+          ? filters.floor
+          : filters?.floor,
 
-    return {
-      success: true,
-      data: res.data,
-    };
-  } catch (error) {
-    console.log(
-      "TENANT REPORT DOWNLOAD ERROR →",
-      error.response?.data || error.message
-    );
+        period: filters?.period,
 
-    return {
-      success: false,
-      data: error.response?.data || error.message,
-    };
-  }
-};
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
 
+        sharingType: Array.isArray(filters?.sharingType)
+          ? filters.sharingType
+          : filters?.sharingType,
+      };
 
-return (
-  <ElectricityContext.Provider value={{
-    getElectricity, updateElectricity, changeRoomHostelElectricity, getBillingConfig, addBillingRecurring, getRoleByHostel,
-    getRoleModules, addRole, updateRole, deleteRole, loading, setLoading, getUsersByHostel, addUser, updateUser, deleteUser, getReportsByHostel, Reportsdetails, GetInvoiceReports, invoiceReports, getTenantRegisterReport, GetExpenseRegisterReport, getReceiptRegisterReport, downloadReceiptReport,
-    downloadExpenseReport, downloadInvoiceReport, getHostelPlans, getCurrentHostelPlan, NewupdateElectricityRule, postSubscription, verfiyPayment, currentPlan, downloadSubscriptionBill, billingRuleData,
-    getTenantReportDownload,
-  }}>
-    {children}
-  </ElectricityContext.Provider>
-);
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(([_, value]) => {
+          if (
+            value === undefined ||
+            value === null ||
+            value === ""
+          ) {
+            return false;
+          }
+
+          if (Array.isArray(value) && value.length === 0) {
+            return false;
+          }
+
+          return true;
+        })
+      );
+
+      console.log("========== PDF API PARAMS ==========");
+      console.log("cleanParams:", cleanParams);
+
+      const queryString = qs.stringify(cleanParams, {
+        arrayFormat: "repeat",
+      });
+
+      console.log("PDF QUERY STRING:", queryString);
+
+      const res = await axios.get(
+        `/v2/reports/download/${hostelId}?${queryString}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("TENANT REPORT DOWNLOAD RESPONSE →", res.data);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+
+    } catch (error) {
+      console.log(
+        "TENANT REPORT DOWNLOAD ERROR →",
+        error.response?.data || error.message
+      );
+
+      return {
+        success: false,
+        data: error.response?.data || error.message,
+      };
+    }
+  };
+
+  return (
+    <ElectricityContext.Provider value={{
+      getElectricity, updateElectricity, changeRoomHostelElectricity, getBillingConfig, addBillingRecurring, getRoleByHostel,
+      getRoleModules, addRole, updateRole, deleteRole, loading, setLoading, getUsersByHostel, addUser, updateUser, deleteUser, getReportsByHostel, Reportsdetails, GetInvoiceReports, invoiceReports, getTenantRegisterReport, GetExpenseRegisterReport, getReceiptRegisterReport, downloadReceiptReport,
+      downloadExpenseReport, downloadInvoiceReport, getHostelPlans, getCurrentHostelPlan, NewupdateElectricityRule, postSubscription, verfiyPayment, currentPlan, downloadSubscriptionBill, billingRuleData,
+      getTenantReportDownload,
+    }}>
+      {children}
+    </ElectricityContext.Provider>
+  );
 };
