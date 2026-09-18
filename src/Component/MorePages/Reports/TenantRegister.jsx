@@ -489,6 +489,13 @@ console.log("FULL FILTERS:", filters);
                 icon={InactiveIcon}
                 linearcolor="#FFF4F4"
               />
+              <SummaryCard
+                title="Booked"
+                value={tenantData?.summary?.booked?.count}
+                icon={TenantsIcon}
+                valueColor="#2d5fff"
+                linearcolor="#c0e3ff"
+              />
             </ScrollView>
           </View>
 
