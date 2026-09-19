@@ -79,7 +79,7 @@ const BillDetailsSheet = ({
   const { bankList, getBankListByHostel } = useContext(BankingContext)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
-   const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
   const isBillLocked = true;
@@ -127,6 +127,8 @@ const BillDetailsSheet = ({
   const [showDeductions, setShowDeductions] = useState(false);
   const [showBookings, setShowBookings] = useState(false);
   const [showWallet, setShowWallet] = useState(false);
+  const [showAdditionalAdvance, setShowAdditionalAdvance] = useState(false);
+  const [showAdjustments, setShowAdjustments] = useState(false);
   const [showRetainer, setShowRetainer] = useState(false)
 
 
@@ -234,19 +236,19 @@ const BillDetailsSheet = ({
   );
 
 
-const SelectedinvoiceId =
-  BillPdfdetails?.invoiceId ||
-  BillPdfdetails?.invoiceInfo?.invoiceId;
+  const SelectedinvoiceId =
+    BillPdfdetails?.invoiceId ||
+    BillPdfdetails?.invoiceInfo?.invoiceId;
 
-const invoiceDetail = BillDetails?.listInvoices?.find(
-  item => item?.invoiceId === SelectedinvoiceId
-);
+  const invoiceDetail = BillDetails?.listInvoices?.find(
+    item => item?.invoiceId === SelectedinvoiceId
+  );
 
 
   // const invoiceDetail = BillDetails?.listInvoices?.find((item) => item?.invoiceId === (BillPdfdetails?.invoiceId || BillPdfdetails?.invoiceInfo?.invoiceId))
 
-   console.log("invoicedetail", invoiceDetail);
-   
+  console.log("invoicedetail", invoiceDetail);
+
 
   const billDetailsPan = useRef(
     PanResponder.create({
@@ -521,6 +523,22 @@ const invoiceDetail = BillDetails?.listInvoices?.find(
     BillPdfdetails?.invoiceInfo?.isNewPattern;
 
 
+  const retainerApplied = BillPdfdetails?.invoiceInfo?.retainerApplied;
+  const amountSettled = BillPdfdetails?.invoiceInfo?.amountSettled;
+
+  const redeemedList =
+    amountSettled?.redeemdList ||
+    retainerApplied?.redeemdList ||
+    [];
+
+  const showAdjustmentsAccordion = redeemedList.length > 0;
+
+  const adjustmentDetails =
+    amountSettled?.redeemdList?.length > 0
+      ? amountSettled
+      : retainerApplied;
+
+
 
 
   // const paymentStatus = invoice?.paymentStatus;
@@ -587,7 +605,6 @@ const invoiceDetail = BillDetails?.listInvoices?.find(
     inputRange: [0, 1],
     outputRange: ["0deg", "180deg"],
   });
-
 
 
   const showApplyToInvoices = BillPdfdetails?.invoiceInfo?.canApplyToOtherInvoice
@@ -2029,6 +2046,97 @@ const invoiceDetail = BillDetails?.listInvoices?.find(
                   )}
                 </TouchableOpacity>
 
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.accordionCard}
+                  onPress={() => setShowAdditionalAdvance(!showAdditionalAdvance)}
+                >
+                  <View style={styles.accordionHeader}>
+                    <View style={styles.accordionLeft}>
+                      {/* <Image
+                        source={showWallet ? ArrowUp : ArrowDown}
+                        style={styles.arrowIcon}
+                      /> */}
+
+                      <Image
+                        source={DownArrow}
+                        style={[
+                          styles.arrowImg,
+                          showAdditionalAdvance && { transform: [{ rotate: "180deg" }] },
+                        ]}
+                      />
+                      {/* <Animated.Image
+                                                source={DownArrow}
+                                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                                              /> */}
+
+                      <Text style={styles.accordionTitle}>
+                        Additional Advances
+                      </Text>
+                    </View>
+
+                    <Text
+                      style={[
+                        styles.amountText,
+                        {
+                          color:
+                            (BillPdfdetails?.additionalAdvanceItems?.balanceAmount || 0) < 0
+                              ? "#DC2626"
+                              : "#16A34A",
+                        },
+                      ]}
+                    >
+                      ₹ {BillPdfdetails?.additionalAdvanceItems?.balanceAmount || 0}
+                    </Text>
+                  </View>
+
+                  <View style={styles.tableHeader}>
+                    <Text style={[styles.th, { flex: 1 }]}>Inv No</Text>
+                    {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
+                    <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                      Amount
+                    </Text>
+                  </View>
+
+
+                  {showAdditionalAdvance && (
+                    <View style={styles.accordionBody}>
+                      {BillPdfdetails?.additionalAdvanceItems?.additionalAdvanceItems?.length > 0 ? (
+                        BillPdfdetails?.additionalAdvanceItems?.additionalAdvanceItems?.map((item, index) => (
+                          <View
+                            key={index}
+                            style={styles.walletRow}
+                          >
+                            <Text style={styles.walletSource}>
+                              {item?.invoiceNumber}
+                            </Text>
+
+                            <Text
+                              style={[
+                                styles.walletAmount,
+                                {
+                                  color:
+                                    item?.amount < 0
+                                      ? "#DC2626"
+                                      : "#16A34A",
+                                },
+                              ]}
+                            >
+                              ₹ {item?.amount}
+                            </Text>
+                          </View>
+                        ))
+                      ) : (
+                        <View style={styles.emptyWallet}>
+                          <Text style={styles.emptyWalletText}>
+                            No Additional Advances available
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  )}
+                </TouchableOpacity>
+
 
 
               </>
@@ -2075,6 +2183,125 @@ const invoiceDetail = BillDetails?.listInvoices?.find(
               )}
 
 
+
+            {showAdjustmentsAccordion && (
+              <View style={styles.paymentWrapper}>
+
+                {/* HEADER */}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  style={styles.paymentHeader}
+                  onPress={() => setShowAdjustments(!showAdjustments)}
+                >
+                  <Text style={styles.paymentHeaderText}>
+                    Adjustments Applied
+                  </Text>
+
+                  <Image
+                    source={DownArrow}
+                    style={{
+                      width: 22,
+                      height: 22,
+                      transform: [
+                        {
+                          rotate: showAdjustments ? "180deg" : "0deg",
+                        },
+                      ],
+                    }}
+                  />
+                </TouchableOpacity>
+
+                {/* BODY */}
+                {showAdjustments && (
+                  <View style={{ marginTop: 8 }}>
+
+                    {redeemedList.map((item, index) => (
+                      <View
+                        key={`${item?.invoiceId}-${index}`}
+                        style={styles.adjustmentCard}
+                      >
+
+                        {/* TOP */}
+                        <View style={styles.adjustmentTopRow}>
+
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                            }}
+                          >
+                            <Text style={styles.adjustmentInvoice}>
+                              {item?.invoiceNo || "--"}
+                            </Text>
+
+                            <Image
+                              source={InvoiceLinkIcon}
+                              style={styles.linkIcon}
+                            />
+                          </View>
+
+                          <Text style={styles.adjustmentAmount}>
+                            ₹ {item?.amount || 0}
+                          </Text>
+                        </View>
+
+                        {/* DIVIDER */}
+                        <View style={styles.adjustmentDivider} />
+
+                        {/* BOTTOM */}
+                        <View style={styles.adjustmentBottomRow}>
+
+                          <View>
+                            <Text style={styles.adjustmentLabel}>
+                              Date
+                            </Text>
+                          </View>
+
+                          <View style={{ alignItems: "flex-end" }}>
+                            <Text style={styles.adjustadjustmentValuementLabel}>
+                              {item?.redeemedOn || "--"}
+                            </Text>
+                          </View>
+
+                        </View>
+                      </View>
+                    ))}
+
+                    {/* SUMMARY CARD */}
+                    <View style={styles.adjustmentSummaryCard}>
+
+                      <View style={styles.summaryRow}>
+                        <Text style={styles.summaryLabel}>
+                          Total Adjusted
+                        </Text>
+
+                        <Text style={styles.summaryValue}>
+                          ₹ {adjustmentDetails?.totalAmountSettled || 0}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={[
+                          styles.summaryRow,
+                          { marginTop: 10 },
+                        ]}
+                      >
+                        <Text style={styles.summaryLabel}>
+                          Balance Amount
+                        </Text>
+
+                        <Text style={styles.summaryValue}>
+                          ₹ {BillPdfdetails?.invoiceInfo?.balanceAmount || 0}
+                        </Text>
+                      </View>
+
+                    </View>
+                  </View>
+                )}
+              </View>
+            )}
+
+
             {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
               <View style={styles.creditCard}>
                 <View style={styles.creditTopRow}>
@@ -2097,8 +2324,8 @@ const invoiceDetail = BillDetails?.listInvoices?.find(
                   The booking amount isn't applied with any bills yet.
                 </Text>
 
-                <TouchableOpacity style={[styles.applyBtn, !canWriteInvoice && {opacity:0.4}]}
-                disabled={!canWriteInvoice}
+                <TouchableOpacity style={[styles.applyBtn, !canWriteInvoice && { opacity: 0.4 }]}
+                  disabled={!canWriteInvoice}
                   onPress={handleApplyBookingToInvoice}
                 >
                   <Text style={{
@@ -2287,7 +2514,7 @@ const invoiceDetail = BillDetails?.listInvoices?.find(
 
 
 
-            {
+            {/* {
               invoiceDetail?.canEdit && (
                 <TouchableOpacity
                   style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
@@ -2300,23 +2527,23 @@ const invoiceDetail = BillDetails?.listInvoices?.find(
                   />
                   <Text style={styles.popupText}>Edit</Text>
                 </TouchableOpacity>
-              )}
+              )} */}
 
             {/* {paymentStatus === "Pending" &&
               (invoiceType === "Rent" || invoiceType === "Settlement" || invoiceType === "REASSIGN_RENT") &&
               !isDiscounted &&
               ( */}
-            {(BillPdfdetails?.invoiceInfo?.paymentStatus === "Pending" || BillPdfdetails?.invoiceInfo?.status === "PENDING")  &&
+            {(BillPdfdetails?.invoiceInfo?.paymentStatus === "Pending" || BillPdfdetails?.invoiceInfo?.status === "PENDING") &&
               (
                 BillPdfdetails?.invoiceInfo?.invoiceType === "REASSIGN_RENT" ||
                 BillPdfdetails?.invoiceInfo?.invoiceType === "RENT" ||
-               (invoiceDetail?.invoiceType === "Settlement" || BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT")||
-                  BillPdfdetails?.invoiceInfo?.invoiceType === "OTHER"  
+                (invoiceDetail?.invoiceType === "Settlement" || BillPdfdetails?.invoiceInfo?.invoiceType === "SETTLEMENT") ||
+                BillPdfdetails?.invoiceInfo?.invoiceType === "OTHER"
               ) &&
               !BillPdfdetails?.invoiceInfo?.isDiscounted && (
 
                 <TouchableOpacity
-                  style={[styles.popupRow, !canUpdateInvoice && {opacity:0.4}]}
+                  style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
                   disabled={!canUpdateInvoice}
                   onPress={() => {
                     setShowMenu(false);
@@ -3582,6 +3809,120 @@ const styles = StyleSheet.create({
     // fontSize: 12,
     fontFamily: "Gilroy-Semibold",
   },
+
+  paymentWrapper: {
+    marginTop: 24,
+  },
+
+  paymentHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10
+  },
+
+  paymentTitle: {
+    fontSize: 28,
+    fontFamily: "Gilroy-SemiBold",
+    color: "#111827",
+  },
+
+  arrowIcon: {
+    width: 22,
+    height: 22,
+    resizeMode: "contain",
+  },
+
+  adjustmentCard: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 14,
+  },
+
+  adjustmentTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  adjustmentInvoice: {
+    fontSize: 15,
+    fontFamily: "Gilroy-SemiBold",
+    color: "#111827",
+  },
+
+  linkIcon: {
+    width: 18,
+    height: 18,
+    marginLeft: 6,
+    tintColor: "#1E45E1",
+  },
+
+  adjustmentAmount: {
+    fontSize: 17,
+    fontFamily: "Gilroy-Bold",
+    color: "#111827",
+  },
+
+  adjustmentDivider: {
+    height: 1,
+    backgroundColor: "#F1F5F9",
+    marginVertical: 14,
+  },
+
+  adjustmentBottomRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  adjustmentLabel: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Regular",
+    color: "#9CA3AF",
+    marginBottom: 6,
+  },
+
+  adjustmentValue: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Medium",
+    color: "#111827",
+  },
+
+  adjustmentType: {
+    fontSize: 15,
+    fontFamily: "Gilroy-SemiBold",
+    color: "#1E45E1",
+  },
+
+  adjustmentSummaryCard: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 18,
+    padding: 16,
+    marginTop: 4,
+  },
+
+  summaryRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  summaryLabel: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Medium",
+    color: "#6B7280",
+  },
+
+  summaryValue: {
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+    color: "#111827",
+  },
+
 
 
 })
