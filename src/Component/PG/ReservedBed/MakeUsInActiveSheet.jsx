@@ -209,7 +209,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const handleConfirmCancel = async () => {
     let valid = true;
     if (!joiningDate) {
-      setJoiningDateError("Please select joining date");
+      setJoiningDateError("Please select inactive date");
       valid = false;
     }
     if (!refundFrom) {

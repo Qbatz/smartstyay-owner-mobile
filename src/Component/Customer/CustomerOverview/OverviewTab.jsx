@@ -420,10 +420,11 @@ export default function OverviewTab({ customerDetails,
               </View>
 
               <TouchableOpacity
-                style={[styles.pendingBtn, (customerDetails?.customerCurrentStatus == "BOOKED" || !canWriteTenant) && { opacity: 0.4 }]}
+                style={[styles.pendingBtn, (customerDetails?.customerCurrentStatus == "BOOKED" || customerDetails?.customerCurrentStatus === "CANCELLED_BOOKING" ||
+                  !canWriteTenant) && { opacity: 0.4 }]}
                 // disabled={customerDetails?.customerCurrentStatus == "BOOKED" ? true : false}
                 disabled={
-                  customerDetails?.customerCurrentStatus == "BOOKED" ||
+                  customerDetails?.customerCurrentStatus == "BOOKED" ||  customerDetails?.customerCurrentStatus === "CANCELLED_BOOKING"||
                   !canWriteTenant
                 }
                 onPress={handleshowkycsheet}>
