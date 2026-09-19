@@ -48,7 +48,8 @@ import TickGreenIcon from "../../../Assets/Images/tickgreen.png"
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.44
-const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFiltersheet }) => {
+const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFiltersheet, appliedFilters,
+  setAppliedFilters, }) => {
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, setBookingBills, GetAdvanceBookingBills } = useContext(BillContext);
@@ -68,6 +69,8 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
 
   const lastScrollY = useRef(0);
   const isTabBarVisible = useRef(true);
+
+
 
   const handleScroll = (event) => {
     const currentY = event.nativeEvent.contentOffset.y;
@@ -127,6 +130,22 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
 
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
   const [amountDropdownVisible, setAmountDropdownVisible] = useState(false)
+
+  // const [appliedFilters, setAppliedFilters] = useState(null);
+
+  const hasActiveBookingFilter =
+    !!appliedFilters &&
+    (
+      appliedFilters?.startDate ||
+      appliedFilters?.endDate ||
+      appliedFilters?.status ||
+      appliedFilters?.period ||
+      appliedFilters?.floor ||
+      appliedFilters?.room ||
+      appliedFilters?.minAmount !== undefined ||
+      appliedFilters?.maxAmount !== undefined ||
+      (Array.isArray(appliedFilters?.type) && appliedFilters.type.length > 0)
+    );
 
   // const Advancebookingbills = bookingBills?.advanceInvoiceList
 
@@ -385,6 +404,17 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
     onBookingDetailsShow(item)
   }
 
+  const handleResetBookingFilters = async () => {
+    setAppliedFilters(null);
+
+    if (!activeHostelId || !canReadBooking) return;
+
+    await GetAdvanceBookingBills(activeHostelId, {
+      page: 1,
+      size: 10,
+    });
+  };
+
 
   const handleEditBill = () => {
 
@@ -435,14 +465,31 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
 
   const EmptyReceiptState = () => (
     <View style={styles.emptyContainer}>
+
       <Image
         source={EmptyFloor}
         style={styles.emptyImage}
         resizeMode="contain"
       />
+
       <Text style={styles.emptyText}>
-        No Bookings Found
+        {hasActiveBookingFilter
+          ? "No bookings found for the selected filter"
+          : "No Bookings Found"}
       </Text>
+
+      {hasActiveBookingFilter && (
+        <TouchableOpacity
+          style={styles.emptyResetButton}
+          onPress={handleResetBookingFilters}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.emptyResetText}>
+            Reset
+          </Text>
+        </TouchableOpacity>
+      )}
+
     </View>
   );
 
@@ -625,6 +672,7 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
         ) : (
           <>
 
+
             <FlatList
               data={Advancebookingbills}
               renderItem={renderItem}
@@ -646,6 +694,94 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
               ListHeaderComponent={() =>
                 hasBookings ? (
                   <>
+
+                    {hasActiveBookingFilter && (
+                      <View style={styles.appliedFilterWrapper}>
+
+                        <ScrollView
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                          contentContainerStyle={styles.appliedFilterScroll}
+                        >
+
+                          {appliedFilters?.startDate && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipText}>
+                                From : {appliedFilters.startDate}
+                              </Text>
+                            </View>
+                          )}
+
+                          {appliedFilters?.endDate && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipText}>
+                                To : {appliedFilters.endDate}
+                              </Text>
+                            </View>
+                          )}
+
+                          {appliedFilters?.status && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipText}>
+                                Status is : {appliedFilters.status}
+                              </Text>
+                            </View>
+                          )}
+
+                          {appliedFilters?.period && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipText}>
+                                Period is : {appliedFilters.period}
+                              </Text>
+                            </View>
+                          )}
+
+                          {appliedFilters?.floor && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipLabel}>Floor</Text>
+                              <Text style={styles.filterChipValue}>
+                                {appliedFilters?.floorName || appliedFilters?.floor}
+                              </Text>
+                            </View>
+                          )}
+
+                          {appliedFilters?.room && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipLabel}>Room</Text>
+                              <Text style={styles.filterChipValue}>
+                                {appliedFilters?.roomName || appliedFilters?.room}
+                              </Text>
+                            </View>
+                          )}
+
+                          {appliedFilters?.minAmount !== undefined && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipText}>
+                                Min Amount : ₹ {appliedFilters.minAmount}
+                              </Text>
+                            </View>
+                          )}
+
+                          {appliedFilters?.maxAmount !== undefined && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipText}>
+                                Max Amount : ₹ {appliedFilters.maxAmount}
+                              </Text>
+                            </View>
+                          )}
+
+                        </ScrollView>
+
+                        <TouchableOpacity
+                          onPress={handleResetBookingFilters}
+                          activeOpacity={0.7}
+                          style={styles.topResetButton}
+                        >
+                          <Text style={styles.topResetText}>Reset</Text>
+                        </TouchableOpacity>
+
+                      </View>
+                    )}
                     <View
                       style={{
                         flexDirection: "row",
@@ -1687,6 +1823,56 @@ const styles = StyleSheet.create({
     color: "#111827",
     fontFamily: "Gilroy-Bold",
   },
+  appliedFilterWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    marginTop: 8,
+    marginBottom: 10,
+},
+
+appliedFilterScroll: {
+    flexGrow: 1,
+    paddingRight: 6,
+    gap: 8,
+},
+
+filterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F4F7FF",
+    borderWidth: 1,
+    borderColor: "#D9E3FF",
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 18,
+    marginRight: 6,
+},
+
+filterChipLabel: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Medium",
+    color: "#64748B",
+    marginRight: 4,
+},
+
+filterChipValue: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Semibold",
+    color: "#1D5BEE",
+},
+
+topResetButton: {
+    marginLeft: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+},
+
+topResetText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Semibold",
+    color: "#1D5BEE",
+},
 
 
 });

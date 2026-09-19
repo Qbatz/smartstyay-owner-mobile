@@ -976,7 +976,7 @@ export default function OverviewTab({ customerDetails,
 
 
                 {
-                  !disableFinancialEdit && isSubscriptionAllow && (
+                  !disableFinancialEdit && isSubscriptionAllow && customerDetails?.advanceInfo?.advanceAmount > 0 && (
                     <>
 
                       {
