@@ -1533,7 +1533,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         )}
         <InactiveTenantSheet
           visible={showInactiveSheet}
-          onClose={() => setShowInactiveSheet(false)}
+          onClose={() => {
+            fetchCustomerDetails()
+            setShowInactiveSheet(false)}}
           selectedItem={selectedItem}
           onSuccess={handleCheckoutSuccess}
         // RedirectionSuccess = {handleRedirectTenant}

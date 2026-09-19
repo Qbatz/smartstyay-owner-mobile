@@ -865,7 +865,8 @@ export default function ExpensesList({ navigation }) {
 
                                     <View style={styles.filterRow}>
                                         <View style={{ display: 'flex', flexDirection: 'row' }}>
-                                            <TouchableOpacity style={styles.filterChipActive}>
+                                            <TouchableOpacity style={styles.filterChipActive}
+                                            onPress={() => setShowFilter(true)}>
                                                 <Text style={styles.filterChipTextActive}>All</Text>
                                             </TouchableOpacity>
 

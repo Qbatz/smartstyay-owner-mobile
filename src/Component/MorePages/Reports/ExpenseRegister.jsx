@@ -608,7 +608,7 @@ const ExpenseRegister = ({ navigation }) => {
               <View key={index} style={styles.listItem}>
                 <View style={{ flex: 1, paddingRight: 10 }}>
                   <Text style={styles.name}>  {item?.expenseCategory}</Text>
-                  <Text style={styles.sub}>{item?.description || "N/A"}</Text>
+                  <Text style={styles.sub}>{item?.expenseSubCategory || item?.description || "N/A"}</Text>
                 </View>
 
                 <Text style={styles.amount}> ₹ {item.amount}</Text>
