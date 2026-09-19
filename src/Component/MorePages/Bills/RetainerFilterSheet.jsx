@@ -72,7 +72,7 @@ const RetainerFilterSheet = ({
     const [toDate, setToDate] = useState(null);
 
 
-    const [selectedPeriod, setSelectedPeriod] = useState({});
+    const [selectedPeriod, setSelectedPeriod] = useState("");
 
 
     const [openFrom, setOpenFrom] = useState(false);
@@ -125,8 +125,8 @@ const RetainerFilterSheet = ({
 
 
     const periodOptions = (filterOptions.period || []).map(item => ({
-        label: item.name,
-        value: item.type,
+        label: item?.name,
+        value: item?.type,
     }))
 
 
@@ -249,20 +249,95 @@ const RetainerFilterSheet = ({
             setFilterError("Please select Start Date");
             return;
         }
+const selectedFloorId =
+    selectedFloor?.length > 0 ? selectedFloor[0] : undefined;
 
-        const filters = {
-            startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
-            endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
-            paymentStatus: billStatus,
-            type: retainerType,
-            period: selectedPeriod,
-            modes: paymentmode,
-            collectedBy: collectedBy,
-            floor: selectedFloor?.length > 0 ? selectedFloor : undefined,
-            room: selectedRoom?.length > 0 ? selectedRoom : undefined,
-            minAmount: String(minAmount) || undefined,
-            maxAmount: String(maxAmount) || undefined,
-        };
+const selectedRoomId =
+    selectedRoom?.length > 0 ? selectedRoom[0] : undefined;
+
+const selectedFloorOption = floorOptions.find(
+    item => String(item.value) === String(selectedFloorId)
+);
+
+const selectedRoomOption = roomOptions.find(
+    item => String(item.value) === String(selectedRoomId)
+);
+
+const filters = {
+    startDate: fromDate
+        ? dayjs(fromDate).format("DD/MM/YYYY")
+        : undefined,
+
+    endDate: toDate
+        ? dayjs(toDate).format("DD/MM/YYYY")
+        : undefined,
+
+    status: status?.length > 0
+        ? status[0]
+        : undefined,
+
+    type: retainerType?.length > 0
+        ? retainerType
+        : undefined,
+
+    period: selectedPeriod || undefined,
+
+    // API-ku ID
+    floor: selectedFloorId,
+
+    // UI-ku Name
+    floorName: selectedFloorOption?.label,
+
+    // API-ku ID
+    room: selectedRoomId,
+
+    // UI-ku Name
+    roomName: selectedRoomOption?.label,
+
+    minAmount: minAmount
+        ? Number(minAmount)
+        : undefined,
+
+    maxAmount: maxAmount
+        ? Number(maxAmount)
+        : undefined,
+};
+
+        // const filters = {
+        //     startDate: fromDate
+        //         ? dayjs(fromDate).format("DD/MM/YYYY")
+        //         : undefined,
+
+        //     endDate: toDate
+        //         ? dayjs(toDate).format("DD/MM/YYYY")
+        //         : undefined,
+
+        //     status: status?.length > 0
+        //         ? status[0]
+        //         : undefined,
+
+        //     type: retainerType?.length > 0
+        //         ? retainerType
+        //         : undefined,
+
+        //     period: selectedPeriod || undefined,
+
+        //     floor: selectedFloor?.length > 0
+        //         ? selectedFloor[0]
+        //         : undefined,
+
+        //     room: selectedRoom?.length > 0
+        //         ? selectedRoom[0]
+        //         : undefined,
+
+        //     minAmount: minAmount
+        //         ? Number(minAmount)
+        //         : undefined,
+
+        //     maxAmount: maxAmount
+        //         ? Number(maxAmount)
+        //         : undefined,
+        // };
 
         const hasAnyFilter =
             filters.startDate ||
@@ -297,20 +372,35 @@ const RetainerFilterSheet = ({
     const handleResetFilters = async () => {
         if (!canReadReceipt) return;
 
+        // setFromDate(null);
+        // setToDate(null);
+        // setCollectedBy([]);
+        // setRetainerType([])
+        // setType([]);
+        // setPaymentMode([]);
+        // setSelectedPeriod("");
+        // setFilterError("");
+        // setAmountRange([]);
+        // setMode([]);
+        // setMinAmount(null)
+        // setMaxAmount(null)
+        // setAppliedFilters(null);
+
         setFromDate(null);
         setToDate(null);
         setCollectedBy([]);
-        setRetainerType([])
+        setRetainerType([]);
         setType([]);
+        setStatus([]);
         setPaymentMode([]);
         setSelectedPeriod("");
         setFilterError("");
         setAmountRange([]);
         setMode([]);
-        setMinAmount(null)
-        setMaxAmount(null)
+        setMinAmount(null);
+        setMaxAmount(null);
         setAppliedFilters(null);
-     
+
         onResetFilter?.();
 
         onClose();
@@ -434,15 +524,23 @@ const RetainerFilterSheet = ({
                             {periodOptions.map(i => (
                                 <TouchableOpacity style={[
                                     styles.quickBtn,
-                                    selectedPeriod === i?.value  && styles.activeQuickBtn,
-                                ]} 
-                                key={i?.type} 
-                                 onPress={() => {
-                                    setFromDate(dayjs()); setToDate(dayjs());
-                                    setSelectedPeriod(i?.value)
-                                }}>
-                                    <Text style={[styles.quickText, 
-                                         selectedPeriod === i?.value  && {color:"#ffffff"},
+                                    selectedPeriod === i?.value && styles.activeQuickBtn,
+                                ]}
+                                    // key={i?.type} 
+                                    key={`${i?.value}-${i?.label}`}
+                                    // onPress={() => {
+                                    //     setFromDate(dayjs()); setToDate(dayjs());
+                                    //     setSelectedPeriod(i?.value)
+                                    // }}
+                                    onPress={() => {
+                                        setSelectedPeriod(i?.value);
+                                        setFromDate(null);
+                                        setToDate(null);
+                                        setFilterError("");
+                                    }}
+                                >
+                                    <Text style={[styles.quickText,
+                                    selectedPeriod === i?.value && { color: "#ffffff" },
                                     ]}>{i?.label}</Text>
                                 </TouchableOpacity>
 
@@ -537,13 +635,13 @@ const RetainerFilterSheet = ({
                             </Text>
 
                             <Image
-    source={require("../../../Assets/Images/direction_down.png")
-    //   showMoreFilters
-    //     ? require("")
-    //     : require("../../Assets/Images/downArrow.png")
-    }
-    style={{width:25,height:22,tintColor:'red',marginLeft:4}}
-  />
+                                source={require("../../../Assets/Images/direction_down.png")
+                                    //   showMoreFilters
+                                    //     ? require("")
+                                    //     : require("../../Assets/Images/downArrow.png")
+                                }
+                                style={{ width: 25, height: 22, tintColor: 'red', marginLeft: 4 }}
+                            />
                         </TouchableOpacity>
 
                         {showMoreFilters && (
@@ -999,12 +1097,12 @@ const styles = StyleSheet.create({
         color: "#222",
         paddingVertical: 0,
     },
-    moreFilterHeader:{
-        marginTop:16,flexDirection:'row',
-        alignItems:'center'
+    moreFilterHeader: {
+        marginTop: 16, flexDirection: 'row',
+        alignItems: 'center'
     },
-    moreFilterText:{
-        fontSize:16,fontFamily:'Gilroy-Bold'
+    moreFilterText: {
+        fontSize: 16, fontFamily: 'Gilroy-Bold'
     }
 
 })

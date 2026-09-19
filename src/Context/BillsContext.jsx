@@ -1116,121 +1116,236 @@ export default function BillsProvider({ children }) {
 
 
 
-  const GetAdvanceBookingBills = async (hostelId, filters, page = 1, size = 10) => {
-    console.log("filteredRetainer", filters)
-    if (!hostelId) {
-      return { success: false, message: "Invalid hostelId" };
-    }
+  // const GetAdvanceBookingBills = async (hostelId, filters, page = 1, size = 10) => {
+  //   console.log("filteredRetainer", filters)
+  //   if (!hostelId) {
+  //     return { success: false, message: "Invalid hostelId" };
+  //   }
 
-    try {
-      setLoading(true);
-      setErrorMsg("");
+  //   try {
+  //     setLoading(true);
+  //     setErrorMsg("");
 
-      const axios = getAxios();
-      const params = {
-        page,
-        size,
-        startDate: filters?.startDate,
-        endDate: filters?.endDate,
-        name: filters?.name,
-        type: filters?.type,
-        period: filters?.period,
-        floor: filters?.floor,
-        room: filters?.room,
-        minAmount: filters?.minAmount,
-        maxAmount: filters?.maxAmount,
-      };
-      console.log("PARAMS TO SEND:", params);
+  //     const axios = getAxios();
+  //     const params = {
+  //       page,
+  //       size,
+  //       startDate: filters?.startDate,
+  //       endDate: filters?.endDate,
+  //       name: filters?.name,
+  //       type: filters?.type,
+  //       period: filters?.period,
+  //       floor: filters?.floor,
+  //       room: filters?.room,
+  //       minAmount: filters?.minAmount,
+  //       maxAmount: filters?.maxAmount,
+  //     };
+  //     console.log("PARAMS TO SEND:", params);
 
-      const res = await axios.get(`/v2/bills/advances/${hostelId}`, {
-        params: {
-          page,
-          size,
-          startDate: filters?.startDate,
-          endDate: filters?.endDate,
-          name: filters?.name,
-          type: filters?.type,
-          period: filters?.period,
-          floor: filters?.floor,
-          room: filters?.room,
-          minAmount: filters?.minAmount,
-          maxAmount: filters?.maxAmount
-        },
+  //     const res = await axios.get(`/v2/bills/advances/${hostelId}`, {
+  //       params: {
+  //         page,
+  //         size,
+  //         startDate: filters?.startDate,
+  //         endDate: filters?.endDate,
+  //         name: filters?.name,
+  //         type: filters?.type,
+  //         period: filters?.period,
+  //         floor: filters?.floor,
+  //         room: filters?.room,
+  //         minAmount: filters?.minAmount,
+  //         maxAmount: filters?.maxAmount
+  //       },
+  //       paramsSerializer: (params) =>
+  //         Object.keys(params)
+  //           .map((key) => {
+  //             const value = params[key];
+
+  //             if (Array.isArray(value)) {
+  //               if (!value.length) return null;
+  //               return value
+  //                 .map((v) => `${key}=${encodeURIComponent(v)}`)
+  //                 .join("&");
+  //             }
+
+  //             if (
+  //               value !== undefined &&
+  //               value !== null &&
+  //               value !== ""
+  //             ) {
+  //               return `${key}=${encodeURIComponent(value)}`;
+  //             }
+
+  //             return null;
+  //           })
+  //           .filter(Boolean)
+  //           .join("&"),
+  //     });
+   
+  //     console.log("Request URL:", res.request?.responseURL);
+
+  //     console.log("AfterFilterRetainer", res)
+
+
+  //     if (res.status === 200) {
+  //       setBookingBills(res?.data || []);
+  //       console.log("res", res);
+  //       console.log("Balaji")
+
+  //       return {
+  //         success: true,
+  //         data: res.data,
+  //         statusCode: res.status,
+  //       };
+  //     }
+
+  //     return { success: false, message: "Failed to fetch advance bills" };
+
+  //   } catch (error) {
+  //     const msg = getErrorMessage(error);
+  //     setErrorMsg(msg);
+
+  //     return {
+  //       success: false,
+  //       message: msg,
+  //     };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
+
+const GetAdvanceBookingBills = async (
+  hostelId,
+  filters = {},
+  page = 1,
+  size = 10
+) => {
+  console.log("filteredRetainer", filters);
+
+  if (!hostelId) {
+    return {
+      success: false,
+      message: "Invalid hostelId",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const params = {
+      page,
+      size,
+
+      startDate: filters?.startDate || undefined,
+      endDate: filters?.endDate || undefined,
+
+      name: filters?.name || undefined,
+      period: filters?.period || undefined,
+      status: filters?.status || undefined,
+
+      // Web format
+      type:
+        Array.isArray(filters?.type) && filters.type.length
+          ? filters.type
+          : undefined,
+
+      // Web sends IDs
+      floor:
+        Array.isArray(filters?.floor) && filters.floor.length
+          ? filters.floor[0]
+          : filters?.floor || undefined,
+
+      room:
+        Array.isArray(filters?.room) && filters.room.length
+          ? filters.room[0]
+          : filters?.room || undefined,
+
+      minAmount:
+        filters?.minAmount !== undefined &&
+        filters?.minAmount !== null &&
+        filters?.minAmount !== ""
+          ? Number(filters.minAmount)
+          : undefined,
+
+      maxAmount:
+        filters?.maxAmount !== undefined &&
+        filters?.maxAmount !== null &&
+        filters?.maxAmount !== ""
+          ? Number(filters.maxAmount)
+          : undefined,
+    };
+
+    console.log("PARAMS TO SEND:", params);
+
+    const res = await axios.get(
+      `/v2/bills/advances/${hostelId}`,
+      {
+        params,
+
         paramsSerializer: (params) =>
           Object.keys(params)
             .map((key) => {
               const value = params[key];
 
+              if (value === undefined || value === null || value === "") {
+                return null;
+              }
+
               if (Array.isArray(value)) {
                 if (!value.length) return null;
+
                 return value
-                  .map((v) => `${key}=${encodeURIComponent(v)}`)
+                  .map(
+                    (v) =>
+                      `${key}=${encodeURIComponent(v)}`
+                  )
                   .join("&");
               }
 
-              if (
-                value !== undefined &&
-                value !== null &&
-                value !== ""
-              ) {
-                return `${key}=${encodeURIComponent(value)}`;
-              }
-
-              return null;
+              return `${key}=${encodeURIComponent(value)}`;
             })
             .filter(Boolean)
             .join("&"),
-      });
-      //   paramsSerializer: (params) =>
-      //     Object.keys(params)
-      //       .map((key) => {
-      //         const value = params[key];
-      //         if (Array.isArray(value)) {
-      //           return value.map((v) => `${key}=${v}`).join("&");
-      //         }
-      //         if (value !== undefined && value !== null && value !== "") {
-      //           return `${key}=${value}`;
-      //         }
-      //         return null;
-      //       })
-      //       .filter(Boolean)
-      //       .join("&"),
-
-
-      // }
-      // );
-      console.log("Request URL:", res.request?.responseURL);
-
-      console.log("AfterFilterRetainer", res)
-
-
-      if (res.status === 200) {
-        setBookingBills(res?.data || []);
-        console.log("res", res);
-        console.log("Balaji")
-
-        return {
-          success: true,
-          data: res.data,
-          statusCode: res.status,
-        };
       }
+    );
 
-      return { success: false, message: "Failed to fetch advance bills" };
+    console.log(
+      "Request URL:",
+      res.request?.responseURL
+    );
 
-    } catch (error) {
-      const msg = getErrorMessage(error);
-      setErrorMsg(msg);
+    if (res.status === 200) {
+      setBookingBills(res?.data || []);
 
       return {
-        success: false,
-        message: msg,
+        success: true,
+        data: res.data,
+        statusCode: res.status,
       };
-    } finally {
-      setLoading(false);
     }
-  }
 
+    return {
+      success: false,
+      message: "Failed to fetch advance bills",
+    };
+
+  } catch (error) {
+    console.log("GetAdvanceBookingBills ERROR:", error);
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
   const GetInitializeAdvanceRedeem = async ({ hostelId, advanceInvoiceId }) => {
     if (!hostelId || !advanceInvoiceId) {
       return { success: false, message: "Invalid data" };
