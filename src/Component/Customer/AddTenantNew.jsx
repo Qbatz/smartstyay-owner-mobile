@@ -1583,6 +1583,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
         if (res.success) {
+            setAccountList(res?.data?.bankDetails || []);
             setBeds(res?.data?.listBeds);
         } else {
             setBeds([]);
@@ -1614,7 +1615,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const fetchBankingList = async () => {
         const data = await getBankListByHostel(activeHostelId);
-        setAccountList(data.data);
+        // setAccountList(data.data);
     };
 
     useEffect(() => {
@@ -2251,7 +2252,7 @@ export default function AddTenantNewform({ navigation, route }) {
                 //     rentalAmount || bedSelected?.rentAmount || 0
                 // ),
 
-                bankId: accountSelected?.bankingId,
+                bankId:accountSelected?.bankId,
                 referenceNumber: referenceNumber?.trim() || "",
             };
 
@@ -4723,9 +4724,12 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 >
 
                                                     <Text style={styles.selectText}>
-                                                        {accountSelected
+                                                        {/* {accountSelected
                                                             ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
-                                                            : "Select Bank"}
+                                                            : "Select Bank"} */}
+                                                        {accountSelected
+                                                            ? `${accountSelected.holderName} - ${accountSelected.bankName}`
+                                                            : "Select Mode Of Transaction"}
                                                     </Text>
                                                     <Image source={DownArrow} style={styles.arrow} />
                                                 </TouchableOpacity>
@@ -4736,8 +4740,11 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                                 {accountOpen && (
                                                     <View style={styles.dropdownMenu}>
-                                                        <ScrollView style={{ maxHeight: 150 }}>
-                                                            {AccountsList.map((v, i) => (
+                                                        <ScrollView     style={{ maxHeight: 160 }}
+                                                            nestedScrollEnabled={true}          // ✅ Android fix
+                                                            keyboardShouldPersistTaps="handled"
+                                                            showsVerticalScrollIndicator={false}>
+                                                            {/* {AccountsList.map((v, i) => (
                                                                 <TouchableOpacity
                                                                     key={i}
                                                                     style={styles.option}
@@ -4749,7 +4756,22 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                 >
                                                                     <Text style={styles.optionText}>{v.accountHolderName}-{v.accountType}</Text>
                                                                 </TouchableOpacity>
-                                                            ))}
+                                                            ))} */}
+                                                             {AccountsList?.map((v) => (
+                                                                                  <TouchableOpacity
+                                                                                    key={v.bankId}
+                                                                                    style={styles.option}
+                                                                                    onPress={() => {
+                                                                                      setAccountSelected(v);
+                                                                                      setAccountopen(false);
+                                                                                      setBankError("");
+                                                                                    }}
+                                                                                  >
+                                                                                    <Text style={styles.optionText}>
+                                                                                      {v?.holderName} - {v?.bankName}
+                                                                                    </Text>
+                                                                                  </TouchableOpacity>
+                                                                                ))}
                                                         </ScrollView>
                                                     </View>
                                                 )}
@@ -5427,10 +5449,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                         This amount reflects First month Rent only.
                                                                     </Text>
 
-                                                                     {!isCustomRentSaved ? (
+                                                                    {!isCustomRentSaved ? (
 
-                                                    <>
-                                                        {/* <View style={styles.amountRow}>
+                                                                        <>
+                                                                            {/* <View style={styles.amountRow}>
 
                                                             <TextInput
                                                                 style={styles.amountInput}
@@ -5481,90 +5503,90 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                                         </View> */}
 
-                                                        <View style={styles.amountInputWrapper}>
+                                                                            <View style={styles.amountInputWrapper}>
 
-                                                            <TextInput
-                                                                style={styles.customRentInput}
-                                                                placeholder="₹ 0.00"
-                                                                placeholderTextColor="#9CA3AF"
-                                                                keyboardType="numeric"
-                                                                value={customRentAmount}
-                                                                onChangeText={(text) => {
-                                                                    setCustomRentAmount(
-                                                                        text.replace(/[^0-9]/g, "")
-                                                                    );
-                                                                    setCustomRentError("");
-                                                                }}
-                                                            />
+                                                                                <TextInput
+                                                                                    style={styles.customRentInput}
+                                                                                    placeholder="₹ 0.00"
+                                                                                    placeholderTextColor="#9CA3AF"
+                                                                                    keyboardType="numeric"
+                                                                                    value={customRentAmount}
+                                                                                    onChangeText={(text) => {
+                                                                                        setCustomRentAmount(
+                                                                                            text.replace(/[^0-9]/g, "")
+                                                                                        );
+                                                                                        setCustomRentError("");
+                                                                                    }}
+                                                                                />
 
-                                                            <TouchableOpacity
-                                                                style={styles.setBtnInside}
-                                                                onPress={() => {
+                                                                                <TouchableOpacity
+                                                                                    style={styles.setBtnInside}
+                                                                                    onPress={() => {
 
-                                                                    if (!customRentAmount) {
-                                                                        setCustomRentError(
-                                                                            "Please enter custom rent amount"
-                                                                        );
-                                                                        return;
-                                                                    }
+                                                                                        if (!customRentAmount) {
+                                                                                            setCustomRentError(
+                                                                                                "Please enter custom rent amount"
+                                                                                            );
+                                                                                            return;
+                                                                                        }
 
-                                                                    if (Number(customRentAmount) <= 0) {
-                                                                        setCustomRentError(
-                                                                            "Amount should be greater than zero"
-                                                                        );
-                                                                        return;
-                                                                    }
+                                                                                        if (Number(customRentAmount) <= 0) {
+                                                                                            setCustomRentError(
+                                                                                                "Amount should be greater than zero"
+                                                                                            );
+                                                                                            return;
+                                                                                        }
 
-                                                                    setSavedCustomRent(customRentAmount);
-                                                                    setIsCustomRentSaved(true);
-                                                                    setShowCustomRentEditor(false);
-                                                                    setCustomRentError("");
-                                                                }}
-                                                            >
-                                                                <Text style={styles.setBtnText}>
-                                                                    ✓ Set
-                                                                </Text>
-                                                            </TouchableOpacity>
+                                                                                        setSavedCustomRent(customRentAmount);
+                                                                                        setIsCustomRentSaved(true);
+                                                                                        setShowCustomRentEditor(false);
+                                                                                        setCustomRentError("");
+                                                                                    }}
+                                                                                >
+                                                                                    <Text style={styles.setBtnText}>
+                                                                                        ✓ Set
+                                                                                    </Text>
+                                                                                </TouchableOpacity>
 
-                                                        </View>
+                                                                            </View>
 
-                                                        {customRentError ? (
-                                                            <ErrorMessage message={customRentError} />
-                                                        ) : null}
-                                                    </>
+                                                                            {customRentError ? (
+                                                                                <ErrorMessage message={customRentError} />
+                                                                            ) : null}
+                                                                        </>
 
-                                                ) : (
+                                                                    ) : (
 
-                                                    <View style={styles.savedRow}>
+                                                                        <View style={styles.savedRow}>
 
-                                                        <Text style={styles.savedAmount}>
-                                                            ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
-                                                        </Text>
+                                                                            <Text style={styles.savedAmount}>
+                                                                                ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                                                                            </Text>
 
-                                                        <TouchableOpacity
-                                                            onPress={() => {
+                                                                            <TouchableOpacity
+                                                                                onPress={() => {
 
-                                                                setCustomRentAmount(savedCustomRent);
+                                                                                    setCustomRentAmount(savedCustomRent);
 
-                                                                setIsCustomRentSaved(false);
+                                                                                    setIsCustomRentSaved(false);
 
-                                                                setShowCustomRentEditor(true);
+                                                                                    setShowCustomRentEditor(true);
 
-                                                            }}
-                                                        >
-                                                            <Image
-                                                                source={require("../../Assets/Images/EditRent.png")}
-                                                                style={{
-                                                                    width: 24,
-                                                                    height: 24,
-                                                                    tintColor: "#6B7280",
-                                                                }}
-                                                            />
-                                                        </TouchableOpacity>
+                                                                                }}
+                                                                            >
+                                                                                <Image
+                                                                                    source={require("../../Assets/Images/EditRent.png")}
+                                                                                    style={{
+                                                                                        width: 24,
+                                                                                        height: 24,
+                                                                                        tintColor: "#6B7280",
+                                                                                    }}
+                                                                                />
+                                                                            </TouchableOpacity>
 
-                                                    </View>
+                                                                        </View>
 
-                                                )}
+                                                                    )}
 
 
                                                                 </View>
@@ -8770,7 +8792,7 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Semibold"
     },
 
-        amountInputWrapper: {
+    amountInputWrapper: {
         marginTop: 20,
         height: 52,
         borderWidth: 1,

@@ -866,6 +866,10 @@ export default function BillsDesign({ route }) {
     };
   }, []);
 
+
+  console.log("refundInitDetails", refundInitDetails);
+  
+
   const maxRefund = Number(refundInitDetails?.pendingRefund || 0);
 
 

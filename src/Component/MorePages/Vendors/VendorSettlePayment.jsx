@@ -116,6 +116,11 @@ export default function VendorSettlePayment({
     ? vendorSettlementInitialize
     : IntializeexpensesList;
 
+    console.log("initializeData", initializeData);
+    
+
+
+
   const paymentOptions =
     initializeData?.banks?.map((b) => ({
       id: b.bankId,
