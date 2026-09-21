@@ -82,24 +82,22 @@ export default function MoreDesign({ navigation }) {
 
   const menuItems = [
     { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
-    { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
-
-    //   ...(environment !== "PROD"
-    //     ? [
-    //  { title: "New Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "NewBankingScreen" },
-    //  ]
-    //     : []),
-
-    ...(environment?.toUpperCase() !== "PROD"
+     ...(environment?.toUpperCase() !== "PROD"
       ? [
+    { title: "Old Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
+       ]
+      : []),
+
+    // ...(environment?.toUpperCase() !== "PROD"
+    //   ? [
         {
-          title: "New Banking",
+          title: "Banking",
           icon: Bankingimage,
           bg: "#0F6EFF",
           screen: "NewBankingScreen",
         },
-      ]
-      : []),
+      // ]
+      // : []),
 
     // { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
     {
