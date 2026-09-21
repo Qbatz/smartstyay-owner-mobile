@@ -42,7 +42,9 @@ export default function SubscriptionExpired({setTabBar,onClose}){
   );
 
   const handleSubscriptionPage = () => {
-    console.log("buttonclcikedforSubscription")
+    if (Platform.OS === 'ios') {
+      return;
+    }
     navigation.navigate("SubscriptionPlans")  
   }
 

@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, BackHandler , NativeModules } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, BackHandler, NativeModules } from "react-native";
 import Calendar from "../../../Assets/Images/calendar.png";
 import { useFocusEffect } from '@react-navigation/native';
 import StatusIcon from "../../../Assets/Images/StatusIcon.png";
@@ -18,10 +18,10 @@ import LinearGradient from "react-native-linear-gradient";
 
 export default function PlanDetailsScreen({ route, navigation }) {
 
-  const { getCurrentHostelPlan, currentPlan , downloadSubscriptionBill } = UseSetting();
+  const { getCurrentHostelPlan, currentPlan, downloadSubscriptionBill } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
 
-    const { CommonModule } = NativeModules;
+  const { CommonModule } = NativeModules;
 
   // const [currentPlan, setCurrentPlan] = useState(null);
 
@@ -101,17 +101,17 @@ export default function PlanDetailsScreen({ route, navigation }) {
       billingTag: "Basic",
     };
 
-    const handleDownloadInvoice = async (subscriptionId) => {
-  const res = await downloadSubscriptionBill(activeHostelId, subscriptionId);
+  const handleDownloadInvoice = async (subscriptionId) => {
+    const res = await downloadSubscriptionBill(activeHostelId, subscriptionId);
 
-  if (res?.success && res?.url) {
+    if (res?.success && res?.url) {
       await CommonModule.downloadAndViewDocument(res.url);
-    } 
-   else {
-    // error toast/modal
-    console.log("Invoice download failed", res?.message);
-  }
-};
+    }
+    else {
+      // error toast/modal
+      console.log("Invoice download failed", res?.message);
+    }
+  };
 
 
   console.log(currentPlan?.billingHistory)
@@ -122,17 +122,17 @@ export default function PlanDetailsScreen({ route, navigation }) {
         ? StatusBar.currentHeight
         : 40,
     }}>
-       <View style={styles.row}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            {/* <Text style={styles.backArrow}>←</Text> */}
-            <Image source={Arrow} style={styles.backArrow} />
-          </TouchableOpacity>
-          <Text style={styles.header}>Subscription plans</Text>
-        </View>
+      <View style={styles.row}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          {/* <Text style={styles.backArrow}>←</Text> */}
+          <Image source={Arrow} style={styles.backArrow} />
+        </TouchableOpacity>
+        <Text style={styles.header}>Subscription plans</Text>
+      </View>
       <ScrollView style={{ paddingHorizontal: 16 }} contentContainerStyle={{ flexGrow: 1 }}>
 
 
-       
+
 
 
         {currentPlan ? (<>
@@ -164,9 +164,8 @@ export default function PlanDetailsScreen({ route, navigation }) {
 
             {/* Buttons */}
 
-            {isExpired ? (
-
-              <TouchableOpacity
+            {isExpired ? (<> {
+              Platform.OS === 'ios' ? null : <TouchableOpacity
                 style={styles.primaryBtn}
                 onPress={() => navigation.navigate("SubscriptionPlans")}
               >
@@ -174,21 +173,24 @@ export default function PlanDetailsScreen({ route, navigation }) {
                   Renew Now
                 </Text>
               </TouchableOpacity>
+            }
+
+            </>
 
             ) : (
 
               <View style={styles.buttonRow}>
                 {
                   Platform.OS === 'ios' ? null : <TouchableOpacity
-                  style={styles.secondaryBtn}
-                  onPress={() => navigation.navigate("SubscriptionPlans")}
-                >
-                  <Text style={styles.secondaryBtnText}>
-                    {isPremium ? "Change Plan" : "Upgrade Plan"}
-                  </Text>
-                </TouchableOpacity>
+                    style={styles.secondaryBtn}
+                    onPress={() => navigation.navigate("SubscriptionPlans")}
+                  >
+                    <Text style={styles.secondaryBtnText}>
+                      {isPremium ? "Change Plan" : "Upgrade Plan"}
+                    </Text>
+                  </TouchableOpacity>
                 }
-                
+
 
                 <TouchableOpacity
                   style={styles.primaryBtn}
@@ -501,7 +503,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
   );
 }
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 20 , paddingHorizontal: 16 },
+  row: { flexDirection: "row", alignItems: "center", marginBottom: 12, marginTop: 20, paddingHorizontal: 16 },
   backArrow: { marginRight: 8, width: 20, height: 20 },
   header: { fontSize: 20, fontWeight: "700" },
 
@@ -672,14 +674,14 @@ const styles = StyleSheet.create({
 
   billingHeader: { fontSize: 18, fontWeight: "700", marginBottom: 10 },
 
- billCard: {
-  backgroundColor: "#FFF",
-  borderRadius: 14,
-  borderWidth: 1,
-  borderColor: "#ECECEC",
-  padding: 18,
-  marginBottom: 16,
-},
+  billCard: {
+    backgroundColor: "#FFF",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#ECECEC",
+    padding: 18,
+    marginBottom: 16,
+  },
 
   billIcon: { width: 34, height: 34, },
   billTitle: { fontSize: 14, fontWeight: "700" },
