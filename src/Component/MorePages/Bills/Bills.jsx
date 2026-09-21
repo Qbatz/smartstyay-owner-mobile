@@ -11,7 +11,8 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, Keyboard, Platform
+  BackHandler, Keyboard, Platform , 
+  KeyboardAvoidingView ,
 } from "react-native";
 import { useFocusEffect, useNavigationState } from "@react-navigation/native";
 import { useCallback } from "react";
