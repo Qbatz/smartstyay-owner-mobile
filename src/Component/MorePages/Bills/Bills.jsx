@@ -2580,10 +2580,12 @@ const adjustmentDetails =
 
   const handleEditBill = (item) => {
 
-    navigation.navigate("CreateBills", {
-      mode: "edit",
-      data: item,
-    });
+    // navigation.navigate("CreateBills", {
+    //   mode: "edit",
+    //   data: item,
+    // });
+
+     navigation.navigate("CreateInvoice", { mode: "edit" ,  data: item,})
     setShowBillDetails(false);
     setShowMenu(false)
 
@@ -5521,7 +5523,7 @@ const adjustmentDetails =
 
                 {/*  */}
 
-                {/* {selectedBill?.canEdit && (
+                {selectedBill?.canEdit && (
                   <>
                     <TouchableOpacity
                       style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
@@ -5536,7 +5538,7 @@ const adjustmentDetails =
                     </TouchableOpacity>
                     <View style={styles.menuDivider} />
                   </>
-                )} */}
+                )}
 
                 {/* {(selectedBill?.canEdit === "Recurring" && selectedBill?.paymentStatus === "Pending") && (
                   <TouchableOpacity

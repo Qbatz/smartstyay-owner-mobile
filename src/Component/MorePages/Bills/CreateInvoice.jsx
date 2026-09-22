@@ -28,10 +28,22 @@ const CreateInvoice = ({ }) => {
     const navigation = useNavigation();
     const { retainerCustomerList } = useContext(CustomerContext)
     const { activeHostelId } = useContext(CommonContexts);
-    const { loading, CreateManualInvoice, GetAllBillDetails } = useContext(BillContext)
+    const { loading, CreateManualInvoice, GetAllBillDetails,
+        GetBillDetailsById, UpdateBill, } = useContext(BillContext)
 
-    const route = useRoute();
-    const { customerDetails: passedCustomer } = route.params || {};
+    const route = useRoute()
+
+    const {
+        mode = "add",
+        data: editBillData,
+        customerDetails: passedCustomer,
+    } = route.params || {}
+
+
+    console.log("customerDetails", editBillData)
+    console.log("customerDetails", passedCustomer)
+
+    const isEditMode = mode === "edit";
 
     const [isTenantLocked, setIsTenantLocked] = useState(false)
     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false)
@@ -44,9 +56,16 @@ const CreateInvoice = ({ }) => {
         itemDetail: "",
         retainerType: "",
         amount: "",
-    }
+        description: "",
+        am_name: "",
+        isExisting: false,
+    };
     const [description, setDescription] = useState("")
-    const [items, setItems] = useState([]);
+    const [items, setItems] = useState([
+        {
+            ...emptyItem,
+        },
+    ]);
     const [showTenantName, setShowTenantName] = useState(false);
     const [selectedName, setSelectedName] = useState("")
     const [selectedTenant, setSelectedTenant] = useState("")
@@ -72,9 +91,49 @@ const CreateInvoice = ({ }) => {
         "Other",
     ]
 
+    // const getDetailOptions = (currentIndex) => {
+    //     const hasAdvance = items.some(
+    //         (item, index) => index !== currentIndex && item?.itemDetail === "Advance"
+    //     );
+
+    //     if (hasAdvance) {
+    //         return [];
+    //     }
+
+    //     const hasRoomRent = items.some(
+    //         (item, index) => index !== currentIndex && item?.itemDetail === "Room Rent"
+    //     );
+
+
+
+    //     return detailOptions.filter(option => {
+    //         if (option === "Room Rent") return !hasRoomRent;
+    //         return true;
+    //     });
+    // }
+
     const getDetailOptions = (currentIndex) => {
+
+        // EDIT 
+
+        if (isEditMode) {
+
+            // Existing API item -> cannot change type
+            if (items[currentIndex]?.isExisting) {
+                return [];
+            }
+
+            // New item -> ONLY Other
+            return ["Other"];
+        }
+
+
+        // ADD 
+
         const hasAdvance = items.some(
-            (item, index) => index !== currentIndex && item?.itemDetail === "Advance"
+            (item, index) =>
+                index !== currentIndex &&
+                item?.itemDetail === "Advance"
         );
 
         if (hasAdvance) {
@@ -82,19 +141,21 @@ const CreateInvoice = ({ }) => {
         }
 
         const hasRoomRent = items.some(
-            (item, index) => index !== currentIndex && item?.itemDetail === "Room Rent"
+            (item, index) =>
+                index !== currentIndex &&
+                item?.itemDetail === "Room Rent"
         );
 
-        // const hasEB = items.some(
-        //     (item, index) => index !== currentIndex && item?.itemDetail === "EB"
-        // );
-
         return detailOptions.filter(option => {
-            if (option === "Room Rent") return !hasRoomRent;
-            // if (option === "EB") return !hasEB;
+            if (option === "Room Rent") {
+                return !hasRoomRent;
+            }
+
             return true;
         });
-    }
+    };
+
+
     const [showSuccessModal, setShowSuccessModal] = useState(false)
     const [modalMessage, setModalMessage] = useState("")
     const [modalType, setModalType] = useState("")
@@ -105,6 +166,7 @@ const CreateInvoice = ({ }) => {
     const tenantInputRef = useRef(null);
     const discountInputRef = useRef(null);
     const itemInputRefs = useRef({});
+    const originalItemsRef = useRef([]);
 
     const [discount, setDiscount] = useState("");
     const [discountType, setDiscountType] = useState("amount")
@@ -181,7 +243,44 @@ const CreateInvoice = ({ }) => {
 
 
 
+    // const handleAddRow = () => {
+    //     const hasAdvance = items.some(
+    //         item => item?.itemDetail === "Advance"
+    //     );
+
+    //     if (hasAdvance) {
+    //         return;
+    //     }
+
+    //     setItems(prev => [...prev, { ...emptyItem }]);
+    //     setErrors({});
+    // }
+
     const handleAddRow = () => {
+
+        // --------------------------------
+        // EDIT MODE
+        // --------------------------------
+        if (isEditMode) {
+            setOpenDetailIndex(null);
+            setOpenRetainerType(false);
+
+            setItems(prev => [
+                ...prev,
+                {
+                    ...emptyItem,
+                    itemDetail: "Other",
+                    isExisting: false,
+                }
+            ]);
+
+            setErrors({});
+            return;
+        }
+
+        // --------------------------------
+        // ADD MODE
+        // --------------------------------
         const hasAdvance = items.some(
             item => item?.itemDetail === "Advance"
         );
@@ -190,9 +289,16 @@ const CreateInvoice = ({ }) => {
             return;
         }
 
-        setItems(prev => [...prev, { ...emptyItem }]);
+        setItems(prev => [
+            ...prev,
+            {
+                ...emptyItem,
+                isExisting: false,
+            }
+        ]);
+
         setErrors({});
-    }
+    };
 
     const handleDetailChange = (index, value) => {
         if (value === "Advance") {
@@ -246,30 +352,299 @@ const CreateInvoice = ({ }) => {
     };
 
 
-
     useEffect(() => {
         const fetchCustomerRetainerList = async () => {
-            const res = await retainerCustomerList(activeHostelId, "BILL")
-
-            const list = res?.data || [];
-            setAvailbleTenantList(list)
-            setRetainerBankList(res?.data?.listBanks)
-
-            if (passedCustomer?.customerId) {
-                const matched = list.find(
-                    (c) => c.customerId === passedCustomer.customerId
+            try {
+                const res = await retainerCustomerList(
+                    activeHostelId,
+                    "BILL"
                 );
 
-                if (matched) {
-                    setSelectedName(matched.fullName);
-                    setSelectedTenant(matched);
+                const list = res?.data || [];
+
+                setAvailbleTenantList(list);
+                setRetainerBankList(res?.data?.listBanks);
+
+                // --------------------------------
+                // ADD MODE
+                // --------------------------------
+                if (!isEditMode && passedCustomer?.customerId) {
+
+                    const matched = list.find(
+                        c => c.customerId === passedCustomer.customerId
+                    );
+
+                    if (matched) {
+                        setSelectedName(matched.fullName);
+                        setSelectedTenant(matched);
+                        setIsTenantLocked(true);
+                    }
+                }
+
+                // --------------------------------
+                // EDIT MODE
+                // --------------------------------
+                if (isEditMode && editBillData?.customerId) {
+
+                    const matched = list.find(
+                        c => c.customerId === editBillData.customerId
+                    );
+
+                    if (matched) {
+                        // Full tenant object
+                        // profile/address/stayInfo எல்லாம் கிடைக்கும்
+                        setSelectedTenant(matched);
+
+                        setSelectedName(
+                            matched.fullName ||
+                            editBillData.fullName ||
+                            ""
+                        );
+                    } else {
+                        // Fallback: invoice data
+                        setSelectedTenant({
+                            customerId: editBillData.customerId,
+                            fullName: editBillData.fullName || "",
+                            profilePic: editBillData.profilePic || null,
+                            initials: editBillData.initials || "",
+                        });
+
+                        setSelectedName(
+                            editBillData.fullName || ""
+                        );
+                    }
+
+                    // VERY IMPORTANT
                     setIsTenantLocked(true);
                 }
+
+            } catch (error) {
+                console.log(
+                    "fetchCustomerRetainerList error:",
+                    error
+                );
             }
+        };
+
+        if (activeHostelId) {
+            fetchCustomerRetainerList();
         }
 
-        fetchCustomerRetainerList();
-    }, [])
+    }, [
+        activeHostelId,
+        isEditMode,
+        editBillData?.customerId,
+        passedCustomer?.customerId,
+    ]);
+
+    useEffect(() => {
+        const fetchEditInvoice = async () => {
+
+            if (!isEditMode) return;
+            if (!activeHostelId) return;
+            if (!editBillData?.invoiceId) return;
+
+            try {
+
+                console.log(
+                    "Fetching invoice details:",
+                    editBillData.invoiceId
+                );
+
+                const res = await GetBillDetailsById({
+                    hostelId: activeHostelId,
+                    invoiceId: editBillData.invoiceId,
+                });
+
+                console.log("GetBillDetailsById response:", res);
+
+                if (!res?.success) {
+                    console.log(
+                        "Get invoice details failed:",
+                        res?.message
+                    );
+                    return;
+                }
+
+                const bill = res?.data;
+
+                console.log(
+                    "EDIT INVOICE DETAILS:",
+                    bill
+                );
+
+                // --------------------------------
+                // TENANT
+                // --------------------------------
+
+                const customerId =
+                    bill?.customerId ||
+                    editBillData?.customerId;
+
+                const customerName =
+                    bill?.fullName ||
+                    bill?.customerName ||
+                    editBillData?.fullName ||
+                    "";
+
+                if (customerId) {
+
+                    setSelectedTenant({
+                        ...editBillData,
+
+                        customerId,
+                        fullName: customerName,
+                    });
+
+                    setSelectedName(customerName);
+                    setIsTenantLocked(true);
+                }
+
+
+                // --------------------------------
+                // INVOICE NUMBER
+                // --------------------------------
+
+                setTransactionId(
+                    bill?.invoiceNumber ||
+                    editBillData?.invoiceNumber ||
+                    ""
+                );
+
+
+                // --------------------------------
+                // INVOICE DATE
+                // --------------------------------
+
+                const invoiceDateValue =
+                    bill?.invoiceDate ||
+                    bill?.startDate ||
+                    editBillData?.invoiceDate;
+
+                if (invoiceDateValue) {
+
+                    const parsedDate = dayjs(
+                        invoiceDateValue,
+                        [
+                            "DD-MM-YYYY",
+                            "DD/MM/YYYY",
+                            "YYYY-MM-DD",
+                            "DD-MM-YYYY HH:mm:ss",
+                        ]
+                    );
+
+                    if (parsedDate.isValid()) {
+                        setPaidDate(parsedDate.toDate());
+                    }
+                }
+
+
+                // --------------------------------
+                // NOTES
+                // --------------------------------
+
+                setDescription(
+                    bill?.notes ||
+                    bill?.description ||
+                    ""
+                );
+
+
+                // --------------------------------
+                // DISCOUNT
+                // --------------------------------
+
+                const discountPercentage =
+                    Number(bill?.discountPercentage || 0);
+
+                const discountAmount =
+                    Number(bill?.discountAmount || 0);
+
+                if (discountPercentage > 0) {
+
+                    setDiscountType("percentage");
+                    setDiscount(
+                        String(discountPercentage)
+                    );
+
+                } else if (discountAmount > 0) {
+
+                    setDiscountType("amount");
+                    setDiscount(
+                        String(discountAmount)
+                    );
+
+                } else {
+
+                    setDiscount("");
+                    setDiscountType("amount");
+                }
+
+
+                // --------------------------------
+                // INVOICE ITEMS
+                // --------------------------------
+
+                const apiItems = bill?.invoiceItems || [];
+
+                const mappedItems = apiItems?.map((item) => {
+
+                    const apiDescription = String(
+                        item?.description || ""
+                    ).trim();
+
+                    const isRent =
+                        apiDescription.toLowerCase() === "rent";
+
+                    return {
+                        ...item,
+
+                        itemDetail: isRent
+                            ? "Room Rent"
+                            : "Other",
+
+                        // Other type value
+                        am_name: isRent
+                            ? ""
+                            : apiDescription,
+
+                        amount: String(
+                            item?.amount ?? ""
+                        ),
+
+                        // Item-level description is not used
+                        description: "",
+
+                        isExisting: true,
+                    };
+                });
+
+                originalItemsRef.current = mappedItems?.map((item) => ({
+                    itemDetail: item?.itemDetail || "",
+                    am_name: String(item?.am_name || "").trim(),
+                    amount: Number(item?.amount || 0),
+                }));
+
+                setItems(mappedItems);
+
+
+            } catch (error) {
+
+                console.log(
+                    "fetchEditInvoice error:",
+                    error
+                );
+            }
+        };
+
+
+        fetchEditInvoice();
+
+    }, [
+        isEditMode,
+        activeHostelId,
+        editBillData?.invoiceId,
+    ]);
 
 
     const totalRetainerAmount = items.reduce((sum, item) => {
@@ -409,91 +784,129 @@ const CreateInvoice = ({ }) => {
 
 
 
+    const checkInvoiceItemsChanged = () => {
+        const originalItems = originalItemsRef.current || [];
+
+        const currentItems = items.map((item) => ({
+            itemDetail: item?.itemDetail || "",
+            am_name: String(item?.am_name || "").trim(),
+            amount: Number(item?.amount || 0),
+        }));
+
+        return JSON.stringify(originalItems) !== JSON.stringify(currentItems);
+    };
 
 
     const savegenerate = async () => {
 
-
         let newErrors = {};
 
-        if (!selectedName.trim()) {
-            newErrors.name = "Please Select Name"
+        // --------------------------------
+        // TENANT VALIDATION
+        // --------------------------------
+
+        if (!selectedName?.trim()) {
+            newErrors.name = "Please Select Name";
         }
+
+
+        // --------------------------------
+        // DATE VALIDATION
+        // --------------------------------
+
         if (!paidDate) {
-            newErrors.paidDate = "Please Select Invoice Date"
+            newErrors.paidDate =
+                "Please Select Invoice Date";
         }
 
+        const currentDiscountError =
+            validateDiscount();
 
-        const currentDiscountError = validateDiscount();
         if (currentDiscountError) {
-            newErrors.discount = currentDiscountError;
+            newErrors.discount =
+                currentDiscountError;
         }
 
-        // if (!totalRetainerAmount) {
-        //     newErrors.retainerAmount = "Please Enter Amount"
-        // }
 
         items.forEach((item, index) => {
 
             if (!item?.itemDetail) {
+
                 newErrors[`itemDetail_${index}`] =
                     "Please Select Detail";
+
             } else if (
                 item.itemDetail === "Other" &&
                 !String(item?.am_name || "").trim()
             ) {
+
                 newErrors[`itemDetail_${index}`] =
                     "Please Enter Item Name";
             }
 
-            if (!item?.amount || Number(item.amount) <= 0) {
+            if (
+                !item?.amount ||
+                Number(item.amount) <= 0
+            ) {
+
                 newErrors[`amount_${index}`] =
                     "Please Enter Amount";
             }
-
         });
 
 
-
-        setErrors(newErrors)
-
-        // if (newErrors.length > 0) {
-        //     return;
-        // }
         if (items.length === 0) {
-            newErrors.items = "Please Add New Row";
+            newErrors.items =
+                "Please Add New Row";
         }
 
+
+        setErrors(newErrors);
+
+
         if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors);
             return false;
         }
 
-        if (isSubmitClicked) return;
 
-        console.log("itemsList", items[0]?.retainerType)
-        console.log(totalRetainerAmount)
-        const invoiceCreatedDate = dayjs(paidDate).format("DD/MM/YYYY")
+        if (isSubmitClicked) {
+            return;
+        }
 
+        if (isEditMode) {
+            const hasChanges = checkInvoiceItemsChanged();
 
-        console.log("payload", selectedTenant?.customerId)
-        console.log("payload", transactionId)
-        console.log("payload", paidDate)
-        console.log("payload", items)
+            if (!hasChanges) {
+                setModalType("warning")
+                setModalMessage("No changes detected")
+                setShowSuccessModal(true)
 
+                setTimeout(() => {
+                    setShowSuccessModal(false)
+                }, 1500)
+
+                return;
+            }
+        }
 
         try {
+
             setIsSubmitClicked(true);
 
-
-
-
             const payload = {
-                invoiceNumber: transactionId || "",
-                invoiceDate: dayjs(paidDate).format("DD-MM-YYYY"),
-                notes: description || "",
 
-                isDiscounted: Number(discount || 0) > 0,
+                invoiceNumber:
+                    transactionId || "",
+
+                invoiceDate:
+                    dayjs(paidDate)
+                        .format("DD-MM-YYYY"),
+
+                notes:
+                    description || "",
+
+                isDiscounted:
+                    Number(discount || 0) > 0,
 
                 discountAmount:
                     discountType === "amount"
@@ -505,10 +918,42 @@ const CreateInvoice = ({ }) => {
                         ? Number(discount || 0)
                         : "",
 
-                invoiceItems: items.map((item) => ({
-                    invoiceItem:
+                invoiceItems:
+                    items.map((item) => ({
+
+                        invoiceItem:
+                            item.itemDetail === "Other"
+                                ? (item.am_name || "").trim()
+
+                                : item.itemDetail ===
+                                    "Advance"
+                                    ? "ADDITIONAL_ADVANCE"
+
+                                    : item.itemDetail ===
+                                        "Room Rent"
+                                        ? "RENT"
+
+                                        : "OTHER",
+
+                        amount:
+                            Number(item.amount || 0),
+                    })),
+            };
+
+
+            console.log(
+                "FINAL INVOICE PAYLOAD:",
+                payload
+            );
+
+            let res;
+
+            if (isEditMode) {
+
+                const changedItems = items.map((item) => ({
+                    type:
                         item.itemDetail === "Other"
-                            ? (item.am_name || "").trim()
+                            ? String(item.am_name || "").trim()
                             : item.itemDetail === "Advance"
                                 ? "ADDITIONAL_ADVANCE"
                                 : item.itemDetail === "Room Rent"
@@ -516,50 +961,124 @@ const CreateInvoice = ({ }) => {
                                     : "OTHER",
 
                     amount: Number(item.amount || 0),
-                })),
-            };
+                }));
 
-            console.log("Manual Invoice Payload:", payload);
+                console.log(
+                    "UPDATE BILL PAYLOAD:",
+                    changedItems
+                );
 
+                res = await UpdateBill({
+                    hostelId: activeHostelId,
+                    invoiceId: editBillData?.invoiceId,
+                    payload: changedItems,
+                });
 
-            const res = await CreateManualInvoice({
-                hostelId: activeHostelId,
-                customerId: selectedTenant?.customerId,
-                payload,
-            });
-
-
-            console.log("Inovice", res)
-            if (res?.success) {
-                setModalType("success");
-                setModalMessage("Manual Invoice added successfully");
-                setShowSuccessModal(true);
-
-                setTimeout(() => {
-                    setShowSuccessModal(false);
-                    setIsSubmitClicked(false);
-                    GetAllBillDetails(activeHostelId);
-                    navigation.goBack();
-                }, 1500);
-
-            } else {
-                setModalType("error");
-                setModalMessage(res?.message || "Manual Invoice add failed");
-                setShowSuccessModal(true);
-
-                setTimeout(() => {
-
-                    setShowSuccessModal(false);
-                }, 2500);
-                setIsSubmitClicked(false);
+                console.log(
+                    "UPDATE INVOICE RESPONSE:",
+                    res
+                );
             }
+
+            // ==================================================
+            // ADD
+            // ==================================================
+
+            else {
+
+                res = await CreateManualInvoice({
+
+                    hostelId:
+                        activeHostelId,
+
+                    customerId:
+                        selectedTenant?.customerId,
+
+                    payload,
+                });
+
+
+                console.log(
+                    "CREATE INVOICE RESPONSE:",
+                    res
+                );
+            }
+
+
+            // ==================================================
+            // RESPONSE
+            // ==================================================
+
+            if (!res?.success) {
+
+                setModalType("error");
+
+                setModalMessage(
+                    res?.message ||
+                    (
+                        isEditMode
+                            ? "Invoice update failed"
+                            : "Manual Invoice add failed"
+                    )
+                );
+
+                setShowSuccessModal(true);
+
+                setIsSubmitClicked(false);
+
+                return;
+            }
+
+
+            // ==================================================
+            // SUCCESS
+            // ==================================================
+
+            setModalType("success");
+
+            setModalMessage(
+                isEditMode
+                    ? "Invoice updated successfully"
+                    : "Manual Invoice added successfully"
+            );
+
+            setShowSuccessModal(true);
+
+
+            await GetAllBillDetails(
+                activeHostelId
+            );
+
+
+            setTimeout(() => {
+
+                setShowSuccessModal(false);
+
+                setIsSubmitClicked(false);
+
+                navigation.goBack();
+
+            }, 1500);
+
+
         } catch (error) {
-            console.log(error)
-            setIsSubmitClicked(false)
+
+            console.log(
+                "savegenerate error:",
+                error
+            );
+
+            setIsSubmitClicked(false);
+
+            setModalType("error");
+
+            setModalMessage(
+                "Something went wrong"
+            );
+
+            setShowSuccessModal(true);
         }
-
-
-    }
+    };
 
     return (
         <>
@@ -578,7 +1097,7 @@ const CreateInvoice = ({ }) => {
                         onPress={handleLeaveScreen} >
                         <Image source={ArrowLeft} style={{ width: 22, height: 22 }} />
                     </TouchableOpacity>
-                    <Text style={styles.pageHead}>New Invoice</Text>
+                    <Text style={styles.pageHead}>  {isEditMode ? "Edit Invoice" : "New Invoice"}</Text>
                 </View>
                 <KeyboardAvoidingView
                     style={styles.formKeyboardContainer}
@@ -670,7 +1189,12 @@ const CreateInvoice = ({ }) => {
                                                 onPress={() => {
                                                     setTransactionId("");
                                                     setPaidDate("");
-                                                    setItems([]);
+                                                    setItems([
+                                                        {
+                                                            ...emptyItem,
+                                                            isExisting: false,
+                                                        },
+                                                    ]);
                                                     setDiscount("");
                                                     setDiscountType("amount");
                                                     setDiscountError("");
@@ -822,19 +1346,50 @@ const CreateInvoice = ({ }) => {
                             type="alphaNumeric"
                             inputType="text"
                             value={transactionId}
-                            style={[styles.inputBox, { marginTop: 10 }]}
+                            // style={[styles.inputBox, { marginTop: 10 }]}
+                            style={[
+                                styles.inputBox,
+                                {
+                                    marginTop: 10,
+                                    backgroundColor: isEditMode ? "#F3F4F6" : "#FFFFFF",
+                                }
+                            ]}
+                            editable={!isEditMode}
+                            onFocus={() => {
+                                if (!isEditMode) {
+                                    scrollToField(transactionRef);
+                                }
+                            }}
                             placeholder="Enter Invoice Number"
                             placeholderTextColor="#B5B5B5"
-                            onFocus={() => scrollToField(transactionRef)}
+                            // onFocus={() => scrollToField(transactionRef)}
                             onChangeText={setTransactionId}
                         />
 
                         <Text style={styles.headerTxt}>Invoice Date <Text style={{ color: "red" }}>*</Text></Text>
                         <TouchableOpacity
-                            style={[styles.inputBox, { marginTop: 10 }]}
+                            // style={[styles.inputBox, { marginTop: 10 }]}
+                            // onPress={() => {
+                            //     setOpenPaidDate(true);
+                            //     setErrors(prev => ({ ...prev, paidDate: "" }));
+                            // }}
+
+                            disabled={isEditMode}
+                            style={[
+                                styles.inputBox,
+                                {
+                                    marginTop: 10,
+                                    backgroundColor: isEditMode ? "#F3F4F6" : "#FFFFFF",
+                                }
+                            ]}
                             onPress={() => {
+                                if (isEditMode) return;
+
                                 setOpenPaidDate(true);
-                                setErrors(prev => ({ ...prev, paidDate: "" }));
+                                setErrors(prev => ({
+                                    ...prev,
+                                    paidDate: ""
+                                }));
                             }}
                         >
                             <Text
@@ -880,19 +1435,28 @@ const CreateInvoice = ({ }) => {
                                         Item - {String(index + 1).padStart(2, "0")}
                                     </Text>
 
-                                    <TouchableOpacity
+                                    {/* <TouchableOpacity
                                         onPress={() => handleDeleteRow(index)}
                                         style={styles.deleteItemButton}
                                     >
                                         <Text style={styles.closeIcon}>×</Text>
-                                    </TouchableOpacity>
+                                    </TouchableOpacity> */}
+
+                                    {(!isEditMode || !item?.isExisting) && (
+                                        <TouchableOpacity
+                                            onPress={() => handleDeleteRow(index)}
+                                            style={styles.deleteItemButton}
+                                        >
+                                            <Text style={styles.closeIcon}>×</Text>
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
 
                                 <Text style={styles.itemdetailTxt}>Detail</Text>
 
                                 {item.itemDetail === "Other" ? (
                                     <View style={styles.otherItemInputRow}>
-                                        <ValidatedInput
+                                        {/* <ValidatedInput
                                             type="description"
                                             inputType="text"
                                             style={styles.otherItemInput}
@@ -907,9 +1471,55 @@ const CreateInvoice = ({ }) => {
                                                     [`itemDetail_${index}`]: "",
                                                 }));
                                             }}
-                                        />
+                                        /> */}
 
-                                        <TouchableOpacity
+                                        <ValidatedInput
+                                            type="description"
+                                            inputType="text"
+                                            style={[
+                                                styles.otherItemInput,
+                                                isEditMode &&
+                                                item?.isExisting && {
+                                                    backgroundColor: "#F3F4F6",
+                                                }
+                                            ]}
+                                            value={item.am_name || ""}
+                                            placeholder="Enter Item Name"
+                                            placeholderTextColor="#A0A0A0"
+                                            editable={
+                                                !(isEditMode && item?.isExisting)
+                                            }
+                                            onChangeText={value => {
+
+                                                if (isEditMode && item?.isExisting) {
+                                                    return;
+                                                }
+
+                                                handleChange(index, "am_name", value);
+
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    [`itemDetail_${index}`]: "",
+                                                }));
+                                            }}
+                                        />
+                                        {(!isEditMode || !item?.isExisting) && (
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    handleChange(index, "itemDetail", "");
+                                                    handleChange(index, "am_name", "");
+
+                                                    setErrors(prev => ({
+                                                        ...prev,
+                                                        [`itemDetail_${index}`]: "",
+                                                    }));
+                                                }}
+                                                style={styles.otherClearButton}
+                                            >
+                                                <Text style={styles.closeIcon}>×</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                        {/* <TouchableOpacity
                                             onPress={() => {
                                                 handleChange(index, "itemDetail", "");
                                                 handleChange(index, "am_name", "");
@@ -921,11 +1531,11 @@ const CreateInvoice = ({ }) => {
                                             style={styles.otherClearButton}
                                         >
                                             <Text style={styles.closeIcon}>×</Text>
-                                        </TouchableOpacity>
+                                        </TouchableOpacity> */}
                                     </View>
                                 ) : (
                                     <>
-                                        <TouchableOpacity
+                                        {/* <TouchableOpacity
                                             onPress={() => {
                                                 setOpenDetailIndex(
                                                     openDetailIndex === index ? null : index
@@ -937,6 +1547,36 @@ const CreateInvoice = ({ }) => {
                                                 }));
                                             }}
                                             style={styles.retainTypeBox}
+                                        > */}
+                                        <TouchableOpacity
+                                            disabled={
+                                                isEditMode &&
+                                                item?.isExisting
+                                            }
+                                            onPress={() => {
+                                                if (isEditMode && item?.isExisting) {
+                                                    return;
+                                                }
+
+                                                setOpenDetailIndex(
+                                                    openDetailIndex === index ? null : index
+                                                );
+
+                                                setOpenRetainerType(false);
+
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    [`itemDetail_${index}`]: "",
+                                                }));
+                                            }}
+                                            style={[
+                                                styles.retainTypeBox,
+
+                                                isEditMode &&
+                                                item?.isExisting && {
+                                                    backgroundColor: "#F3F4F6",
+                                                }
+                                            ]}
                                         >
                                             <Text
                                                 style={[
@@ -978,7 +1618,7 @@ const CreateInvoice = ({ }) => {
                                     />
                                 )}
 
-                                <ValidatedInput
+                                {/* <ValidatedInput
                                     type="description"
                                     inputType="text"
                                     style={styles.itemDescriptionInput}
@@ -989,7 +1629,7 @@ const CreateInvoice = ({ }) => {
                                     onChangeText={value =>
                                         handleChange(index, "description", value)
                                     }
-                                />
+                                /> */}
 
                                 <Text style={styles.itemdetailTxt}>
                                     Amount{" "}
@@ -1060,12 +1700,15 @@ const CreateInvoice = ({ }) => {
                                     </Text>
                                     <View style={styles.discountToggle}>
                                         <TouchableOpacity
+                                            disabled={isEditMode}
                                             style={[
                                                 styles.discountBtn,
                                                 discountType === "amount" &&
                                                 styles.discountBtnActive,
+                                                isEditMode && styles.discountBtnDisabled,
                                             ]}
                                             onPress={() => {
+                                                if (isEditMode) return;
                                                 setDiscountType("amount")
                                                 setDiscountError(
                                                     validateDiscount(discount, "amount")
@@ -1076,12 +1719,15 @@ const CreateInvoice = ({ }) => {
                                         </TouchableOpacity>
 
                                         <TouchableOpacity
+                                            disabled={isEditMode}
                                             style={[
                                                 styles.discountBtn,
                                                 discountType === "percentage" &&
                                                 styles.discountBtnActive,
+                                                isEditMode && styles.discountBtnDisabled,
                                             ]}
                                             onPress={() => {
+                                                if (isEditMode) return;
                                                 setDiscountType("percentage")
                                                 setDiscountError(
                                                     validateDiscount(discount, "percentage")
@@ -1097,7 +1743,9 @@ const CreateInvoice = ({ }) => {
                                         type="numberOnly"
                                         inputType="numeric"
                                         value={discount}
+                                        editable={!isEditMode}
                                         onChangeText={(value) => {
+                                            if (isEditMode) return;
                                             const validationError = validateDiscount(
                                                 value,
                                                 discountType
@@ -1120,7 +1768,11 @@ const CreateInvoice = ({ }) => {
                                             }));
                                         }}
                                         placeholder={discountType === "percentage" ? "0" : "₹ 0.00"}
-                                        style={styles.discountInput}
+                                        // style={styles.discountInput}
+                                        style={[
+                                            styles.discountInput,
+                                            isEditMode && styles.discountInputDisabled,
+                                        ]}
                                     />
                                 </View>
                                 {(discountError || errors.discount) && (
@@ -1157,10 +1809,15 @@ const CreateInvoice = ({ }) => {
                             ref={descriptionRef}
                             type="description"
                             inputType="text"
-                            style={styles.dscpBox}
+                            // style={styles.dscpBox}
+                            style={[
+                                            styles.dscpBox,
+                                            isEditMode && styles.discountInputDisabled,
+                                        ]}
                             placeholder="Enter terms and condition for this invoice"
                             placeholderTextColor="#A0A0A0"
                             value={description}
+                            editable={!isEditMode}
                             onFocus={() => handleInputFocus(descriptionRef)}
                             onChangeText={handleDescriptionChange}
                         />
@@ -1187,7 +1844,7 @@ const CreateInvoice = ({ }) => {
                                 isSubmitClicked && styles.saveButtonDisabled
                             ]}>
                             <Text style={styles.saveButtonText}>
-                                Save & Generate
+                                {isEditMode ? "Save Changes" : "Save & Generate"}
                             </Text>
                         </TouchableOpacity>
                     </View>
@@ -1838,6 +2495,13 @@ const styles = StyleSheet.create({
     },
     prflField: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    },
+    discountBtnDisabled: {
+        opacity: 0.5,
+    },
+    discountInputDisabled: {
+        backgroundColor: "#F3F4F6",
+        color: "#9CA3AF",
     },
 })
 

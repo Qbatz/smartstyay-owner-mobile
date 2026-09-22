@@ -679,10 +679,11 @@ const BillDetailsSheet = ({
   const handleEditBill = (item) => {
     onClose();
 
-    navigation.navigate("CreateBills", {
-      mode: "edit",
-      data: item,
-    });
+     navigation.navigate("CreateInvoice", { mode: "edit" ,  data: item,})
+    // navigation.navigate("CreateBills", {
+    //   mode: "edit",
+    //   data: item,
+    // });
   }
 
   const handlemakeDiscount = async () => {
@@ -2514,7 +2515,7 @@ const BillDetailsSheet = ({
 
 
 
-            {/* {
+            {
               invoiceDetail?.canEdit && (
                 <TouchableOpacity
                   style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
@@ -2522,12 +2523,12 @@ const BillDetailsSheet = ({
                   onPress={() => handleEditBill(invoiceDetail)}
                 >
                   <Image
-                    source={require("../../../Assets/Images/ReAssign.png")}
+                    source={require("../../../Assets/Images/editIcon.png")}
                     style={styles.popupIcon}
                   />
                   <Text style={styles.popupText}>Edit</Text>
                 </TouchableOpacity>
-              )} */}
+              )}
 
             {/* {paymentStatus === "Pending" &&
               (invoiceType === "Rent" || invoiceType === "Settlement" || invoiceType === "REASSIGN_RENT") &&
