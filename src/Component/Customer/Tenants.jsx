@@ -521,7 +521,7 @@ export default function TenantsScreen({ route }) {
     value: i?.type,
   }));
 
-  const renderFilterDropdown = (
+  const   renderFilterDropdown = (
     label,
     value,
     setValue,
@@ -767,6 +767,15 @@ export default function TenantsScreen({ route }) {
     activeTab, showReAssignbed
   ]);
 
+  useEffect(()=>{
+    if(!showFilter){
+      setTempFilterStatus([])
+      setTempFilterSharing([])
+      setTempFilterMonth("")
+      setActiveDropdown(null)
+    }
+  },[showFilter])
+
 
   //   useLayoutEffect(() => {
   //     const backAction = () => {
@@ -849,9 +858,9 @@ export default function TenantsScreen({ route }) {
         ? []
         : tempFilterStatus;
 
-    setTenantStatusFilter(finalStatus);
-    setSharingTypeFilter(tempFilterSharing);
-    setSelectedMonth(tempFilterMonth);
+    // setTenantStatusFilter(finalStatus);
+    // setSharingTypeFilter(tempFilterSharing);
+    // setSelectedMonth(tempFilterMonth);
 
     await fetchCustomers(
       finalStatus,
@@ -1064,7 +1073,10 @@ export default function TenantsScreen({ route }) {
     setSelectedMonth("");
 
     setTempTenantStatus([]);
+    setTempFilterStatus([])
+    setTempFilterSharing([])
     setTempSharingType([]);
+    setTempFilterMonth("")
     setTempMonth("");
 
     setSearchText("");
@@ -1446,6 +1458,13 @@ export default function TenantsScreen({ route }) {
                   )
                 }
 
+                {(tenantStatusFilter.length > 0  || sharingTypeFilter?.length > 0 || tempFilterStatus.length>0 
+                || tempFilterSharing.length >0 || tempFilterMonth || selectedMonth) && (
+                  <TouchableOpacity onPress={handleResetFilters}
+                  style={{marginLeft:15}}>
+                    <Text style={{fontSize:14,fontFamily:'Gilroy-Bold',color:'#2d5fff'}}>Reset</Text>
+                  </TouchableOpacity>
+                )}
 
 
                 {!loading &&
