@@ -3143,7 +3143,8 @@ const adjustmentDetails =
                         </View>
                       )}
 
-                        <View style={styles.reviewBillsCard}>
+                      {!isProd && (
+                  <View style={styles.reviewBillsCard}>
 
     <View style={styles.reviewBillsHeader}>
       <View style={styles.reviewBillsTitleRow}>
@@ -3209,6 +3210,9 @@ const adjustmentDetails =
     </TouchableOpacity>
 
   </View>
+                      )}
+
+      
 
 
                       {BillDetails?.listInvoices?.map((item) => (
@@ -9929,7 +9933,7 @@ reviewBillsButton: {
 
 reviewBillsButtonText: {
   color: "#214BE5",
-  fontSize: 19,
+  fontSize: 16,
   fontFamily: "Gilroy-Medium",
 },
 

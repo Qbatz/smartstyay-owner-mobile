@@ -12,6 +12,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 // import Ionicons from "react-native-vector-icons/Ionicons";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import BillGenerateIcon from "../../../Assets/Images/BillGenerateIcon.png";
+import GenerateBillsSheet from "./GenerateBillsDetails";
 
 const ReviewBillsScreen = ({
   navigation,
@@ -21,6 +22,8 @@ const ReviewBillsScreen = ({
   const insets = useSafeAreaInsets();
 
   const isSmallDevice = width < 360;
+
+  const [showGenerateSheet, setShowGenerateSheet] = useState(false);
 
   /*
    * You can replace this with API data.
@@ -194,54 +197,73 @@ const ReviewBillsScreen = ({
   };
 
   const handleGenerateAll = () => {
-    const selectedIds = selectedReadyInvoices.map(
-      (item) => item.id
-    );
+    // if (selectedReadyInvoices?.length === 0) {
+    //   return;
+    // }
 
     console.log(
       "Generate invoices:",
-      selectedIds
+      selectedReadyInvoices
     );
 
-    /*
-     * API example:
-     *
-     * await generateInvoices(selectedIds);
-     */
-
-    // navigation?.navigate("GeneratedBills");
+    setShowGenerateSheet(true);
   };
 
   const formatAmount = (amount) => {
     return Number(amount || 0).toLocaleString("en-IN");
   };
 
-//   const renderCheckbox = ({
-//     checked,
-//     disabled = false,
-//     onPress,
-//   }) => {
-//     return (
-//       <TouchableOpacity
-//         activeOpacity={0.8}
-//         disabled={disabled}
-//         onPress={onPress}
-//         style={[
-//           styles.checkbox,
-//           checked && styles.checkboxChecked,
-//           disabled && styles.checkboxDisabled,
-//         ]}
-//       >
-//         {checked && (
-//           <Ionicons
-//             name="checkmark"
-//             size={14}
-//             color="#FFFFFF"
-//           />
-//         )}
-//       </TouchableOpacity>
-//     );
-//   };
+  const renderCheckbox = ({
+    checked,
+    disabled = false,
+    onPress,
+  }) => {
+    return (
+      <TouchableOpacity
+        activeOpacity={0.8}
+        disabled={disabled}
+        onPress={onPress}
+        style={[
+          styles.checkbox,
+          checked && styles.checkboxChecked,
+          disabled && styles.checkboxDisabled,
+        ]}
+      >
+        {checked && (
+          <Text style={styles.checkboxTick}>
+            ✓
+          </Text>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
+  //   const renderCheckbox = ({
+  //     checked,
+  //     disabled = false,
+  //     onPress,
+  //   }) => {
+  //     return (
+  //       <TouchableOpacity
+  //         activeOpacity={0.8}
+  //         disabled={disabled}
+  //         onPress={onPress}
+  //         style={[
+  //           styles.checkbox,
+  //           checked && styles.checkboxChecked,
+  //           disabled && styles.checkboxDisabled,
+  //         ]}
+  //       >
+  //         {checked && (
+  //           <Ionicons
+  //             name="checkmark"
+  //             size={14}
+  //             color="#FFFFFF"
+  //           />
+  //         )}
+  //       </TouchableOpacity>
+  //     );
+  //   };
 
   const renderStatus = (status) => {
     if (status === "READY") {
@@ -321,12 +343,12 @@ const ReviewBillsScreen = ({
       >
         {/* Checkbox */}
         <View style={styles.checkboxContainer}>
-          {/* {renderCheckbox({
+          {renderCheckbox({
             checked: item.selected,
             disabled: !isReady,
             onPress: () =>
               toggleInvoice(item.id),
-          })} */}
+          })}
         </View>
 
         {/* Initial Circle */}
@@ -343,7 +365,7 @@ const ReviewBillsScreen = ({
               style={[
                 styles.tenantName,
                 isSmallDevice &&
-                  styles.tenantNameSmall,
+                styles.tenantNameSmall,
               ]}
               numberOfLines={1}
             >
@@ -363,7 +385,7 @@ const ReviewBillsScreen = ({
             style={[
               styles.tenantDetails,
               isSmallDevice &&
-                styles.tenantDetailsSmall,
+              styles.tenantDetailsSmall,
             ]}
             numberOfLines={1}
           >
@@ -378,7 +400,7 @@ const ReviewBillsScreen = ({
             style={[
               styles.amountText,
               isSmallDevice &&
-                styles.amountTextSmall,
+              styles.amountTextSmall,
             ]}
           >
             ₹{formatAmount(item.amount)}
@@ -391,174 +413,195 @@ const ReviewBillsScreen = ({
   };
 
   return (
-    <SafeAreaView
-      style={styles.safeArea}
-      edges={["top", "left", "right"]}
-    >
-      <View style={styles.container}>
-        {/* ================= HEADER ================= */}
+    <>
+      <SafeAreaView
+        style={styles.safeArea}
+        edges={["top", "left", "right"]}
+      >
+        <View style={styles.container}>
+          {/* ================= HEADER ================= */}
 
-        <View style={styles.header}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() =>
-              navigation?.goBack?.()
-            }
-            style={styles.backButton}
-          >
-            {/* <Ionicons
+          <View style={styles.header}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() =>
+                navigation?.goBack?.()
+              }
+              style={styles.backButton}
+            >
+              {/* <Ionicons
               name="chevron-back"
               size={24}
               color="#1D2638"
             /> */}
 
-            <Image  source={ArrowLeft} style={{height:12, width:12}}/>
-          </TouchableOpacity>
+              <Image source={ArrowLeft} style={{ height: 12, width: 12 }} />
+            </TouchableOpacity>
 
-          <Text
-            style={[
-              styles.headerTitle,
-              isSmallDevice &&
+            <Text
+              style={[
+                styles.headerTitle,
+                isSmallDevice &&
                 styles.headerTitleSmall,
-            ]}
-          >
-            Review & Generate Bills
-          </Text>
-        </View>
+              ]}
+            >
+              Review & Generate Bills
+            </Text>
+          </View>
 
-        {/* ================= DESCRIPTION ================= */}
+          {/* ================= DESCRIPTION ================= */}
 
-        <View style={styles.descriptionContainer}>
-          <Text
-            style={[
-              styles.description,
-              isSmallDevice &&
+          <View style={styles.descriptionContainer}>
+            <Text
+              style={[
+                styles.description,
+                isSmallDevice &&
                 styles.descriptionSmall,
-            ]}
-          >
-            Review calculated invoices before generating
-            them for tenants.
-          </Text>
-        </View>
-
-        {/* ================= PERIOD ================= */}
-
-        <View style={styles.periodRow}>
-          <View style={styles.periodItem}>
-            <Text style={styles.periodLabel}>
-              Period:
-            </Text>
-
-            <Text style={styles.periodValue}>
-              01 Sep – 30 Sep 2026
+              ]}
+            >
+              Review calculated invoices before generating
+              them for tenants.
             </Text>
           </View>
 
-          <View style={styles.generationItem}>
-            <Text style={styles.periodLabel}>
-              Gen. Date:
-            </Text>
+          {/* ================= PERIOD ================= */}
 
-            <Text style={styles.periodValue}>
-              01 Sep 2026
-            </Text>
+          <View style={styles.periodRow}>
+            <View style={styles.periodItem}>
+              <Text style={styles.periodLabel}>
+                Period:
+              </Text>
+
+              <Text style={styles.periodValue}>
+                01 Sep – 30 Sep 2026
+              </Text>
+            </View>
+
+            <View style={styles.generationItem}>
+              <Text style={styles.periodLabel}>
+                Gen. Date:
+              </Text>
+
+              <Text style={styles.periodValue}>
+                01 Sep 2026
+              </Text>
+            </View>
           </View>
-        </View>
 
-        {/* ================= SELECT ALL ================= */}
+          {/* ================= SELECT ALL ================= */}
 
-        <View style={styles.selectAllContainer}>
-          <View style={styles.selectAllLeft}>
-            {/* {renderCheckbox({
+          <View style={styles.selectAllContainer}>
+            <View style={styles.selectAllLeft}>
+              {renderCheckbox({
               checked: allEligibleSelected,
               disabled:
                 readyInvoices.length === 0,
               onPress: toggleSelectAll,
-            })} */}
+            })}
 
-            <Text style={styles.selectAllText}>
-              Select All Eligible
+              <Text style={styles.selectAllText}>
+                Select All Eligible
+              </Text>
+            </View>
+
+            <Text style={styles.readyCountText}>
+              {String(readyCount).padStart(2, "0")} of{" "}
+              {String(invoices.length).padStart(2, "0")} ready
             </Text>
           </View>
 
-          <Text style={styles.readyCountText}>
-            {String(readyCount).padStart(2, "0")} of{" "}
-            {String(invoices.length).padStart(2, "0")} ready
-          </Text>
-        </View>
+          {/* ================= INVOICE LIST ================= */}
 
-        {/* ================= INVOICE LIST ================= */}
+          <FlatList
+            data={invoices}
+            keyExtractor={(item) => item.id}
+            renderItem={renderInvoice}
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+            contentContainerStyle={[
+              styles.listContent,
+              {
+                paddingBottom:
+                  90 + insets.bottom,
+              },
+            ]}
+            ItemSeparatorComponent={() => (
+              <View style={styles.separator} />
+            )}
+          />
 
-        <FlatList
-          data={invoices}
-          keyExtractor={(item) => item.id}
-          renderItem={renderInvoice}
-          showsVerticalScrollIndicator={false}
-          bounces={true}
-          contentContainerStyle={[
-            styles.listContent,
-            {
-              paddingBottom:
-                90 + insets.bottom,
-            },
-          ]}
-          ItemSeparatorComponent={() => (
-            <View style={styles.separator} />
-          )}
-        />
+          {/* ================= BOTTOM ACTION ================= */}
 
-        {/* ================= BOTTOM ACTION ================= */}
-
-        <View
-          style={[
-            styles.bottomBar,
-            {
-              paddingBottom:
-                Math.max(insets.bottom, 10),
-            },
-          ]}
-        >
-          <View style={styles.bottomTextContainer}>
-            <Text style={styles.bottomCountText}>
-              {String(
-                selectedReadyInvoices.length
-              ).padStart(2, "0")}{" "}
-              invoices are
-            </Text>
-
-            <Text style={styles.bottomSubText}>
-              ready to generate
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            activeOpacity={0.85}
-            disabled={
-              selectedReadyInvoices.length === 0
-            }
-            onPress={handleGenerateAll}
+          <View
             style={[
-              styles.generateButton,
-              selectedReadyInvoices.length ===
-                0 &&
-                styles.generateButtonDisabled,
+              styles.bottomBar,
+              {
+                paddingBottom:
+                  Math.max(insets.bottom, 10),
+              },
             ]}
           >
-            {/* <Ionicons
+            <View style={styles.bottomTextContainer}>
+              <Text style={styles.bottomCountText}>
+                {String(
+                  selectedReadyInvoices.length
+                ).padStart(2, "0")}{" "}
+                invoices are
+              </Text>
+
+              <Text style={styles.bottomSubText}>
+                ready to generate
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              disabled={
+                selectedReadyInvoices.length === 0
+              }
+              onPress={handleGenerateAll}
+              style={[
+                styles.generateButton,
+                selectedReadyInvoices.length ===
+                0 &&
+                styles.generateButtonDisabled,
+              ]}
+            >
+              {/* <Ionicons
               name="sync-outline"
               size={18}
               color="#FFFFFF"
             /> */}
 
-                 <Image  source={BillGenerateIcon} style={{height:12, width:12}}/>
+              <Image source={BillGenerateIcon} style={{ height: 12, width: 12 }} />
 
-            <Text style={styles.generateButtonText}>
-              Generate All Eligible
-            </Text>
-          </TouchableOpacity>
+              <Text style={styles.generateButtonText}>
+                Generate All Eligible
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </SafeAreaView>
+      </SafeAreaView>
+
+      <GenerateBillsSheet
+        visible={showGenerateSheet}
+        onClose={() => {
+          setShowGenerateSheet(false);
+        }}
+        invoices={selectedReadyInvoices}
+        onGenerate={(payload) => {
+          console.log(
+            "FINAL GENERATE PAYLOAD:",
+            payload
+          );
+
+          setShowGenerateSheet(false);
+
+          // API call இங்கே:
+          // generateInvoices(payload);
+        }}
+      />
+    </>
   );
 };
 
@@ -615,7 +658,7 @@ const styles = StyleSheet.create({
   /* ================= DESCRIPTION ================= */
 
   descriptionContainer: {
-    paddingHorizontal: 70,
+    paddingHorizontal: 30,
     paddingTop: 2,
     paddingBottom: 12,
   },
@@ -636,33 +679,33 @@ const styles = StyleSheet.create({
 
   periodRow: {
     flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 43,
+    // alignItems: "center",
+    paddingHorizontal: 30,
     paddingBottom: 13,
   },
 
   periodItem: {
     flex: 1,
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
   },
 
   generationItem: {
     flex: 1,
     flexDirection: "row",
-    alignItems: "center",
+    // alignItems: "center",
     marginLeft: 12,
   },
 
   periodLabel: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#30343B",
     fontFamily: "Gilroy-Medium",
   },
 
   periodValue: {
     flexShrink: 1,
-    fontSize: 13,
+    fontSize: 11,
     color: "#7B8495",
     fontFamily: "Gilroy-Regular",
     marginLeft: 4,
@@ -701,31 +744,31 @@ const styles = StyleSheet.create({
 
   /* ================= CHECKBOX ================= */
 
-  checkboxContainer: {
-    width: 31,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  // checkboxContainer: {
+  //   width: 31,
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // },
 
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: "#CBD1DB",
-    backgroundColor: "#FFFFFF",
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  // checkbox: {
+  //   width: 18,
+  //   height: 18,
+  //   borderRadius: 4,
+  //   borderWidth: 1,
+  //   borderColor: "#CBD1DB",
+  //   backgroundColor: "#FFFFFF",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // },
 
-  checkboxChecked: {
-    backgroundColor: "#1835A5",
-    borderColor: "#1835A5",
-  },
+  // checkboxChecked: {
+  //   backgroundColor: "#1835A5",
+  //   borderColor: "#1835A5",
+  // },
 
-  checkboxDisabled: {
-    opacity: 0.45,
-  },
+  // checkboxDisabled: {
+  //   opacity: 0.45,
+  // },
 
   /* ================= LIST ================= */
 
@@ -955,4 +998,36 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Medium",
     marginLeft: 7,
   },
+  checkboxContainer: {
+  width: 30,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+checkbox: {
+  width: 28,
+  height: 28,
+  borderRadius: 7,
+  borderWidth: 2,
+  borderColor: "#D4D8E0",
+  backgroundColor: "#FFFFFF",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+checkboxChecked: {
+  backgroundColor: "#2864E8",
+  borderColor: "#2864E8",
+},
+
+checkboxTick: {
+  color: "#FFFFFF",
+  fontSize: 18,
+  lineHeight: 24,
+  fontFamily: "Gilroy-Bold",
+},
+
+checkboxDisabled: {
+  opacity: 0.45,
+},
 });
