@@ -52,12 +52,15 @@ import ShareIcon from "../../../Assets/Images/share.png";
 import QuestionIcon from "../../../Assets/Images/help.png";
 import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
 import DirectionImage from "../../../Assets/Images/direction-down.png"
+
 // import TenAntAdd from "../../../Assets/Images/TenantAdd.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DiscountDown from "../../../Assets/Images/direction-downIcon.png";
 import BillIcon from "../../../Assets/Images/bill.png";
+import GenerateBillIcon from "../../../Assets/Images/SettleIcon.png";
+import LeftArrowIcon from "../../../Assets/Images/ArrowRight.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
@@ -3141,6 +3144,77 @@ const adjustmentDetails =
 
                         </View>
                       )}
+
+                      {!isProd && (
+                  <View style={styles.reviewBillsCard}>
+
+    <View style={styles.reviewBillsHeader}>
+      <View style={styles.reviewBillsTitleRow}>
+        <Image
+          source={GenerateBillIcon}
+          style={styles.reviewBillsIcon}
+        />
+
+        <Text style={styles.reviewBillsTitle}>
+          Review & Generate Bills
+        </Text>
+      </View>
+    </View>
+
+    <Text style={styles.reviewBillsDescription}>
+      Review calculated invoices before generating them for tenants.
+    </Text>
+
+    <View style={styles.reviewBillsInfoRow}>
+
+      <View style={styles.reviewBillsInfoItem}>
+        <Text style={styles.reviewBillsLabel}>
+          Period :
+        </Text>
+
+        <Text style={styles.reviewBillsValue}>
+          01 Sep - 30 Sep 2026
+        </Text>
+      </View>
+
+      <View style={styles.reviewRequiredBadge}>
+        <Text style={styles.reviewRequiredText}>
+          Review Required
+        </Text>
+      </View>
+
+    </View>
+
+    <View style={styles.reviewBillsDateRow}>
+      <Text style={styles.reviewBillsLabel}>
+        Gen. Date :
+      </Text>
+
+      <Text style={styles.reviewBillsValue}>
+        01 Sep 2026
+      </Text>
+    </View>
+
+    <TouchableOpacity
+      activeOpacity={0.8}
+      style={styles.reviewBillsButton}
+      // onPress={handleReviewBills}
+       onPress={() => navigation.navigate("ReviewBillsScreen")}
+    >
+      <Text style={styles.reviewBillsButtonText}>
+        Review Bills
+      </Text>
+
+  <Image source={LeftArrowIcon} style={{height:20, width:20, marginLeft:10}}/>
+      {/* <Text style={styles.reviewBillsArrow}>
+        →
+      </Text> */}
+    </TouchableOpacity>
+
+  </View>
+                      )}
+
+      
 
 
                       {BillDetails?.listInvoices?.map((item) => (
@@ -9760,5 +9834,122 @@ const styles = StyleSheet.create({
     height: 14,
     marginLeft: 6,
   },
+  reviewBillsCard: {
+  width: "100%",
+  backgroundColor: "#25218F",
+  borderRadius: 14,
+  paddingHorizontal: 20,
+  paddingTop: 18,
+  paddingBottom: 18,
+  marginBottom: 12,
+  overflow: "hidden",
+},
+
+reviewBillsHeader: {
+  width: "100%",
+},
+
+reviewBillsTitleRow: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+reviewBillsIcon: {
+  width: 24,
+  height: 24,
+  resizeMode: "contain",
+  marginRight: 10,
+},
+
+reviewBillsTitle: {
+  flex: 1,
+  fontSize: 22,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Medium",
+},
+
+reviewBillsDescription: {
+  fontSize: 16,
+  lineHeight: 22,
+  color: "#D8D8F2",
+  fontFamily: "Gilroy-Regular",
+  marginTop: 6,
+  marginBottom: 22,
+},
+
+reviewBillsInfoRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+reviewBillsInfoItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  flexShrink: 1,
+},
+
+reviewBillsDateRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 12,
+},
+
+reviewBillsLabel: {
+  fontSize: 12,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Medium",
+},
+
+reviewBillsValue: {
+  fontSize: 13,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Regular",
+  marginLeft: 8,
+},
+
+reviewRequiredBadge: {
+  backgroundColor: "#FF7A18",
+  paddingHorizontal: 15,
+  paddingVertical: 8,
+  borderRadius: 20,
+  marginLeft: 10,
+  flexShrink: 0,
+},
+
+reviewRequiredText: {
+  color: "#FFFFFF",
+  fontSize: 13,
+  fontFamily: "Gilroy-Bold",
+},
+
+reviewBillsButton: {
+  height: 50,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 10,
+  marginTop: 28,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+reviewBillsButtonText: {
+  color: "#214BE5",
+  fontSize: 16,
+  fontFamily: "Gilroy-Medium",
+},
+
+reviewBillsArrow: {
+  color: "#214BE5",
+  fontSize: 28,
+  marginLeft: 10,
+  marginTop: -2,
+},
+
+invoiceListContent: {
+  paddingHorizontal: 16,
+  paddingTop: 10,
+  paddingBottom: 160,
+},
 
 });
