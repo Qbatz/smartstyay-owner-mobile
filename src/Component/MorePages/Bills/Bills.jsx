@@ -53,12 +53,15 @@ import ShareIcon from "../../../Assets/Images/share.png";
 import QuestionIcon from "../../../Assets/Images/help.png";
 import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
 import DirectionImage from "../../../Assets/Images/direction-down.png"
+
 // import TenAntAdd from "../../../Assets/Images/TenantAdd.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
 import Dots from "../../../Assets/Images/3dots.png";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DiscountDown from "../../../Assets/Images/direction-downIcon.png";
 import BillIcon from "../../../Assets/Images/bill.png";
+import GenerateBillIcon from "../../../Assets/Images/SettleIcon.png";
+import LeftArrowIcon from "../../../Assets/Images/ArrowRight.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
@@ -2581,10 +2584,12 @@ export default function BillsDesign({ route }) {
 
   const handleEditBill = (item) => {
 
-    navigation.navigate("CreateBills", {
-      mode: "edit",
-      data: item,
-    });
+    // navigation.navigate("CreateBills", {
+    //   mode: "edit",
+    //   data: item,
+    // });
+
+     navigation.navigate("CreateInvoice", { mode: "edit" ,  data: item,})
     setShowBillDetails(false);
     setShowMenu(false)
 
@@ -5533,7 +5538,7 @@ export default function BillsDesign({ route }) {
 
                 {/*  */}
 
-                {/* {selectedBill?.canEdit && (
+                {selectedBill?.canEdit && (
                   <>
                     <TouchableOpacity
                       style={[styles.popupRow, !canUpdateInvoice && { opacity: 0.4 }]}
@@ -5548,7 +5553,7 @@ export default function BillsDesign({ route }) {
                     </TouchableOpacity>
                     <View style={styles.menuDivider} />
                   </>
-                )} */}
+                )}
 
                 {/* {(selectedBill?.canEdit === "Recurring" && selectedBill?.paymentStatus === "Pending") && (
                   <TouchableOpacity
@@ -9770,5 +9775,122 @@ const styles = StyleSheet.create({
     height: 14,
     marginLeft: 6,
   },
+  reviewBillsCard: {
+  width: "100%",
+  backgroundColor: "#25218F",
+  borderRadius: 14,
+  paddingHorizontal: 20,
+  paddingTop: 18,
+  paddingBottom: 18,
+  marginBottom: 12,
+  overflow: "hidden",
+},
+
+reviewBillsHeader: {
+  width: "100%",
+},
+
+reviewBillsTitleRow: {
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+reviewBillsIcon: {
+  width: 24,
+  height: 24,
+  resizeMode: "contain",
+  marginRight: 10,
+},
+
+reviewBillsTitle: {
+  flex: 1,
+  fontSize: 22,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Medium",
+},
+
+reviewBillsDescription: {
+  fontSize: 16,
+  lineHeight: 22,
+  color: "#D8D8F2",
+  fontFamily: "Gilroy-Regular",
+  marginTop: 6,
+  marginBottom: 22,
+},
+
+reviewBillsInfoRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+reviewBillsInfoItem: {
+  flexDirection: "row",
+  alignItems: "center",
+  flexShrink: 1,
+},
+
+reviewBillsDateRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 12,
+},
+
+reviewBillsLabel: {
+  fontSize: 12,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Medium",
+},
+
+reviewBillsValue: {
+  fontSize: 13,
+  color: "#FFFFFF",
+  fontFamily: "Gilroy-Regular",
+  marginLeft: 8,
+},
+
+reviewRequiredBadge: {
+  backgroundColor: "#FF7A18",
+  paddingHorizontal: 15,
+  paddingVertical: 8,
+  borderRadius: 20,
+  marginLeft: 10,
+  flexShrink: 0,
+},
+
+reviewRequiredText: {
+  color: "#FFFFFF",
+  fontSize: 13,
+  fontFamily: "Gilroy-Bold",
+},
+
+reviewBillsButton: {
+  height: 50,
+  backgroundColor: "#FFFFFF",
+  borderRadius: 10,
+  marginTop: 28,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+reviewBillsButtonText: {
+  color: "#214BE5",
+  fontSize: 16,
+  fontFamily: "Gilroy-Medium",
+},
+
+reviewBillsArrow: {
+  color: "#214BE5",
+  fontSize: 28,
+  marginLeft: 10,
+  marginTop: -2,
+},
+
+invoiceListContent: {
+  paddingHorizontal: 16,
+  paddingTop: 10,
+  paddingBottom: 160,
+},
 
 });
