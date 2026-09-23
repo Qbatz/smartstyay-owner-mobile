@@ -18,6 +18,7 @@ import Loader from "../../Loader/Loader";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { useRoute } from "@react-navigation/native";
 import ValidatedInput from "../ValidatedInput"
+import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 
 
 
@@ -70,6 +71,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
     const scrollRef = useRef(null);
     const descriptionRef = useRef(null);
     const transactionRef = useRef(null)
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false)
 
 
     //   const scrollToField = (ref) => {
@@ -182,7 +184,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
     useEffect(() => {
         const fetchCustomerRetainerList = async () => {
             // const res = await retainerCustomerList(activeHostelId)
-            const res = await retainerCustomerList( activeHostelId,"ADVANCE_HOLDING")
+            const res = await retainerCustomerList(activeHostelId, "ADVANCE_HOLDING")
             console.log("retainerList", res)
 
             const list = res?.data?.customersLists || [];
@@ -368,6 +370,18 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
     }
 
+    const handleLeaveScreen = () => {
+
+        console.log( totalRetainerAmount)
+
+        if (selectedTenant || selectedGuardian?.guardianName|| receivedFrom || items[0]?.retainerType ||
+            transactionId || totalRetainerAmount || transactionId || selectedBankId) {
+            setShowLeavePageScreen(true)
+        } else {
+            navigation.goBack();
+        }
+    }
+
     return (
         <>
 
@@ -461,8 +475,9 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 <View style={styles.dropdownMenu}>
                                     <ScrollView keyboardShouldPersistTaps="always"
                                         nestedScrollEnabled={true}
-                                        showsVerticalScrollIndicator={true}>
-                                        {filterList.map((i, index) => (
+                                        showsVerticalScrollIndicator={true}>                                       
+                                        {filterList.length > 0 ?
+                                        filterList.map((i, index) => (
                                             <TouchableOpacity key={index}
                                                 style={{ paddingVertical: 8, paddingHorizontal: 14 }}
                                                 onPress={() => {
@@ -476,7 +491,12 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                                 <Text>{i.fullName}</Text>
                                             </TouchableOpacity>
 
-                                        ))}
+                                        )) : 
+                                        <View>
+                                            <Text style={{paddingVertical: 8, paddingHorizontal: 14,fontSize:12,fontFamily:'Gilroy-Medium'}}>
+                                                No Options available</Text>
+                                        </View>
+                                        }
                                     </ScrollView>
                                 </View>
                             </>
@@ -799,7 +819,8 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         />
 
                         <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', marginTop: 22 }}>
-                            <TouchableOpacity style={{ marginRight: 8 }}>
+                            <TouchableOpacity onPress={handleLeaveScreen}
+                                style={{ marginRight: 8 }}>
                                 <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Medium' }}>
                                     Cancel</Text>
                             </TouchableOpacity>
@@ -853,6 +874,15 @@ const NewRetainerInvoiceSheet = ({ }) => {
                     </View>
                 </View>
             )}
+            <LeavePageScreen
+                visible={showLeavePageScreen}
+                onClose={() => setShowLeavePageScreen(false)}
+                discardClose={() => {
+                    setShowLeavePageScreen(false)
+                    setTimeout(() => {
+                        navigation.goBack()
+                    }, 300);
+                }} />
         </>
     )
 }

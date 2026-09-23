@@ -11,8 +11,9 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, Keyboard, Platform , 
-  KeyboardAvoidingView ,
+  BackHandler, Keyboard, Platform,
+  KeyboardAvoidingView,
+  FlatList
 } from "react-native";
 import { useFocusEffect, useNavigationState } from "@react-navigation/native";
 import { useCallback } from "react";
@@ -1532,20 +1533,20 @@ export default function BillsDesign({ route }) {
     console.log("res", res);
   }
 
- const retainerApplied = BillPdfdetails?.invoiceInfo?.retainerApplied;
-const amountSettled = BillPdfdetails?.invoiceInfo?.amountSettled;
+  const retainerApplied = BillPdfdetails?.invoiceInfo?.retainerApplied;
+  const amountSettled = BillPdfdetails?.invoiceInfo?.amountSettled;
 
-const redeemedList =
-  amountSettled?.redeemdList ||
-  retainerApplied?.redeemdList ||
-  [];
+  const redeemedList =
+    amountSettled?.redeemdList ||
+    retainerApplied?.redeemdList ||
+    [];
 
-const showAdjustmentsAccordion = redeemedList.length > 0;
+  const showAdjustmentsAccordion = redeemedList.length > 0;
 
-const adjustmentDetails =
-  amountSettled?.redeemdList?.length > 0
-    ? amountSettled
-    : retainerApplied;
+  const adjustmentDetails =
+    amountSettled?.redeemdList?.length > 0
+      ? amountSettled
+      : retainerApplied;
 
   // const showAdjustmentsAccordion = redeemedList.length > 0;
 
@@ -3095,7 +3096,7 @@ const adjustmentDetails =
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
-                      contentContainerStyle={{ paddingBottom: 150, }} onScroll={handleScroll}
+                      // contentContainerStyle={{ paddingBottom: 150, }} 
                     >
 
                       {appliedFilters && (
@@ -3145,79 +3146,19 @@ const adjustmentDetails =
                         </View>
                       )}
 
-                      {!isProd && (
-                  <View style={styles.reviewBillsCard}>
-
-    <View style={styles.reviewBillsHeader}>
-      <View style={styles.reviewBillsTitleRow}>
-        <Image
-          source={GenerateBillIcon}
-          style={styles.reviewBillsIcon}
-        />
-
-        <Text style={styles.reviewBillsTitle}>
-          Review & Generate Bills
-        </Text>
-      </View>
-    </View>
-
-    <Text style={styles.reviewBillsDescription}>
-      Review calculated invoices before generating them for tenants.
-    </Text>
-
-    <View style={styles.reviewBillsInfoRow}>
-
-      <View style={styles.reviewBillsInfoItem}>
-        <Text style={styles.reviewBillsLabel}>
-          Period :
-        </Text>
-
-        <Text style={styles.reviewBillsValue}>
-          01 Sep - 30 Sep 2026
-        </Text>
-      </View>
-
-      <View style={styles.reviewRequiredBadge}>
-        <Text style={styles.reviewRequiredText}>
-          Review Required
-        </Text>
-      </View>
-
-    </View>
-
-    <View style={styles.reviewBillsDateRow}>
-      <Text style={styles.reviewBillsLabel}>
-        Gen. Date :
-      </Text>
-
-      <Text style={styles.reviewBillsValue}>
-        01 Sep 2026
-      </Text>
-    </View>
-
-    <TouchableOpacity
-      activeOpacity={0.8}
-      style={styles.reviewBillsButton}
-      // onPress={handleReviewBills}
-       onPress={() => navigation.navigate("ReviewBillsScreen")}
-    >
-      <Text style={styles.reviewBillsButtonText}>
-        Review Bills
-      </Text>
-
-  <Image source={LeftArrowIcon} style={{height:20, width:20, marginLeft:10}}/>
-      {/* <Text style={styles.reviewBillsArrow}>
-        →
-      </Text> */}
-    </TouchableOpacity>
-
-  </View>
-                      )}
-
-      
 
 
-                      {BillDetails?.listInvoices?.map((item) => (
+                    </ScrollView>
+                  )}
+
+                  {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
+
+                    <FlatList
+                      data={BillDetails?.listInvoices}
+                      showsVerticalScrollIndicator={false}
+                      onScroll={handleScroll}
+                      renderItem={({ item }) => (
+
                         <TouchableOpacity key={item.invoiceId} activeOpacity={0.8} style={styles.tenantRow} onPress={() => openBillDetails(item)}>
 
                           <View>
@@ -3300,8 +3241,8 @@ const adjustmentDetails =
                           </View>
 
                         </TouchableOpacity>
-                      ))}
-                    </ScrollView>
+
+                      )} />
                   )}
 
 
@@ -4779,122 +4720,122 @@ const adjustmentDetails =
                     )}
 
 
-                   {showAdjustmentsAccordion && (
-  <View style={styles.paymentWrapper}>
+                    {showAdjustmentsAccordion && (
+                      <View style={styles.paymentWrapper}>
 
-    {/* HEADER */}
-    <TouchableOpacity
-      activeOpacity={0.8}
-      style={styles.paymentHeader}
-      onPress={() => setShowAdjustments(!showAdjustments)}
-    >
-      <Text style={styles.paymentHeaderText}>
-        Adjustments Applied
-      </Text>
+                        {/* HEADER */}
+                        <TouchableOpacity
+                          activeOpacity={0.8}
+                          style={styles.paymentHeader}
+                          onPress={() => setShowAdjustments(!showAdjustments)}
+                        >
+                          <Text style={styles.paymentHeaderText}>
+                            Adjustments Applied
+                          </Text>
 
-      <Image
-        source={DownArrow}
-        style={{
-          width: 22,
-          height: 22,
-          transform: [
-            {
-              rotate: showAdjustments ? "180deg" : "0deg",
-            },
-          ],
-        }}
-      />
-    </TouchableOpacity>
+                          <Image
+                            source={DownArrow}
+                            style={{
+                              width: 22,
+                              height: 22,
+                              transform: [
+                                {
+                                  rotate: showAdjustments ? "180deg" : "0deg",
+                                },
+                              ],
+                            }}
+                          />
+                        </TouchableOpacity>
 
-    {/* BODY */}
-    {showAdjustments && (
-      <View style={{ marginTop: 8 }}>
+                        {/* BODY */}
+                        {showAdjustments && (
+                          <View style={{ marginTop: 8 }}>
 
-        {redeemedList.map((item, index) => (
-          <View
-            key={`${item?.invoiceId}-${index}`}
-            style={styles.adjustmentCard}
-          >
+                            {redeemedList.map((item, index) => (
+                              <View
+                                key={`${item?.invoiceId}-${index}`}
+                                style={styles.adjustmentCard}
+                              >
 
-            {/* TOP */}
-            <View style={styles.adjustmentTopRow}>
+                                {/* TOP */}
+                                <View style={styles.adjustmentTopRow}>
 
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
-                <Text style={styles.adjustmentInvoice}>
-                  {item?.invoiceNo || "--"}
-                </Text>
+                                  <View
+                                    style={{
+                                      flexDirection: "row",
+                                      alignItems: "center",
+                                    }}
+                                  >
+                                    <Text style={styles.adjustmentInvoice}>
+                                      {item?.invoiceNo || "--"}
+                                    </Text>
 
-                <Image
-                  source={InvoiceLinkIcon}
-                  style={styles.linkIcon}
-                />
-              </View>
+                                    <Image
+                                      source={InvoiceLinkIcon}
+                                      style={styles.linkIcon}
+                                    />
+                                  </View>
 
-              <Text style={styles.adjustmentAmount}>
-                ₹ {item?.amount || 0}
-              </Text>
-            </View>
+                                  <Text style={styles.adjustmentAmount}>
+                                    ₹ {item?.amount || 0}
+                                  </Text>
+                                </View>
 
-            {/* DIVIDER */}
-            <View style={styles.adjustmentDivider} />
+                                {/* DIVIDER */}
+                                <View style={styles.adjustmentDivider} />
 
-            {/* BOTTOM */}
-            <View style={styles.adjustmentBottomRow}>
+                                {/* BOTTOM */}
+                                <View style={styles.adjustmentBottomRow}>
 
-              <View>
-                <Text style={styles.adjustmentLabel}>
-                  Date
-                </Text>
-              </View>
+                                  <View>
+                                    <Text style={styles.adjustmentLabel}>
+                                      Date
+                                    </Text>
+                                  </View>
 
-              <View style={{ alignItems: "flex-end" }}>
-                <Text style={styles.adjustadjustmentValuementLabel}>
-                  {item?.redeemedOn || "--"}
-                </Text>
-              </View>
+                                  <View style={{ alignItems: "flex-end" }}>
+                                    <Text style={styles.adjustadjustmentValuementLabel}>
+                                      {item?.redeemedOn || "--"}
+                                    </Text>
+                                  </View>
 
-            </View>
-          </View>
-        ))}
+                                </View>
+                              </View>
+                            ))}
 
-        {/* SUMMARY CARD */}
-        <View style={styles.adjustmentSummaryCard}>
+                            {/* SUMMARY CARD */}
+                            <View style={styles.adjustmentSummaryCard}>
 
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>
-              Total Adjusted
-            </Text>
+                              <View style={styles.summaryRow}>
+                                <Text style={styles.summaryLabel}>
+                                  Total Adjusted
+                                </Text>
 
-            <Text style={styles.summaryValue}>
-              ₹ {adjustmentDetails?.totalAmountSettled || 0}
-            </Text>
-          </View>
+                                <Text style={styles.summaryValue}>
+                                  ₹ {adjustmentDetails?.totalAmountSettled || 0}
+                                </Text>
+                              </View>
 
-          <View
-            style={[
-              styles.summaryRow,
-              { marginTop: 10 },
-            ]}
-          >
-            <Text style={styles.summaryLabel}>
-              Balance Amount
-            </Text>
+                              <View
+                                style={[
+                                  styles.summaryRow,
+                                  { marginTop: 10 },
+                                ]}
+                              >
+                                <Text style={styles.summaryLabel}>
+                                  Balance Amount
+                                </Text>
 
-            <Text style={styles.summaryValue}>
-              ₹ {BillPdfdetails?.invoiceInfo?.balanceAmount || 0}
-            </Text>
-          </View>
+                                <Text style={styles.summaryValue}>
+                                  ₹ {BillPdfdetails?.invoiceInfo?.balanceAmount || 0}
+                                </Text>
+                              </View>
 
-        </View>
-      </View>
-    )}
-  </View>
-)}
+                            </View>
+                          </View>
+                        )}
+                      </View>
+                    )}
 
                     {BillPdfdetails?.invoiceInfo?.avilableAmountToRedeem > 0 && (
                       <View style={styles.creditCard}>
