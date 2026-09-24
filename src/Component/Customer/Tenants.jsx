@@ -2607,7 +2607,8 @@ export default function TenantsScreen({ route }) {
                 tempFilterSharing,
                 setTempFilterSharing,
                 sharingTypeOptions,
-                "filterSharing"
+                "filterSharing",
+                 true
               )}
 
               {renderFilterDropdown(
@@ -2856,7 +2857,7 @@ export default function TenantsScreen({ route }) {
           options={sharingTypeOptions}
           selectedValues={tempSharingType}
           setSelectedValues={setTempSharingType}
-
+          isSingleSelect={true}
           onReset={async () => {
             setTempSharingType([]);
             setSharingTypeFilter([]);
