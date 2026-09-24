@@ -3099,7 +3099,7 @@ export default function BillsDesign({ route }) {
                       // contentContainerStyle={{ paddingBottom: 150, }} 
                     >
 
-                      {appliedFilters && (
+                       {appliedFilters && (
                         <View style={{ marginTop: 10 }}>
 
                           <ScrollView horizontal showsHorizontalScrollIndicator={false} >
@@ -3146,10 +3146,109 @@ export default function BillsDesign({ route }) {
                         </View>
                       )}
 
+                      {!isProd && (
+                  <View style={styles.reviewBillsCard}>
 
+    <View style={styles.reviewBillsHeader}>
+      <View style={styles.reviewBillsTitleRow}>
+        <Image
+          source={GenerateBillIcon}
+          style={styles.reviewBillsIcon}
+        />
 
-                    </ScrollView>
-                  )}
+        <Text style={styles.reviewBillsTitle}>
+          Review & Generate Bills
+        </Text>
+      </View>
+    </View>
+
+    <Text style={styles.reviewBillsDescription}>
+      Review calculated invoices before generating them for tenants.
+    </Text>
+
+    <View style={styles.reviewBillsInfoRow}>
+
+      <View style={styles.reviewBillsInfoItem}>
+        <Text style={styles.reviewBillsLabel}>
+          Period :
+        </Text>
+
+        <Text style={styles.reviewBillsValue}>
+          01 Sep - 30 Sep 2026
+        </Text>
+      </View>
+
+      <View style={styles.reviewRequiredBadge}>
+        <Text style={styles.reviewRequiredText}>
+          Review Required
+        </Text>
+      </View>
+
+    </View>
+
+    <View style={styles.reviewBillsDateRow}>
+      <Text style={styles.reviewBillsLabel}>
+        Gen. Date :
+      </Text>
+
+      <Text style={styles.reviewBillsValue}>
+        01 Sep 2026
+      </Text>
+    </View>
+
+    {/* <TouchableOpacity
+      activeOpacity={0.8}
+      style={styles.reviewBillsButton}
+       onPress={() => navigation.navigate("ReviewBillsScreen")}
+    >
+      <Text style={styles.reviewBillsButtonText}>
+        Review Bills
+      </Text>
+
+  <Image source={LeftArrowIcon} style={{height:20, width:20, marginLeft:10}}/>
+   
+    </TouchableOpacity> */}
+
+    <TouchableOpacity
+  activeOpacity={PGDetails?.shouldVerifyRecurring ? 0.8 : 1}
+  disabled={!PGDetails?.shouldVerifyRecurring}
+  style={[
+    styles.reviewBillsButton,
+    !PGDetails?.shouldVerifyRecurring && styles.reviewBillsButtonDisabled,
+  ]}
+  onPress={() => {
+    if (PGDetails?.shouldVerifyRecurring) {
+      navigation.navigate("ReviewBillsScreen");
+    }
+  }}
+>
+  <Text
+    style={[
+      styles.reviewBillsButtonText,
+      !PGDetails?.shouldVerifyRecurring &&
+        styles.reviewBillsButtonTextDisabled,
+    ]}
+  >
+    Review Bills
+  </Text>
+
+  <Image
+    source={LeftArrowIcon}
+    style={[
+      {
+        height: 20,
+        width: 20,
+        marginLeft: 10,
+      },
+      !PGDetails?.shouldVerifyRecurring &&
+        styles.reviewBillsArrowDisabled,
+    ]}
+  />
+</TouchableOpacity>
+
+  </View>
+                      )}
+
 
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
 
@@ -9891,6 +9990,18 @@ invoiceListContent: {
   paddingHorizontal: 16,
   paddingTop: 10,
   paddingBottom: 160,
+},
+reviewBillsButtonDisabled: {
+  // backgroundColor: "#E5E7EB",
+  opacity: 0.8,
+},
+
+reviewBillsButtonTextDisabled: {
+  color: "#728ec0",
+},
+
+reviewBillsArrowDisabled: {
+  opacity: 0.4,
 },
 
 });
