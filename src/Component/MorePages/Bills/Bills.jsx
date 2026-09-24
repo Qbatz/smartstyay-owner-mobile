@@ -3195,10 +3195,9 @@ const adjustmentDetails =
       </Text>
     </View>
 
-    <TouchableOpacity
+    {/* <TouchableOpacity
       activeOpacity={0.8}
       style={styles.reviewBillsButton}
-      // onPress={handleReviewBills}
        onPress={() => navigation.navigate("ReviewBillsScreen")}
     >
       <Text style={styles.reviewBillsButtonText}>
@@ -3206,10 +3205,45 @@ const adjustmentDetails =
       </Text>
 
   <Image source={LeftArrowIcon} style={{height:20, width:20, marginLeft:10}}/>
-      {/* <Text style={styles.reviewBillsArrow}>
-        →
-      </Text> */}
-    </TouchableOpacity>
+   
+    </TouchableOpacity> */}
+
+    <TouchableOpacity
+  activeOpacity={PGDetails?.shouldVerifyRecurring ? 0.8 : 1}
+  disabled={!PGDetails?.shouldVerifyRecurring}
+  style={[
+    styles.reviewBillsButton,
+    !PGDetails?.shouldVerifyRecurring && styles.reviewBillsButtonDisabled,
+  ]}
+  onPress={() => {
+    if (PGDetails?.shouldVerifyRecurring) {
+      navigation.navigate("ReviewBillsScreen");
+    }
+  }}
+>
+  <Text
+    style={[
+      styles.reviewBillsButtonText,
+      !PGDetails?.shouldVerifyRecurring &&
+        styles.reviewBillsButtonTextDisabled,
+    ]}
+  >
+    Review Bills
+  </Text>
+
+  <Image
+    source={LeftArrowIcon}
+    style={[
+      {
+        height: 20,
+        width: 20,
+        marginLeft: 10,
+      },
+      !PGDetails?.shouldVerifyRecurring &&
+        styles.reviewBillsArrowDisabled,
+    ]}
+  />
+</TouchableOpacity>
 
   </View>
                       )}
@@ -9950,6 +9984,18 @@ invoiceListContent: {
   paddingHorizontal: 16,
   paddingTop: 10,
   paddingBottom: 160,
+},
+reviewBillsButtonDisabled: {
+  // backgroundColor: "#E5E7EB",
+  opacity: 0.8,
+},
+
+reviewBillsButtonTextDisabled: {
+  color: "#728ec0",
+},
+
+reviewBillsArrowDisabled: {
+  opacity: 0.4,
 },
 
 });

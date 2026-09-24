@@ -4352,6 +4352,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                         {!isBookingMode && (
                                             <TouchableOpacity
                                                 style={[styles.tab, activeTab === "CheckIn" && styles.tabActive]}
+                                                disabled={activeTab === "CheckIn"}
                                                 onPress={() => {
                                                     setActiveTab("CheckIn");
                                                     setCheckinTenantSelected(null);
@@ -4379,6 +4380,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                         <TouchableOpacity
                                             style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
+                                              disabled={activeTab === "Booking"}
                                             onPress={() => {
                                                 setActiveTab("Booking");
                                                 setCheckinTenantSelected(null);
