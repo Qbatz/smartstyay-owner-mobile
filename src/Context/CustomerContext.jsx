@@ -935,7 +935,7 @@ export const CustomerProvider = ({ children }) => {
 
     queryParams.append(
       "size",
-      String(filters?.size || 10)
+      String(filters?.size || 0)
     );
 
     const queryString = queryParams.toString();

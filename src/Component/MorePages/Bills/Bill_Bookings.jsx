@@ -861,7 +861,7 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
         )}
 
 
-        {!loading && hasBookings && hostelList?.length > 0 && (
+        {!loading && hostelList?.length > 0 && (
           <>
 
 

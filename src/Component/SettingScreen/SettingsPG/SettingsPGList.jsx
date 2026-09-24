@@ -759,7 +759,7 @@ export default function SettingsPG({ navigation }) {
             <Text style={styles.infoTitle}>Email ID</Text>
             <View style={styles.infoRow}>
               <Image source={sms} style={styles.infoIcon} />
-              <Text style={styles.infoText}>{mainHostel?.email}</Text>
+              <Text style={styles.infoText}>{mainHostel?.email || "N/A"}</Text>
             </View>
 
             <Text style={styles.infoTitle}>Contact Number</Text>
