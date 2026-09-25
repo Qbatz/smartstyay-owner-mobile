@@ -918,13 +918,16 @@ const CreateInvoice = ({ }) => {
             const hasChanges = checkInvoiceItemsChanged();
 
             if (!hasChanges) {
-                setModalType("warning")
-                setModalMessage("No changes detected")
-                setShowSuccessModal(true)
+                setModalType("warning");
+                setModalMessage("No changes detected");
+                setShowSuccessModal(true);
+
+                submitLockRef.current = false;
+                setIsSubmitClicked(false);
 
                 setTimeout(() => {
-                    setShowSuccessModal(false)
-                }, 1500)
+                    setShowSuccessModal(false);
+                }, 1500);
 
                 return;
             }
@@ -1049,9 +1052,7 @@ const CreateInvoice = ({ }) => {
             // ==================================================
             // RESPONSE
             // ==================================================
-
             if (!res?.success) {
-
                 setModalType("error");
 
                 setModalMessage(
@@ -1065,6 +1066,7 @@ const CreateInvoice = ({ }) => {
 
                 setShowSuccessModal(true);
 
+                submitLockRef.current = false;
                 setIsSubmitClicked(false);
 
                 return;
@@ -1109,6 +1111,7 @@ const CreateInvoice = ({ }) => {
                 error
             );
 
+            submitLockRef.current = false;
             setIsSubmitClicked(false);
 
             setModalType("error");
