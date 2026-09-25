@@ -3124,10 +3124,10 @@ export default function BillsDesign({ route }) {
 
 
 
-                  {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
+                  {/* {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
                     <ScrollView
                       showsVerticalScrollIndicator={false}
-                    // contentContainerStyle={{ paddingBottom: 150, }} 
+                      contentContainerStyle={{ paddingBottom: 150, }} 
                     >
 
                       {appliedFilters && (
@@ -3177,8 +3177,8 @@ export default function BillsDesign({ route }) {
                         </View>
                       )}
 
-                    </ScrollView>
-                  )}
+                       </ScrollView>
+                  )} */}
 
                   {!loading && BillDetails?.listInvoices?.length > 0 && (
                     <FlatList

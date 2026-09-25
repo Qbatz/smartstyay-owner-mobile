@@ -555,13 +555,13 @@ export default function TenantsScreen({ route }) {
             numberOfLines={1}
           >
             {isSingle
-              ? value || "Select"
+              ? value || `Select ${label}`
               : value?.length > 0
                 ? options
                   .filter(item => value.includes(item.value))
                   .map(item => item.label)
                   .join(", ")
-                : "Select"}
+                : `Select ${label}`}
           </Text>
 
           <Text style={styles.arrow}>⌄</Text>
@@ -768,7 +768,7 @@ export default function TenantsScreen({ route }) {
   ]);
 
   useEffect(()=>{
-    if(!showFilter){
+    if(showFilter){
       setTempFilterStatus([])
       setTempFilterSharing([])
       setTempFilterMonth("")
@@ -1279,7 +1279,7 @@ export default function TenantsScreen({ route }) {
                   <View style={styles.emptyContainer}>
                     <Image source={EmptyState} style={styles.emptyImage} />
 
-                    {appliedFilters ? (
+                    {appliedFilters || tempFilterStatus.length > 0 || tempFilterSharing.length>0 || !!tempFilterMonth? (
                       <>
                         <Text style={styles.emptyText}>
                           No tenants found{"\n"}
@@ -1457,14 +1457,18 @@ export default function TenantsScreen({ route }) {
                     </ScrollView>
                   )
                 }
-
-                {(tenantStatusFilter.length > 0  || sharingTypeFilter?.length > 0 || tempFilterStatus.length>0 
-                || tempFilterSharing.length >0 || tempFilterMonth || selectedMonth) && (
+  {console.log("abilash",tempFilterStatus)}
+   {console.log("abiash",tempFilterSharing)}
+   {console.log("seetha",tempFilterMonth)}
+                {(appliedFilters || tempFilterStatus.length>0 ||  tempFilterSharing.length >0 || !!tempFilterMonth) && filteredTenants?.length >0
+                // (tenantStatusFilter.length > 0  || sharingTypeFilter?.length > 0 || tempFilterStatus.length>0 
+                // || tempFilterSharing.length >0 || tempFilterMonth || selectedMonth)
+                 && (
                   <TouchableOpacity onPress={handleResetFilters}
                   style={{marginLeft:15}}>
                     <Text style={{fontSize:14,fontFamily:'Gilroy-Bold',color:'#2d5fff'}}>Reset</Text>
                   </TouchableOpacity>
-                )}
+                )} 
 
 
                 {!loading &&
