@@ -1,9 +1,4 @@
-import React, {
-    useEffect,
-    useRef,
-    useState,
-} from "react";
-
+import React, { useContext, useEffect, useRef, useState, } from "react";
 import {
     View,
     Text,
@@ -16,9 +11,14 @@ import {
     Keyboard,
     TouchableWithoutFeedback,
     useWindowDimensions,
+    Image, Modal
 } from "react-native";
-
+import { BillContext } from "../../../Context/BillsContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import EditIcon from "../../../Assets/Images/pencil.png";
+import DeleteIcon from "../../../Assets/Images/trash.png"
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 
 const GenerateBillsSheet = ({
@@ -30,26 +30,32 @@ const GenerateBillsSheet = ({
     const { height } = useWindowDimensions();
     const insets = useSafeAreaInsets();
 
+
+    const { loading, GetRecurringInvoicesForReview,
+        availablerecurringInvoices, UpdateRecurringBillItem, DeleteRecurringBillItem } = useContext(BillContext)
+    const { activeHostelId } = useContext(CommonContexts);
     const sheetY = useRef(new Animated.Value(0)).current;
 
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+
     const [adjustments, setAdjustments] = useState([]);
+    const [invoiceItems, setInvoiceItems] = useState([]);
     const [editingRow, setEditingRow] = useState(null);
 
     const [draftType, setDraftType] = useState("");
-    const [draftAmount, setDraftAmount] = useState("");
+    const [draftAmount, setDraftAmount] = useState("")
 
+    const [deleteBillRow, setDeleteBillRow] = useState(false);
+    const [selectedDeleteItem, setSelectedDeleteItem] = useState(null);
 
     // =====================================================
-    // RESET WHEN SHEET OPENS
+    // SHEET OPEN ANIMATION
     // =====================================================
 
     useEffect(() => {
         if (!visible) return;
-
-        setAdjustments([]);
-        setEditingRow(null);
-        setDraftType("");
-        setDraftAmount("");
 
         sheetY.setValue(height);
 
@@ -60,12 +66,40 @@ const GenerateBillsSheet = ({
             stiffness: 180,
             mass: 0.8,
         }).start();
-    }, [visible]);
+    }, [visible, height]);
 
 
     // =====================================================
-    // KEYBOARD
+    // UPDATE INVOICE ITEMS
     // =====================================================
+
+    useEffect(() => {
+        if (!visible) return;
+
+        const selectedInvoice = invoices?.[0];
+
+        const apiItems =
+            selectedInvoice?.invoiceItems || [];
+
+        setInvoiceItems(
+            apiItems.map((item) => ({
+                id: `api-${item.itemId}`,
+                itemId: item.itemId,
+                type: item.itemName || "",
+                amount: Number(item.amount || 0),
+                source: "api",
+            }))
+        );
+
+        setEditingRow(null);
+        setDraftType("");
+        setDraftAmount("");
+    }, [visible, invoices])
+
+
+
+
+
 
     useEffect(() => {
         const keyboardShow = Keyboard.addListener(
@@ -150,6 +184,42 @@ const GenerateBillsSheet = ({
     ).current;
 
 
+    const getApplicableDays = (invoice) => {
+        if (
+            !invoice?.invoiceStartDate ||
+            !invoice?.invoiceEndDate
+        ) {
+            return 0;
+        }
+
+        const [startDay, startMonth, startYear] =
+            invoice.invoiceStartDate.split("/").map(Number);
+
+        const [endDay, endMonth, endYear] =
+            invoice.invoiceEndDate.split("/").map(Number);
+
+        const startDate = new Date(
+            startYear,
+            startMonth - 1,
+            startDay
+        );
+
+        const endDate = new Date(
+            endYear,
+            endMonth - 1,
+            endDay
+        );
+
+        const diff =
+            endDate.getTime() -
+            startDate.getTime();
+
+        return Math.floor(
+            diff / (1000 * 60 * 60 * 24)
+        ) + 1;
+    };
+
+
     // =====================================================
     // CLOSE
     // =====================================================
@@ -174,6 +244,7 @@ const GenerateBillsSheet = ({
 
     const handleAdd = () => {
         setEditingRow({
+            mode: "add",
             id: Date.now(),
         });
 
@@ -181,12 +252,204 @@ const GenerateBillsSheet = ({
         setDraftAmount("");
     };
 
+    const handleEditItem = (item) => {
+        setEditingRow({
+            mode: "edit",
+            id: item.id,
+            source: item.source,
+        });
 
-    // =====================================================
-    // SAVE NEW ROW
-    // =====================================================
+        setDraftType(item.type);
+        setDraftAmount(String(item.amount ?? ""));
+    };
 
-    const handleSaveRow = () => {
+
+
+
+    const isEditingExisting =
+        editingRow?.mode === "edit";
+
+    const isAddingNew =
+        editingRow?.mode === "add";
+
+    const canSave =
+        isEditingExisting
+            ? !!draftAmount.trim()
+            : !!draftType.trim() &&
+            !!draftAmount.trim();
+
+    const handleSaveRow = async () => {
+
+        // EDIT EXISTING ITEM
+
+
+        if (editingRow?.mode === "edit") {
+
+            if (!draftAmount.trim()) {
+                return;
+            }
+
+            const item = invoiceItems.find(
+                (item) => item.id === editingRow.id
+            );
+
+            if (!item) {
+                return;
+            }
+
+            const amount = Number(draftAmount || 0);
+
+            // =====================================
+            // API ITEM
+            // =====================================
+
+            if (item.source === "api") {
+                const selectedInvoice = invoices?.[0];
+
+                const invoiceId =
+                    selectedInvoice?.invoiceId ||
+                    selectedInvoice?.id;
+
+                const itemId = item.itemId;
+
+                if (!invoiceId || !itemId) {
+                    console.log(
+                        "Missing invoiceId / itemId",
+                        {
+                            invoiceId,
+                            itemId,
+                        }
+                    );
+
+                    return;
+                }
+
+                const result =
+                    await UpdateRecurringBillItem({
+                        hostelId: activeHostelId,
+                        invoiceId,
+                        itemId,
+                        name: item.type,
+                        draftAmount: amount,
+                    });
+
+                console.log(
+                    "UPDATE RECURRING ITEM RESULT:",
+                    result
+                );
+
+                if (!result?.success) {
+                    setModalType("error");
+
+                    setModalMessage(
+                        result?.message ||
+                        "Failed to update recurring amount"
+                    );
+
+                    setShowSuccessModal(true);
+
+                    setTimeout(() => {
+                        setShowSuccessModal(false);
+                    }, 1500);
+
+                    return;
+                }
+
+
+
+                const refreshResult =
+                    await GetRecurringInvoicesForReview(
+                        activeHostelId
+                    );
+
+                console.log(
+                    "REFRESHED RECURRING INVOICES:",
+                    refreshResult
+                );
+
+                // =========================================
+                // FIND UPDATED INVOICE
+                // =========================================
+
+                const updatedInvoice =
+                    refreshResult?.data?.invoicesList?.find(
+                        (invoice) =>
+                            Number(invoice?.invoiceId) ===
+                            Number(invoiceId)
+                    );
+
+                console.log(
+                    "UPDATED INVOICE:",
+                    updatedInvoice
+                );
+
+                // =========================================
+                // UPDATE SHEET ITEMS IMMEDIATELY
+                // =========================================
+
+                if (updatedInvoice?.invoiceItems) {
+                    setInvoiceItems(
+                        updatedInvoice.invoiceItems.map((apiItem) => ({
+                            id: `api-${apiItem.itemId}`,
+                            itemId: apiItem.itemId,
+                            type: apiItem.itemName || "",
+                            amount: Number(apiItem.amount || 0),
+                            source: "api",
+                        }))
+                    );
+                }
+
+                // =========================================
+                // SUCCESS MESSAGE
+                // =========================================
+
+                setModalType("success");
+
+                setModalMessage(
+                    "Recurring amount updated successfully"
+                );
+
+                setShowSuccessModal(true);
+
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 1500);
+            }
+
+
+            setInvoiceItems((prev) =>
+                prev.map((item) => {
+
+                    if (item.id !== editingRow.id) {
+                        return item;
+                    }
+
+                    return {
+                        ...item,
+
+                        type:
+                            item.source === "api"
+                                ? item.type
+                                : draftType.trim(),
+
+                        amount,
+                    };
+                })
+            );
+
+            setEditingRow(null);
+            setDraftType("");
+            setDraftAmount("");
+
+            Keyboard.dismiss();
+
+            return;
+        }
+
+
+        // ADD NEW ITEM
+
+
         if (
             !draftType.trim() ||
             !draftAmount.trim()
@@ -194,15 +457,17 @@ const GenerateBillsSheet = ({
             return;
         }
 
-        const newRow = {
-            id: Date.now(),
+        const newItem = {
+            id: `local-${Date.now()}`,
+            itemId: null,
             type: draftType.trim(),
             amount: Number(draftAmount || 0),
+            source: "local",
         };
 
-        setAdjustments((prev) => [
+        setInvoiceItems((prev) => [
             ...prev,
-            newRow,
+            newItem,
         ]);
 
         setEditingRow(null);
@@ -212,17 +477,130 @@ const GenerateBillsSheet = ({
         Keyboard.dismiss();
     };
 
+    const handleRemoveItem = (item) => {
+        if (!item) return;
 
-    // =====================================================
-    // REMOVE ADJUSTMENT
-    // =====================================================
+        // Store which item user wants to delete
+        setSelectedDeleteItem(item);
 
-    const handleRemoveAdjustment = (id) => {
-        setAdjustments((prev) =>
-            prev.filter(
-                (item) => item.id !== id
-            )
-        );
+        // Open custom delete modal
+        setDeleteBillRow(true);
+    }
+
+
+    const confirmDeleteItem = async (item) => {
+        if (!item) return;
+
+        // ==========================================
+        // LOCAL ITEM
+        // ==========================================
+
+        if (item.source === "local") {
+            setInvoiceItems((prev) =>
+                prev.filter((row) => row.id !== item.id)
+            );
+
+            if (editingRow?.id === item.id) {
+                setEditingRow(null);
+                setDraftType("");
+                setDraftAmount("");
+            }
+
+            // Close delete popup
+            setSelectedDeleteItem(null);
+            setDeleteBillRow(false);
+
+            return;
+        }
+
+        // ==========================================
+        // API ITEM
+        // ==========================================
+
+        if (item.source === "api") {
+            const selectedInvoice = invoices?.[0];
+
+            const invoiceId =
+                selectedInvoice?.invoiceId ||
+                selectedInvoice?.id;
+
+            const itemId = item.itemId;
+
+            if (!activeHostelId || !invoiceId || !itemId) {
+                console.log("Missing delete params:", {
+                    activeHostelId,
+                    invoiceId,
+                    itemId,
+                });
+
+                return;
+            }
+
+            const result = await DeleteRecurringBillItem({
+                hostelId: activeHostelId,
+                invoiceId,
+                itemId,
+            });
+
+            console.log(
+                "DELETE RECURRING ITEM RESULT:",
+                result
+            );
+
+            // ==========================================
+            // DELETE FAILED
+            // ==========================================
+
+            if (!result?.success) {
+                setModalType("error");
+
+                setModalMessage(
+                    result?.message ||
+                    "Failed to delete recurring item"
+                );
+
+                setShowSuccessModal(true);
+
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 1500);
+
+                return;
+            }
+
+            // ==========================================
+            // DELETE SUCCESS
+            // ==========================================
+
+            setInvoiceItems((prev) =>
+                prev.filter((row) => row.id !== item.id)
+            );
+
+            if (editingRow?.id === item.id) {
+                setEditingRow(null);
+                setDraftType("");
+                setDraftAmount("");
+            }
+
+            // Refresh API data
+            await GetRecurringInvoicesForReview(
+                activeHostelId
+            );
+
+            // Close delete popup
+            setSelectedDeleteItem(null);
+            setDeleteBillRow(false);
+            // Success message
+            setModalType("success");
+            setModalMessage("Item deleted successfully"
+            );
+
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 1500);
+        }
     };
 
 
@@ -231,32 +609,95 @@ const GenerateBillsSheet = ({
     // =====================================================
 
     const getInvoiceAmount = (invoice) => {
-        return Number(
-            invoice?.amount ||
-            invoice?.totalAmount ||
-            invoice?.finalAmount ||
-            0
+        return Number(invoice?.invoiceAmount || 0);
+    };
+
+    const getRentAmount = (invoice) => {
+        const rentItem = invoice?.invoiceItems?.find(
+            (item) =>
+                String(item?.itemName || "").toUpperCase() === "RENT"
+        );
+
+        return Number(rentItem?.amount || 0);
+    };
+
+    const getCustomerName = (invoice) => {
+        return (
+            invoice?.customerInfo?.fullName ||
+            `${invoice?.customerInfo?.firstName || ""} ${invoice?.customerInfo?.lastName || ""
+                }`.trim() ||
+            "Tenant"
         );
     };
 
+    const getInitials = (invoice) => {
+        const customerInfo = invoice?.customerInfo;
 
-    const totalInvoiceAmount = invoices.reduce(
-        (sum, invoice) =>
-            sum + getInvoiceAmount(invoice),
-        0
-    );
+        if (customerInfo?.initials) {
+            return customerInfo.initials.toUpperCase();
+        }
+
+        const name = getCustomerName(invoice);
+
+        return name
+            .split(" ")
+            .filter(Boolean)
+            .map((word) => word[0])
+            .join("")
+            .slice(0, 2)
+            .toUpperCase();
+    };
+
+    const getRoomDetails = (invoice) => {
+        const stayInfo = invoice?.stayInfo;
+
+        return [
+            stayInfo?.floorName,
+            stayInfo?.roomName,
+            stayInfo?.bedName,
+        ]
+            .filter(Boolean)
+            .join(" / ");
+    };
+
+    const getInvoicePeriod = (invoice) => {
+        if (!invoice?.invoiceStartDate) {
+            return "";
+        }
+
+        return `${invoice.invoiceStartDate} - ${invoice?.invoiceEndDate || ""
+            }`;
+    };
+
+    // const getInvoiceAmount = (invoice) => {
+    //     return Number(
+    //         invoice?.amount ||
+    //         invoice?.totalAmount ||
+    //         invoice?.finalAmount ||
+    //         0
+    //     );
+    // };
 
 
-    const adjustmentTotal = adjustments.reduce(
+    // const totalInvoiceAmount = invoices.reduce(
+    //     (sum, invoice) =>
+    //         sum + getInvoiceAmount(invoice),
+    //     0
+    // );
+
+
+    // const adjustmentTotal = adjustments.reduce(
+    //     (sum, item) =>
+    //         sum + Number(item.amount || 0),
+    //     0
+    // );
+
+
+    const finalTotal = invoiceItems.reduce(
         (sum, item) =>
             sum + Number(item.amount || 0),
         0
     );
-
-
-    const finalTotal =
-        totalInvoiceAmount +
-        adjustmentTotal;
 
 
     // =====================================================
@@ -304,122 +745,134 @@ const GenerateBillsSheet = ({
     // =====================================================
 
     return (
-        <View style={styles.sheetOverlay}>
+        <>
 
-            {/* BACKDROP */}
+            <SuccessModal
+                visible={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                message={modalMessage}
+                type={modalType}
+            />
 
-            <TouchableWithoutFeedback
-                onPress={handleClose}
-            >
-                <View style={styles.backdrop} />
-            </TouchableWithoutFeedback>
+            <View style={styles.sheetOverlay}>
 
+                {/* BACKDROP */}
 
-            {/* BOTTOM SHEET */}
-
-            <Animated.View
-                style={[
-                    styles.sheet,
-                    {
-                        height:
-                            height * 0.85,
-
-                        maxHeight:
-                            height * 0.85,
-
-                        transform: [
-                            {
-                                translateY:
-                                    sheetY,
-                            },
-                        ],
-                    },
-                ]}
-                {...panResponder.panHandlers}
-            >
-
-                {/* HANDLE */}
-
-                <View style={styles.handleArea}>
-                    <View
-                        style={
-                            styles.sheetHandle
-                        }
-                    />
-                </View>
+                <TouchableWithoutFeedback
+                    onPress={handleClose}
+                >
+                    <View style={styles.backdrop} />
+                </TouchableWithoutFeedback>
 
 
-                {/* HEADER */}
+                {/* BOTTOM SHEET */}
 
-                <View style={styles.header}>
+                <Animated.View
+                    style={[
+                        styles.sheet,
+                        {
+                            height:
+                                height * 0.85,
 
-                    <View>
-                        <Text
+                            maxHeight:
+                                height * 0.85,
+
+                            transform: [
+                                {
+                                    translateY:
+                                        sheetY,
+                                },
+                            ],
+                        },
+                    ]}
+                    {...panResponder.panHandlers}
+                >
+
+                    {/* HANDLE */}
+
+                    <View style={styles.handleArea}>
+                        <View
                             style={
-                                styles.headerTitle
+                                styles.sheetHandle
                             }
-                        >
-                            Bill Details
-                        </Text>
+                        />
+                    </View>
 
-                        <Text
+
+                    {/* HEADER */}
+
+                    <View style={styles.header}>
+
+                        <View>
+                            <Text
+                                style={
+                                    styles.headerTitle
+                                }
+                            >
+                                Bill Details
+                            </Text>
+
+                            {/* <Text
                             style={
                                 styles.headerSubtitle
                             }
                         >
                             Review before generating
-                        </Text>
-                    </View>
+                        </Text> */}
+                        </View>
 
 
-                    <View
-                        style={
-                            styles.readyBadge
-                        }
-                    >
-                        <Text
+                        <View
                             style={
-                                styles.readyBadgeText
+                                styles.readyBadge
                             }
                         >
-                            {String(
+                            <Text
+                                style={
+                                    styles.readyBadgeText
+                                }
+                            >
+                                {/* {String(
                                 invoices.length
-                            ).padStart(2, "0")}{" "}
-                            Bills
-                        </Text>
+                            ).padStart(2, "0")}{" "} */}
+                                Recurring
+                            </Text>
+                        </View>
+
                     </View>
 
-                </View>
 
+                    {/* CONTENT */}
 
-                {/* CONTENT */}
+                    <ScrollView
+                        showsVerticalScrollIndicator={
+                            false
+                        }
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={{
+                            paddingBottom:
+                                120 +
+                                insets.bottom,
+                        }}
+                    >
 
-                <ScrollView
-                    showsVerticalScrollIndicator={
-                        false
-                    }
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={{
-                        paddingBottom:
-                            120 +
-                            insets.bottom,
-                    }}
-                >
+                        {/* TENANTS */}
 
-                    {/* TENANTS */}
+                        {/* TENANTS */}
 
-                    {invoices.map(
-                        (invoice, index) => {
-                            const amount =
-                                getInvoiceAmount(
-                                    invoice
-                                );
+                        {invoices.map((invoice, index) => {
+                            const amount = getInvoiceAmount(invoice);
+                            const customerName = getCustomerName(invoice);
+                            const initials = getInitials(invoice);
+                            const profilePic = invoice?.customerInfo?.profilePic;
+
+                            const roomDetails = getRoomDetails(invoice);
 
                             return (
                                 <View
                                     key={
-                                        invoice.id ||
-                                        invoice.invoiceId ||
+                                        invoice?.invoiceId ||
+                                        invoice?.id ||
                                         index
                                     }
                                     style={[
@@ -430,654 +883,351 @@ const GenerateBillsSheet = ({
                                     ]}
                                 >
 
-                                    <View
-                                        style={
-                                            styles.avatar
-                                        }
-                                    >
-                                        <Text
-                                            style={
-                                                styles.avatarText
-                                            }
-                                        >
-                                            {invoice.initials ||
-                                                invoice.name
-                                                    ?.substring(
-                                                        0,
-                                                        2
-                                                    )
-                                                    ?.toUpperCase() ||
-                                                "TN"}
-                                        </Text>
-                                    </View>
-
-
-                                    <View
-                                        style={
-                                            styles.tenantInfo
-                                        }
-                                    >
-
-                                        <Text
-                                            style={
-                                                styles.tenantName
-                                            }
-                                            numberOfLines={
-                                                1
-                                            }
-                                        >
-                                            {invoice.name ||
-                                                invoice.fullName ||
-                                                "Tenant"}
-                                        </Text>
-
-
-                                        <Text
-                                            style={
-                                                styles.tenantDetails
-                                            }
-                                            numberOfLines={
-                                                1
-                                            }
-                                        >
-                                            {invoice.room ||
-                                                "--"}{" "}
-                                            ·{" "}
-                                            {invoice.type ||
-                                                "Rent"}{" "}
-                                            ·{" "}
-                                            {invoice.period ||
-                                                ""}
-                                        </Text>
-
-                                    </View>
-
-
-                                    <Text
-                                        style={
-                                            styles.tenantAmount
-                                        }
-                                    >
-                                        ₹
-                                        {Number(
-                                            amount
-                                        ).toLocaleString(
-                                            "en-IN"
+                                    <View style={styles.avatar}>
+                                        {profilePic ? (
+                                            <Image
+                                                source={{
+                                                    uri: profilePic,
+                                                }}
+                                                style={styles.avatarImage}
+                                            />
+                                        ) : (
+                                            <Text style={styles.avatarText}>
+                                                {initials}
+                                            </Text>
                                         )}
-                                    </Text>
+                                    </View>
+
+                                    <View style={styles.tenantInfo}>
+
+                                        <Text
+                                            style={styles.tenantName}
+                                            numberOfLines={1}
+                                        >
+                                            {customerName}
+                                        </Text>
+
+                                        <Text
+                                            style={styles.tenantDetails}
+                                            numberOfLines={1}
+                                        >
+                                            {roomDetails || "--"}
+                                            {" · "}
+                                            Rent
+                                            {" · "}
+                                            {invoice?.invoiceStartDate || ""}
+                                        </Text>
+
+                                    </View>
+
+
 
                                 </View>
-                            );
-                        }
-                    )}
+                            )
+                        })}
 
-
-                    {/* CALCULATION CARD */}
-
-                    <View
-                        style={
-                            styles.calculationCard
-                        }
-                    >
-
-                        {/* CALCULATION HEADER */}
+                        {/* CALCULATION CARD */}
 
                         <View
                             style={
-                                styles.calculationHeader
+                                styles.calculationCard
                             }
                         >
 
-                            <Text
-                                style={
-                                    styles.calculationTitle
-                                }
-                            >
-                                CALCULATION{" "}
-                                BREAKDOWN
-                            </Text>
+                            {/* CALCULATION HEADER */}
 
+                            <View style={styles.calculationHeader}>
 
-                            <View
-                                style={
-                                    styles.manualBadge
-                                }
-                            >
-
-                                <View
-                                    style={
-                                        styles.manualDot
-                                    }
-                                />
-
-                                <Text
-                                    style={
-                                        styles.manualText
-                                    }
-                                >
-                                    Manually Edited
+                                <Text style={styles.calculationTitle}>
+                                    CALCULATION BREAKDOWN
                                 </Text>
 
-                            </View>
+                                {invoices?.[0]?.isEdited && (
+                                    <View style={styles.manualBadge}>
+                                        <View style={styles.manualDot} />
 
-                        </View>
-
-
-                        {/* MONTHLY RENT */}
-
-                        <View
-                            style={
-                                styles.breakdownRow
-                            }
-                        >
-
-                            <Text
-                                style={
-                                    styles.breakdownLabel
-                                }
-                            >
-                                Monthly Rent
-                            </Text>
-
-                            <Text
-                                style={
-                                    styles.breakdownAmount
-                                }
-                            >
-                                ₹
-                                {Number(
-                                    totalInvoiceAmount
-                                ).toLocaleString(
-                                    "en-IN"
+                                        <Text style={styles.manualText}>
+                                            Manually Edited
+                                        </Text>
+                                    </View>
                                 )}
-                            </Text>
-
-                        </View>
-
-
-                        {/* APPLICABLE DAYS */}
-
-                        <View
-                            style={
-                                styles.breakdownRow
-                            }
-                        >
-
-                            <View
-                                style={
-                                    styles.labelWithBadge
-                                }
-                            >
-
-                                <Text
-                                    style={
-                                        styles.breakdownLabel
-                                    }
-                                >
-                                    Applicable Days
-                                </Text>
-
-                                <View
-                                    style={
-                                        styles.editedBadge
-                                    }
-                                >
-                                    <Text
-                                        style={
-                                            styles.editedText
-                                        }
-                                    >
-                                        EDITED
-                                    </Text>
-                                </View>
 
                             </View>
 
 
-                            <Text
-                                style={
-                                    styles.breakdownAmount
-                                }
-                            >
-                                25 days
-                            </Text>
+                            {/* =========================================
+    INVOICE ITEMS
+========================================= */}
 
-                        </View>
+                            {invoiceItems.map((item) => {
 
+                                const isEditing =
+                                    editingRow?.mode === "edit" &&
+                                    editingRow?.id === item.id;
 
-                        {/* PRORATED RENT */}
-
-                        <View
-                            style={
-                                styles.breakdownRow
-                            }
-                        >
-
-                            <Text
-                                style={
-                                    styles.breakdownLabel
-                                }
-                            >
-                                Prorated Rent
-                            </Text>
-
-                            <Text
-                                style={
-                                    styles.breakdownAmount
-                                }
-                            >
-                                ₹
-                                {Number(
-                                    totalInvoiceAmount
-                                ).toLocaleString(
-                                    "en-IN"
-                                )}
-                            </Text>
-
-                        </View>
-
-
-                        {/* DISCOUNT */}
-
-                        <View
-                            style={
-                                styles.breakdownRow
-                            }
-                        >
-
-                            <View
-                                style={
-                                    styles.labelWithBadge
-                                }
-                            >
-
-                                <Text
-                                    style={
-                                        styles.breakdownLabel
-                                    }
-                                >
-                                    Discount
-                                </Text>
-
-                                <View
-                                    style={
-                                        styles.editedBadge
-                                    }
-                                >
-                                    <Text
-                                        style={
-                                            styles.editedText
-                                        }
+                                return (
+                                    <View
+                                        key={item.id}
+                                        style={styles.itemRow}
                                     >
-                                        EDITED
-                                    </Text>
-                                </View>
 
-                            </View>
+                                        {/* DESCRIPTION */}
 
+                                        <View style={styles.itemNameContainer}>
 
-                            <Text
-                                style={
-                                    styles.breakdownAmount
-                                }
-                            >
-                                —
-                            </Text>
+                                            <Text
+                                                style={styles.breakdownLabel}
+                                                numberOfLines={1}
+                                            >
+                                                {item.type}
+                                            </Text>
 
-                        </View>
+                                        </View>
 
 
-                        {/* TAX */}
+                                        {/* RIGHT SIDE */}
 
-                        <View
-                            style={
-                                styles.breakdownRow
-                            }
-                        >
+                                        <View style={styles.itemRightContainer}>
 
-                            <View
-                                style={
-                                    styles.labelWithBadge
-                                }
-                            >
+                                            {/* EDIT */}
 
-                                <Text
-                                    style={
-                                        styles.breakdownLabel
-                                    }
-                                >
-                                    Tax
-                                </Text>
+                                            <TouchableOpacity
+                                                activeOpacity={0.7}
+                                                onPress={() =>
+                                                    handleEditItem(item)
+                                                }
+                                                style={styles.iconButton}
+                                            >
+                                                <Image
+                                                    source={EditIcon}
+                                                    style={styles.actionIcon}
+                                                />
+                                            </TouchableOpacity>
 
-                                <View
-                                    style={
-                                        styles.editedBadge
-                                    }
-                                >
-                                    <Text
-                                        style={
-                                            styles.editedText
-                                        }
+
+                                            {/* DELETE */}
+
+                                            <TouchableOpacity
+                                                activeOpacity={0.7}
+                                                onPress={() =>
+                                                    handleRemoveItem(item)
+                                                }
+                                                style={styles.iconButton}
+                                            >
+                                                <Image
+                                                    source={DeleteIcon}
+                                                    style={styles.actionIcon}
+                                                />
+                                            </TouchableOpacity>
+
+
+                                            {/* AMOUNT */}
+
+                                            {/* {isEditing ? (
+                                            <TextInput
+                                                value={draftAmount}
+                                                onChangeText={(value) =>
+                                                    setDraftAmount(
+                                                        value.replace(
+                                                            /[^0-9.]/g,
+                                                            ""
+                                                        )
+                                                    )
+                                                }
+                                                keyboardType="numeric"
+                                                style={[
+                                                    styles.inlineAmountInput,
+                                                    {
+                                                        width: 95,
+                                                    },
+                                                ]}
+                                                autoFocus
+                                            />
+                                        ) : ( */}
+                                            <Text
+                                                style={
+                                                    styles.breakdownAmount
+                                                }
+                                            >
+                                                ₹
+                                                {Number(
+                                                    item.amount || 0
+                                                ).toLocaleString("en-IN")}
+                                            </Text>
+                                            {/* )} */}
+
+                                        </View>
+
+                                    </View>
+                                );
+                            })}
+
+
+                            {/* ADD */}
+
+                            {/* CALCULATION HEADER */}
+
+
+
+
+                            {/* EDIT / ADD FORM */}
+
+                            {editingRow && (
+                                <View style={styles.editRow}>
+
+                                    {/* DESCRIPTION */}
+
+                                    {editingRow.mode === "add" ||
+                                        editingRow.source === "local" ? (
+                                        <View style={styles.editField}>
+
+                                            <TextInput
+                                                value={draftType}
+                                                onChangeText={setDraftType}
+                                                placeholder="Enter Description"
+                                                placeholderTextColor="#A2A7B0"
+                                                style={styles.editInput}
+                                            />
+
+                                        </View>
+                                    ) : null}
+
+
+                                    {/* AMOUNT */}
+
+                                    <View
+                                        style={[
+                                            styles.editField,
+                                            editingRow.mode === "edit" &&
+                                            editingRow.source === "api" && {
+                                                flex: 1,
+                                            },
+                                        ]}
                                     >
-                                        EDITED
-                                    </Text>
-                                </View>
 
-                            </View>
-
-
-                            <Text
-                                style={
-                                    styles.breakdownAmount
-                                }
-                            >
-                                ₹0
-                            </Text>
-
-                        </View>
-
-
-                        {/* ADD */}
-
-                        <TouchableOpacity
-                            activeOpacity={0.8}
-                            onPress={handleAdd}
-                            style={
-                                styles.addButton
-                            }
-                        >
-                            <Text
-                                style={
-                                    styles.addButtonText
-                                }
-                            >
-                                ＋ Add
-                            </Text>
-                        </TouchableOpacity>
-
-
-                        {/* NEW ROW */}
-
-                        {editingRow && (
-                            <View
-                                style={
-                                    styles.editRow
-                                }
-                            >
-
-                                {/* TYPE */}
-
-                                <View
-                                    style={
-                                        styles.editField
-                                    }
-                                >
-
-                                    <Text
-                                        style={
-                                            styles.editFieldLabel
-                                        }
-                                    >
-                                        Type
-                                    </Text>
-
-                                    <TextInput
-                                        value={
-                                            draftType
-                                        }
-                                        onChangeText={
-                                            setDraftType
-                                        }
-                                        placeholder="Enter type"
-                                        placeholderTextColor="#A2A7B0"
-                                        style={
-                                            styles.editInput
-                                        }
-                                    />
-
-                                </View>
-
-
-                                {/* AMOUNT */}
-
-                                <View
-                                    style={
-                                        styles.editField
-                                    }
-                                >
-
-                                    <Text
-                                        style={
-                                            styles.editFieldLabel
-                                        }
-                                    >
-                                        Amount
-                                    </Text>
-
-                                    <TextInput
-                                        value={
-                                            draftAmount
-                                        }
-                                        onChangeText={(
-                                            value
-                                        ) =>
-                                            setDraftAmount(
-                                                value.replace(
-                                                    /[^0-9.]/g,
-                                                    ""
+                                        <TextInput
+                                            value={draftAmount}
+                                            onChangeText={(value) =>
+                                                setDraftAmount(
+                                                    value.replace(
+                                                        /[^0-9.]/g,
+                                                        ""
+                                                    )
                                                 )
-                                            )
-                                        }
-                                        placeholder="₹ 0.00"
-                                        placeholderTextColor="#A2A7B0"
-                                        keyboardType="numeric"
-                                        style={
-                                            styles.editInput
-                                        }
-                                    />
+                                            }
+                                            placeholder="₹ 0.00"
+                                            placeholderTextColor="#A2A7B0"
+                                            keyboardType="numeric"
+                                            style={styles.editInput}
+                                            autoFocus
+                                        />
+
+                                    </View>
 
                                 </View>
-
-
-                                {/* CANCEL NEW ROW */}
-
+                            )}
+                            {!editingRow && (
                                 <TouchableOpacity
-                                    onPress={() => {
-                                        setEditingRow(
-                                            null
-                                        );
-                                        setDraftType(
-                                            ""
-                                        );
-                                        setDraftAmount(
-                                            ""
-                                        );
-                                    }}
-                                    style={
-                                        styles.removeButton
-                                    }
+                                    activeOpacity={0.8}
+                                    onPress={handleAdd}
+                                    style={styles.addButton}
+                                    disabled={isEditingExisting}
                                 >
-                                    <Text
-                                        style={
-                                            styles.removeIcon
-                                        }
-                                    >
-                                        ×
+                                    <Text style={styles.addButtonText}>
+                                        ＋ Add
                                     </Text>
                                 </TouchableOpacity>
+                            )}
 
-                            </View>
-                        )}
-
-
-                        {/* SAVED ADJUSTMENTS */}
-
-                        {adjustments.map(
-                            (item) => (
+                            {editingRow && (
                                 <View
-                                    key={
-                                        item.id
-                                    }
                                     style={
-                                        styles.savedRow
+                                        styles.actionRow
                                     }
                                 >
 
-                                    <View
+                                    <TouchableOpacity
+                                        activeOpacity={0.8}
+                                        onPress={() => {
+                                            setEditingRow(
+                                                null
+                                            );
+                                            setDraftType(
+                                                ""
+                                            );
+                                            setDraftAmount(
+                                                ""
+                                            );
+                                        }}
                                         style={
-                                            styles.savedRowLeft
+                                            styles.closeButton
                                         }
                                     >
-
                                         <Text
                                             style={
-                                                styles.savedType
+                                                styles.closeButtonText
                                             }
                                         >
-                                            {item.type}
+                                            Close
                                         </Text>
-
-                                        <Text
-                                            style={
-                                                styles.savedAmount
-                                            }
-                                        >
-                                            ₹
-                                            {Number(
-                                                item.amount
-                                            ).toLocaleString(
-                                                "en-IN"
-                                            )}
-                                        </Text>
-
-                                    </View>
+                                    </TouchableOpacity>
 
 
                                     <TouchableOpacity
-                                        onPress={() =>
-                                            handleRemoveAdjustment(
-                                                item.id
-                                            )
-                                        }
+                                        activeOpacity={0.85}
+                                        onPress={handleSaveRow}
+                                        disabled={!canSave}
+                                        style={[
+                                            styles.saveButton,
+                                            !canSave &&
+                                            styles.saveButtonDisabled,
+                                        ]}
                                     >
-                                        <Text
-                                            style={
-                                                styles.removeSavedIcon
-                                            }
-                                        >
-                                            ×
+                                        <Text style={styles.saveButtonText}>
+                                            ✓ Save
                                         </Text>
                                     </TouchableOpacity>
 
                                 </View>
-                            )
-                        )}
+                            )}
 
 
-                        {/* CLOSE + SAVE */}
+                            {/* TOTAL */}
 
-                        {editingRow && (
                             <View
                                 style={
-                                    styles.actionRow
+                                    styles.totalRow
                                 }
                             >
 
-                                <TouchableOpacity
-                                    activeOpacity={0.8}
-                                    onPress={() => {
-                                        setEditingRow(
-                                            null
-                                        );
-                                        setDraftType(
-                                            ""
-                                        );
-                                        setDraftAmount(
-                                            ""
-                                        );
-                                    }}
+                                <Text
                                     style={
-                                        styles.closeButton
+                                        styles.totalLabel
                                     }
                                 >
-                                    <Text
-                                        style={
-                                            styles.closeButtonText
-                                        }
-                                    >
-                                        Close
-                                    </Text>
-                                </TouchableOpacity>
+                                    Invoice Total
+                                </Text>
 
-
-                                <TouchableOpacity
-                                    activeOpacity={0.85}
-                                    onPress={
-                                        handleSaveRow
+                                <Text
+                                    style={
+                                        styles.totalAmount
                                     }
-                                    disabled={
-                                        !draftType.trim() ||
-                                        !draftAmount.trim()
-                                    }
-                                    style={[
-                                        styles.saveButton,
-                                        (
-                                            !draftType.trim() ||
-                                            !draftAmount.trim()
-                                        ) &&
-                                            styles.saveButtonDisabled,
-                                    ]}
                                 >
-                                    <Text
-                                        style={
-                                            styles.saveButtonText
-                                        }
-                                    >
-                                        ✓ Save
-                                    </Text>
-                                </TouchableOpacity>
+                                    ₹
+                                    {Number(
+                                        finalTotal
+                                    ).toLocaleString(
+                                        "en-IN"
+                                    )}
+                                </Text>
 
                             </View>
-                        )}
-
-
-                        {/* TOTAL */}
-
-                        <View
-                            style={
-                                styles.totalRow
-                            }
-                        >
-
-                            <Text
-                                style={
-                                    styles.totalLabel
-                                }
-                            >
-                                Invoice Total
-                            </Text>
-
-                            <Text
-                                style={
-                                    styles.totalAmount
-                                }
-                            >
-                                ₹
-                                {Number(
-                                    finalTotal
-                                ).toLocaleString(
-                                    "en-IN"
-                                )}
-                            </Text>
 
                         </View>
 
-                    </View>
 
 
-                    {/* REVIEW WARNING */}
-
-                    <View
+                        {/* <View
                         style={
                             styles.reviewCard
                         }
@@ -1118,27 +1268,27 @@ const GenerateBillsSheet = ({
                             generating the invoice.
                         </Text>
 
-                    </View>
+                    </View> */}
 
-                </ScrollView>
+                    </ScrollView>
 
 
-                {/* BOTTOM ACTION BAR */}
+                    {/* BOTTOM ACTION BAR */}
 
-                <View
-                    style={[
-                        styles.bottomBar,
-                        {
-                            paddingBottom:
-                                Math.max(
-                                    insets.bottom,
-                                    12
-                                ),
-                        },
-                    ]}
-                >
+                    <View
+                        style={[
+                            styles.bottomBar,
+                            {
+                                paddingBottom:
+                                    Math.max(
+                                        insets.bottom,
+                                        12
+                                    ),
+                            },
+                        ]}
+                    >
 
-                    <TouchableOpacity
+                        {/* <TouchableOpacity
                         activeOpacity={0.8}
                         onPress={handleClose}
                         style={
@@ -1152,10 +1302,10 @@ const GenerateBillsSheet = ({
                         >
                             Cancel
                         </Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
 
-                    <TouchableOpacity
+                        {/* <TouchableOpacity
                         activeOpacity={0.85}
                         onPress={
                             handleGenerate
@@ -1169,15 +1319,67 @@ const GenerateBillsSheet = ({
                                 styles.generateButtonText
                             }
                         >
-                            Generate Bills
+                            Mark As Ready
                         </Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
-                </View>
+                    </View>
 
-            </Animated.View>
+                </Animated.View>
 
-        </View>
+            </View>
+
+            {deleteBillRow && (
+                <Modal
+                    transparent
+                    animationType="fade"
+                    visible={deleteBillRow}
+                    onRequestClose={() => setDeleteBillRow(false)}
+                >
+                    <View style={styles.deleteOverlay}>
+                        <View style={styles.deleteBox}>
+
+                            <Text style={styles.deleteTitle}>Delete Item?</Text>
+                            <Text style={styles.deleteSub}>
+                                Are you sure you want to delete this Item?
+                            </Text>
+
+                            <View style={styles.deleteBtnRow}>
+
+                                <TouchableOpacity
+                                    style={styles.ReceiptcancelBtn}
+                                    activeOpacity={0.8}
+                                    onPress={() => {
+                                        setDeleteBillRow(false);
+                                        setSelectedDeleteItem(null);
+                                    }}
+                                >
+                                    <Text style={styles.cancelText}>
+                                        Cancel
+                                    </Text>
+                                </TouchableOpacity>
+
+
+                                <TouchableOpacity
+                                    style={styles.receiptDeleteBtn}
+                                    activeOpacity={0.8}
+                                    disabled={!selectedDeleteItem || loading}
+                                    onPress={() => {
+                                        if (!selectedDeleteItem) return;
+                                        confirmDeleteItem(selectedDeleteItem);
+                                    }}
+                                >
+                                    <Text style={styles.deleteBtnText}>
+                                        {loading ? "Deleting..." : "Delete"}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
+
+                        </View>
+                    </View>
+                </Modal>
+            )}
+        </>
     );
 };
 
@@ -1192,10 +1394,11 @@ export default GenerateBillsSheet;
 const styles = StyleSheet.create({
 
     sheetOverlay: {
-        flex: 1,
+        ...StyleSheet.absoluteFillObject,
         justifyContent: "flex-end",
-        backgroundColor:
-            "rgba(0,0,0,0.38)",
+        backgroundColor: "rgba(0,0,0,0.38)",
+        zIndex: 9999,
+        elevation: 9999,
     },
 
 
@@ -1285,7 +1488,7 @@ const styles = StyleSheet.create({
         padding: 13,
 
         borderRadius: 14,
-        backgroundColor: "#F7F8FC",
+        // backgroundColor: "#F7F8FC",
 
         flexDirection: "row",
         alignItems: "center",
@@ -1809,5 +2012,142 @@ const styles = StyleSheet.create({
         fontFamily:
             "Gilroy-Medium",
     },
+    avatarImage: {
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+    },
+    itemRow: {
+        minHeight: 52,
+        paddingHorizontal: 18,
+
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+
+    itemNameContainer: {
+        flex: 1,
+        minWidth: 0,
+        paddingRight: 10,
+    },
+
+    itemRightContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+
+    iconButton: {
+        width: 28,
+        height: 35,
+
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    actionIcon: {
+        width: 15,
+        height: 15,
+        resizeMode: "contain",
+    },
+
+    inlineAmountInput: {
+        height: 38,
+
+        borderWidth: 1,
+        borderColor: "#AFC0FF",
+        borderRadius: 7,
+
+        paddingHorizontal: 8,
+
+        backgroundColor: "#FFFFFF",
+
+        color: "#202633",
+        fontSize: 14,
+
+        fontFamily: "Gilroy-Semibold",
+
+        textAlign: "right",
+    },
+
+    deleteOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.4)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+
+    deleteBox: {
+        width: "90%",
+        backgroundColor: "#fff",
+        padding: 25,
+        borderRadius: 15,
+        alignItems: "center",
+        elevation: 10,
+        gap: 10
+    },
+
+    deleteTitle: {
+        fontSize: 18,
+        fontFamily: "Gilroy-Bold",
+        color: "#111",
+        marginBottom: 10,
+    },
+
+    deleteSub: {
+        fontSize: 14,
+        color: "#555",
+        textAlign: "center",
+        marginBottom: 25,
+    },
+
+    deleteBtnRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        width: "100%",
+    },
+
+    ReceiptcancelBtn: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: "#2D6CDF",
+        alignItems: "center",
+        marginRight: 30,
+    },
+    receiptDeleteBtn: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 10,
+        backgroundColor: "#2D6CDF",
+        alignItems: "center",
+    },
+
+
+
+    cancelText: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+        color: "#2D6CDF",
+    },
+
+    deleteBtn: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 10,
+        backgroundColor: "#2D6CDF",
+        alignItems: "center",
+        marginLeft: 10,
+    },
+
+
+
+    deleteBtnText: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+        color: "#fff",
+    },
+
 
 });

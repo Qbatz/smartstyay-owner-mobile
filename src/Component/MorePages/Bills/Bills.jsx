@@ -133,7 +133,7 @@ export default function BillsDesign({ route }) {
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
     GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter,
-    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills } = useContext(BillContext)
+    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills, GetRecurringInvoicesForReview, availablerecurringInvoices } = useContext(BillContext)
 
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
@@ -491,6 +491,22 @@ export default function BillsDesign({ route }) {
       getParticularHostelDetails(activeHostelId);
     }
   }, [activeHostelId])
+
+  useEffect(() => {
+    if (!activeHostelId) return;
+
+    GetRecurringInvoicesForReview(activeHostelId);
+  }, [activeHostelId]);
+
+  // const loadRecurringInvoices = async () => {
+  //   const res = await GetRecurringInvoicesForReview(activeHostelId);
+
+  //   if (res.success) {
+  //     console.log("Recurring invoices:", res.data);
+  //   }
+  // };
+
+  console.log('availablerecurring', availablerecurringInvoices);
 
 
 
@@ -1912,6 +1928,21 @@ export default function BillsDesign({ route }) {
   // };
 
 
+  const formatReviewDate = (date, includeYear = false) => {
+    if (!date) return "N/A";
+
+    const parsedDate = dayjs(date, [
+      "DD/MM/YYYY",
+      "DD-MM-YYYY",
+      "YYYY-MM-DD",
+    ]);
+
+    if (!parsedDate.isValid()) return "--";
+
+    return parsedDate.format(includeYear ? "DD MMM YYYY" : "DD MMM");
+  };
+
+
   const fetchRefundInitialize = async () => {
     try {
       setRefundLoading(true);
@@ -2589,7 +2620,7 @@ export default function BillsDesign({ route }) {
     //   data: item,
     // });
 
-     navigation.navigate("CreateInvoice", { mode: "edit" ,  data: item,})
+    navigation.navigate("CreateInvoice", { mode: "edit", data: item, })
     setShowBillDetails(false);
     setShowMenu(false)
 
@@ -3099,7 +3130,7 @@ export default function BillsDesign({ route }) {
                       contentContainerStyle={{ paddingBottom: 150, }} 
                     >
 
-                       {appliedFilters && (
+                      {appliedFilters && (
                         <View style={{ marginTop: 10 }}>
 
                           <ScrollView horizontal showsHorizontalScrollIndicator={false} >
@@ -3150,340 +3181,349 @@ export default function BillsDesign({ route }) {
                   )} */}
 
                   {!loading && BillDetails?.listInvoices?.length > 0 && (
-  <FlatList
-    data={BillDetails.listInvoices}
-    showsVerticalScrollIndicator={false}
-    onScroll={handleScroll}
-    keyExtractor={(item) => item.invoiceId?.toString()}
+                    <FlatList
+                      data={BillDetails.listInvoices}
+                      showsVerticalScrollIndicator={false}
+                      onScroll={handleScroll}
+                      keyExtractor={(item) => item.invoiceId?.toString()}
 
-    ListHeaderComponent={
-      <>
-        {/* Applied Filters */}
-        {appliedFilters && (
-          <View style={{ marginTop: 10 }}>
+                      ListHeaderComponent={
+                        <>
+                          {/* Applied Filters */}
+                          {appliedFilters && (
+                            <View style={{ marginTop: 10 }}>
 
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                }}
-              >
+                              <ScrollView
+                                horizontal
+                                showsHorizontalScrollIndicator={false}
+                              >
+                                <View
+                                  style={{
+                                    flexDirection: "row",
+                                    alignItems: "center",
+                                  }}
+                                >
 
-                {appliedFilters.paymentStatus?.map((s) => (
-                  <View key={s} style={styles.chip}>
-                    <Text style={styles.chipText}>
-                      Status is : {s}
-                    </Text>
-                  </View>
-                ))}
+                                  {appliedFilters.paymentStatus?.map((s) => (
+                                    <View key={s} style={styles.chip}>
+                                      <Text style={styles.chipText}>
+                                        Status is : {s}
+                                      </Text>
+                                    </View>
+                                  ))}
 
-                {appliedFilters.type?.map((t) => (
-                  <View key={t} style={styles.chip}>
-                    <Text style={styles.chipText}>
-                      Type is : {t}
-                    </Text>
-                  </View>
-                ))}
+                                  {appliedFilters.type?.map((t) => (
+                                    <View key={t} style={styles.chip}>
+                                      <Text style={styles.chipText}>
+                                        Type is : {t}
+                                      </Text>
+                                    </View>
+                                  ))}
 
-                {appliedFilters.modes?.map((m) => (
-                  <View key={m} style={styles.chip}>
-                    <Text style={styles.chipText}>
-                      Mode is : {m}
-                    </Text>
-                  </View>
-                ))}
+                                  {appliedFilters.modes?.map((m) => (
+                                    <View key={m} style={styles.chip}>
+                                      <Text style={styles.chipText}>
+                                        Mode is : {m}
+                                      </Text>
+                                    </View>
+                                  ))}
 
-                {appliedFilters.startDate &&
-                  appliedFilters.endDate && (
-                    <View style={styles.chip}>
-                      <Text style={styles.chipText}>
-                        Date Region is :{" "}
-                        {appliedFilters.startDate} -{" "}
-                        {appliedFilters.endDate}
-                      </Text>
-                    </View>
+                                  {appliedFilters.startDate &&
+                                    appliedFilters.endDate && (
+                                      <View style={styles.chip}>
+                                        <Text style={styles.chipText}>
+                                          Date Region is :{" "}
+                                          {appliedFilters.startDate} -{" "}
+                                          {appliedFilters.endDate}
+                                        </Text>
+                                      </View>
+                                    )}
+
+                                </View>
+                              </ScrollView>
+
+                              <TouchableOpacity onPress={handleResetFilters}>
+                                <Text style={styles.resetTextSmall}>
+                                  Reset
+                                </Text>
+                              </TouchableOpacity>
+
+                            </View>
+                          )}
+
+
+                          {!isProd && (
+                            <View style={styles.reviewBillsCard}>
+
+                              <View style={styles.reviewBillsHeader}>
+                                <View style={styles.reviewBillsTitleRow}>
+
+                                  <Image
+                                    source={GenerateBillIcon}
+                                    style={styles.reviewBillsIcon}
+                                  />
+
+                                  <Text style={styles.reviewBillsTitle}>
+                                    Review & Generate Bills
+                                  </Text>
+
+                                </View>
+                              </View>
+
+                              <Text style={styles.reviewBillsDescription}>
+                                Review calculated invoices before generating them for tenants.
+                              </Text>
+
+                              <View style={styles.reviewBillsInfoRow}>
+
+                                <View style={styles.reviewBillsInfoItem}>
+
+                                  <Text style={styles.reviewBillsLabel}>
+                                    Period :
+                                  </Text>
+
+                                  <Text style={styles.reviewBillsValue}>
+                                    {`${formatReviewDate(
+                                      availablerecurringInvoices?.billingStartDate
+                                    )} - ${formatReviewDate(
+                                      availablerecurringInvoices?.billingEndDate,
+                                      true
+                                    )}`}
+                                  </Text>
+
+                                </View>
+
+                                <View style={styles.reviewRequiredBadge}>
+                                  <Text style={styles.reviewRequiredText}>
+                                    Review Required
+                                  </Text>
+                                </View>
+
+                              </View>
+
+                              <View style={styles.reviewBillsDateRow}>
+
+                                <Text style={styles.reviewBillsLabel}>
+                                  Gen. Date :
+                                </Text>
+
+                                <Text style={styles.reviewBillsValue}>
+                                  {formatReviewDate(
+                                    availablerecurringInvoices?.invoiceDate,
+                                    true
+                                  )}
+                                </Text>
+
+                              </View>
+
+                              <TouchableOpacity
+                                activeOpacity={
+                                  PGDetails?.shouldVerifyRecurring ? 0.8 : 1
+                                }
+                                disabled={!PGDetails?.shouldVerifyRecurring}
+                                style={[
+                                  styles.reviewBillsButton,
+                                  !PGDetails?.shouldVerifyRecurring &&
+                                  styles.reviewBillsButtonDisabled,
+                                ]}
+                                onPress={() => {
+                                  if (!canReadInvoice) return
+                                  if (PGDetails?.shouldVerifyRecurring) {
+                                    navigation.navigate("ReviewBillsScreen");
+                                  }
+                                }}
+                              >
+
+                                <Text
+                                  style={[
+                                    styles.reviewBillsButtonText,
+                                    !PGDetails?.shouldVerifyRecurring &&
+                                    styles.reviewBillsButtonTextDisabled,
+                                  ]}
+                                >
+                                  Review Bills
+                                </Text>
+
+                                <Image
+                                  source={LeftArrowIcon}
+                                  style={[
+                                    {
+                                      height: 20,
+                                      width: 20,
+                                      marginLeft: 10,
+                                    },
+                                    !PGDetails?.shouldVerifyRecurring &&
+                                    styles.reviewBillsArrowDisabled,
+                                  ]}
+                                />
+
+                              </TouchableOpacity>
+
+                            </View>
+                          )}
+                        </>
+                      }
+
+                      renderItem={({ item }) => (
+                        <TouchableOpacity
+                          key={item.invoiceId}
+                          activeOpacity={0.8}
+                          style={styles.tenantRow}
+                          onPress={() => openBillDetails(item)}
+                        >
+
+                          <View>
+
+                            {item?.profilePic ? (
+                              <Image
+                                source={{ uri: item.profilePic }}
+                                style={styles.profileImg}
+                              />
+                            ) : (
+                              <View style={styles.initialCircle}>
+                                <Text style={styles.initialText}>
+                                  {item?.initials?.toUpperCase() || "NA"}
+                                </Text>
+                              </View>
+                            )}
+
+                            <View style={styles.profileStatusBadge}>
+
+                              {item.paymentStatus === "Pending" ||
+                                item.paymentStatus === "Pending Refund" ? (
+                                <View style={styles.redDot} />
+                              ) : (
+                                <View style={styles.tickBadge}>
+                                  <Image
+                                    source={getPaymentIcon(item.paymentStatus)}
+                                    style={styles.statusIcon}
+                                  />
+                                </View>
+                              )}
+
+                            </View>
+
+                          </View>
+
+                          <View
+                            style={{
+                              flex: 1,
+                              marginLeft: 5,
+                              marginRight: 10,
+                            }}
+                          >
+
+                            <Text
+                              style={styles.name}
+                              numberOfLines={1}
+                              ellipsizeMode="tail"
+                            >
+                              {item.fullName}
+                            </Text>
+
+                            <View
+                              style={[
+                                styles.detailRow,
+                                { flex: 1 },
+                              ]}
+                            >
+
+                              <View
+                                style={[
+                                  styles.floorBadge,
+                                  { alignItems: "center" },
+                                ]}
+                              >
+                                <Text style={styles.floorText}>
+                                  {item.invoiceType}
+                                </Text>
+                              </View>
+
+                              <Image
+                                source={Bills_Black_Icon}
+                                style={styles.iconSmall}
+                              />
+
+                              <Text
+                                style={[
+                                  styles.detailText,
+                                  {
+                                    flexShrink: 1,
+                                    flex: 1,
+                                  },
+                                ]}
+                              >
+                                {item.invoiceNumber}
+                              </Text>
+
+                            </View>
+
+                            {(
+                              [
+                                "Partially Paid",
+                                "Partial Payment",
+                                "Partially Refunded",
+                              ].includes(item.paymentStatus) ||
+                              (
+                                item.paymentStatus === "Pending" &&
+                                item.isDiscounted
+                              )
+                            ) && (
+                                <Text style={styles.dueLabel}>
+                                  Outstanding
+                                </Text>
+                              )}
+
+                          </View>
+
+                          <View style={styles.rightSection}>
+
+                            <Text
+                              style={{
+                                fontSize: 16,
+                                fontFamily: "Gilroy-Bold",
+                                color: "#000",
+                              }}
+                            >
+                              ₹ {item?.invoiceAmount ?? "--"}
+                            </Text>
+
+                            <Text
+                              style={{
+                                fontSize: 10,
+                                color: "#6B7280",
+                                fontFamily: "Gilroy-Regular",
+                                marginTop: 4,
+                              }}
+                            >
+                              {item.invoiceDate}
+                            </Text>
+
+                            {(
+                              [
+                                "Partially Paid",
+                                "Partial Payment",
+                                "Partially Refunded",
+                              ].includes(item.paymentStatus) ||
+                              (
+                                item.paymentStatus === "Pending" &&
+                                item.isDiscounted
+                              )
+                            ) && (
+                                <Text style={styles.dueAmount}>
+                                  ₹ {item?.dueAmount || 0}
+                                </Text>
+                              )}
+
+                          </View>
+
+                        </TouchableOpacity>
+                      )}
+                    />
                   )}
 
-              </View>
-            </ScrollView>
 
-            <TouchableOpacity onPress={handleResetFilters}>
-              <Text style={styles.resetTextSmall}>
-                Reset
-              </Text>
-            </TouchableOpacity>
-
-          </View>
-        )}
-
-        {/* Review Bills Card */}
-        {!isProd && (
-          <View style={styles.reviewBillsCard}>
-
-            <View style={styles.reviewBillsHeader}>
-              <View style={styles.reviewBillsTitleRow}>
-
-                <Image
-                  source={GenerateBillIcon}
-                  style={styles.reviewBillsIcon}
-                />
-
-                <Text style={styles.reviewBillsTitle}>
-                  Review & Generate Bills
-                </Text>
-
-              </View>
-            </View>
-
-            <Text style={styles.reviewBillsDescription}>
-              Review calculated invoices before generating them for tenants.
-            </Text>
-
-            <View style={styles.reviewBillsInfoRow}>
-
-              <View style={styles.reviewBillsInfoItem}>
-
-                <Text style={styles.reviewBillsLabel}>
-                  Period :
-                </Text>
-
-                <Text style={styles.reviewBillsValue}>
-                  01 Sep - 30 Sep 2026
-                </Text>
-
-              </View>
-
-              <View style={styles.reviewRequiredBadge}>
-                <Text style={styles.reviewRequiredText}>
-                  Review Required
-                </Text>
-              </View>
-
-            </View>
-
-            <View style={styles.reviewBillsDateRow}>
-
-              <Text style={styles.reviewBillsLabel}>
-                Gen. Date :
-              </Text>
-
-              <Text style={styles.reviewBillsValue}>
-                01 Sep 2026
-              </Text>
-
-            </View>
-
-            <TouchableOpacity
-              activeOpacity={
-                PGDetails?.shouldVerifyRecurring ? 0.8 : 1
-              }
-              disabled={!PGDetails?.shouldVerifyRecurring}
-              style={[
-                styles.reviewBillsButton,
-                !PGDetails?.shouldVerifyRecurring &&
-                  styles.reviewBillsButtonDisabled,
-              ]}
-              onPress={() => {
-                if (PGDetails?.shouldVerifyRecurring) {
-                  navigation.navigate("ReviewBillsScreen");
-                }
-              }}
-            >
-
-              <Text
-                style={[
-                  styles.reviewBillsButtonText,
-                  !PGDetails?.shouldVerifyRecurring &&
-                    styles.reviewBillsButtonTextDisabled,
-                ]}
-              >
-                Review Bills
-              </Text>
-
-              <Image
-                source={LeftArrowIcon}
-                style={[
-                  {
-                    height: 20,
-                    width: 20,
-                    marginLeft: 10,
-                  },
-                  !PGDetails?.shouldVerifyRecurring &&
-                    styles.reviewBillsArrowDisabled,
-                ]}
-              />
-
-            </TouchableOpacity>
-
-          </View>
-        )}
-      </>
-    }
-
-    renderItem={({ item }) => (
-      <TouchableOpacity
-        key={item.invoiceId}
-        activeOpacity={0.8}
-        style={styles.tenantRow}
-        onPress={() => openBillDetails(item)}
-      >
-
-        <View>
-
-          {item?.profilePic ? (
-            <Image
-              source={{ uri: item.profilePic }}
-              style={styles.profileImg}
-            />
-          ) : (
-            <View style={styles.initialCircle}>
-              <Text style={styles.initialText}>
-                {item?.initials?.toUpperCase() || "NA"}
-              </Text>
-            </View>
-          )}
-
-          <View style={styles.profileStatusBadge}>
-
-            {item.paymentStatus === "Pending" ||
-            item.paymentStatus === "Pending Refund" ? (
-              <View style={styles.redDot} />
-            ) : (
-              <View style={styles.tickBadge}>
-                <Image
-                  source={getPaymentIcon(item.paymentStatus)}
-                  style={styles.statusIcon}
-                />
-              </View>
-            )}
-
-          </View>
-
-        </View>
-
-        <View
-          style={{
-            flex: 1,
-            marginLeft: 5,
-            marginRight: 10,
-          }}
-        >
-
-          <Text
-            style={styles.name}
-            numberOfLines={1}
-            ellipsizeMode="tail"
-          >
-            {item.fullName}
-          </Text>
-
-          <View
-            style={[
-              styles.detailRow,
-              { flex: 1 },
-            ]}
-          >
-
-            <View
-              style={[
-                styles.floorBadge,
-                { alignItems: "center" },
-              ]}
-            >
-              <Text style={styles.floorText}>
-                {item.invoiceType}
-              </Text>
-            </View>
-
-            <Image
-              source={Bills_Black_Icon}
-              style={styles.iconSmall}
-            />
-
-            <Text
-              style={[
-                styles.detailText,
-                {
-                  flexShrink: 1,
-                  flex: 1,
-                },
-              ]}
-            >
-              {item.invoiceNumber}
-            </Text>
-
-          </View>
-
-          {(
-            [
-              "Partially Paid",
-              "Partial Payment",
-              "Partially Refunded",
-            ].includes(item.paymentStatus) ||
-            (
-              item.paymentStatus === "Pending" &&
-              item.isDiscounted
-            )
-          ) && (
-            <Text style={styles.dueLabel}>
-              Outstanding
-            </Text>
-          )}
-
-        </View>
-
-        <View style={styles.rightSection}>
-
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: "Gilroy-Bold",
-              color: "#000",
-            }}
-          >
-            ₹ {item?.invoiceAmount ?? "--"}
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 10,
-              color: "#6B7280",
-              fontFamily: "Gilroy-Regular",
-              marginTop: 4,
-            }}
-          >
-            {item.invoiceDate}
-          </Text>
-
-          {(
-            [
-              "Partially Paid",
-              "Partial Payment",
-              "Partially Refunded",
-            ].includes(item.paymentStatus) ||
-            (
-              item.paymentStatus === "Pending" &&
-              item.isDiscounted
-            )
-          ) && (
-            <Text style={styles.dueAmount}>
-              ₹ {item?.dueAmount || 0}
-            </Text>
-          )}
-
-        </View>
-
-      </TouchableOpacity>
-    )}
-  />
-)}
-                 
-
-                      {/* {!isProd && (
+                  {/* {!isProd && (
                   <View style={styles.reviewBillsCard}>
 
     <View style={styles.reviewBillsHeader}>
@@ -3574,8 +3614,8 @@ export default function BillsDesign({ route }) {
 
   </View>
                       )} */}
- 
-{/* 
+
+                  {/* 
                   {!loading && BillDetails?.listInvoices && BillDetails.listInvoices.length > 0 && (
 
                     <FlatList
@@ -3707,7 +3747,7 @@ export default function BillsDesign({ route }) {
 
                     </View>
                   )}
-    
+
                 </>
               )}
 
@@ -10201,133 +10241,133 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   reviewBillsCard: {
-  width: "100%",
-  backgroundColor: "#25218F",
-  borderRadius: 14,
-  paddingHorizontal: 20,
-  paddingTop: 18,
-  paddingBottom: 18,
-  marginBottom: 12,
-  overflow: "hidden",
-},
+    width: "100%",
+    backgroundColor: "#25218F",
+    borderRadius: 14,
+    paddingHorizontal: 20,
+    paddingTop: 18,
+    paddingBottom: 18,
+    marginBottom: 12,
+    overflow: "hidden",
+  },
 
-reviewBillsHeader: {
-  width: "100%",
-},
+  reviewBillsHeader: {
+    width: "100%",
+  },
 
-reviewBillsTitleRow: {
-  flexDirection: "row",
-  alignItems: "center",
-},
+  reviewBillsTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-reviewBillsIcon: {
-  width: 24,
-  height: 24,
-  resizeMode: "contain",
-  marginRight: 10,
-},
+  reviewBillsIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+    marginRight: 10,
+  },
 
-reviewBillsTitle: {
-  flex: 1,
-  fontSize: 22,
-  color: "#FFFFFF",
-  fontFamily: "Gilroy-Medium",
-},
+  reviewBillsTitle: {
+    flex: 1,
+    fontSize: 22,
+    color: "#FFFFFF",
+    fontFamily: "Gilroy-Medium",
+  },
 
-reviewBillsDescription: {
-  fontSize: 16,
-  lineHeight: 22,
-  color: "#D8D8F2",
-  fontFamily: "Gilroy-Regular",
-  marginTop: 6,
-  marginBottom: 22,
-},
+  reviewBillsDescription: {
+    fontSize: 16,
+    lineHeight: 22,
+    color: "#D8D8F2",
+    fontFamily: "Gilroy-Regular",
+    marginTop: 6,
+    marginBottom: 22,
+  },
 
-reviewBillsInfoRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-},
+  reviewBillsInfoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 
-reviewBillsInfoItem: {
-  flexDirection: "row",
-  alignItems: "center",
-  flexShrink: 1,
-},
+  reviewBillsInfoItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+  },
 
-reviewBillsDateRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginTop: 12,
-},
+  reviewBillsDateRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 12,
+  },
 
-reviewBillsLabel: {
-  fontSize: 12,
-  color: "#FFFFFF",
-  fontFamily: "Gilroy-Medium",
-},
+  reviewBillsLabel: {
+    fontSize: 12,
+    color: "#FFFFFF",
+    fontFamily: "Gilroy-Medium",
+  },
 
-reviewBillsValue: {
-  fontSize: 13,
-  color: "#FFFFFF",
-  fontFamily: "Gilroy-Regular",
-  marginLeft: 8,
-},
+  reviewBillsValue: {
+    fontSize: 13,
+    color: "#FFFFFF",
+    fontFamily: "Gilroy-Regular",
+    marginLeft: 8,
+  },
 
-reviewRequiredBadge: {
-  backgroundColor: "#FF7A18",
-  paddingHorizontal: 15,
-  paddingVertical: 8,
-  borderRadius: 20,
-  marginLeft: 10,
-  flexShrink: 0,
-},
+  reviewRequiredBadge: {
+    backgroundColor: "#FF7A18",
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginLeft: 10,
+    flexShrink: 0,
+  },
 
-reviewRequiredText: {
-  color: "#FFFFFF",
-  fontSize: 13,
-  fontFamily: "Gilroy-Bold",
-},
+  reviewRequiredText: {
+    color: "#FFFFFF",
+    fontSize: 13,
+    fontFamily: "Gilroy-Bold",
+  },
 
-reviewBillsButton: {
-  height: 50,
-  backgroundColor: "#FFFFFF",
-  borderRadius: 10,
-  marginTop: 28,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-},
+  reviewBillsButton: {
+    height: 50,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    marginTop: 28,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-reviewBillsButtonText: {
-  color: "#214BE5",
-  fontSize: 16,
-  fontFamily: "Gilroy-Medium",
-},
+  reviewBillsButtonText: {
+    color: "#214BE5",
+    fontSize: 16,
+    fontFamily: "Gilroy-Medium",
+  },
 
-reviewBillsArrow: {
-  color: "#214BE5",
-  fontSize: 28,
-  marginLeft: 10,
-  marginTop: -2,
-},
+  reviewBillsArrow: {
+    color: "#214BE5",
+    fontSize: 28,
+    marginLeft: 10,
+    marginTop: -2,
+  },
 
-invoiceListContent: {
-  paddingHorizontal: 16,
-  paddingTop: 10,
-  paddingBottom: 160,
-},
-reviewBillsButtonDisabled: {
-  // backgroundColor: "#E5E7EB",
-  opacity: 0.8,
-},
+  invoiceListContent: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 160,
+  },
+  reviewBillsButtonDisabled: {
+    // backgroundColor: "#E5E7EB",
+    opacity: 0.8,
+  },
 
-reviewBillsButtonTextDisabled: {
-  color: "#728ec0",
-},
+  reviewBillsButtonTextDisabled: {
+    color: "#728ec0",
+  },
 
-reviewBillsArrowDisabled: {
-  opacity: 0.4,
-},
+  reviewBillsArrowDisabled: {
+    opacity: 0.4,
+  },
 
 });
