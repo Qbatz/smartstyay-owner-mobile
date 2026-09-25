@@ -167,6 +167,7 @@ const CreateInvoice = ({ }) => {
     const discountInputRef = useRef(null);
     const itemInputRefs = useRef({});
     const originalItemsRef = useRef([]);
+    const submitLockRef = useRef(false);
 
     const [discount, setDiscount] = useState("");
     const [discountType, setDiscountType] = useState("amount")
@@ -665,13 +666,45 @@ const CreateInvoice = ({ }) => {
         totalRetainerAmount - calculatedDiscountAmount
     );
 
+    // const validateDiscount = (value = discount, type = discountType) => {
+    //     const numericValue = Number(value || 0);
+
+    //     if (!value) return "";
+
+    //     if (numericValue < 0) {
+    //         return "Discount cannot be negative";
+    //     }
+
+    //     if (type === "percentage" && numericValue > 100) {
+    //         return "Discount percentage cannot exceed 100%";
+    //     }
+
+    //     if (type === "amount" && numericValue > totalRetainerAmount) {
+    //         return "Discount amount cannot exceed subtotal";
+    //     }
+
+    //     return "";
+    // }
+
     const validateDiscount = (value = discount, type = discountType) => {
-        const numericValue = Number(value || 0);
+        const rawValue = String(value ?? "").trim();
 
-        if (!value) return "";
+        // Empty discount is allowed
+        if (!rawValue) return "";
 
-        if (numericValue < 0) {
-            return "Discount cannot be negative";
+        // Reject 0, 00, 000, 0000, 000.00 etc.
+        if (/^0+(?:\.0+)?$/.test(rawValue)) {
+            return "Discount must be greater than 0";
+        }
+
+        const numericValue = Number(rawValue);
+
+        if (!Number.isFinite(numericValue)) {
+            return "Please enter a valid discount";
+        }
+
+        if (numericValue <= 0) {
+            return "Discount must be greater than 0";
         }
 
         if (type === "percentage" && numericValue > 100) {
@@ -799,6 +832,14 @@ const CreateInvoice = ({ }) => {
 
     const savegenerate = async () => {
 
+        if (submitLockRef.current) {
+            return;
+        }
+
+        submitLockRef.current = true;
+        setIsSubmitClicked(true);
+
+
         let newErrors = {};
 
         // --------------------------------
@@ -860,11 +901,11 @@ const CreateInvoice = ({ }) => {
                 "Please Add New Row";
         }
 
-
         setErrors(newErrors);
 
-
         if (Object.keys(newErrors).length > 0) {
+            submitLockRef.current = false;
+            setIsSubmitClicked(false);
             return false;
         }
 
@@ -1744,24 +1785,42 @@ const CreateInvoice = ({ }) => {
                                         inputType="numeric"
                                         value={discount}
                                         editable={!isEditMode}
+                                        // onChangeText={(value) => {
+                                        //     if (isEditMode) return;
+                                        //     const validationError = validateDiscount(
+                                        //         value,
+                                        //         discountType
+                                        //     );
+
+                                        //     if (validationError) {
+                                        //         setDiscountError(validationError);
+                                        //         setErrors(prev => ({
+                                        //             ...prev,
+                                        //             discount: "",
+                                        //         }));
+                                        //         return;
+                                        //     }
+
+                                        //     setDiscount(value);
+                                        //     setDiscountError("");
+                                        //     setErrors(prev => ({
+                                        //         ...prev,
+                                        //         discount: "",
+                                        //     }));
+                                        // }}
+
                                         onChangeText={(value) => {
                                             if (isEditMode) return;
+
                                             const validationError = validateDiscount(
                                                 value,
                                                 discountType
                                             );
 
-                                            if (validationError) {
-                                                setDiscountError(validationError);
-                                                setErrors(prev => ({
-                                                    ...prev,
-                                                    discount: "",
-                                                }));
-                                                return;
-                                            }
-
                                             setDiscount(value);
-                                            setDiscountError("");
+
+                                            setDiscountError(validationError);
+
                                             setErrors(prev => ({
                                                 ...prev,
                                                 discount: "",
@@ -1811,9 +1870,9 @@ const CreateInvoice = ({ }) => {
                             inputType="text"
                             // style={styles.dscpBox}
                             style={[
-                                            styles.dscpBox,
-                                            isEditMode && styles.discountInputDisabled,
-                                        ]}
+                                styles.dscpBox,
+                                isEditMode && styles.discountInputDisabled,
+                            ]}
                             placeholder="Enter terms and condition for this invoice"
                             placeholderTextColor="#A0A0A0"
                             value={description}

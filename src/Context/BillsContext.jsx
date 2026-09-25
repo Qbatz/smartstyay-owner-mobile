@@ -19,6 +19,7 @@ export default function BillsProvider({ children }) {
   const [errorMsg, setErrorMsg] = useState("");
   const [refundError, setRefundError] = useState("");
   const [retainerInvoiceDetail, setRetainerInvoiceDetail] = useState(null)
+  const [availablerecurringInvoices, setAvailableRecurringInvoices] = useState([]);
 
 
   const getErrorMessage = (error) =>
@@ -1727,7 +1728,254 @@ const GetAdvanceBookingBills = async (
     } finally {
       setLoading(false);
     }
-  };
+  }
+
+
+  // GET AVAILABLE RECURRING INVOICES FOR REVIEW
+const GetRecurringInvoicesForReview = async (hostelId) => {
+  if (!hostelId) {
+    return {
+      success: false,
+      message: "Invalid hostelId",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bills/recurring/${hostelId}`
+    );
+
+    if (res?.status === 200) {
+      setAvailableRecurringInvoices(res?.data || []);
+
+      return {
+        success: true,
+        data: res?.data || [],
+        statusCode: res?.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch recurring invoices",
+    };
+  } catch (error) {
+    console.log(
+      "GetRecurringInvoicesForReview ERROR:",
+      error?.response?.data || error
+    );
+
+    const msg = getErrorMessage(error);
+
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+// UPDATE RECURRING BILL ITEM AMOUNT
+
+const UpdateRecurringBillItem = async ({
+  hostelId,
+  invoiceId,
+  itemId,
+  name,
+  draftAmount,
+}) => {
+  if (!hostelId || !invoiceId || !itemId) {
+    return {
+      success: false,
+      message: "Invalid data",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const payload = {
+      name: name || "",
+      draftAmount: Number(draftAmount || 0),
+    };
+
+    console.log(
+      "UPDATE RECURRING ITEM:",
+      {
+        hostelId,
+        invoiceId,
+        itemId,
+        payload,
+      }
+    );
+
+    const res = await axios.put(
+      `/v2/bills/recurring/${hostelId}/${invoiceId}/${itemId}`,
+      payload
+    );
+
+    if (res.status === 200) {
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to update recurring item",
+    };
+
+  } catch (error) {
+    const msg = getErrorMessage(error);
+
+    console.log(
+      "UPDATE RECURRING ITEM ERROR:",
+      error?.response?.data || error
+    );
+
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+      statusCode: error?.response?.status,
+    };
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+// DELETE RECURRING BILL ITEM
+const DeleteRecurringBillItem = async ({
+  hostelId,
+  invoiceId,
+  itemId,
+}) => {
+  if (!hostelId || !invoiceId || !itemId) {
+    return {
+      success: false,
+      message: "Invalid data",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    console.log("DELETE RECURRING ITEM:", {
+      hostelId,
+      invoiceId,
+      itemId,
+    });
+
+    const res = await axios.delete(
+      `/v2/bills/recurring/${hostelId}/${invoiceId}/${itemId}`
+    );
+
+    if (res.status === 200 || res.status === 204) {
+      return {
+        success: true,
+        data: res.data,
+        statusCode: res.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to delete recurring item",
+    };
+  } catch (error) {
+    const msg = getErrorMessage(error);
+
+    console.log(
+      "DELETE RECURRING ITEM ERROR:",
+      error?.response?.data || error
+    );
+
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+      statusCode: error?.response?.status,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+// =====================================================
+// GENERATE ALL RECURRING INVOICES
+// =====================================================
+
+const GenerateAllRecurringInvoices = async (hostelId) => {
+  if (!hostelId) {
+    return {
+      success: false,
+      message: "Invalid hostelId",
+    };
+  }
+
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.post(
+      `/v2/bills/recurring/${hostelId}`
+    );
+
+    if (res?.status === 200 || res?.status === 201) {
+      return {
+        success: true,
+        data: res?.data,
+        statusCode: res?.status,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to generate recurring invoices",
+    };
+
+  } catch (error) {
+    console.log(
+      "GenerateAllRecurringInvoices ERROR:",
+      error?.response?.data || error
+    );
+
+    const msg = getErrorMessage(error);
+
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+      statusCode: error?.response?.status,
+    };
+
+  } finally {
+    setLoading(false);
+  }
+};
 
 
   return (
@@ -1744,6 +1992,7 @@ const GetAdvanceBookingBills = async (
         advanceCreditDetails,
         InitializeRecordPaymentDetails,
         InitializeDiscountDetails,
+        availablerecurringInvoices,
         loading,
         errorMsg,
         refundError,
@@ -1779,7 +2028,9 @@ const GetAdvanceBookingBills = async (
         ReceiptFilter,
         GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, createRetainderInvoice,
         getRetainerInvoiceDetail, retainerInvoiceDetail, ApplyRetainerToInvoices, setBillDetails, setRecurringBills,
-        CreateManualInvoice,
+        CreateManualInvoice, GetRecurringInvoicesForReview ,
+         UpdateRecurringBillItem , DeleteRecurringBillItem , 
+         GenerateAllRecurringInvoices,
       }}
     >
       {children}
