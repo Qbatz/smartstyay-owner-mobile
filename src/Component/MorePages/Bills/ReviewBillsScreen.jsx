@@ -1,4 +1,9 @@
-import React, { useMemo, useState } from "react";
+import React, {
+  useMemo,
+  useState,
+  useContext,
+  useEffect,
+} from "react";
 import {
   View,
   Text,
@@ -6,13 +11,16 @@ import {
   TouchableOpacity,
   FlatList,
   Platform,
-  useWindowDimensions, Image
+  useWindowDimensions, Image, Pressable
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { BillContext } from "../../../Context/BillsContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 // import Ionicons from "react-native-vector-icons/Ionicons";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import BillGenerateIcon from "../../../Assets/Images/BillGenerateIcon.png";
 import GenerateBillsSheet from "./GenerateBillsDetails";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 const ReviewBillsScreen = ({
   navigation,
@@ -24,108 +32,64 @@ const ReviewBillsScreen = ({
   const isSmallDevice = width < 360;
 
   const [showGenerateSheet, setShowGenerateSheet] = useState(false);
+  const {
+    loading,
+    GetRecurringInvoicesForReview,
+    GenerateAllRecurringInvoices,
+    availablerecurringInvoices,
+  } = useContext(BillContext);
+  const { activeHostelId } = useContext(CommonContexts);
 
-  /*
-   * You can replace this with API data.
-   */
-  const [invoices, setInvoices] = useState([
-    {
-      id: "1",
-      name: "Arun Kumar",
-      initials: "AK",
-      room: "G2 / B-204",
-      type: "Rent",
-      period: "Sep 2026",
-      amount: 8000,
-      status: "READY",
-      selected: true,
-      edited: false,
-    },
-    {
-      id: "2",
-      name: "Rahul Sharma",
-      initials: "RS",
-      room: "G1 / B-102",
-      type: "Rent",
-      period: "Sep 2026",
-      amount: 6667,
-      status: "READY",
-      selected: true,
-      edited: true,
-    },
-    {
-      id: "3",
-      name: "Karthik R",
-      initials: "KR",
-      room: "G3 / B-301",
-      type: "Rent",
-      period: "Sep 2026",
-      amount: 8000,
-      status: "READY",
-      selected: true,
-      edited: false,
-    },
-    {
-      id: "4",
-      name: "Suresh Babu",
-      initials: "SB",
-      room: "G1 / B-103",
-      type: "Rent",
-      period: "Sep 2026",
-      amount: 7500,
-      status: "READY",
-      selected: true,
-      edited: false,
-    },
-    {
-      id: "5",
-      name: "Priya Menon",
-      initials: "PM",
-      room: "G4 / B-401",
-      type: "Rent",
-      period: "Sep 2026",
-      amount: 7500,
-      status: "NEEDS_REVIEW",
-      selected: false,
-      edited: false,
-    },
-    {
-      id: "6",
-      name: "Vijay Anand",
-      initials: "VA",
-      room: "G2 / B-206",
-      type: "Rent",
-      period: "Sep 2026",
-      amount: 7500,
-      status: "READY",
-      selected: true,
-      edited: false,
-    },
-    {
-      id: "7",
-      name: "Vijay Anand",
-      initials: "VA",
-      room: "G2 / B-206",
-      type: "Rent",
-      period: "Sep 2026",
-      amount: 7500,
-      status: "READY",
-      selected: true,
-      edited: false,
-    },
-    {
-      id: "8",
-      name: "Anitha Rajan",
-      initials: "AR",
-      room: "G4 / B-402",
-      type: "Rent",
-      period: "Sep 2026",
-      amount: 7500,
-      status: "GENERATED",
-      selected: false,
-      edited: false,
-    },
-  ]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
+
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+
+  const invoices = useMemo(() => {
+    return availablerecurringInvoices?.invoicesList || [];
+  }, [availablerecurringInvoices]);
+
+
+  const currentSelectedInvoice = useMemo(() => {
+    if (!selectedInvoice?.invoiceId) return null;
+
+    return invoices.find(
+      (invoice) =>
+        Number(invoice?.invoiceId) ===
+        Number(selectedInvoice?.invoiceId)
+    ) || null;
+  }, [invoices, selectedInvoice]);
+
+
+  const formatReviewDate = (date, includeYear = false) => {
+    if (!date) return "--";
+
+    const [day, month, year] = date.split("/");
+
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    const monthName = months[Number(month) - 1];
+
+    if (!monthName) return "--";
+
+    return includeYear
+      ? `${day} ${monthName} ${year}`
+      : `${day} ${monthName}`;
+  };
 
   /*
    * Ready invoices
@@ -196,17 +160,73 @@ const ReviewBillsScreen = ({
     );
   };
 
-  const handleGenerateAll = () => {
-    // if (selectedReadyInvoices?.length === 0) {
-    //   return;
-    // }
+  const handleGenerateAll = async () => {
+    if (!activeHostelId) {
+      console.log("Missing hostelId");
+      return;
+    }
 
-    console.log(
-      "Generate invoices:",
-      selectedReadyInvoices
-    );
+    try {
+      console.log(
+        "GENERATING ALL RECURRING INVOICES:",
+        activeHostelId
+      );
 
-    setShowGenerateSheet(true);
+      const result = await GenerateAllRecurringInvoices(
+        activeHostelId
+      );
+
+      console.log(
+        "GENERATE ALL RECURRING RESULT:",
+        result
+      );
+
+      if (!result?.success) {
+        console.log(
+          "Generate failed:",
+          result?.message
+        );
+
+        setModalType("error");
+        setModalMessage(
+          result?.message || "Failed to generate invoices"
+        );
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1500);
+
+        return;
+      }
+
+      setModalType("success");
+      setModalMessage("All invoices generated successfully");
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
+
+ 
+
+      // Refresh review list
+      await GetRecurringInvoicesForReview(
+        activeHostelId
+      );
+
+    } catch (error) {
+      console.log(
+        "HANDLE GENERATE ALL ERROR:",
+        error
+      );
+
+      setModalType("error");
+      setModalMessage(
+        error?.message || "Something went wrong"
+      );
+      setShowSuccessModal(true);
+    }
   };
 
   const formatAmount = (amount) => {
@@ -329,56 +349,88 @@ const ReviewBillsScreen = ({
     return null;
   };
 
+  const handleInvoicePress = (invoice) => {
+    console.log("🔥 INVOICE ROW CLICKED:", invoice?.invoiceId);
+    console.log("Selected Invoice:", invoice);
+
+    if (!invoice) return;
+
+    setSelectedInvoice(invoice);
+    setShowGenerateSheet(true);
+  };
+
   const renderInvoice = ({ item, index }) => {
-    const isReady = item.status === "READY";
-    const isGenerated =
-      item.status === "GENERATED";
+    const customerName =
+      item?.customerInfo?.fullName || "Unknown Tenant";
+
+    const initials =
+      item?.customerInfo?.initials ||
+      customerName
+        .split(" ")
+        .filter(Boolean)
+        .map((name) => name?.[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+
+    const profilePic = item?.customerInfo?.profilePic;
+
+    const floorName =
+      item?.stayInfo?.floorName || "";
+
+    const roomName =
+      item?.stayInfo?.roomName || "";
+
+    const amount =
+      Number(item?.invoiceAmount || 0);
 
     return (
-      <View
-        style={[
+      <Pressable
+        onPress={() => handleInvoicePress(item)}
+        style={({ pressed }) => [
           styles.invoiceRow,
           index === 0 && styles.firstInvoiceRow,
+          pressed && styles.invoiceRowPressed,
         ]}
       >
-        {/* Checkbox */}
-        <View style={styles.checkboxContainer}>
-          {renderCheckbox({
-            checked: item.selected,
-            disabled: !isReady,
-            onPress: () =>
-              toggleInvoice(item.id),
-          })}
-        </View>
 
-        {/* Initial Circle */}
+        {/* PROFILE */}
         <View style={styles.initialCircle}>
-          <Text style={styles.initialText}>
-            {item.initials}
-          </Text>
+          {profilePic ? (
+            <Image
+              source={{ uri: profilePic }}
+              style={styles.profileImage}
+            />
+          ) : (
+            <Text style={styles.initialText}>
+              {initials}
+            </Text>
+          )}
         </View>
 
-        {/* Tenant Information */}
+        {/* TENANT INFORMATION */}
         <View style={styles.tenantInfo}>
+
           <View style={styles.nameRow}>
+
             <Text
               style={[
                 styles.tenantName,
-                isSmallDevice &&
-                styles.tenantNameSmall,
+                isSmallDevice && styles.tenantNameSmall,
               ]}
               numberOfLines={1}
             >
-              {item.name}
+              {customerName}
             </Text>
 
-            {item.edited && (
+            {item?.isEdited && (
               <View style={styles.editedBadge}>
                 <Text style={styles.editedText}>
                   EDITED
                 </Text>
               </View>
             )}
+
           </View>
 
           <Text
@@ -389,13 +441,15 @@ const ReviewBillsScreen = ({
             ]}
             numberOfLines={1}
           >
-            {item.room} · {item.type} ·{" "}
-            {item.period}
+            {floorName} / {roomName} · Rent ·{" "}
+            {formatReviewDate(item?.invoiceStartDate, true)}
           </Text>
+
         </View>
 
-        {/* Amount + Status */}
+        {/* AMOUNT + STATUS */}
         <View style={styles.amountSection}>
+
           <Text
             style={[
               styles.amountText,
@@ -403,17 +457,27 @@ const ReviewBillsScreen = ({
               styles.amountTextSmall,
             ]}
           >
-            ₹{formatAmount(item.amount)}
+            ₹{formatAmount(amount)}
           </Text>
 
-          {renderStatus(item.status)}
+          {renderStatus(item?.status)}
+
         </View>
-      </View>
+
+      </Pressable>
     );
   };
 
   return (
     <>
+
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
+
       <SafeAreaView
         style={styles.safeArea}
         edges={["top", "left", "right"]}
@@ -473,8 +537,14 @@ const ReviewBillsScreen = ({
               </Text>
 
               <Text style={styles.periodValue}>
-                01 Sep – 30 Sep 2026
+                {`${formatReviewDate(
+                  availablerecurringInvoices?.billingStartDate
+                )} – ${formatReviewDate(
+                  availablerecurringInvoices?.billingEndDate,
+                  true
+                )}`}
               </Text>
+
             </View>
 
             <View style={styles.generationItem}>
@@ -483,21 +553,23 @@ const ReviewBillsScreen = ({
               </Text>
 
               <Text style={styles.periodValue}>
-                01 Sep 2026
+                {formatReviewDate(
+                  availablerecurringInvoices?.invoiceDate,
+                  true
+                )}
               </Text>
             </View>
           </View>
 
-          {/* ================= SELECT ALL ================= */}
 
-          <View style={styles.selectAllContainer}>
+          {/* <View style={styles.selectAllContainer}>
             <View style={styles.selectAllLeft}>
               {renderCheckbox({
-              checked: allEligibleSelected,
-              disabled:
-                readyInvoices.length === 0,
-              onPress: toggleSelectAll,
-            })}
+                checked: allEligibleSelected,
+                disabled:
+                  readyInvoices.length === 0,
+                onPress: toggleSelectAll,
+              })}
 
               <Text style={styles.selectAllText}>
                 Select All Eligible
@@ -508,10 +580,9 @@ const ReviewBillsScreen = ({
               {String(readyCount).padStart(2, "0")} of{" "}
               {String(invoices.length).padStart(2, "0")} ready
             </Text>
-          </View>
+          </View> */}
 
-          {/* ================= INVOICE LIST ================= */}
-
+          {/* 
           <FlatList
             data={invoices}
             keyExtractor={(item) => item.id}
@@ -528,6 +599,33 @@ const ReviewBillsScreen = ({
             ItemSeparatorComponent={() => (
               <View style={styles.separator} />
             )}
+          /> */}
+          <FlatList
+            data={invoices}
+            keyExtractor={(item, index) =>
+              String(item?.invoiceId ?? index)
+            }
+            renderItem={renderInvoice}
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+            contentContainerStyle={[
+              styles.listContent,
+              invoices.length === 0 && styles.emptyListContent,
+            ]}
+            ListEmptyComponent={
+              !loading ? (
+                <View style={styles.emptyContainer}>
+                  <Text style={styles.emptyTitle}>
+                    No invoices available
+                  </Text>
+
+                  <Text style={styles.emptyDescription}>
+                    There are no recurring invoices available
+                    for review.
+                  </Text>
+                </View>
+              ) : null
+            }
           />
 
           {/* ================= BOTTOM ACTION ================= */}
@@ -544,7 +642,7 @@ const ReviewBillsScreen = ({
             <View style={styles.bottomTextContainer}>
               <Text style={styles.bottomCountText}>
                 {String(
-                  selectedReadyInvoices.length
+                  availablerecurringInvoices?.totalInvoices
                 ).padStart(2, "0")}{" "}
                 invoices are
               </Text>
@@ -556,51 +654,55 @@ const ReviewBillsScreen = ({
 
             <TouchableOpacity
               activeOpacity={0.85}
-              disabled={
-                selectedReadyInvoices.length === 0
-              }
+              disabled={loading}
               onPress={handleGenerateAll}
               style={[
                 styles.generateButton,
-                selectedReadyInvoices.length ===
-                0 &&
-                styles.generateButtonDisabled,
+                loading && styles.generateButtonDisabled,
               ]}
             >
-              {/* <Ionicons
-              name="sync-outline"
-              size={18}
-              color="#FFFFFF"
-            /> */}
-
-              <Image source={BillGenerateIcon} style={{ height: 12, width: 12 }} />
+              <Image
+                source={BillGenerateIcon}
+                style={{ height: 12, width: 12 }}
+              />
 
               <Text style={styles.generateButtonText}>
-                Generate All Eligible
+                {loading ? "Generating..." : "Generate All"}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
 
-      <GenerateBillsSheet
-        visible={showGenerateSheet}
-        onClose={() => {
-          setShowGenerateSheet(false);
-        }}
-        invoices={selectedReadyInvoices}
-        onGenerate={(payload) => {
-          console.log(
-            "FINAL GENERATE PAYLOAD:",
-            payload
-          );
+      {showGenerateSheet && (
+        <GenerateBillsSheet
+          visible={showGenerateSheet}
+          onClose={() => {
+            setShowGenerateSheet(false);
+            setSelectedInvoice(null);
+          }}
+          invoices={
+            currentSelectedInvoice
+              ? [currentSelectedInvoice]
+              : []
+          }
 
-          setShowGenerateSheet(false);
+          onGenerate={(payload) => {
+            console.log(
+              "FINAL GENERATE PAYLOAD:",
+              payload
+            );
 
-          // API call இங்கே:
-          // generateInvoices(payload);
-        }}
-      />
+            console.log(
+              "GENERATING INVOICE:",
+              selectedInvoice
+            );
+
+            setShowGenerateSheet(false);
+            setSelectedInvoice(null);
+          }}
+        />
+      )}
     </>
   );
 };
@@ -999,35 +1101,86 @@ const styles = StyleSheet.create({
     marginLeft: 7,
   },
   checkboxContainer: {
-  width: 30,
-  alignItems: "center",
-  justifyContent: "center",
-},
+    width: 30,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-checkbox: {
-  width: 28,
-  height: 28,
-  borderRadius: 7,
-  borderWidth: 2,
-  borderColor: "#D4D8E0",
-  backgroundColor: "#FFFFFF",
-  alignItems: "center",
-  justifyContent: "center",
-},
+  checkbox: {
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: "#D4D8E0",
+    backgroundColor: "#FFFFFF",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-checkboxChecked: {
-  backgroundColor: "#2864E8",
-  borderColor: "#2864E8",
-},
+  checkboxChecked: {
+    backgroundColor: "#2864E8",
+    borderColor: "#2864E8",
+  },
 
-checkboxTick: {
-  color: "#FFFFFF",
-  fontSize: 18,
-  lineHeight: 24,
-  fontFamily: "Gilroy-Bold",
-},
+  checkboxTick: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    lineHeight: 24,
+    fontFamily: "Gilroy-Bold",
+  },
 
-checkboxDisabled: {
-  opacity: 0.45,
-},
-});
+  checkboxDisabled: {
+    opacity: 0.45,
+  },
+  emptyListContent: {
+    flexGrow: 1,
+  },
+
+  emptyContainer: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 30,
+    paddingBottom: 80,
+  },
+
+  emptyTitle: {
+    fontSize: 17,
+    color: "#172033",
+    fontFamily: "Gilroy-Medium",
+    textAlign: "center",
+  },
+
+  emptyDescription: {
+    marginTop: 6,
+    fontSize: 13,
+    color: "#7B8495",
+    fontFamily: "Gilroy-Regular",
+    textAlign: "center",
+  },
+  generateSingleButton: {
+    marginTop: 5,
+    minWidth: 68,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 5,
+    backgroundColor: "#008C4A",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  generateSingleButtonText: {
+    color: "#FFFFFF",
+    fontSize: 8,
+    fontFamily: "Gilroy-Medium",
+  },
+  profileImage: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+  },
+  invoiceRowPressed: {
+    opacity: 0.65,
+  },
+
+})
