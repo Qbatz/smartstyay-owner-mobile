@@ -19,6 +19,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import EditIcon from "../../../Assets/Images/pencil.png";
 import DeleteIcon from "../../../Assets/Images/trash.png"
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { useHasPermission } from "../../../Utils/useHasPermission";
+import ValidatedInput from "../ValidatedInput"
 
 
 const GenerateBillsSheet = ({
@@ -32,9 +34,17 @@ const GenerateBillsSheet = ({
 
 
     const { loading, GetRecurringInvoicesForReview,
-        availablerecurringInvoices, UpdateRecurringBillItem, DeleteRecurringBillItem } = useContext(BillContext)
+        availablerecurringInvoices, UpdateRecurringBillItem, DeleteRecurringBillItem,
+        AddRecurringBillItem } = useContext(BillContext)
     const { activeHostelId } = useContext(CommonContexts);
     const sheetY = useRef(new Animated.Value(0)).current;
+
+    const {
+        canWriteModule: canWriteInvoice,
+        canReadModule: canReadInvoice,
+        canUpdateModule: canUpdateInvoice,
+        canDeleteModule: canDeleteInvoice,
+    } = useHasPermission("Bills")
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -46,7 +56,7 @@ const GenerateBillsSheet = ({
 
     const [draftType, setDraftType] = useState("");
     const [draftAmount, setDraftAmount] = useState("")
-
+    const [isSaving, setIsSaving] = useState(false);
     const [deleteBillRow, setDeleteBillRow] = useState(false);
     const [selectedDeleteItem, setSelectedDeleteItem] = useState(null);
 
@@ -261,7 +271,7 @@ const GenerateBillsSheet = ({
 
         setDraftType(item.type);
         setDraftAmount(String(item.amount ?? ""));
-    };
+    }
 
 
 
@@ -272,78 +282,201 @@ const GenerateBillsSheet = ({
     const isAddingNew =
         editingRow?.mode === "add";
 
+
+    const isValidAmount = (value) => {
+        const amount = String(value || "").trim();
+
+        if (!amount) return false;
+
+        if (!/^[0-9]+(\.[0-9]{1,2})?$/.test(amount)) {
+            return false;
+        }
+
+        if (/^0\d+/.test(amount)) {
+            return false;
+        }
+
+        const numericAmount = Number(amount);
+
+        if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+            return false;
+        }
+
+        return true;
+    };
+
+    // const canSave =
+    //     !isSaving &&
+    //     (
+    //         isEditingExisting
+    //             ? isValidAmount(draftAmount)
+    //             : !!draftType.trim() &&
+    //             isValidAmount(draftAmount)
+    //     )
+
+    const editingItem = isEditingExisting
+        ? invoiceItems.find(
+            (item) => item.id === editingRow?.id
+        )
+        : null;
+
+    const isEditingRent =
+        isEditingExisting &&
+        String(editingItem?.type || "")
+            .trim()
+            .toUpperCase() === "RENT";
+
     const canSave =
-        isEditingExisting
-            ? !!draftAmount.trim()
-            : !!draftType.trim() &&
-            !!draftAmount.trim();
+        !isSaving &&
+        canUpdateInvoice &&
+        isValidAmount(draftAmount) &&
+        (
+            !isEditingExisting ||
+            isEditingRent ||
+            !!draftType.trim()
+        );
+
+
 
     const handleSaveRow = async () => {
 
-        // EDIT EXISTING ITEM
+        if (isSaving) {
+            return;
+        }
 
+        if (editingRow?.mode === "edit" && !canUpdateInvoice) {
+            return;
+        }
 
-        if (editingRow?.mode === "edit") {
+        if (editingRow?.mode === "add" && !canUpdateInvoice) {
+            return;
+        }
 
-            if (!draftAmount.trim()) {
-                return;
-            }
+        if (!isValidAmount(draftAmount)) {
+            return;
+        }
 
-            const item = invoiceItems.find(
-                (item) => item.id === editingRow.id
-            );
+        setIsSaving(true);
 
-            if (!item) {
-                return;
-            }
+        try {
 
-            const amount = Number(draftAmount || 0);
+            // =========================================
+            // EDIT EXISTING ITEM
+            // =========================================
 
-            // =====================================
-            // API ITEM
-            // =====================================
+            if (editingRow?.mode === "edit") {
 
-            if (item.source === "api") {
-                const selectedInvoice = invoices?.[0];
+                const item = invoiceItems.find(
+                    (item) => item.id === editingRow.id
+                );
 
-                const invoiceId =
-                    selectedInvoice?.invoiceId ||
-                    selectedInvoice?.id;
-
-                const itemId = item.itemId;
-
-                if (!invoiceId || !itemId) {
-                    console.log(
-                        "Missing invoiceId / itemId",
-                        {
-                            invoiceId,
-                            itemId,
-                        }
-                    );
-
+                if (!item) {
                     return;
                 }
 
-                const result =
-                    await UpdateRecurringBillItem({
-                        hostelId: activeHostelId,
-                        invoiceId,
-                        itemId,
-                        name: item.type,
-                        draftAmount: amount,
-                    });
+                const isRentItem =
+                    String(item?.type || "")
+                        .trim()
+                        .toUpperCase() === "RENT";
 
-                console.log(
-                    "UPDATE RECURRING ITEM RESULT:",
-                    result
-                );
+                const amount = Number(draftAmount);
 
-                if (!result?.success) {
-                    setModalType("error");
+
+                // API ITEM
+                if (item.source === "api") {
+
+                    const selectedInvoice = invoices?.[0];
+
+                    const invoiceId =
+                        selectedInvoice?.invoiceId ||
+                        selectedInvoice?.id;
+
+                    const itemId = item.itemId;
+
+                    if (!invoiceId || !itemId) {
+                        console.log(
+                            "Missing invoiceId / itemId",
+                            {
+                                invoiceId,
+                                itemId,
+                            }
+                        );
+
+                        return;
+                    }
+
+                    const result =
+                        await UpdateRecurringBillItem({
+                            hostelId: activeHostelId,
+                            invoiceId,
+                            itemId,
+
+                            // RENT → existing name
+                            // Others → edited name
+                            name: isRentItem
+                                ? item.type
+                                : draftType.trim(),
+
+                            draftAmount: amount,
+                        });
+
+
+                    console.log(
+                        "UPDATE RECURRING ITEM RESULT:",
+                        result
+                    );
+
+                    if (!result?.success) {
+                        setModalType("error");
+
+                        setModalMessage(
+                            result?.message ||
+                            "Failed to update recurring amount"
+                        );
+
+                        setShowSuccessModal(true);
+
+                        setTimeout(() => {
+                            setShowSuccessModal(false);
+                        }, 1500);
+
+                        return;
+                    }
+
+                    const refreshResult =
+                        await GetRecurringInvoicesForReview(
+                            activeHostelId
+                        );
+
+                    const updatedInvoice =
+                        refreshResult?.data?.invoicesList?.find(
+                            (invoice) =>
+                                Number(invoice?.invoiceId) ===
+                                Number(invoiceId)
+                        );
+
+                    if (updatedInvoice?.invoiceItems) {
+                        setInvoiceItems(
+                            updatedInvoice.invoiceItems.map(
+                                (apiItem) => ({
+                                    id: `api-${apiItem.itemId}`,
+                                    itemId: apiItem.itemId,
+                                    type:
+                                        apiItem.itemName || "",
+                                    amount:
+                                        Number(
+                                            apiItem.amount || 0
+                                        ),
+                                    source: "api",
+                                })
+                            )
+                        );
+                    }
+
+                    setModalType("success");
 
                     setModalMessage(
-                        result?.message ||
-                        "Failed to update recurring amount"
+                        "Recurring amount updated successfully"
                     );
 
                     setShowSuccessModal(true);
@@ -351,62 +484,64 @@ const GenerateBillsSheet = ({
                     setTimeout(() => {
                         setShowSuccessModal(false);
                     }, 1500);
-
-                    return;
                 }
 
+                // Local item update
+                setInvoiceItems((prev) =>
+                    prev.map((item) => {
 
+                        if (item.id !== editingRow.id) {
+                            return item;
+                        }
 
-                const refreshResult =
-                    await GetRecurringInvoicesForReview(
-                        activeHostelId
-                    );
+                        return {
+                            ...item,
 
-                console.log(
-                    "REFRESHED RECURRING INVOICES:",
-                    refreshResult
+                            type:
+                                String(item.type || "")
+                                    .trim()
+                                    .toUpperCase() === "RENT"
+                                    ? item.type
+                                    : draftType.trim(),
+
+                            amount,
+                        };
+                    })
                 );
 
-                // =========================================
-                // FIND UPDATED INVOICE
-                // =========================================
+                setEditingRow(null);
+                setDraftType("");
+                setDraftAmount("");
 
-                const updatedInvoice =
-                    refreshResult?.data?.invoicesList?.find(
-                        (invoice) =>
-                            Number(invoice?.invoiceId) ===
-                            Number(invoiceId)
-                    );
+                Keyboard.dismiss();
 
-                console.log(
-                    "UPDATED INVOICE:",
-                    updatedInvoice
-                );
+                return;
+            }
 
-                // =========================================
-                // UPDATE SHEET ITEMS IMMEDIATELY
-                // =========================================
 
-                if (updatedInvoice?.invoiceItems) {
-                    setInvoiceItems(
-                        updatedInvoice.invoiceItems.map((apiItem) => ({
-                            id: `api-${apiItem.itemId}`,
-                            itemId: apiItem.itemId,
-                            type: apiItem.itemName || "",
-                            amount: Number(apiItem.amount || 0),
-                            source: "api",
-                        }))
-                    );
-                }
+            // =========================================
+            // ADD NEW ITEM
+            // =========================================
 
-                // =========================================
-                // SUCCESS MESSAGE
-                // =========================================
+            if (
+                !draftType.trim() ||
+                !isValidAmount(draftAmount)
+            ) {
+                return;
+            }
 
-                setModalType("success");
+            const selectedInvoice = invoices?.[0];
+
+            const invoiceId =
+                selectedInvoice?.invoiceId ||
+                selectedInvoice?.id;
+
+            if (!activeHostelId || !invoiceId) {
+
+                setModalType("error");
 
                 setModalMessage(
-                    "Recurring amount updated successfully"
+                    "Invoice details are missing"
                 );
 
                 setShowSuccessModal(true);
@@ -414,28 +549,80 @@ const GenerateBillsSheet = ({
                 setTimeout(() => {
                     setShowSuccessModal(false);
                 }, 1500);
+
+                return;
             }
 
+            const amount = Number(draftAmount);
 
-            setInvoiceItems((prev) =>
-                prev.map((item) => {
+            // =========================================
+            // ADD API
+            // =========================================
 
-                    if (item.id !== editingRow.id) {
-                        return item;
-                    }
+            const result = await AddRecurringBillItem({
+                hostelId: activeHostelId,
+                invoiceId,
+                name: draftType.trim(),
+                amount,
+            });
 
-                    return {
-                        ...item,
-
-                        type:
-                            item.source === "api"
-                                ? item.type
-                                : draftType.trim(),
-
-                        amount,
-                    };
-                })
+            console.log(
+                "ADD RECURRING ITEM RESULT:",
+                result
             );
+
+            if (!result?.success) {
+
+                setModalType("error");
+
+                setModalMessage(
+                    result?.message ||
+                    "Failed to add recurring item"
+                );
+
+                setShowSuccessModal(true);
+
+                setTimeout(() => {
+                    setShowSuccessModal(false);
+                }, 1500);
+
+                return;
+            }
+
+            // =========================================
+            // REFRESH
+            // =========================================
+
+            const refreshResult =
+                await GetRecurringInvoicesForReview(
+                    activeHostelId
+                );
+
+            const updatedInvoice =
+                refreshResult?.data?.invoicesList?.find(
+                    (invoice) =>
+                        Number(invoice?.invoiceId) ===
+                        Number(invoiceId)
+                );
+
+            if (updatedInvoice?.invoiceItems) {
+
+                setInvoiceItems(
+                    updatedInvoice.invoiceItems.map(
+                        (apiItem) => ({
+                            id: `api-${apiItem.itemId}`,
+                            itemId: apiItem.itemId,
+                            type:
+                                apiItem.itemName || "",
+                            amount:
+                                Number(
+                                    apiItem.amount || 0
+                                ),
+                            source: "api",
+                        })
+                    )
+                );
+            }
 
             setEditingRow(null);
             setDraftType("");
@@ -443,38 +630,23 @@ const GenerateBillsSheet = ({
 
             Keyboard.dismiss();
 
-            return;
+            setModalType("success");
+
+            setModalMessage(
+                "Recurring item added successfully"
+            );
+
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 1500);
+
+        } finally {
+
+            // Unlock only after API completes
+            setIsSaving(false);
         }
-
-
-        // ADD NEW ITEM
-
-
-        if (
-            !draftType.trim() ||
-            !draftAmount.trim()
-        ) {
-            return;
-        }
-
-        const newItem = {
-            id: `local-${Date.now()}`,
-            itemId: null,
-            type: draftType.trim(),
-            amount: Number(draftAmount || 0),
-            source: "local",
-        };
-
-        setInvoiceItems((prev) => [
-            ...prev,
-            newItem,
-        ]);
-
-        setEditingRow(null);
-        setDraftType("");
-        setDraftAmount("");
-
-        Keyboard.dismiss();
     };
 
     const handleRemoveItem = (item) => {
@@ -518,6 +690,9 @@ const GenerateBillsSheet = ({
         // ==========================================
 
         if (item.source === "api") {
+            if (!canDeleteInvoice) {
+                return;
+            }
             const selectedInvoice = invoices?.[0];
 
             const invoiceId =
@@ -965,6 +1140,9 @@ const GenerateBillsSheet = ({
                                     editingRow?.mode === "edit" &&
                                     editingRow?.id === item.id;
 
+                                const isRentItem =
+                                    String(item?.type || "").trim().toUpperCase() === "RENT";
+
                                 return (
                                     <View
                                         key={item.id}
@@ -991,32 +1169,55 @@ const GenerateBillsSheet = ({
 
                                             {/* EDIT */}
 
+
+
                                             <TouchableOpacity
                                                 activeOpacity={0.7}
                                                 onPress={() =>
                                                     handleEditItem(item)
                                                 }
-                                                style={styles.iconButton}
+                                                disabled={!canUpdateInvoice}
+                                                style={[
+                                                    styles.iconButton,
+                                                    !canUpdateInvoice && styles.permissionDisabledIcon,
+                                                ]}
                                             >
                                                 <Image
                                                     source={EditIcon}
-                                                    style={styles.actionIcon}
+                                                    style={[
+                                                        styles.actionIcon,
+                                                        !canUpdateInvoice && styles.permissionDisabledIconImage,
+                                                    ]}
                                                 />
                                             </TouchableOpacity>
 
 
-                                            {/* DELETE */}
+
 
                                             <TouchableOpacity
                                                 activeOpacity={0.7}
-                                                onPress={() =>
-                                                    handleRemoveItem(item)
+                                                onPress={() => {
+                                                    if (isRentItem) return;
+
+                                                    handleRemoveItem(item);
+                                                }}
+                                                disabled={
+                                                    isRentItem ||
+                                                    !canDeleteInvoice
                                                 }
-                                                style={styles.iconButton}
+                                                style={[
+                                                    styles.iconButton,
+                                                    (isRentItem || !canDeleteInvoice) &&
+                                                    styles.permissionDisabledIcon,
+                                                ]}
                                             >
                                                 <Image
                                                     source={DeleteIcon}
-                                                    style={styles.actionIcon}
+                                                    style={[
+                                                        styles.actionIcon,
+                                                        (isRentItem || !canDeleteInvoice) &&
+                                                        styles.permissionDisabledIconImage,
+                                                    ]}
                                                 />
                                             </TouchableOpacity>
 
@@ -1077,20 +1278,33 @@ const GenerateBillsSheet = ({
 
                                     {/* DESCRIPTION */}
 
-                                    {editingRow.mode === "add" ||
-                                        editingRow.source === "local" ? (
-                                        <View style={styles.editField}>
-
-                                            <TextInput
-                                                value={draftType}
-                                                onChangeText={setDraftType}
-                                                placeholder="Enter Description"
-                                                placeholderTextColor="#A2A7B0"
-                                                style={styles.editInput}
-                                            />
-
-                                        </View>
-                                    ) : null}
+                                    {(
+                                        editingRow.mode === "add" ||
+                                        editingRow.source === "local" ||
+                                        !(
+                                            editingRow.mode === "edit" &&
+                                            editingRow.source === "api" &&
+                                            String(
+                                                invoiceItems.find(
+                                                    (row) => row.id === editingRow.id
+                                                )?.type || ""
+                                            )
+                                                .trim()
+                                                .toUpperCase() === "RENT"
+                                        )
+                                    ) && (
+                                            <View style={styles.editField}>
+                                                <ValidatedInput
+                                                    type="name"
+                                                    inputType="text"
+                                                    value={draftType}
+                                                    onChangeText={setDraftType}
+                                                    placeholder="Enter Description"
+                                                    placeholderTextColor="#A2A7B0"
+                                                    style={styles.editInput}
+                                                />
+                                            </View>
+                                        )}
 
 
                                     {/* AMOUNT */}
@@ -1105,7 +1319,7 @@ const GenerateBillsSheet = ({
                                         ]}
                                     >
 
-                                        <TextInput
+                                        {/* <TextInput
                                             value={draftAmount}
                                             onChangeText={(value) =>
                                                 setDraftAmount(
@@ -1120,13 +1334,65 @@ const GenerateBillsSheet = ({
                                             keyboardType="numeric"
                                             style={styles.editInput}
                                             autoFocus
+                                        /> */}
+
+                                        <TextInput
+                                            value={draftAmount}
+                                            onChangeText={(value) => {
+                                                // Only numbers + decimal point
+                                                let cleaned = value.replace(/[^0-9.]/g, "");
+
+                                                // Allow only one decimal point
+                                                const parts = cleaned.split(".");
+
+                                                if (parts.length > 2) {
+                                                    cleaned = `${parts[0]}.${parts.slice(1).join("")}`;
+                                                }
+
+                                                // Don't allow leading zero
+                                                // 0800 -> blocked
+                                                // 0123 -> blocked
+                                                // 00 -> blocked
+                                                if (/^0\d/.test(cleaned)) {
+                                                    return;
+                                                }
+
+                                                setDraftAmount(cleaned);
+                                            }}
+                                            placeholder="₹ 0.00"
+                                            placeholderTextColor="#A2A7B0"
+                                            keyboardType="decimal-pad"
+                                            style={styles.editInput}
+                                            autoFocus
                                         />
 
                                     </View>
 
                                 </View>
                             )}
+
                             {!editingRow && (
+                                <TouchableOpacity
+                                    activeOpacity={0.8}
+                                    onPress={handleAdd}
+                                    style={[
+                                        styles.addButton,
+                                        !canWriteInvoice && styles.permissionDisabledButton,
+                                    ]}
+                                    disabled={!canWriteInvoice}
+                                >
+                                    <Text
+                                        style={[
+                                            styles.addButtonText,
+                                            !canWriteInvoice && styles.permissionDisabledText,
+                                        ]}
+                                    >
+                                        ＋ Add
+                                    </Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {/* {!editingRow && canWriteInvoice && (
                                 <TouchableOpacity
                                     activeOpacity={0.8}
                                     onPress={handleAdd}
@@ -1137,7 +1403,7 @@ const GenerateBillsSheet = ({
                                         ＋ Add
                                     </Text>
                                 </TouchableOpacity>
-                            )}
+                            )} */}
 
                             {editingRow && (
                                 <View
@@ -1184,7 +1450,8 @@ const GenerateBillsSheet = ({
                                         ]}
                                     >
                                         <Text style={styles.saveButtonText}>
-                                            ✓ Save
+                                            {isSaving ? isEditingExisting ? "Updating..." : "Saving..."
+                                                : isEditingExisting ? "✓ Update" : "✓ Save"}
                                         </Text>
                                     </TouchableOpacity>
 
@@ -2147,6 +2414,21 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: "Gilroy-Semibold",
         color: "#fff",
+    },
+    permissionDisabledButton: {
+        opacity: 0.45,
+    },
+
+    permissionDisabledText: {
+        opacity: 0.6,
+    },
+
+    permissionDisabledIcon: {
+        opacity: 0.45,
+    },
+
+    permissionDisabledIconImage: {
+        opacity: 0.45,
     },
 
 
