@@ -1924,22 +1924,12 @@ const DeleteRecurringBillItem = async ({
 // =====================================================
 // GENERATE ALL RECURRING INVOICES
 // =====================================================
-// =====================================================
-// GENERATE RECURRING INVOICES
-// =====================================================
 
-const GenerateAllRecurringInvoices = async (hostelId, invoiceIds = []) => {
+const GenerateAllRecurringInvoices = async (hostelId) => {
   if (!hostelId) {
     return {
       success: false,
       message: "Invalid hostelId",
-    };
-  }
-
-  if (!Array.isArray(invoiceIds) || invoiceIds.length === 0) {
-    return {
-      success: false,
-      message: "Please select at least one invoice",
     };
   }
 
@@ -1949,14 +1939,8 @@ const GenerateAllRecurringInvoices = async (hostelId, invoiceIds = []) => {
 
     const axios = getAxios();
 
-    console.log("GENERATE RECURRING INVOICES:", {
-      hostelId,
-      invoiceIds,
-    });
-
     const res = await axios.post(
-      `/v2/bills/recurring/manual/${hostelId}`,
-      invoiceIds
+      `/v2/bills/recurring/${hostelId}`
     );
 
     if (res?.status === 200 || res?.status === 201) {
@@ -1974,7 +1958,7 @@ const GenerateAllRecurringInvoices = async (hostelId, invoiceIds = []) => {
 
   } catch (error) {
     console.log(
-      "GenerateRecurringInvoices ERROR:",
+      "GenerateAllRecurringInvoices ERROR:",
       error?.response?.data || error
     );
 
@@ -1993,81 +1977,6 @@ const GenerateAllRecurringInvoices = async (hostelId, invoiceIds = []) => {
   }
 };
 
-
-// =====================================================
-// ADD NEW RECURRING BILL ITEM
-// =====================================================
-
-const AddRecurringBillItem = async ({
-  hostelId,
-  invoiceId,
-  name,
-  amount,
-}) => {
-  if (!hostelId || !invoiceId || !name || amount === undefined || amount === null) {
-    return {
-      success: false,
-      message: "Invalid data",
-    };
-  }
-
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const payload = [
-      {
-        name: name.trim(),
-        amount: Number(amount),
-      },
-    ];
-
-    console.log("ADD RECURRING ITEM:", {
-      hostelId,
-      invoiceId,
-      payload,
-    });
-
-    const res = await axios.post(
-      `/v2/bills/recurring/${hostelId}/${invoiceId}`,
-      payload
-    );
-
-    if (res?.status === 200 || res?.status === 201) {
-      return {
-        success: true,
-        data: res.data,
-        statusCode: res.status,
-      };
-    }
-
-    return {
-      success: false,
-      message: "Failed to add recurring item",
-    };
-
-  } catch (error) {
-    const msg = getErrorMessage(error);
-
-    console.log(
-      "ADD RECURRING ITEM ERROR:",
-      error?.response?.data || error
-    );
-
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-      statusCode: error?.response?.status,
-    };
-
-  } finally {
-    setLoading(false);
-  }
-};
 
   return (
     <BillContext.Provider
@@ -2121,7 +2030,7 @@ const AddRecurringBillItem = async ({
         getRetainerInvoiceDetail, retainerInvoiceDetail, ApplyRetainerToInvoices, setBillDetails, setRecurringBills,
         CreateManualInvoice, GetRecurringInvoicesForReview ,
          UpdateRecurringBillItem , DeleteRecurringBillItem , 
-         GenerateAllRecurringInvoices, AddRecurringBillItem , 
+         GenerateAllRecurringInvoices,
       }}
     >
       {children}

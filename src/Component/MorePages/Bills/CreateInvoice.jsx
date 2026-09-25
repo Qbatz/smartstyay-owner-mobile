@@ -1745,14 +1745,12 @@ const CreateInvoice = ({ }) => {
                                     <View style={styles.discountToggle}>
                                         <TouchableOpacity
                                             disabled={isEditMode}
-
                                             style={[
                                                 styles.discountBtn,
                                                 discountType === "amount" &&
                                                 styles.discountBtnActive,
                                                 isEditMode && styles.discountBtnDisabled,
                                             ]}
-
                                             onPress={() => {
                                                 if (isEditMode) return;
                                                 setDiscountType("amount")
@@ -1760,7 +1758,6 @@ const CreateInvoice = ({ }) => {
                                                     validateDiscount(discount, "amount")
                                                 )
                                             }}
-
                                         >
                                             <Text style={{ color: discountType === "amount" ? "#fff" : "#00000" }}>₹</Text>
                                         </TouchableOpacity>
@@ -1907,8 +1904,7 @@ const CreateInvoice = ({ }) => {
                             style={[
                                 styles.saveButton,
                                 isSubmitClicked && styles.saveButtonDisabled
-                            ]}
-                            >
+                            ]}>
                             <Text style={styles.saveButtonText}>
                                 {isEditMode ? "Save Changes" : "Save & Generate"}
                             </Text>

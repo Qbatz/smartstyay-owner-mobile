@@ -3,10 +3,7 @@ import React, {
   useState,
   useContext,
   useEffect,
-  useCallback, useRef
 } from "react";
-
-import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -23,7 +20,6 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import BillGenerateIcon from "../../../Assets/Images/BillGenerateIcon.png";
 import GenerateBillsSheet from "./GenerateBillsDetails";
-// import GenerateSelectedInvoicesSheet from "./GenerateSelectedInvoices";
 import SuccessModal from "../../../ToastFile/ToastPage";
 
 const ReviewBillsScreen = ({
@@ -36,11 +32,6 @@ const ReviewBillsScreen = ({
   const isSmallDevice = width < 360;
 
   const [showGenerateSheet, setShowGenerateSheet] = useState(false);
-
-  // NEW: controls the "Generate N Invoices?" confirmation screen
-  // for the manually selected invoices (top "Generate" button)
-  const [showGenerateSelectedSheet, setShowGenerateSelectedSheet] = useState(false);
-
   const {
     loading,
     GetRecurringInvoicesForReview,
@@ -54,32 +45,11 @@ const ReviewBillsScreen = ({
   const [modalType, setModalType] = useState("success");
 
   const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState([]);
-
-  const [selectcheckinvoice, setSelectCheckInvoice] = useState(false)
-  const [isSubmitClicked, setIsSubmitClicked] = useState(false)
-
-  const hasFocusedOnce = useRef(false);
-  const submitLockRef = useRef(false);
-
-
-  useFocusEffect(
-    useCallback(() => {
-      if (hasFocusedOnce.current) {
-        setSelectedInvoiceIds([]);
-      }
-
-      hasFocusedOnce.current = true;
-    }, [])
-  );
 
   const invoices = useMemo(() => {
-    const list = availablerecurringInvoices?.invoicesList || [];
-    return list.map((item) => ({
-      ...item,
-      status: item.status || "READY", // backend status anuppala na default READY
-    }));
+    return availablerecurringInvoices?.invoicesList || [];
   }, [availablerecurringInvoices]);
+
 
   const currentSelectedInvoice = useMemo(() => {
     if (!selectedInvoice?.invoiceId) return null;
@@ -90,6 +60,7 @@ const ReviewBillsScreen = ({
         Number(selectedInvoice?.invoiceId)
     ) || null;
   }, [invoices, selectedInvoice]);
+
 
   const formatReviewDate = (date, includeYear = false) => {
     if (!date) return "--";
@@ -120,14 +91,13 @@ const ReviewBillsScreen = ({
       : `${day} ${monthName}`;
   };
 
-  const normalizeStatus = (status) =>
-    String(status || "").trim().toUpperCase();
-
   /*
    * Ready invoices
    */
   const readyInvoices = useMemo(() => {
-    return invoices.filter((item) => normalizeStatus(item.status) === "READY");
+    return invoices.filter(
+      (item) => item.status === "READY"
+    );
   }, [invoices]);
 
   /*
@@ -135,175 +105,129 @@ const ReviewBillsScreen = ({
    */
   const selectedReadyInvoices = useMemo(() => {
     return invoices.filter(
-      (item) => normalizeStatus(item.status) === "READY" && item.selected
+      (item) =>
+        item.status === "READY" &&
+        item.selected
     );
   }, [invoices]);
 
   const readyCount = readyInvoices.length;
 
   /*
-   * NEW: the actual invoice objects for the currently selected ids
-   * (used to show total amount / details on the confirmation screen)
-   */
-  const selectedInvoicesData = useMemo(() => {
-    return invoices.filter((item) =>
-      selectedInvoiceIds.includes(Number(item?.invoiceId))
-    );
-  }, [invoices, selectedInvoiceIds]);
-
-  const selectedInvoicesTotalAmount = useMemo(() => {
-    return selectedInvoicesData.reduce(
-      (sum, item) => sum + Number(item?.invoiceAmount || 0),
-      0
-    );
-  }, [selectedInvoicesData]);
-
-  const billingPeriodText = useMemo(() => {
-    const start = formatReviewDate(availablerecurringInvoices?.billingStartDate);
-    const end = formatReviewDate(availablerecurringInvoices?.billingEndDate, true);
-    return `${start} – ${end}`;
-  }, [availablerecurringInvoices]);
-
-  /*
    * Select all READY invoices
    */
   const allEligibleSelected =
     readyInvoices.length > 0 &&
-    readyInvoices.every((item) =>
-      selectedInvoiceIds.includes(
-        Number(item.invoiceId)
-      )
+    readyInvoices.every((item) => item.selected);
+
+  const toggleInvoice = (id) => {
+    setInvoices((prev) =>
+      prev.map((item) => {
+        if (item.id !== id) {
+          return item;
+        }
+
+        /*
+         * Don't allow selection for
+         * Needs Review / Generated
+         */
+        if (
+          item.status !== "READY"
+        ) {
+          return item;
+        }
+
+        return {
+          ...item,
+          selected: !item.selected,
+        };
+      })
     );
-
-  const toggleInvoice = (invoiceId) => {
-    const id = Number(invoiceId);
-
-    if (!id) {
-      return;
-    }
-
-    const invoice = invoices.find(
-      (item) => Number(item?.invoiceId) === id
-    );
-
-    if (!invoice) {
-      console.log("Invoice not found:", id);
-      return;
-    }
-
-    if (
-      normalizeStatus(invoice?.status) !== "READY"
-    ) {
-      console.log(
-        "Invoice is not READY:",
-        invoice?.status
-      );
-      return;
-    }
-
-    setSelectedInvoiceIds((prev) => {
-      const exists = prev.includes(id);
-
-      if (exists) {
-        return prev.filter(
-          (selectedId) => selectedId !== id
-        );
-      }
-
-      return [...prev, id];
-    });
   };
 
   const toggleSelectAll = () => {
-    if (!readyInvoices.length) {
-      return;
-    }
+    setInvoices((prev) =>
+      prev.map((item) => {
+        if (item.status !== "READY") {
+          return item;
+        }
 
-    if (allEligibleSelected) {
-      setSelectedInvoiceIds([]);
-      return;
-    }
-
-    setSelectedInvoiceIds(
-      readyInvoices.map((item) =>
-        Number(item.invoiceId)
-      )
+        return {
+          ...item,
+          selected: !allEligibleSelected,
+        };
+      })
     );
   };
 
-  const selectedCount = selectedInvoiceIds.length;
+  const handleGenerateAll = async () => {
+    if (!activeHostelId) {
+      console.log("Missing hostelId");
+      return;
+    }
 
+    try {
+      console.log(
+        "GENERATING ALL RECURRING INVOICES:",
+        activeHostelId
+      );
 
-  const handleOpenGenerateSelected = () => {
-    if (selectedInvoiceIds.length === 0) {
-      setModalType("error");
-      setModalMessage("Please select at least one invoice");
+      const result = await GenerateAllRecurringInvoices(
+        activeHostelId
+      );
+
+      console.log(
+        "GENERATE ALL RECURRING RESULT:",
+        result
+      );
+
+      if (!result?.success) {
+        console.log(
+          "Generate failed:",
+          result?.message
+        );
+
+        setModalType("error");
+        setModalMessage(
+          result?.message || "Failed to generate invoices"
+        );
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1500);
+
+        return;
+      }
+
+      setModalType("success");
+      setModalMessage("All invoices generated successfully");
       setShowSuccessModal(true);
 
       setTimeout(() => {
         setShowSuccessModal(false);
       }, 1500);
 
-      return;
-    }
+ 
 
-    navigation.navigate("GenerateSelectedInvoiceScreen", {
-      selectedInvoiceIds,
-      selectedCount: selectedInvoiceIds.length,
-      totalAmount: selectedInvoicesTotalAmount,
-      billingPeriod: billingPeriodText,
-    });
-  };
+      // Refresh review list
+      await GetRecurringInvoicesForReview(
+        activeHostelId
+      );
 
+    } catch (error) {
+      console.log(
+        "HANDLE GENERATE ALL ERROR:",
+        error
+      );
 
-
-  const handleGenerateAll = async () => {
-  if (!activeHostelId) return;
-  if (submitLockRef.current) return;
-
-  submitLockRef.current = true;
-  setIsSubmitClicked(true);
-
-  try {
-    console.log("GENERATING ALL INVOICES FOR HOSTEL:", activeHostelId);
-
-    const result = await GenerateAllRecurringInvoices(activeHostelId);
-
-    console.log("GENERATE ALL RESULT:", result);
-
-    if (!result?.success) {
       setModalType("error");
-      setModalMessage(result?.message || "Failed to generate invoices");
+      setModalMessage(
+        error?.message || "Something went wrong"
+      );
       setShowSuccessModal(true);
-
-      setTimeout(() => setShowSuccessModal(false), 1500);
-      return; // finally still runs, lock resets
     }
-
-    setModalType("success");
-    setModalMessage("All invoices generated successfully");
-    setShowSuccessModal(true);
-
-    setSelectedInvoiceIds([]);
-
-    await GetRecurringInvoicesForReview(activeHostelId);
-
-    setTimeout(() => setShowSuccessModal(false), 1500);
-
-  } catch (error) {
-    console.log("HANDLE GENERATE ALL ERROR:", error);
-
-    setModalType("error");
-    setModalMessage(error?.message || "Something went wrong");
-    setShowSuccessModal(true);
-
-      setTimeout(() => setShowSuccessModal(false), 1500);
-
- } finally {
-  submitLockRef.current = false;
-  setIsSubmitClicked(false);
-}
-};
+  };
 
   const formatAmount = (amount) => {
     return Number(amount || 0).toLocaleString("en-IN");
@@ -311,36 +235,58 @@ const ReviewBillsScreen = ({
 
   const renderCheckbox = ({
     checked,
+    disabled = false,
     onPress,
   }) => {
     return (
       <TouchableOpacity
         activeOpacity={0.8}
+        disabled={disabled}
         onPress={onPress}
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-        }}
+        style={[
+          styles.checkbox,
+          checked && styles.checkboxChecked,
+          disabled && styles.checkboxDisabled,
+        ]}
       >
-        <View
-          style={[
-            styles.checkbox,
-            checked && styles.checkboxSelected,
-          ]}
-        >
-          {checked && (
-            <Text style={styles.tick}>
-              ✓
-            </Text>
-          )}
-        </View>
+        {checked && (
+          <Text style={styles.checkboxTick}>
+            ✓
+          </Text>
+        )}
       </TouchableOpacity>
     );
   };
 
+  //   const renderCheckbox = ({
+  //     checked,
+  //     disabled = false,
+  //     onPress,
+  //   }) => {
+  //     return (
+  //       <TouchableOpacity
+  //         activeOpacity={0.8}
+  //         disabled={disabled}
+  //         onPress={onPress}
+  //         style={[
+  //           styles.checkbox,
+  //           checked && styles.checkboxChecked,
+  //           disabled && styles.checkboxDisabled,
+  //         ]}
+  //       >
+  //         {checked && (
+  //           <Ionicons
+  //             name="checkmark"
+  //             size={14}
+  //             color="#FFFFFF"
+  //           />
+  //         )}
+  //       </TouchableOpacity>
+  //     );
+  //   };
+
   const renderStatus = (status) => {
-    const s = normalizeStatus(status);
-    if (s === "READY") {
+    if (status === "READY") {
       return (
         <View
           style={[
@@ -360,7 +306,7 @@ const ReviewBillsScreen = ({
       );
     }
 
-    if (s === "NEEDS_REVIEW") {
+    if (status === "NEEDS_REVIEW") {
       return (
         <View
           style={[
@@ -380,7 +326,7 @@ const ReviewBillsScreen = ({
       );
     }
 
-    if (s === "GENERATED") {
+    if (status === "GENERATED") {
       return (
         <View
           style={[
@@ -439,23 +385,16 @@ const ReviewBillsScreen = ({
       Number(item?.invoiceAmount || 0);
 
     return (
-      <View
-        style={[
+      <Pressable
+        onPress={() => handleInvoicePress(item)}
+        style={({ pressed }) => [
           styles.invoiceRow,
           index === 0 && styles.firstInvoiceRow,
+          pressed && styles.invoiceRowPressed,
         ]}
       >
 
-        <View style={styles.checkboxContainer}>
-          {renderCheckbox({
-            checked: selectedInvoiceIds.includes(
-              Number(item?.invoiceId)
-            ),
-            onPress: () => toggleInvoice(item?.invoiceId),
-          })}
-        </View>
-
-        {/* ================= PROFILE ================= */}
+        {/* PROFILE */}
         <View style={styles.initialCircle}>
           {profilePic ? (
             <Image
@@ -469,20 +408,15 @@ const ReviewBillsScreen = ({
           )}
         </View>
 
+        {/* TENANT INFORMATION */}
+        <View style={styles.tenantInfo}>
 
-        {/* ================= TENANT INFORMATION ================= */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => handleInvoicePress(item)}
-          style={styles.tenantInfo}
-        >
           <View style={styles.nameRow}>
 
             <Text
               style={[
                 styles.tenantName,
-                isSmallDevice &&
-                styles.tenantNameSmall,
+                isSmallDevice && styles.tenantNameSmall,
               ]}
               numberOfLines={1}
             >
@@ -508,16 +442,12 @@ const ReviewBillsScreen = ({
             numberOfLines={1}
           >
             {floorName} / {roomName} · Rent ·{" "}
-            {formatReviewDate(
-              item?.invoiceStartDate,
-              true
-            )}
+            {formatReviewDate(item?.invoiceStartDate, true)}
           </Text>
 
-        </TouchableOpacity>
+        </View>
 
-
-        {/* ================= AMOUNT ================= */}
+        {/* AMOUNT + STATUS */}
         <View style={styles.amountSection}>
 
           <Text
@@ -534,7 +464,7 @@ const ReviewBillsScreen = ({
 
         </View>
 
-      </View>
+      </Pressable>
     );
   };
 
@@ -563,6 +493,12 @@ const ReviewBillsScreen = ({
               }
               style={styles.backButton}
             >
+              {/* <Ionicons
+              name="chevron-back"
+              size={24}
+              color="#1D2638"
+            /> */}
+
               <Image source={ArrowLeft} style={{ height: 12, width: 12 }} />
             </TouchableOpacity>
 
@@ -626,10 +562,12 @@ const ReviewBillsScreen = ({
           </View>
 
 
-          <View style={styles.selectAllContainer}>
+          {/* <View style={styles.selectAllContainer}>
             <View style={styles.selectAllLeft}>
               {renderCheckbox({
                 checked: allEligibleSelected,
+                disabled:
+                  readyInvoices.length === 0,
                 onPress: toggleSelectAll,
               })}
 
@@ -639,33 +577,29 @@ const ReviewBillsScreen = ({
             </View>
 
             <Text style={styles.readyCountText}>
-              {String(selectedCount).padStart(2, "0")} of{" "}
-              {String(readyCount).padStart(2, "0")} selected
+              {String(readyCount).padStart(2, "0")} of{" "}
+              {String(invoices.length).padStart(2, "0")} ready
             </Text>
+          </View> */}
 
-
-            <TouchableOpacity
-              activeOpacity={0.85}
-              disabled={
-                loading ||
-                selectedInvoiceIds.length === 0
-              }
-              onPress={handleOpenGenerateSelected}
-              style={[
-                styles.generateButton,
-                (
-                  loading ||
-                  selectedInvoiceIds.length === 0
-                ) && styles.generateButtonDisabled,
-              ]}
-            >
-              <Text style={styles.generateButtonText}>
-                Generate
-              </Text>
-            </TouchableOpacity>
-
-          </View>
-
+          {/* 
+          <FlatList
+            data={invoices}
+            keyExtractor={(item) => item.id}
+            renderItem={renderInvoice}
+            showsVerticalScrollIndicator={false}
+            bounces={true}
+            contentContainerStyle={[
+              styles.listContent,
+              {
+                paddingBottom:
+                  90 + insets.bottom,
+              },
+            ]}
+            ItemSeparatorComponent={() => (
+              <View style={styles.separator} />
+            )}
+          /> */}
           <FlatList
             data={invoices}
             keyExtractor={(item, index) =>
@@ -718,17 +652,13 @@ const ReviewBillsScreen = ({
               </Text>
             </View>
 
-            {/*
-              CHANGED: calls handleGenerateAll directly, which now
-              sends ONLY activeHostelId (no invoice id array).
-            */}
             <TouchableOpacity
               activeOpacity={0.85}
+              disabled={loading}
               onPress={handleGenerateAll}
-              disabled={isSubmitClicked}
               style={[
                 styles.generateButton,
-                isSubmitClicked && styles.generateButtonDisabled
+                loading && styles.generateButtonDisabled,
               ]}
             >
               <Image
@@ -737,14 +667,13 @@ const ReviewBillsScreen = ({
               />
 
               <Text style={styles.generateButtonText}>
-                {isSubmitClicked ? "Generating..." : "Generate All"}
+                {loading ? "Generating..." : "Generate All"}
               </Text>
             </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
 
-      {/* Existing single-invoice detail sheet */}
       {showGenerateSheet && (
         <GenerateBillsSheet
           visible={showGenerateSheet}
@@ -774,8 +703,6 @@ const ReviewBillsScreen = ({
           }}
         />
       )}
-
-
     </>
   );
 };
@@ -854,6 +781,7 @@ const styles = StyleSheet.create({
 
   periodRow: {
     flexDirection: "row",
+    // alignItems: "center",
     paddingHorizontal: 30,
     paddingBottom: 13,
   },
@@ -861,11 +789,13 @@ const styles = StyleSheet.create({
   periodItem: {
     flex: 1,
     flexDirection: "row",
+    // alignItems: "center",
   },
 
   generationItem: {
     flex: 1,
     flexDirection: "row",
+    // alignItems: "center",
     marginLeft: 12,
   },
 
@@ -891,7 +821,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 23,
+    paddingHorizontal: 43,
   },
 
   selectAllLeft: {
@@ -913,6 +843,34 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Regular",
     marginLeft: 8,
   },
+
+  /* ================= CHECKBOX ================= */
+
+  // checkboxContainer: {
+  //   width: 31,
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // },
+
+  // checkbox: {
+  //   width: 18,
+  //   height: 18,
+  //   borderRadius: 4,
+  //   borderWidth: 1,
+  //   borderColor: "#CBD1DB",
+  //   backgroundColor: "#FFFFFF",
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // },
+
+  // checkboxChecked: {
+  //   backgroundColor: "#1835A5",
+  //   borderColor: "#1835A5",
+  // },
+
+  // checkboxDisabled: {
+  //   opacity: 0.45,
+  // },
 
   /* ================= LIST ================= */
 
@@ -1085,8 +1043,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingTop: 9,
 
+    /*
+     * Android shadow
+     */
     elevation: 8,
 
+    /*
+     * iOS shadow
+     */
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -1136,43 +1100,21 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Medium",
     marginLeft: 7,
   },
-
   checkboxContainer: {
     width: 30,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 2,
   },
 
   checkbox: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    borderWidth: 1.5,
-    borderColor: "#D1D5DB",
-    justifyContent: "center",
+    width: 28,
+    height: 28,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: "#D4D8E0",
+    backgroundColor: "#FFFFFF",
     alignItems: "center",
-    backgroundColor: "#FFF",
-    marginRight: 8,
-  },
-
-  checkboxSelected: {
-    backgroundColor: "#1E45E1",
-    borderColor: "#1E45E1",
-  },
-
-  tick: {
-    color: "#FFF",
-    fontSize: 13,
-    fontWeight: "700",
-  },
-
-  checkboxDisabled: {
-    opacity: 0.45,
-  },
-
-  checkboxPressed: {
-    opacity: 0.7,
+    justifyContent: "center",
   },
 
   checkboxChecked: {
@@ -1180,6 +1122,16 @@ const styles = StyleSheet.create({
     borderColor: "#2864E8",
   },
 
+  checkboxTick: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    lineHeight: 24,
+    fontFamily: "Gilroy-Bold",
+  },
+
+  checkboxDisabled: {
+    opacity: 0.45,
+  },
   emptyListContent: {
     flexGrow: 1,
   },
@@ -1206,7 +1158,6 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Regular",
     textAlign: "center",
   },
-
   generateSingleButton: {
     marginTop: 5,
     minWidth: 68,
@@ -1223,13 +1174,11 @@ const styles = StyleSheet.create({
     fontSize: 8,
     fontFamily: "Gilroy-Medium",
   },
-
   profileImage: {
     width: 38,
     height: 38,
     borderRadius: 19,
   },
-
   invoiceRowPressed: {
     opacity: 0.65,
   },
