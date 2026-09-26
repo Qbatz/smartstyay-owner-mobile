@@ -10308,7 +10308,7 @@ const styles = StyleSheet.create({
   },
 
   reviewBillsValue: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#FFFFFF",
     fontFamily: "Gilroy-Regular",
     marginLeft: 8,
@@ -10316,7 +10316,7 @@ const styles = StyleSheet.create({
 
   reviewRequiredBadge: {
     backgroundColor: "#FF7A18",
-    paddingHorizontal: 15,
+    paddingHorizontal: 8,
     paddingVertical: 8,
     borderRadius: 20,
     marginLeft: 10,
@@ -10325,7 +10325,7 @@ const styles = StyleSheet.create({
 
   reviewRequiredText: {
     color: "#FFFFFF",
-    fontSize: 13,
+    fontSize: 12,
     fontFamily: "Gilroy-Bold",
   },
 

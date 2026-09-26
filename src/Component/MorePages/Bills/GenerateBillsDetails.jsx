@@ -38,6 +38,7 @@ const GenerateBillsSheet = ({
         AddRecurringBillItem } = useContext(BillContext)
     const { activeHostelId } = useContext(CommonContexts);
     const sheetY = useRef(new Animated.Value(0)).current;
+    const scrollRef = useRef(null);
 
     const {
         canWriteModule: canWriteInvoice,
@@ -60,9 +61,7 @@ const GenerateBillsSheet = ({
     const [deleteBillRow, setDeleteBillRow] = useState(false);
     const [selectedDeleteItem, setSelectedDeleteItem] = useState(null);
 
-    // =====================================================
-    // SHEET OPEN ANIMATION
-    // =====================================================
+
 
     useEffect(() => {
         if (!visible) return;
@@ -79,9 +78,7 @@ const GenerateBillsSheet = ({
     }, [visible, height]);
 
 
-    // =====================================================
-    // UPDATE INVOICE ITEMS
-    // =====================================================
+  
 
     useEffect(() => {
         if (!visible) return;
@@ -107,45 +104,17 @@ const GenerateBillsSheet = ({
     }, [visible, invoices])
 
 
+    const scrollToInput = () => {
+        setTimeout(() => {
+            scrollRef.current?.scrollToEnd({
+                animated: true,
+            });
+        }, 250);
+    };
 
 
 
 
-    useEffect(() => {
-        const keyboardShow = Keyboard.addListener(
-            "keyboardDidShow",
-            () => {
-                Animated.spring(sheetY, {
-                    toValue: 0,
-                    useNativeDriver: true,
-                    damping: 20,
-                    stiffness: 180,
-                }).start();
-            }
-        );
-
-        const keyboardHide = Keyboard.addListener(
-            "keyboardDidHide",
-            () => {
-                Animated.spring(sheetY, {
-                    toValue: 0,
-                    useNativeDriver: true,
-                    damping: 20,
-                    stiffness: 180,
-                }).start();
-            }
-        );
-
-        return () => {
-            keyboardShow.remove();
-            keyboardHide.remove();
-        };
-    }, []);
-
-
-    // =====================================================
-    // SHEET SWIPE
-    // =====================================================
 
     const panResponder = useRef(
         PanResponder.create({
@@ -154,8 +123,6 @@ const GenerateBillsSheet = ({
             },
 
             onPanResponderMove: (_, gesture) => {
-                // Only allow downward movement.
-                // Sheet cannot move above its 85% top boundary.
                 if (gesture.dy > 0) {
                     sheetY.setValue(gesture.dy);
                 } else {
@@ -164,7 +131,6 @@ const GenerateBillsSheet = ({
             },
 
             onPanResponderRelease: (_, gesture) => {
-                // Swipe down enough -> close
                 if (
                     gesture.dy > 120 ||
                     gesture.vy > 1.2
@@ -181,7 +147,6 @@ const GenerateBillsSheet = ({
                     return;
                 }
 
-                // Small swipe -> return to top position
                 Animated.spring(sheetY, {
                     toValue: 0,
                     useNativeDriver: true,
@@ -230,9 +195,7 @@ const GenerateBillsSheet = ({
     };
 
 
-    // =====================================================
-    // CLOSE
-    // =====================================================
+
 
     const handleClose = () => {
         Keyboard.dismiss();
@@ -248,9 +211,7 @@ const GenerateBillsSheet = ({
     };
 
 
-    // =====================================================
-    // ADD
-    // =====================================================
+
 
     const handleAdd = () => {
         setEditingRow({
@@ -305,14 +266,7 @@ const GenerateBillsSheet = ({
         return true;
     };
 
-    // const canSave =
-    //     !isSaving &&
-    //     (
-    //         isEditingExisting
-    //             ? isValidAmount(draftAmount)
-    //             : !!draftType.trim() &&
-    //             isValidAmount(draftAmount)
-    //     )
+ 
 
     const editingItem = isEditingExisting
         ? invoiceItems.find(
@@ -360,9 +314,6 @@ const GenerateBillsSheet = ({
 
         try {
 
-            // =========================================
-            // EDIT EXISTING ITEM
-            // =========================================
 
             if (editingRow?.mode === "edit") {
 
@@ -382,7 +333,6 @@ const GenerateBillsSheet = ({
                 const amount = Number(draftAmount);
 
 
-                // API ITEM
                 if (item.source === "api") {
 
                     const selectedInvoice = invoices?.[0];
@@ -411,8 +361,6 @@ const GenerateBillsSheet = ({
                             invoiceId,
                             itemId,
 
-                            // RENT → existing name
-                            // Others → edited name
                             name: isRentItem
                                 ? item.type
                                 : draftType.trim(),
@@ -486,7 +434,6 @@ const GenerateBillsSheet = ({
                     }, 1500);
                 }
 
-                // Local item update
                 setInvoiceItems((prev) =>
                     prev.map((item) => {
 
@@ -518,10 +465,6 @@ const GenerateBillsSheet = ({
                 return;
             }
 
-
-            // =========================================
-            // ADD NEW ITEM
-            // =========================================
 
             if (
                 !draftType.trim() ||
@@ -555,9 +498,7 @@ const GenerateBillsSheet = ({
 
             const amount = Number(draftAmount);
 
-            // =========================================
-            // ADD API
-            // =========================================
+
 
             const result = await AddRecurringBillItem({
                 hostelId: activeHostelId,
@@ -588,10 +529,6 @@ const GenerateBillsSheet = ({
 
                 return;
             }
-
-            // =========================================
-            // REFRESH
-            // =========================================
 
             const refreshResult =
                 await GetRecurringInvoicesForReview(
@@ -644,7 +581,6 @@ const GenerateBillsSheet = ({
 
         } finally {
 
-            // Unlock only after API completes
             setIsSaving(false);
         }
     };
@@ -652,10 +588,8 @@ const GenerateBillsSheet = ({
     const handleRemoveItem = (item) => {
         if (!item) return;
 
-        // Store which item user wants to delete
         setSelectedDeleteItem(item);
 
-        // Open custom delete modal
         setDeleteBillRow(true);
     }
 
@@ -663,9 +597,6 @@ const GenerateBillsSheet = ({
     const confirmDeleteItem = async (item) => {
         if (!item) return;
 
-        // ==========================================
-        // LOCAL ITEM
-        // ==========================================
 
         if (item.source === "local") {
             setInvoiceItems((prev) =>
@@ -678,16 +609,13 @@ const GenerateBillsSheet = ({
                 setDraftAmount("");
             }
 
-            // Close delete popup
             setSelectedDeleteItem(null);
             setDeleteBillRow(false);
 
             return;
         }
 
-        // ==========================================
-        // API ITEM
-        // ==========================================
+
 
         if (item.source === "api") {
             if (!canDeleteInvoice) {
@@ -722,9 +650,7 @@ const GenerateBillsSheet = ({
                 result
             );
 
-            // ==========================================
-            // DELETE FAILED
-            // ==========================================
+
 
             if (!result?.success) {
                 setModalType("error");
@@ -743,9 +669,7 @@ const GenerateBillsSheet = ({
                 return;
             }
 
-            // ==========================================
-            // DELETE SUCCESS
-            // ==========================================
+
 
             setInvoiceItems((prev) =>
                 prev.filter((row) => row.id !== item.id)
@@ -757,15 +681,12 @@ const GenerateBillsSheet = ({
                 setDraftAmount("");
             }
 
-            // Refresh API data
             await GetRecurringInvoicesForReview(
                 activeHostelId
             );
 
-            // Close delete popup
             setSelectedDeleteItem(null);
             setDeleteBillRow(false);
-            // Success message
             setModalType("success");
             setModalMessage("Item deleted successfully"
             );
@@ -779,9 +700,7 @@ const GenerateBillsSheet = ({
     };
 
 
-    // =====================================================
-    // INVOICE AMOUNT
-    // =====================================================
+
 
     const getInvoiceAmount = (invoice) => {
         return Number(invoice?.invoiceAmount || 0);
@@ -844,28 +763,7 @@ const GenerateBillsSheet = ({
             }`;
     };
 
-    // const getInvoiceAmount = (invoice) => {
-    //     return Number(
-    //         invoice?.amount ||
-    //         invoice?.totalAmount ||
-    //         invoice?.finalAmount ||
-    //         0
-    //     );
-    // };
 
-
-    // const totalInvoiceAmount = invoices.reduce(
-    //     (sum, invoice) =>
-    //         sum + getInvoiceAmount(invoice),
-    //     0
-    // );
-
-
-    // const adjustmentTotal = adjustments.reduce(
-    //     (sum, item) =>
-    //         sum + Number(item.amount || 0),
-    //     0
-    // );
 
 
     const finalTotal = invoiceItems.reduce(
@@ -875,9 +773,7 @@ const GenerateBillsSheet = ({
     );
 
 
-    // =====================================================
-    // GENERATE
-    // =====================================================
+
 
     const handleGenerate = () => {
         const payload = {
@@ -906,18 +802,14 @@ const GenerateBillsSheet = ({
     };
 
 
-    // =====================================================
-    // HIDE
-    // =====================================================
+
 
     if (!visible) {
         return null;
     }
 
 
-    // =====================================================
-    // UI
-    // =====================================================
+
 
     return (
         <>
@@ -946,35 +838,21 @@ const GenerateBillsSheet = ({
                     style={[
                         styles.sheet,
                         {
-                            height:
-                                height * 0.85,
-
-                            maxHeight:
-                                height * 0.85,
-
-                            transform: [
-                                {
-                                    translateY:
-                                        sheetY,
-                                },
-                            ],
+                            height: height * 0.85,
+                            maxHeight: height * 0.85,
+                            transform: [{ translateY: sheetY }],
                         },
                     ]}
-                    {...panResponder.panHandlers}
                 >
 
-                    {/* HANDLE */}
-
-                    <View style={styles.handleArea}>
-                        <View
-                            style={
-                                styles.sheetHandle
-                            }
-                        />
+                    <View
+                        style={styles.handleArea}
+                        {...panResponder.panHandlers}
+                    >
+                        <View style={styles.sheetHandle} />
                     </View>
 
 
-                    {/* HEADER */}
 
                     <View style={styles.header}>
 
@@ -1007,9 +885,7 @@ const GenerateBillsSheet = ({
                                     styles.readyBadgeText
                                 }
                             >
-                                {/* {String(
-                                invoices.length
-                            ).padStart(2, "0")}{" "} */}
+                            
                                 Recurring
                             </Text>
                         </View>
@@ -1017,23 +893,20 @@ const GenerateBillsSheet = ({
                     </View>
 
 
-                    {/* CONTENT */}
 
                     <ScrollView
-                        showsVerticalScrollIndicator={
-                            false
-                        }
+                        ref={scrollRef}
+                        showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode="interactive"
+                        nestedScrollEnabled={true}
+                        scrollEventThrottle={16}
                         contentContainerStyle={{
-                            paddingBottom:
-                                120 +
-                                insets.bottom,
+                            paddingBottom: 220 + insets.bottom,
                         }}
                     >
 
-                        {/* TENANTS */}
-
-                        {/* TENANTS */}
+  
 
                         {invoices.map((invoice, index) => {
                             const amount = getInvoiceAmount(invoice);
@@ -1101,16 +974,12 @@ const GenerateBillsSheet = ({
                             )
                         })}
 
-                        {/* CALCULATION CARD */}
 
                         <View
                             style={
                                 styles.calculationCard
                             }
                         >
-
-                            {/* CALCULATION HEADER */}
-
                             <View style={styles.calculationHeader}>
 
                                 <Text style={styles.calculationTitle}>
@@ -1129,11 +998,6 @@ const GenerateBillsSheet = ({
 
                             </View>
 
-
-                            {/* =========================================
-    INVOICE ITEMS
-========================================= */}
-
                             {invoiceItems.map((item) => {
 
                                 const isEditing =
@@ -1149,8 +1013,6 @@ const GenerateBillsSheet = ({
                                         style={styles.itemRow}
                                     >
 
-                                        {/* DESCRIPTION */}
-
                                         <View style={styles.itemNameContainer}>
 
                                             <Text
@@ -1162,14 +1024,7 @@ const GenerateBillsSheet = ({
 
                                         </View>
 
-
-                                        {/* RIGHT SIDE */}
-
                                         <View style={styles.itemRightContainer}>
-
-                                            {/* EDIT */}
-
-
 
                                             <TouchableOpacity
                                                 activeOpacity={0.7}
@@ -1222,29 +1077,7 @@ const GenerateBillsSheet = ({
                                             </TouchableOpacity>
 
 
-                                            {/* AMOUNT */}
-
-                                            {/* {isEditing ? (
-                                            <TextInput
-                                                value={draftAmount}
-                                                onChangeText={(value) =>
-                                                    setDraftAmount(
-                                                        value.replace(
-                                                            /[^0-9.]/g,
-                                                            ""
-                                                        )
-                                                    )
-                                                }
-                                                keyboardType="numeric"
-                                                style={[
-                                                    styles.inlineAmountInput,
-                                                    {
-                                                        width: 95,
-                                                    },
-                                                ]}
-                                                autoFocus
-                                            />
-                                        ) : ( */}
+                                        
                                             <Text
                                                 style={
                                                     styles.breakdownAmount
@@ -1255,7 +1088,7 @@ const GenerateBillsSheet = ({
                                                     item.amount || 0
                                                 ).toLocaleString("en-IN")}
                                             </Text>
-                                            {/* )} */}
+                                          
 
                                         </View>
 
@@ -1264,19 +1097,9 @@ const GenerateBillsSheet = ({
                             })}
 
 
-                            {/* ADD */}
-
-                            {/* CALCULATION HEADER */}
-
-
-
-
-                            {/* EDIT / ADD FORM */}
-
                             {editingRow && (
                                 <View style={styles.editRow}>
 
-                                    {/* DESCRIPTION */}
 
                                     {(
                                         editingRow.mode === "add" ||
@@ -1302,12 +1125,10 @@ const GenerateBillsSheet = ({
                                                     placeholder="Enter Description"
                                                     placeholderTextColor="#A2A7B0"
                                                     style={styles.editInput}
+                                                    onFocus={scrollToInput}
                                                 />
                                             </View>
                                         )}
-
-
-                                    {/* AMOUNT */}
 
                                     <View
                                         style={[
@@ -1319,40 +1140,18 @@ const GenerateBillsSheet = ({
                                         ]}
                                     >
 
-                                        {/* <TextInput
-                                            value={draftAmount}
-                                            onChangeText={(value) =>
-                                                setDraftAmount(
-                                                    value.replace(
-                                                        /[^0-9.]/g,
-                                                        ""
-                                                    )
-                                                )
-                                            }
-                                            placeholder="₹ 0.00"
-                                            placeholderTextColor="#A2A7B0"
-                                            keyboardType="numeric"
-                                            style={styles.editInput}
-                                            autoFocus
-                                        /> */}
+                                       
 
                                         <TextInput
                                             value={draftAmount}
                                             onChangeText={(value) => {
-                                                // Only numbers + decimal point
                                                 let cleaned = value.replace(/[^0-9.]/g, "");
-
-                                                // Allow only one decimal point
                                                 const parts = cleaned.split(".");
 
                                                 if (parts.length > 2) {
                                                     cleaned = `${parts[0]}.${parts.slice(1).join("")}`;
                                                 }
 
-                                                // Don't allow leading zero
-                                                // 0800 -> blocked
-                                                // 0123 -> blocked
-                                                // 00 -> blocked
                                                 if (/^0\d/.test(cleaned)) {
                                                     return;
                                                 }
@@ -1364,6 +1163,7 @@ const GenerateBillsSheet = ({
                                             keyboardType="decimal-pad"
                                             style={styles.editInput}
                                             autoFocus
+                                            onFocus={scrollToInput}
                                         />
 
                                     </View>
@@ -1391,19 +1191,6 @@ const GenerateBillsSheet = ({
                                     </Text>
                                 </TouchableOpacity>
                             )}
-
-                            {/* {!editingRow && canWriteInvoice && (
-                                <TouchableOpacity
-                                    activeOpacity={0.8}
-                                    onPress={handleAdd}
-                                    style={styles.addButton}
-                                    disabled={isEditingExisting}
-                                >
-                                    <Text style={styles.addButtonText}>
-                                        ＋ Add
-                                    </Text>
-                                </TouchableOpacity>
-                            )} */}
 
                             {editingRow && (
                                 <View
@@ -1458,9 +1245,6 @@ const GenerateBillsSheet = ({
                                 </View>
                             )}
 
-
-                            {/* TOTAL */}
-
                             <View
                                 style={
                                     styles.totalRow
@@ -1491,56 +1275,7 @@ const GenerateBillsSheet = ({
                             </View>
 
                         </View>
-
-
-
-                        {/* <View
-                        style={
-                            styles.reviewCard
-                        }
-                    >
-
-                        <View
-                            style={
-                                styles.reviewTitleRow
-                            }
-                        >
-
-                            <Text
-                                style={
-                                    styles.warningIcon
-                                }
-                            >
-                                ⚠
-                            </Text>
-
-                            <Text
-                                style={
-                                    styles.reviewTitle
-                                }
-                            >
-                                Needs Review
-                            </Text>
-
-                        </View>
-
-
-                        <Text
-                            style={
-                                styles.reviewText
-                            }
-                        >
-                            Please verify the
-                            calculated amount before
-                            generating the invoice.
-                        </Text>
-
-                    </View> */}
-
                     </ScrollView>
-
-
-                    {/* BOTTOM ACTION BAR */}
 
                     <View
                         style={[
@@ -1555,40 +1290,6 @@ const GenerateBillsSheet = ({
                         ]}
                     >
 
-                        {/* <TouchableOpacity
-                        activeOpacity={0.8}
-                        onPress={handleClose}
-                        style={
-                            styles.bottomCancel
-                        }
-                    >
-                        <Text
-                            style={
-                                styles.bottomCancelText
-                            }
-                        >
-                            Cancel
-                        </Text>
-                    </TouchableOpacity> */}
-
-
-                        {/* <TouchableOpacity
-                        activeOpacity={0.85}
-                        onPress={
-                            handleGenerate
-                        }
-                        style={
-                            styles.generateButton
-                        }
-                    >
-                        <Text
-                            style={
-                                styles.generateButtonText
-                            }
-                        >
-                            Mark As Ready
-                        </Text>
-                    </TouchableOpacity> */}
 
                     </View>
 
@@ -1654,9 +1355,8 @@ const GenerateBillsSheet = ({
 export default GenerateBillsSheet;
 
 
-// =====================================================
 // STYLES
-// =====================================================
+
 
 const styles = StyleSheet.create({
 
