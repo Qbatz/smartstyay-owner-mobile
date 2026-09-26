@@ -866,7 +866,7 @@ const styles = StyleSheet.create({
   generationItem: {
     flex: 1,
     flexDirection: "row",
-    marginLeft: 12,
+    marginLeft: 5,
   },
 
   periodLabel: {
