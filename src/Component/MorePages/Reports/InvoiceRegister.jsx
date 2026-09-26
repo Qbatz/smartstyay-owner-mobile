@@ -61,11 +61,11 @@ const InvoiceRegister = ({ navigation }) => {
   const [tempMonth, setTempMonth] = useState("");
   const [allFilterSheet, setAllFilterSheet] = useState(false)
 
-  const [selectedBillStatus, setSelectedBillStatus] = useState(null)
-  const [allSelectedMonth, setAllSelectedMonth] = useState(null)
-  const [selectedInvoiceType, setSelectedInvoiceType] = useState(null)
-  const [selectedCreatedBy, setCreatedByValue] = useState(null)
-  const [selectedInvoiceMode, setSelectedModeValue] = useState(null)
+  const [selectedBillStatus, setSelectedBillStatus] = useState([])
+  const [allSelectedMonth, setAllSelectedMonth] = useState([])
+  const [selectedInvoiceType, setSelectedInvoiceType] = useState([])
+  const [selectedCreatedBy, setCreatedByValue] = useState([])
+  const [selectedInvoiceMode, setSelectedModeValue] = useState([])
   const [startDateValue, setStartDateValue] = useState(null)
   const [endDateValue, setEndDateValue] = useState(null)
   const [minPaidValue, setMinPaidValue] = useState("")
@@ -335,6 +335,28 @@ const InvoiceRegister = ({ navigation }) => {
     GetInvoiceReports(activeHostelId, filters);
   };
 
+  const handleResetFilter = async () => {
+    setTempMonth("");
+    setSelectedMonth("");
+    setTempStatus([]);
+    setBillStatus([]);
+    setTempType([]);
+    setType([]);
+    setSelectedBillStatus([]), setAllSelectedMonth([]), setSelectedInvoiceType([]),
+      setCreatedByValue([]), setSelectedModeValue([]), setStartDateValue(null),
+      setEndDateValue(null), setMaxPaidValue(""), setMinPaidValue("")
+
+    const filters = {
+      page: 1,
+      size: 10,
+    };
+    const response = await GetInvoiceReports(activeHostelId, filters
+    )
+    console.log("response", response);
+
+
+  }
+
   // const applyFilters = (
   //   newMonth = selectedMonth ?? allSelectedMonth,
   //   newStatus = billStatus ?? selectedBillStatus,
@@ -560,6 +582,31 @@ const InvoiceRegister = ({ navigation }) => {
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadReports;
   const insets = useSafeAreaInsets()
+  // setSelectedBillStatus={setSelectedBillStatus}
+  //         setSelectedMonth={setAllSelectedMonth}
+  //         setSelectedInvoiceType={setSelectedInvoiceType}
+  //         setCreatedByValue={setCreatedByValue}
+  //         setSelectedModeValue={setSelectedModeValue}
+  //         setHeaderSelectedMonth={setSelectedMonth}
+
+  //         setStartDateValue={setStartDateValue}
+  //         setEndDateValue={setEndDateValue}
+  //         setMinPaidValue={setMinPaidValue}
+  //         setMaxPaidValue={setMaxPaidValue}
+  const appliedFilters = billStatus.length > 0 || type.length > 0 || selectedMonth.length > 0;
+  const allAppliedFilters = selectedBillStatus.length > 0 || allSelectedMonth.length > 0 || selectedInvoiceType.length > 0
+    || selectedCreatedBy.length > 0 || selectedInvoiceMode.length > 0
+  // || startDateValue
+  console.log("sillana", allAppliedFilters)
+  console.log(selectedBillStatus)
+  console.log(allSelectedMonth)
+  console.log(selectedInvoiceType)
+  console.log(selectedInvoiceMode)
+  console.log(selectedCreatedBy)
+
+
+  //  || selectedInvoiceMode.length>0 || startDateValue || endDateValue ||
+  // minPaidValue || maxPaidValue
 
   const AnimatedNumber = ({ value, duration = 800 }) => {
     const animatedValue = useRef(new Animated.Value(0)).current;
@@ -872,9 +919,11 @@ const InvoiceRegister = ({ navigation }) => {
             </TouchableOpacity>
           </View>
 
-
-
-
+          {(appliedFilters || allAppliedFilters) && invoiceReports?.invoiceList?.length > 0 &&
+            <TouchableOpacity onPress={handleResetFilter}
+              style={{ marginTop: 10 }}>
+              <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold', color: '#1e45e2' }}>Reset</Text>
+            </TouchableOpacity>}
 
 
           <ScrollView
@@ -902,7 +951,17 @@ const InvoiceRegister = ({ navigation }) => {
               <View style={styles.emptyContainer}>
                 <Image source={EmptyState} style={styles.emptyImage} />
                 <Text style={styles.emptyText}>No Invoices are there!</Text>
+
+                {(appliedFilters || allAppliedFilters) &&
+                  <TouchableOpacity onPress={handleResetFilter}
+                    style={{ marginTop: 10,borderWidth:1,paddingVertical:12,paddingHorizontal:18,borderRadius:10,
+                      borderColor:'#1e45e2'
+                     }}>
+                    <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold', color: '#1e45e2' }}>Reset</Text>
+                  </TouchableOpacity>}
               </View>
+
+
             )}
 
 
@@ -1047,6 +1106,7 @@ const InvoiceRegister = ({ navigation }) => {
         }}
 
         onClose={() => setStatusSheetOpen(false)}
+        isSingleSelect={true}
       />
 
       <FilterBottomSheet
@@ -1072,12 +1132,14 @@ const InvoiceRegister = ({ navigation }) => {
         }}
 
         onClose={() => setTypeSheetOpen(false)}
+        isSingleSelect={true}
       />
 
       <ReportsAllFilterBottomSheet
         visible={allFilterSheet}
         filters={filterOptions}
         reportType="invoice"
+        appliedFilter={allAppliedFilters}
         // selectedFilters={ }
         setSelectedBillStatus={setSelectedBillStatus}
         setSelectedMonth={setAllSelectedMonth}

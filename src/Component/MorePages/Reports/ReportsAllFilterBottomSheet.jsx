@@ -36,6 +36,7 @@ export default function ReportsAllFilterBottomSheet({
     reportType,
     filters,
     selectedFilters,
+    appliedFilter,
     onClose, onApply, onReset,
     setSelectedSharingValue, setSelectedTenantStatus, setSelectedFloorValue,
     setSelectedRoomValue, tenantList, setTenantValue,
@@ -65,6 +66,7 @@ export default function ReportsAllFilterBottomSheet({
     const [maxAmount, setMaxAmount] = useState(null)
 
     // invoice filter
+    console.log("batha",appliedFilter)
 
 
     const [selectedType, setSelectedType] = useState(null)
@@ -159,8 +161,9 @@ export default function ReportsAllFilterBottomSheet({
     // }, [visible]);
 
     useEffect(() => {
-        if (visible) {
+        if (visible ) {
             // Clear local filter states whenever sheet opens
+            if(!appliedFilter){
             setSelectedTenants("");
             setSelectedFloor(null);
             setSelectedRoom(null);
@@ -189,6 +192,7 @@ export default function ReportsAllFilterBottomSheet({
             // Clear errors
             setError("");
             setErrorMsg("");
+            }
 
             openSheet();
 
@@ -953,6 +957,7 @@ export default function ReportsAllFilterBottomSheet({
                     <TouchableOpacity
                         style={styles.applyButton}
                         onPress={onApply}
+                        // onPress={handleApply}
                     >
                         <Text style={styles.applyText}>
                             Apply
