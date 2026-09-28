@@ -78,7 +78,7 @@ const GenerateBillsSheet = ({
     }, [visible, height]);
 
 
-  
+
 
     useEffect(() => {
         if (!visible) return;
@@ -266,7 +266,11 @@ const GenerateBillsSheet = ({
         return true;
     };
 
- 
+    const isValidDescription = (value) => {
+        return String(value || "").trim().length > 0;
+    };
+
+
 
     const editingItem = isEditingExisting
         ? invoiceItems.find(
@@ -280,15 +284,21 @@ const GenerateBillsSheet = ({
             .trim()
             .toUpperCase() === "RENT";
 
+    // const canSave =
+    //     !isSaving &&
+    //     canUpdateInvoice &&
+    //     isValidAmount(draftAmount) &&
+    //     (
+    //         !isEditingExisting ||
+    //         isEditingRent ||
+    //         !!draftType.trim()
+    //     );
+
     const canSave =
         !isSaving &&
         canUpdateInvoice &&
-        isValidAmount(draftAmount) &&
-        (
-            !isEditingExisting ||
-            isEditingRent ||
-            !!draftType.trim()
-        );
+        isValidDescription(draftType) &&
+        isValidAmount(draftAmount);
 
 
 
@@ -306,9 +316,17 @@ const GenerateBillsSheet = ({
             return;
         }
 
+        if (!isValidDescription(draftType)) {
+            return;
+        }
+
         if (!isValidAmount(draftAmount)) {
             return;
         }
+
+        // if (!isValidAmount(draftAmount)) {
+        //     return;
+        // }
 
         setIsSaving(true);
 
@@ -746,7 +764,7 @@ const GenerateBillsSheet = ({
         const stayInfo = invoice?.stayInfo;
 
         return [
-            stayInfo?.floorName,
+            // stayInfo?.floorName,
             stayInfo?.roomName,
             stayInfo?.bedName,
         ]
@@ -885,7 +903,7 @@ const GenerateBillsSheet = ({
                                     styles.readyBadgeText
                                 }
                             >
-                            
+
                                 Recurring
                             </Text>
                         </View>
@@ -906,7 +924,7 @@ const GenerateBillsSheet = ({
                         }}
                     >
 
-  
+
 
                         {invoices.map((invoice, index) => {
                             const amount = getInvoiceAmount(invoice);
@@ -960,15 +978,16 @@ const GenerateBillsSheet = ({
                                             numberOfLines={1}
                                         >
                                             {roomDetails || "--"}
-                                            {" · "}
+
+                                            {" "}
+                                            {" "}
+
                                             Rent
                                             {" · "}
                                             {invoice?.invoiceStartDate || ""}
                                         </Text>
 
                                     </View>
-
-
 
                                 </View>
                             )
@@ -1077,7 +1096,7 @@ const GenerateBillsSheet = ({
                                             </TouchableOpacity>
 
 
-                                        
+
                                             <Text
                                                 style={
                                                     styles.breakdownAmount
@@ -1088,7 +1107,7 @@ const GenerateBillsSheet = ({
                                                     item.amount || 0
                                                 ).toLocaleString("en-IN")}
                                             </Text>
-                                          
+
 
                                         </View>
 
@@ -1140,7 +1159,7 @@ const GenerateBillsSheet = ({
                                         ]}
                                     >
 
-                                       
+
 
                                         <TextInput
                                             value={draftAmount}
@@ -1177,14 +1196,14 @@ const GenerateBillsSheet = ({
                                     onPress={handleAdd}
                                     style={[
                                         styles.addButton,
-                                        !canWriteInvoice && styles.permissionDisabledButton,
+                                        // !canWriteInvoice && styles.permissionDisabledButton,
                                     ]}
-                                    disabled={!canWriteInvoice}
+                                    // disabled={!canWriteInvoice}
                                 >
                                     <Text
                                         style={[
                                             styles.addButtonText,
-                                            !canWriteInvoice && styles.permissionDisabledText,
+                                            // !canWriteInvoice && styles.permissionDisabledText,
                                         ]}
                                     >
                                         ＋ Add

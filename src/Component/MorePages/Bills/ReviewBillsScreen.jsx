@@ -25,6 +25,8 @@ import BillGenerateIcon from "../../../Assets/Images/BillGenerateIcon.png";
 import GenerateBillsSheet from "./GenerateBillsDetails";
 // import GenerateSelectedInvoicesSheet from "./GenerateSelectedInvoices";
 import SuccessModal from "../../../ToastFile/ToastPage";
+import { PGContext } from "../../../Context/PGContext";
+
 
 const ReviewBillsScreen = ({
   navigation,
@@ -48,6 +50,7 @@ const ReviewBillsScreen = ({
     availablerecurringInvoices,
   } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
+  const { getParticularHostelDetails, PGDetails } = useContext(PGContext)
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -253,57 +256,61 @@ const ReviewBillsScreen = ({
       totalAmount: selectedInvoicesTotalAmount,
       billingPeriod: billingPeriodText,
     });
-  };
+  }
+
+  const isJoiningDateBased =
+    String(PGDetails?.billingType || "").toUpperCase() ===
+    "JOINING_DATE_BASED";
 
 
 
   const handleGenerateAll = async () => {
-  if (!activeHostelId) return;
-  if (submitLockRef.current) return;
+    if (!activeHostelId) return;
+    if (submitLockRef.current) return;
 
-  submitLockRef.current = true;
-  setIsSubmitClicked(true);
+    submitLockRef.current = true;
+    setIsSubmitClicked(true);
 
-  try {
-    console.log("GENERATING ALL INVOICES FOR HOSTEL:", activeHostelId);
+    try {
+      console.log("GENERATING ALL INVOICES FOR HOSTEL:", activeHostelId);
 
-    const result = await GenerateAllRecurringInvoices(activeHostelId);
+      const result = await GenerateAllRecurringInvoices(activeHostelId);
 
-    console.log("GENERATE ALL RESULT:", result);
+      console.log("GENERATE ALL RESULT:", result);
 
-    if (!result?.success) {
+      if (!result?.success) {
+        setModalType("error");
+        setModalMessage(result?.message || "Failed to generate invoices");
+        setShowSuccessModal(true);
+
+        setTimeout(() => setShowSuccessModal(false), 1500);
+        return; // finally still runs, lock resets
+      }
+
+      setModalType("success");
+      setModalMessage("All invoices generated successfully");
+      setShowSuccessModal(true);
+
+      setSelectedInvoiceIds([]);
+
+      await GetRecurringInvoicesForReview(activeHostelId);
+
+      setTimeout(() => setShowSuccessModal(false), 1500);
+
+    } catch (error) {
+      console.log("HANDLE GENERATE ALL ERROR:", error);
+
       setModalType("error");
-      setModalMessage(result?.message || "Failed to generate invoices");
+      setModalMessage(error?.message || "Something went wrong");
       setShowSuccessModal(true);
 
       setTimeout(() => setShowSuccessModal(false), 1500);
-      return; // finally still runs, lock resets
+
+    } finally {
+      submitLockRef.current = false;
+      setIsSubmitClicked(false);
     }
-
-    setModalType("success");
-    setModalMessage("All invoices generated successfully");
-    setShowSuccessModal(true);
-
-    setSelectedInvoiceIds([]);
-
-    await GetRecurringInvoicesForReview(activeHostelId);
-
-    setTimeout(() => setShowSuccessModal(false), 1500);
-
-  } catch (error) {
-    console.log("HANDLE GENERATE ALL ERROR:", error);
-
-    setModalType("error");
-    setModalMessage(error?.message || "Something went wrong");
-    setShowSuccessModal(true);
-
-      setTimeout(() => setShowSuccessModal(false), 1500);
-
- } finally {
-  submitLockRef.current = false;
-  setIsSubmitClicked(false);
-}
-};
+  };
 
   const formatAmount = (amount) => {
     return Number(amount || 0).toLocaleString("en-IN");
@@ -429,11 +436,14 @@ const ReviewBillsScreen = ({
 
     const profilePic = item?.customerInfo?.profilePic;
 
-    const floorName =
-      item?.stayInfo?.floorName || "";
+    // const floorName =
+    //   item?.stayInfo?.floorName || "";
 
     const roomName =
       item?.stayInfo?.roomName || "";
+
+    const bedName =
+      item?.stayInfo?.bedName || "";
 
     const amount =
       Number(item?.invoiceAmount || 0);
@@ -507,7 +517,8 @@ const ReviewBillsScreen = ({
             ]}
             numberOfLines={1}
           >
-            {floorName} / {roomName} · Rent ·{" "}
+            {/* {floorName} /  */}
+            {roomName} - {bedName} · Rent ·{" "}
             {formatReviewDate(
               item?.invoiceStartDate,
               true
@@ -593,7 +604,7 @@ const ReviewBillsScreen = ({
           </View>
 
           {/* ================= PERIOD ================= */}
-
+          {/* 
           <View style={styles.periodRow}>
             <View style={styles.periodItem}>
               <Text style={styles.periodLabel}>
@@ -612,6 +623,43 @@ const ReviewBillsScreen = ({
             </View>
 
             <View style={styles.generationItem}>
+              <Text style={styles.periodLabel}>
+                Gen. Date:
+              </Text>
+
+              <Text style={styles.periodValue}>
+                {formatReviewDate(
+                  availablerecurringInvoices?.invoiceDate,
+                  true
+                )}
+              </Text>
+            </View>
+          </View> */}
+
+          <View style={styles.periodRow}>
+            {!isJoiningDateBased && (
+              <View style={styles.periodItem}>
+                <Text style={styles.periodLabel}>
+                  Period:
+                </Text>
+
+                <Text style={styles.periodValue}>
+                  {`${formatReviewDate(
+                    availablerecurringInvoices?.billingStartDate
+                  )} – ${formatReviewDate(
+                    availablerecurringInvoices?.billingEndDate,
+                    true
+                  )}`}
+                </Text>
+              </View>
+            )}
+
+            <View
+              style={[
+                styles.generationItem,
+                isJoiningDateBased && styles.generationItemFullWidth,
+              ]}
+            >
               <Text style={styles.periodLabel}>
                 Gen. Date:
               </Text>
@@ -695,56 +743,55 @@ const ReviewBillsScreen = ({
           />
 
           {/* ================= BOTTOM ACTION ================= */}
-
-          <View
-            style={[
-              styles.bottomBar,
-              {
-                paddingBottom:
-                  Math.max(insets.bottom, 10),
-              },
-            ]}
-          >
-            <View style={styles.bottomTextContainer}>
-              <Text style={styles.bottomCountText}>
-                {String(
-                  availablerecurringInvoices?.totalInvoices
-                ).padStart(2, "0")}{" "}
-                invoices are
-              </Text>
-
-              <Text style={styles.bottomSubText}>
-                ready to generate
-              </Text>
-            </View>
-
-            {/*
-              CHANGED: calls handleGenerateAll directly, which now
-              sends ONLY activeHostelId (no invoice id array).
-            */}
-            <TouchableOpacity
-              activeOpacity={0.85}
-              onPress={handleGenerateAll}
-              disabled={isSubmitClicked}
+          {invoices?.length > 0 && (
+            <View
               style={[
-                styles.generateButton,
-                isSubmitClicked && styles.generateButtonDisabled
+                styles.bottomBar,
+                {
+                  paddingBottom:
+                    Math.max(insets.bottom, 10),
+                },
               ]}
             >
-              <Image
-                source={BillGenerateIcon}
-                style={{ height: 12, width: 12 }}
-              />
+              <View style={styles.bottomTextContainer}>
+                <Text style={styles.bottomCountText}>
+                  {String(
+                    availablerecurringInvoices?.totalInvoices
+                  ).padStart(2, "0")}{" "}
+                  invoices are
+                </Text>
 
-              <Text style={styles.generateButtonText}>
-                {isSubmitClicked ? "Generating..." : "Generate All"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+                <Text style={styles.bottomSubText}>
+                  ready to generate
+                </Text>
+              </View>
+
+
+              <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={handleGenerateAll}
+                disabled={isSubmitClicked}
+                style={[
+                  styles.generateButton,
+                  isSubmitClicked && styles.generateButtonDisabled
+                ]}
+              >
+                <Image
+                  source={BillGenerateIcon}
+                  style={{ height: 12, width: 12 }}
+                />
+
+                <Text style={styles.generateButtonText}>
+                  {isSubmitClicked ? "Generating..." : "Generate All"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+          )}
+
         </View>
       </SafeAreaView>
 
-      {/* Existing single-invoice detail sheet */}
       {showGenerateSheet && (
         <GenerateBillsSheet
           visible={showGenerateSheet}
@@ -782,10 +829,6 @@ const ReviewBillsScreen = ({
 
 export default ReviewBillsScreen;
 
-/* =====================================================
-   STYLES
-===================================================== */
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -796,8 +839,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-
-  /* ================= HEADER ================= */
 
   header: {
     minHeight: 58,
@@ -830,8 +871,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 
-  /* ================= DESCRIPTION ================= */
-
   descriptionContainer: {
     paddingHorizontal: 30,
     paddingTop: 2,
@@ -849,8 +888,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
   },
-
-  /* ================= PERIOD ================= */
 
   periodRow: {
     flexDirection: "row",
@@ -883,8 +920,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
-  /* ================= SELECT ALL ================= */
-
   selectAllContainer: {
     minHeight: 48,
     backgroundColor: "#F7F7F7",
@@ -914,18 +949,15 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
-  /* ================= LIST ================= */
-
   listContent: {
     paddingHorizontal: 18,
     paddingTop: 0,
   },
-
   invoiceRow: {
     minHeight: 76,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
     paddingVertical: 10,
     backgroundColor: "#FFFFFF",
   },
@@ -940,8 +972,6 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   },
 
-  /* ================= INITIAL ================= */
-
   initialCircle: {
     width: 38,
     height: 38,
@@ -949,7 +979,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#152AA0",
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 9,
+    marginHorizontal: 4,
+    marginRight: 9,
   },
 
   initialText: {
@@ -957,8 +988,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontFamily: "Gilroy-Medium",
   },
-
-  /* ================= TENANT ================= */
 
   tenantInfo: {
     flex: 1,
@@ -994,8 +1023,6 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
   },
 
-  /* ================= EDITED ================= */
-
   editedBadge: {
     borderWidth: 1,
     borderColor: "#FF7043",
@@ -1010,8 +1037,6 @@ const styles = StyleSheet.create({
     color: "#FF7043",
     fontFamily: "Gilroy-Medium",
   },
-
-  /* ================= AMOUNT ================= */
 
   amountSection: {
     width: 82,
@@ -1030,7 +1055,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  /* ================= STATUS ================= */
 
   statusBadge: {
     marginTop: 5,
@@ -1071,8 +1095,6 @@ const styles = StyleSheet.create({
   generatedText: {
     color: "#FFFFFF",
   },
-
-  /* ================= BOTTOM BAR ================= */
 
   bottomBar: {
     minHeight: 70,
@@ -1138,7 +1160,7 @@ const styles = StyleSheet.create({
   },
 
   checkboxContainer: {
-    width: 30,
+    width: 25,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 2,
@@ -1232,6 +1254,10 @@ const styles = StyleSheet.create({
 
   invoiceRowPressed: {
     opacity: 0.65,
+  },
+  generationItemFullWidth: {
+    flex: 1,
+    marginLeft: 0,
   },
 
 })
