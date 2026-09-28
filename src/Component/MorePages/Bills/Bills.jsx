@@ -5507,6 +5507,7 @@ export default function BillsDesign({ route }) {
                 console.log("Applied Retainer Filters:", filters);
                 setRetainerAppliedFilters(filters);
               }}
+              appliedFilters={retainerAppliedFilters}
               setAppliedFilters={setRetainerAppliedFilters}
               onResetFilter={handleRetainerResetFilter}
             />
