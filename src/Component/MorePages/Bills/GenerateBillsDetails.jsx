@@ -78,7 +78,7 @@ const GenerateBillsSheet = ({
     }, [visible, height]);
 
 
-  
+
 
     useEffect(() => {
         if (!visible) return;
@@ -266,7 +266,7 @@ const GenerateBillsSheet = ({
         return true;
     };
 
- 
+
 
     const editingItem = isEditingExisting
         ? invoiceItems.find(
@@ -746,7 +746,7 @@ const GenerateBillsSheet = ({
         const stayInfo = invoice?.stayInfo;
 
         return [
-            stayInfo?.floorName,
+            // stayInfo?.floorName,
             stayInfo?.roomName,
             stayInfo?.bedName,
         ]
@@ -885,7 +885,7 @@ const GenerateBillsSheet = ({
                                     styles.readyBadgeText
                                 }
                             >
-                            
+
                                 Recurring
                             </Text>
                         </View>
@@ -906,7 +906,7 @@ const GenerateBillsSheet = ({
                         }}
                     >
 
-  
+
 
                         {invoices.map((invoice, index) => {
                             const amount = getInvoiceAmount(invoice);
@@ -960,7 +960,11 @@ const GenerateBillsSheet = ({
                                             numberOfLines={1}
                                         >
                                             {roomDetails || "--"}
-                                            {" · "}
+
+                                            {" "}
+                                            {" "}
+
+
                                             Rent
                                             {" · "}
                                             {invoice?.invoiceStartDate || ""}
@@ -1077,7 +1081,7 @@ const GenerateBillsSheet = ({
                                             </TouchableOpacity>
 
 
-                                        
+
                                             <Text
                                                 style={
                                                     styles.breakdownAmount
@@ -1088,7 +1092,7 @@ const GenerateBillsSheet = ({
                                                     item.amount || 0
                                                 ).toLocaleString("en-IN")}
                                             </Text>
-                                          
+
 
                                         </View>
 
@@ -1140,7 +1144,7 @@ const GenerateBillsSheet = ({
                                         ]}
                                     >
 
-                                       
+
 
                                         <TextInput
                                             value={draftAmount}
