@@ -507,7 +507,8 @@ const ReviewBillsScreen = ({
             ]}
             numberOfLines={1}
           >
-            {floorName} / {roomName} · Rent ·{" "}
+            {/* {floorName} /  */}
+            {roomName} · Rent ·{" "}
             {formatReviewDate(
               item?.invoiceStartDate,
               true
@@ -744,7 +745,6 @@ const ReviewBillsScreen = ({
         </View>
       </SafeAreaView>
 
-      {/* Existing single-invoice detail sheet */}
       {showGenerateSheet && (
         <GenerateBillsSheet
           visible={showGenerateSheet}
@@ -782,10 +782,6 @@ const ReviewBillsScreen = ({
 
 export default ReviewBillsScreen;
 
-/* =====================================================
-   STYLES
-===================================================== */
-
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -796,8 +792,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#FFFFFF",
   },
-
-  /* ================= HEADER ================= */
 
   header: {
     minHeight: 58,
@@ -830,8 +824,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 
-  /* ================= DESCRIPTION ================= */
-
   descriptionContainer: {
     paddingHorizontal: 30,
     paddingTop: 2,
@@ -849,8 +841,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 19,
   },
-
-  /* ================= PERIOD ================= */
 
   periodRow: {
     flexDirection: "row",
@@ -883,8 +873,6 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
 
-  /* ================= SELECT ALL ================= */
-
   selectAllContainer: {
     minHeight: 48,
     backgroundColor: "#F7F7F7",
@@ -914,8 +902,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
-  /* ================= LIST ================= */
-
   listContent: {
     paddingHorizontal: 18,
     paddingTop: 0,
@@ -925,7 +911,7 @@ const styles = StyleSheet.create({
     minHeight: 76,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 8,
+    paddingHorizontal: 4,
     paddingVertical: 10,
     backgroundColor: "#FFFFFF",
   },
@@ -940,8 +926,6 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   },
 
-  /* ================= INITIAL ================= */
-
   initialCircle: {
     width: 38,
     height: 38,
@@ -949,7 +933,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#152AA0",
     alignItems: "center",
     justifyContent: "center",
-    marginHorizontal: 9,
+    marginHorizontal: 4,
+    marginRight:9 ,
   },
 
   initialText: {
@@ -957,8 +942,6 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontFamily: "Gilroy-Medium",
   },
-
-  /* ================= TENANT ================= */
 
   tenantInfo: {
     flex: 1,
@@ -994,8 +977,6 @@ const styles = StyleSheet.create({
     fontSize: 10.5,
   },
 
-  /* ================= EDITED ================= */
-
   editedBadge: {
     borderWidth: 1,
     borderColor: "#FF7043",
@@ -1010,8 +991,6 @@ const styles = StyleSheet.create({
     color: "#FF7043",
     fontFamily: "Gilroy-Medium",
   },
-
-  /* ================= AMOUNT ================= */
 
   amountSection: {
     width: 82,
@@ -1030,7 +1009,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  /* ================= STATUS ================= */
 
   statusBadge: {
     marginTop: 5,
@@ -1071,8 +1049,6 @@ const styles = StyleSheet.create({
   generatedText: {
     color: "#FFFFFF",
   },
-
-  /* ================= BOTTOM BAR ================= */
 
   bottomBar: {
     minHeight: 70,
@@ -1138,7 +1114,7 @@ const styles = StyleSheet.create({
   },
 
   checkboxContainer: {
-    width: 30,
+    width: 25,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 2,
