@@ -518,8 +518,7 @@ const CreateInvoice = ({ }) => {
                 // --------------------------------
 
                 const invoiceDateValue =
-                    bill?.invoiceDate ||
-                    bill?.startDate ||
+                    bill?.invoiceDate ||              
                     editBillData?.invoiceDate;
 
                 if (invoiceDateValue) {
