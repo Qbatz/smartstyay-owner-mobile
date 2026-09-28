@@ -823,6 +823,16 @@ export default function BillsDesign({ route }) {
   const BillsStatusStyle = getStatusStyle(selectedBill?.paymentStatus);
   const statusStyle = getStatusStyle(selectedReceipt?.paymentStatus);
 
+  useEffect(()=>{
+    if(!showFilter){
+      setActiveDropdown(null)
+    }
+    if(!appliedFilters){
+      setBillStatus([])
+      setType([])
+      setMode([])
+    }
+  },[showFilter])
 
 
   console.log("statusstyle", statusStyle)
