@@ -2612,7 +2612,7 @@ export default function TenantsScreen({ route }) {
                 setTempFilterSharing,
                 sharingTypeOptions,
                 "filterSharing",
-                 true
+                //  true
               )}
 
               {renderFilterDropdown(
@@ -2828,7 +2828,7 @@ export default function TenantsScreen({ route }) {
           options={tenantStatusOptions}
           selectedValues={tempTenantStatus}
           setSelectedValues={setTempTenantStatus}
-
+           isSingleSelect={true}
           onReset={async () => {
             setTempTenantStatus([]);
             setTenantStatusFilter([]);
@@ -3105,8 +3105,8 @@ const styles = StyleSheet.create({
   //   elevation: 5,
   // },
   dropdownMenu: {
-    position: "absolute",
-    top: 52,
+    // position: "absolute",
+    top: 6,
     left: 0,
     right: 0,
     backgroundColor: "#fff",
