@@ -147,6 +147,7 @@ export default function BillsDesign({ route }) {
   const [showPayments, setShowPayments] = useState(false);
   const [showDiscountSheet, setShowDiscountSheet] = useState(false);
 
+
   const {
     canWriteModule: canWriteInvoice,
     canReadModule: canReadInvoice,
@@ -166,9 +167,7 @@ export default function BillsDesign({ route }) {
   } = useHasPermission("Booking");
 
 
-
   console.log("BillDetails", BillDetails?.listInvoices);
-
 
   const filterOptions = BillDetails?.filterOptions;
 
@@ -2784,6 +2783,8 @@ export default function BillsDesign({ route }) {
   const isExportAllow = isValidSubscription && canReadInvoice;
   const isReceiptExportAllow = isValidSubscription && canReadReceipt;
 
+  const isJoiningDateBased = String(PGDetails?.billingType || "").toUpperCase() === "JOINING_DATE_BASED";
+
 
   const showDotsbtn =
     !cancelled &&
@@ -3286,6 +3287,8 @@ export default function BillsDesign({ route }) {
 
                               <View style={styles.reviewBillsInfoRow}>
 
+                                 {!isJoiningDateBased && (
+
                                 <View style={styles.reviewBillsInfoItem}>
 
                                   <Text style={styles.reviewBillsLabel}>
@@ -3301,8 +3304,25 @@ export default function BillsDesign({ route }) {
                                     )}`}
                                   </Text>
 
-                                </View>
+                                </View>)}
 
+              {isJoiningDateBased && (
+                                     <View style={styles.reviewBillsDateRow}>
+
+                                <Text style={styles.reviewBillsLabel}>
+                                  Gen. Date :
+                                </Text>
+
+                                <Text style={styles.reviewBillsValue}>
+                                  {formatReviewDate(
+                                    availablerecurringInvoices?.invoiceDate,
+                                    true
+                                  )}
+                                </Text>
+
+                              </View>
+              )}
+           
                                 <View style={styles.reviewRequiredBadge}>
                                   <Text style={styles.reviewRequiredText}>
                                     Review Required
@@ -3310,6 +3330,8 @@ export default function BillsDesign({ route }) {
                                 </View>
 
                               </View>
+
+                                 {!isJoiningDateBased && (
 
                               <View style={styles.reviewBillsDateRow}>
 
@@ -3325,6 +3347,7 @@ export default function BillsDesign({ route }) {
                                 </Text>
 
                               </View>
+                                 )}
 
                               <TouchableOpacity
                                 activeOpacity={

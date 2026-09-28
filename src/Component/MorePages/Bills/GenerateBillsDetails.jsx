@@ -266,6 +266,10 @@ const GenerateBillsSheet = ({
         return true;
     };
 
+    const isValidDescription = (value) => {
+        return String(value || "").trim().length > 0;
+    };
+
 
 
     const editingItem = isEditingExisting
@@ -280,15 +284,21 @@ const GenerateBillsSheet = ({
             .trim()
             .toUpperCase() === "RENT";
 
+    // const canSave =
+    //     !isSaving &&
+    //     canUpdateInvoice &&
+    //     isValidAmount(draftAmount) &&
+    //     (
+    //         !isEditingExisting ||
+    //         isEditingRent ||
+    //         !!draftType.trim()
+    //     );
+
     const canSave =
         !isSaving &&
         canUpdateInvoice &&
-        isValidAmount(draftAmount) &&
-        (
-            !isEditingExisting ||
-            isEditingRent ||
-            !!draftType.trim()
-        );
+        isValidDescription(draftType) &&
+        isValidAmount(draftAmount);
 
 
 
@@ -306,9 +316,17 @@ const GenerateBillsSheet = ({
             return;
         }
 
+        if (!isValidDescription(draftType)) {
+            return;
+        }
+
         if (!isValidAmount(draftAmount)) {
             return;
         }
+
+        // if (!isValidAmount(draftAmount)) {
+        //     return;
+        // }
 
         setIsSaving(true);
 
@@ -964,15 +982,12 @@ const GenerateBillsSheet = ({
                                             {" "}
                                             {" "}
 
-
                                             Rent
                                             {" · "}
                                             {invoice?.invoiceStartDate || ""}
                                         </Text>
 
                                     </View>
-
-
 
                                 </View>
                             )
@@ -1181,14 +1196,14 @@ const GenerateBillsSheet = ({
                                     onPress={handleAdd}
                                     style={[
                                         styles.addButton,
-                                        !canWriteInvoice && styles.permissionDisabledButton,
+                                        // !canWriteInvoice && styles.permissionDisabledButton,
                                     ]}
-                                    disabled={!canWriteInvoice}
+                                    // disabled={!canWriteInvoice}
                                 >
                                     <Text
                                         style={[
                                             styles.addButtonText,
-                                            !canWriteInvoice && styles.permissionDisabledText,
+                                            // !canWriteInvoice && styles.permissionDisabledText,
                                         ]}
                                     >
                                         ＋ Add

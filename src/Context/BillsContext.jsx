@@ -1936,12 +1936,12 @@ const GenerateAllRecurringInvoices = async (hostelId, invoiceIds = []) => {
     };
   }
 
-  if (!Array.isArray(invoiceIds) || invoiceIds.length === 0) {
-    return {
-      success: false,
-      message: "Please select at least one invoice",
-    };
-  }
+  // if (!Array.isArray(invoiceIds) || invoiceIds.length === 0) {
+  //   return {
+  //     success: false,
+  //     message: "Please select at least one invoice",
+  //   };
+  // }
 
   try {
     setLoading(true);
