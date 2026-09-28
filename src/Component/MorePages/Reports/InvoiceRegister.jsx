@@ -593,9 +593,25 @@ const InvoiceRegister = ({ navigation }) => {
   //         setEndDateValue={setEndDateValue}
   //         setMinPaidValue={setMinPaidValue}
   //         setMaxPaidValue={setMaxPaidValue}
-  const appliedFilters = billStatus.length > 0 || type.length > 0 || selectedMonth.length > 0;
-  const allAppliedFilters = selectedBillStatus.length > 0 || allSelectedMonth.length > 0 || selectedInvoiceType.length > 0
-    || selectedCreatedBy.length > 0 || selectedInvoiceMode.length > 0
+
+  // const appliedFilters = billStatus.length > 0 || type.length > 0 || selectedMonth.length > 0;
+
+  // const allAppliedFilters = selectedBillStatus.length > 0 || 
+  // allSelectedMonth.length > 0 || selectedInvoiceType.length > 0
+  //   || selectedCreatedBy.length > 0 || selectedInvoiceMode.length > 0
+
+  const appliedFilters =
+  (billStatus?.length ?? 0) > 0 ||
+  (type?.length ?? 0) > 0 ||
+  (selectedMonth?.length ?? 0) > 0;
+
+    const allAppliedFilters =
+  (selectedBillStatus?.length ?? 0) > 0 ||
+  (allSelectedMonth?.length ?? 0) > 0 ||
+  (selectedInvoiceType?.length ?? 0) > 0 ||
+  (selectedCreatedBy?.length ?? 0) > 0 ||
+  (selectedInvoiceMode?.length ?? 0) > 0;
+
   // || startDateValue
   console.log("sillana", allAppliedFilters)
   console.log(selectedBillStatus)
@@ -954,9 +970,10 @@ const InvoiceRegister = ({ navigation }) => {
 
                 {(appliedFilters || allAppliedFilters) &&
                   <TouchableOpacity onPress={handleResetFilter}
-                    style={{ marginTop: 10,borderWidth:1,paddingVertical:12,paddingHorizontal:18,borderRadius:10,
-                      borderColor:'#1e45e2'
-                     }}>
+                    style={{
+                      marginTop: 10, borderWidth: 1, paddingVertical: 12, paddingHorizontal: 18, borderRadius: 10,
+                      borderColor: '#1e45e2'
+                    }}>
                     <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Bold', color: '#1e45e2' }}>Reset</Text>
                   </TouchableOpacity>}
               </View>
@@ -1153,13 +1170,28 @@ const InvoiceRegister = ({ navigation }) => {
         setMinPaidValue={setMinPaidValue}
         setMaxPaidValue={setMaxPaidValue}
 
+        // onReset={() => {
+        //   setSelectedBillStatus(null), setAllSelectedMonth(""), setSelectedInvoiceType(null),
+        //     setCreatedByValue(null), setSelectedModeValue(null), setStartDateValue(null),
+        //     setEndDateValue(null), setMaxPaidValue(""), setMinPaidValue("")
+        //   applyFilters("", [], [], [], [], "", "", "", "")
+        // }}
+
         onReset={() => {
-          setSelectedBillStatus(null), setAllSelectedMonth(""), setSelectedInvoiceType(null),
-            setCreatedByValue(null), setSelectedModeValue(null), setStartDateValue(null),
-            setEndDateValue(null), setMaxPaidValue(""), setMinPaidValue("")
-          // setAllFilterSheet(false)
-          applyFilters("", [], [], [], [], "", "", "", "")
+          setSelectedBillStatus([]);
+          setAllSelectedMonth("");
+          setSelectedInvoiceType([]);
+          setCreatedByValue([]);
+          setSelectedModeValue([]);
+          setStartDateValue(null);
+          setEndDateValue(null);
+          setMaxPaidValue("");
+          setMinPaidValue("");
+
+          applyFilters("", [], [], [], [], "", "", "", "");
         }}
+
+
         onApply={() => {
           setAllFilterSheet(false)
           applyFilters(allSelectedMonth, selectedBillStatus, selectedInvoiceType, selectedCreatedBy,
