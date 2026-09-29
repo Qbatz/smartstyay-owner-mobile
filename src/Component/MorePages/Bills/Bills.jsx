@@ -3263,7 +3263,7 @@ export default function BillsDesign({ route }) {
                           )}
 
 
-                          {!isProd && (
+                       
                             <View style={styles.reviewBillsCard}>
 
                               <View style={styles.reviewBillsHeader}>
@@ -3393,7 +3393,7 @@ export default function BillsDesign({ route }) {
                               </TouchableOpacity>
 
                             </View>
-                          )}
+                         
                         </>
                       }
 
