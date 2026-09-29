@@ -5509,6 +5509,7 @@ export default function BillsDesign({ route }) {
               onApply={(filters) => {
                 console.log(filters);
               }}
+              appliedFilters={receiptAppliedFilters}
               setAppliedFilters={setReceiptAppliedFilters}
               onResetFilter={handleReceiptResetFilters}
             />
