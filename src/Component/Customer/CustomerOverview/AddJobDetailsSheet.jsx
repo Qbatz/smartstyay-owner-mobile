@@ -97,6 +97,7 @@ export default function JobDetailsSheet({
 
     const [iosPickerType, setIosPickerType] = useState(null);
     const [iosTempTime, setIosTempTime] = useState(new Date());
+      const [isSubmitClicked, setIsSubmitClicked] = useState(false)
 
     const formatTime = (date) => {
         if (!date) return "";
@@ -720,6 +721,9 @@ export default function JobDetailsSheet({
             return;
         }
 
+        if(isSubmitClicked) return;
+
+
         // Existing jobs from GET API
         const existingJobs = Array.isArray(
             customerDetails?.customerJobs
@@ -884,6 +888,8 @@ export default function JobDetailsSheet({
         // =====================================================
         // SAME API FOR ADD + EDIT
         // =====================================================
+        try{
+            setIsSubmitClicked(true)
         const res = await UpdateJobDetails(
             activeHostelId,
             customerDetails?.customerId,
@@ -906,7 +912,7 @@ export default function JobDetailsSheet({
                 setShowSuccess(false);
 
                 onSuccess?.();
-
+                setIsSubmitClicked(false)
                 closeSheet();
             }, 1500);
 
@@ -921,7 +927,11 @@ export default function JobDetailsSheet({
 
             setTimeout(() => {
                 setShowSuccess(false);
+                setIsSubmitClicked(false)
             }, 1200);
+        }
+        }catch(errror){
+            setIsSubmitClicked(false)
         }
     };
 
@@ -1248,7 +1258,8 @@ export default function JobDetailsSheet({
                                     <Text style={[styles.cancel, { marginRight: 20 }]}>Cancel</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.updateBtn} onPress={handleUpdate}>
+                                <TouchableOpacity style={[styles.updateBtn, isSubmitClicked && {opacity:0.4}]} onPress={handleUpdate}
+                                disabled={isSubmitClicked}>
                                     <Text style={styles.updateText}> {isEditMode ? "Update" : "Save"}</Text>
                                 </TouchableOpacity>
                             </View>

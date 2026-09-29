@@ -605,6 +605,7 @@ export default function NewBankingList() {
               : UpiIcon,
 
       raw: item,
+      lastTransactionDate: item?.lastTransactionDate
     };
   });
 
@@ -1318,7 +1319,7 @@ export default function NewBankingList() {
                           {
                             type === "CARD"
                               ? "Due Date : 10 Jun 2026"
-                              : "Last Txn : Today, 10:30 AM"
+                              : `Last Txn :   ${(item?.lastTransactionDate)}`
                           }
                         </Text>
 

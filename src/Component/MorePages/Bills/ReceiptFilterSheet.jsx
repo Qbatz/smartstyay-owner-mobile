@@ -27,6 +27,7 @@ const ReceiptFilterSheet = ({
   visible,
   onClose,
   onApply,
+  appliedFilters,
   setAppliedFilters,
   onResetFilter
 }) => {
@@ -182,6 +183,27 @@ const ReceiptFilterSheet = ({
 
     return () => sub.remove();
   }, [visible]);
+
+  useEffect(() => {
+    if (visible) {
+      setActiveDropdown(null)
+    }
+
+    if (!appliedFilters) {
+      setBillStatus([]);
+      setType([]);
+      setPaymentMode([]);
+      setCollectedBy([]);
+      setFilterError("");
+      setShowUnpaidModal(false)
+      setActiveDropdown(null);
+      setSelectedPeriod(""); setFromDate(null);
+      setToDate(null);
+      setMinAmount(null); setMaxAmount(null)
+      setErrorMsg("")
+
+    }
+  }, [visible])
 
 
   // new design changes ==>
@@ -486,7 +508,7 @@ const ReceiptFilterSheet = ({
                       setErrorMsg("")
                     }
                     const cleanText = text.replace(/[^0-9]/g, "");
-                    setMaxAmount(cleanText)            
+                    setMaxAmount(cleanText)
                   }}
                   placeholder="Max"
                   placeholderTextColor="#999"

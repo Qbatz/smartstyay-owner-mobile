@@ -148,6 +148,8 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
     );
 
   // const Advancebookingbills = bookingBills?.advanceInvoiceList
+  console.log("bablana",hasActiveBookingFilter)
+  console.log(appliedFilters)
 
   const Advancebookingbills = Array.isArray(bookingBills?.advanceInvoiceList)
     ? bookingBills.advanceInvoiceList
@@ -770,6 +772,14 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
                             </View>
                           )}
 
+                          {appliedFilters?.type && (
+                            <View style={styles.filterChip}>
+                              <Text style={styles.filterChipText}>
+                                Type : {appliedFilters.type}
+                              </Text>
+                            </View>
+                          )}
+
                         </ScrollView>
 
                         <TouchableOpacity
@@ -861,7 +871,7 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
         )}
 
 
-        {!loading && hasBookings && hostelList?.length > 0 && (
+        {!loading && hostelList?.length > 0 && (
           <>
 
 
@@ -1728,6 +1738,15 @@ const styles = StyleSheet.create({
   emptyImage: {
     width: 250,
     height: 180,
+  },
+  emptyResetButton:{
+      borderWidth:1,borderColor:'#1D5DFF',
+      paddingVertical:10,paddingHorizontal:16,
+      borderRadius:10,marginTop:10
+  },
+  emptyResetText:{
+    fontSize:16,fontFamily:'Gilroy-Medium',
+    color:'#1D5DFF'
   },
   cardRow: {
     paddingLeft: 5,

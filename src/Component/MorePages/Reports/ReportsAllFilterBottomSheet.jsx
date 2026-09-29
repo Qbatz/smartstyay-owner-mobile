@@ -11,7 +11,11 @@ import {
     Image,
     TextInput,
     KeyboardAvoidingView,
+    Keyboard,
+    Platform,
 } from "react-native";
+
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import FilterDropdown from "./FilterDropdown"
@@ -21,7 +25,9 @@ import CalenderIcon from "../../../Assets/Images/calendar.png"
 import dayjs from "dayjs";
 
 
+const { height } = Dimensions.get("window");
 
+const SHEET_HEIGHT = height * 0.80;
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -30,6 +36,7 @@ export default function ReportsAllFilterBottomSheet({
     reportType,
     filters,
     selectedFilters,
+    appliedFilter,
     onClose, onApply, onReset,
     setSelectedSharingValue, setSelectedTenantStatus, setSelectedFloorValue,
     setSelectedRoomValue, tenantList, setTenantValue,
@@ -48,6 +55,7 @@ export default function ReportsAllFilterBottomSheet({
 
     const insets = useSafeAreaInsets();
     const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
+    const scrollRef = useRef(null);
     const [selectedTenants, setSelectedTenants] = useState("")
     const [selectedFloor, setSelectedFloor] = useState(null);
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -58,6 +66,7 @@ export default function ReportsAllFilterBottomSheet({
     const [maxAmount, setMaxAmount] = useState(null)
 
     // invoice filter
+    console.log("batha",appliedFilter)
 
 
     const [selectedType, setSelectedType] = useState(null)
@@ -80,6 +89,23 @@ export default function ReportsAllFilterBottomSheet({
 
     const [error, setError] = React.useState("");
     const [errorMsg, setErrorMsg] = useState("")
+
+    useEffect(() => {
+        const keyboardShowListener = Keyboard.addListener(
+            "keyboardDidShow",
+            () => {
+                setTimeout(() => {
+                    scrollRef.current?.scrollToEnd({
+                        animated: true,
+                    });
+                }, 100);
+            }
+        );
+
+        return () => {
+            keyboardShowListener.remove();
+        };
+    }, []);
 
     const openSheet = () => {
         Animated.spring(translateY, {
@@ -109,6 +135,14 @@ export default function ReportsAllFilterBottomSheet({
         })
     ).current;
 
+    const scrollToAmount = () => {
+        setTimeout(() => {
+            scrollRef.current?.scrollToEnd({
+                animated: true,
+            });
+        }, 500);
+    };
+
     // useEffect(() => {
     //     if (visible) {
     //         setError("");
@@ -127,8 +161,9 @@ export default function ReportsAllFilterBottomSheet({
     // }, [visible]);
 
     useEffect(() => {
-        if (visible) {
+        if (visible ) {
             // Clear local filter states whenever sheet opens
+            if(!appliedFilter){
             setSelectedTenants("");
             setSelectedFloor(null);
             setSelectedRoom(null);
@@ -157,6 +192,7 @@ export default function ReportsAllFilterBottomSheet({
             // Clear errors
             setError("");
             setErrorMsg("");
+            }
 
             openSheet();
 
@@ -268,12 +304,12 @@ export default function ReportsAllFilterBottomSheet({
             />
 
             <Animated.View
-                {...panResponder.panHandlers}
+                // {...panResponder.panHandlers}
                 style={[
                     styles.sheet,
                     {
                         transform: [{ translateY }],
-                        // paddingBottom: 20 + insets.bottom
+                        paddingBottom:  insets.bottom
                     }
                 ]}
             >
@@ -297,18 +333,27 @@ export default function ReportsAllFilterBottomSheet({
 
                 </View>
 
-                {/* <KeyboardAvoidingView
-                    // style={{ flex: 1 }}
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    // keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
-                    >
-   <View style={{ flex: 1 }}> */}
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    // behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    behavior="padding"
+                    keyboardVerticalOffset={0}
+                // keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+                >
+                    {/* <View style={{ flex: 1 }}>  */}
                     <ScrollView
+                        ref={scrollRef}
+                        style={{ flex: 1 }}
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps="handled"
+                        keyboardDismissMode={
+                            Platform.OS === "ios"
+                                ? "interactive"
+                                : "on-drag"
+                        }
                         nestedScrollEnabled
                         contentContainerStyle={{
-                            paddingBottom: 100,
+                            paddingBottom: 180,
                         }}
                     >
 
@@ -475,6 +520,14 @@ export default function ReportsAllFilterBottomSheet({
 
                                         <TextInput
                                             value={minAmount}
+                                            onFocus={() => {
+                                                setTimeout(() => {
+                                                    scrollRef.current?.scrollToEnd({
+                                                        animated: true,
+                                                    });
+                                                }, 600);
+                                            }}
+
                                             onChangeText={(text) => {
                                                 if (text > maxAmount) {
                                                     setErrorMsg("Min Amount should not be greater than max")
@@ -499,6 +552,14 @@ export default function ReportsAllFilterBottomSheet({
                                         <TextInput
                                             value={maxAmount}
                                             editable={minAmount ? true : false}
+                                            onFocus={() => {
+                                                setTimeout(() => {
+                                                    scrollRef.current?.scrollToEnd({
+                                                        animated: true,
+                                                    });
+                                                }, 600);
+                                            }}
+
                                             onChangeText={(text) => {
                                                 if (minAmount > text) {
                                                     setErrorMsg("Min Amount should not be greater than max")
@@ -819,16 +880,16 @@ export default function ReportsAllFilterBottomSheet({
                         )}
 
                     </ScrollView>
-                    
 
-               
 
-           
-                {/* </View>
-                 </KeyboardAvoidingView> */}
-                      <View style={styles.bottomButtons}>
 
-                
+
+
+
+                </KeyboardAvoidingView>
+                <View style={styles.bottomButtons}>
+
+
 
                     <TouchableOpacity
                         style={styles.resetButton}
@@ -896,6 +957,7 @@ export default function ReportsAllFilterBottomSheet({
                     <TouchableOpacity
                         style={styles.applyButton}
                         onPress={onApply}
+                        // onPress={handleApply}
                     >
                         <Text style={styles.applyText}>
                             Apply
@@ -1010,17 +1072,31 @@ const styles = {
         backgroundColor: "rgba(0,0,0,0.4)",
     },
 
+    // sheet: {
+    //     position: "absolute",
+    //     bottom: 0,
+    //     left: 0,
+    //     right: 0,
+    //     backgroundColor: "#fff",
+    //     borderTopLeftRadius: 24,
+    //     borderTopRightRadius: 24,
+    //     paddingHorizontal: 20,
+    //     paddingTop: 20,
+    //     maxHeight: "85%",
+    // },
+
     sheet: {
         position: "absolute",
         bottom: 0,
         left: 0,
         right: 0,
+        height: SHEET_HEIGHT,
         backgroundColor: "#fff",
+        paddingTop: 20,
+        paddingHorizontal: 20,
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
-        paddingHorizontal: 20,
-        paddingTop: 20,
-        maxHeight: "95%",
+        overflow: "hidden",
     },
     dragIndicator: {
         width: 40,

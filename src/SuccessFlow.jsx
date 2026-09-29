@@ -55,6 +55,7 @@ import ProfileScreen from "../src/Component/Dashboard/ChangeProfile";
 import CreateBill from "./Component/MorePages/Bills/CreateBill";
 import CreateInvoice from "./Component/MorePages/Bills/CreateInvoice";
 import BillsPdfDesign from "./Component/MorePages/Bills/BillsPdf";
+import ReviewBillsScreen from "./Component/MorePages/Bills/ReviewBillsScreen";
 import NewRetainerInvoiceSheet from "./Component/MorePages/Bills/CreateRetainer"
 import AssignTenant from "../src/Component/PG/AssignTenants";
 import ReceiptPdfViewer from "../src/Component/MorePages/Bills/ReceiptPdf";
@@ -109,6 +110,8 @@ import NewRecordPayment from "../src/Component/MorePages/Bills/NewRecordPayment"
 import AddBookingNewForm from "../src/Component/Customer/AddBookingNew";
 import ApplyBookingToInvoice from "../src/Component/MorePages/Bills/ApplyBookingToInvoice"
 import Requests from "../src/Component/MorePages/Requests/RequestList";
+import GenerateSelectedInvoiceScreen from "../src/Component/MorePages/Bills/GenerateSelectedInvoices"
+
 
 const SuccessFlow = (props) => {
 
@@ -190,6 +193,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="CreateBills" component={CreateBill} />
                      <Navigation.Screen name="CreateInvoice" component={CreateInvoice} />
                     <Navigation.Screen name="BillsPdf" component={BillsPdfDesign} />
+                     <Navigation.Screen name="ReviewBillsScreen" component={ReviewBillsScreen} />
                     <Navigation.Screen name="NewRetainerInvoiceSheet" component={NewRetainerInvoiceSheet} />
                     <Navigation.Screen name="NewRecordPayment" component={NewRecordPayment} />
                     <Navigation.Screen name="AddBookingNewForm" component={AddBookingNewForm}/>
@@ -237,6 +241,7 @@ const SuccessFlow = (props) => {
                     <Navigation.Screen name="BookingtoDiscount" component={BookingtoDiscount} />
                     <Navigation.Screen name="BillsApplyInvoices" component={BillsApplyInvoices} />
                     <Navigation.Screen name="ApplyBookingToInvoice" component={ApplyBookingToInvoice}/>
+                    <Navigation.Screen name="GenerateSelectedInvoiceScreen" component={GenerateSelectedInvoiceScreen}/>
                      <Navigation.Screen name="Requests" component={Requests} />
                 </Navigation.Navigator>
             </NavigationContainer>

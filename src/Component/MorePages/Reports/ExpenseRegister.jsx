@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef, Suspense } from "react";
 import {
   View,
   Text,
@@ -418,6 +418,30 @@ const ExpenseRegister = ({ navigation }) => {
               <SummaryCard
                 title="Total Amount"
                 value={expenseData?.summary?.totalAmount || 0}
+                icon={RupeeIcon}
+                valueColor="#00A651"
+                linearcolor="#F4FFF7"
+              />
+
+              <SummaryCard
+                title="Paid"
+                value={expenseData?.summary?.totalPaidAmount || 0}
+                icon={RupeeIcon}
+                valueColor="#00A651"
+                linearcolor="#F4FFF7"
+              />
+
+              <SummaryCard
+                title="Unpaid"
+                value={expenseData?.summary?.totalUnPaidAmount || 0}
+                icon={RupeeIcon}
+                valueColor="#f00800"
+                linearcolor="#FFF4F4"
+              />
+
+              <SummaryCard
+                title="Partial Paid"
+                value={expenseData?.summary?.totalPartialPaidAmount || 0}
                 icon={RupeeIcon}
                 valueColor="#00A651"
                 linearcolor="#F4FFF7"

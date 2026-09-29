@@ -531,7 +531,8 @@ export default function AddComponentSheet({
     {
       title: "Invoice",
       icon: require("../../Assets/Images/invoice.png"),
-      screen: "CreateBills",
+      screen: "CreateInvoice",
+      mode: "add" 
     },
     {
       title: "Complaint",
