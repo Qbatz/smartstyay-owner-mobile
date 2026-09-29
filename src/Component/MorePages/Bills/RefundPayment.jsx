@@ -8,7 +8,7 @@ import {
   Animated,
   Image,
   Keyboard,
-  TouchableWithoutFeedback, StyleSheet
+  TouchableWithoutFeedback, StyleSheet , KeyboardAvoidingView
 } from "react-native";
 import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
@@ -105,6 +105,9 @@ const RefundPaymentSheet = ({
         hostelId: activeHostelId,
         invoiceId: normalizedBill?.invoiceId,
       });
+
+      console.log("Refundinitialize", res);
+      
 
       if (res?.success) {
         setRefundInitDetails(res?.data);

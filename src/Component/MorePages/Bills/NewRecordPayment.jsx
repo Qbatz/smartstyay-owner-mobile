@@ -29,7 +29,7 @@ const NewRecordPayment = ({ route }) => {
     const [tenantName, setTenantName] = useState("");
     const [paidAmount, setPaidAmount] = useState("");
     const [transactionId, setTransactionId] = useState("");
-    const [description,setDescription]=useState("")
+    const [description, setDescription] = useState("")
     const [error, setError] = useState("");
     const [showPaymentMode, setShowPaymentMode] = useState(false);
     const [selectedMode, setSelectedMode] = useState("");
@@ -46,22 +46,25 @@ const NewRecordPayment = ({ route }) => {
     const [modalMessage, setModalMessage] = useState("");
     const [modalType, setModalType] = useState("success");
     const [recordLoading, setRecordLoading] = useState(false)
-    const [showLeavePageScreen,setShowLeavePageScreen]=useState(false)
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false)
 
-    console.log("InitializeRecordPaymentDetails", InitializeRecordPaymentDetails);
+    console.log("bankList", InitializeRecordPaymentDetails);
+
+    console.log("bankList", bankList);
+
 
 
     console.log(selectedBill)
 
-   
+
 
     const today = dayjs();
     const invoiceDate = dayjs(selectedBill?.invoiceDate, "DD-MM-YYYY");
 
-    const handleLeaveScreen=()=>{
-        if(paidAmount.trim() || paidDate || selectedMode || transactionId.trim() ){
+    const handleLeaveScreen = () => {
+        if (paidAmount.trim() || paidDate || selectedMode || transactionId.trim()) {
             setShowLeavePageScreen(true)
-        }else{
+        } else {
             navigation.goBack();
         }
     }
@@ -115,9 +118,15 @@ const NewRecordPayment = ({ route }) => {
         // setBalanceAmount((selectedBill?.dueAmount || 0) - num);
     };
 
-    const transactionOptions = (bankList || []).map((item) => ({
-        label: `${item.accountHolderName || "Account"} - ${item.accountType}`,
-        value: item.bankingId,
+    // const transactionOptions = (bankList || []).map((item) => ({
+    //     label: `${item.accountHolderName || "Account"} - ${item.accountType}`,
+    //     value: item.bankingId,
+    // }));
+
+    const transactionOptions = (
+        InitializeRecordPaymentDetails?.accountInfo || []).map((item) => ({
+        label: item?.bankName || item?.accountHolderName || "Account",
+        value: item?.bankId,
     }));
 
     const isDisabledPaidDate = (d) => {
@@ -263,7 +272,7 @@ const NewRecordPayment = ({ route }) => {
             <View style={styles.mainheadPage}>
 
 
-                  <View style={{ marginTop: 15, flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ marginTop: 15, flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity style={{ marginRight: 5 }}
                         onPress={handleLeaveScreen} >
                         <Image source={ArrowLeft} style={{ width: 22, height: 22 }} />
@@ -576,11 +585,11 @@ const NewRecordPayment = ({ route }) => {
                     <TextInput
                         style={styles.descTxtBox}
                         value={description}
-                        placeholder="Enter Description" 
-                        onChangeText={(text)=>{
+                        placeholder="Enter Description"
+                        onChangeText={(text) => {
                             const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
                             setDescription(onlyLetters)
-                        }}/>
+                        }} />
 
                     <View style={styles.sumryBox}>
                         <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Bold', color: '#FFFFFF99' }}>SUMMARY</Text>
@@ -650,15 +659,15 @@ const NewRecordPayment = ({ route }) => {
                 </View>
             )}
 
-            <LeavePageScreen 
-            visible={showLeavePageScreen}
-            onClose={()=>setShowLeavePageScreen(false)}
-            discardClose={()=>{             
-                setShowLeavePageScreen(false)
-                setTimeout(() => {
-                    navigation.goBack()
-                }, 300);               
-            }}/>
+            <LeavePageScreen
+                visible={showLeavePageScreen}
+                onClose={() => setShowLeavePageScreen(false)}
+                discardClose={() => {
+                    setShowLeavePageScreen(false)
+                    setTimeout(() => {
+                        navigation.goBack()
+                    }, 300);
+                }} />
         </>
     )
 
@@ -720,7 +729,7 @@ const styles = StyleSheet.create({
     descTxtBox: {
         borderWidth: 1, borderColor: '#D9D9D9',
         borderRadius: 12, height: 80, paddingHorizontal: 12,
-        marginTop: 10, textAlignVertical: 'top',fontSize:14,fontFamily:'Gilroy-Regular'
+        marginTop: 10, textAlignVertical: 'top', fontSize: 14, fontFamily: 'Gilroy-Regular'
     },
     sumryBox: {
         backgroundColor: '#2633A0', borderRadius: 10, padding: 14,
