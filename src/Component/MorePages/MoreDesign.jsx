@@ -82,11 +82,11 @@ export default function MoreDesign({ navigation }) {
 
   const menuItems = [
     { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
-     ...(environment?.toUpperCase() !== "PROD"
-      ? [
-    { title: "Old Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
-       ]
-      : []),
+    //  ...(environment?.toUpperCase() !== "PROD"
+    //   ? [
+    // { title: "Old Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
+    //    ]
+    //   : []),
 
     // ...(environment?.toUpperCase() !== "PROD"
     //   ? [

@@ -209,7 +209,7 @@ export default function BankOverview({ expense }) {
     >
         <InfoItem
         label="Responisble Person"
-         value={bankDetails?.responsiblePersonName || "N/A"}
+         value={bankDetails?.responsiblePerson || "N/A"}
          icon={CategoryIcon} />
      
       <InfoItem
