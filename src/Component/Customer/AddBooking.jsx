@@ -37,7 +37,7 @@ export default function AddBookingScreen({ navigation, route }) {
   const { bankList, getBankListByHostel } = useContext(BankingContext);
   const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, bookCustomer } = useCustomer();
 
-     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
   const [openDatePicker, setOpenDatePicker] = useState(false);
   // const [joiningDate, setJoiningDate] = useState(new Date());
@@ -140,9 +140,13 @@ export default function AddBookingScreen({ navigation, route }) {
     const res = await getBedsByHostelAndDate(
       activeHostelId,
       formattedDate
-    );
+    )
+
+    console.log("bookinginiatizeResposne", res);
+
 
     if (res.success) {
+      setAccountList(res?.data?.bankDetails || []);
       setBeds(res?.data?.listBeds);
       console.log("Beds.......?????", beds)
     } else {
@@ -163,16 +167,17 @@ export default function AddBookingScreen({ navigation, route }) {
   });
   console.log("filteredBeds", filteredBeds)
 
-  const fetchBankingList = async () => {
-    const data = await getBankListByHostel(activeHostelId);
-    setAccountList(data.data);
-  };
+  // const fetchBankingList = async () => {
+  //   const data = await getBankListByHostel(activeHostelId);
+  //   console.log("booking", data);
 
-  useEffect(() => {
-    if (activeHostelId) {
-      fetchBankingList(activeHostelId);
-    }
-  }, [activeHostelId]);
+  // };
+
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     fetchBankingList(activeHostelId);
+  //   }
+  // }, [activeHostelId]);
 
   const validateForm = () => {
     let valid = true;
@@ -225,46 +230,46 @@ export default function AddBookingScreen({ navigation, route }) {
 
 
   const handleLeavePage = useCallback(() => {
-  const hasMandatoryValue =
-    !!bookingDate ||
-    !!joiningDate ||
-    !!amount?.trim() ||
-    !!selectedFloor ||
-    !!selectedRoom ||
-    !!selectedBed ||
-    !!accountSelected;
+    const hasMandatoryValue =
+      !!bookingDate ||
+      !!joiningDate ||
+      !!amount?.trim() ||
+      !!selectedFloor ||
+      !!selectedRoom ||
+      !!selectedBed ||
+      !!accountSelected;
 
-  if (hasMandatoryValue) {
-    setShowLeavePageScreen(true);
-  } else {
-    navigation.goBack();
-  }
-}, [
-  bookingDate,
-  joiningDate,
-  amount,
-  selectedFloor,
-  selectedRoom,
-  selectedBed,
-  accountSelected,
-  navigation,
-]);
+    if (hasMandatoryValue) {
+      setShowLeavePageScreen(true);
+    } else {
+      navigation.goBack();
+    }
+  }, [
+    bookingDate,
+    joiningDate,
+    amount,
+    selectedFloor,
+    selectedRoom,
+    selectedBed,
+    accountSelected,
+    navigation,
+  ]);
 
-useFocusEffect(
-  useCallback(() => {
-    const backAction = () => {
-      handleLeavePage();
-      return true;
-    };
+  useFocusEffect(
+    useCallback(() => {
+      const backAction = () => {
+        handleLeavePage();
+        return true;
+      };
 
-    const handler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+      const handler = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
 
-    return () => handler.remove();
-  }, [handleLeavePage])
-);
+      return () => handler.remove();
+    }, [handleLeavePage])
+  );
 
 
   const handleSubmit = async () => {
@@ -277,7 +282,7 @@ useFocusEffect(
       joiningDate: joiningDate.format("DD-MM-YYYY"),
       bookingAmount: Number(amount),
       customerId: selectedItem.customerId,
-      bankId: accountSelected.bankingId,
+      bankId: accountSelected?.bankId,
       floorId: selectedFloor.id,
       roomId: selectedRoom.id,
       bedId: selectedBed.bedId,
@@ -679,17 +684,22 @@ useFocusEffect(
               >
 
                 <Text style={styles.selectText}>
-                  {accountSelected
+                  {/* {accountSelected
                     ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
-                    : "Select Bank"}
+                    : "Select Bank"} */}
+                  {accountSelected
+                    ? `${accountSelected.holderName} - ${accountSelected.bankName}`
+                    : "Select Mode Of Transaction"}
                 </Text>
                 <Image source={DownArrow} style={styles.arrow} />
               </TouchableOpacity>
 
               {accountOpen && (
                 <View style={styles.dropdownMenu}>
-                  <ScrollView style={{ maxHeight: 150 }}>
-                    {AccountsList.map((v, i) => (
+                  <ScrollView       nestedScrollEnabled
+                          scrollEnabled={AccountsList?.length > 3}
+                          showsVerticalScrollIndicator={false}>
+                    {/* {AccountsList.map((v, i) => (
                       <TouchableOpacity
                         key={i}
                         style={styles.option}
@@ -700,6 +710,21 @@ useFocusEffect(
                         }}
                       >
                         <Text style={styles.optionText}>{v.accountHolderName}-{v.accountType}</Text>
+                      </TouchableOpacity>
+                    ))} */}
+                    {AccountsList?.map((v) => (
+                      <TouchableOpacity
+                        key={v.bankId}
+                        style={styles.option}
+                        onPress={() => {
+                          setAccountSelected(v);
+                          setAccountopen(false);
+                          setBankIdError("");
+                        }}
+                      >
+                        <Text style={styles.optionText}>
+                          {v?.holderName} - {v?.bankName}
+                        </Text>
                       </TouchableOpacity>
                     ))}
                   </ScrollView>
@@ -731,7 +756,7 @@ useFocusEffect(
         </View>
       </KeyboardAvoidingView>
 
-     <LeavePageScreen
+      <LeavePageScreen
         visible={showLeavePageScreen}
         onClose={() => setShowLeavePageScreen(false)}
         discardClose={() => {
@@ -923,17 +948,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dropdownMenu: {
-    position: "absolute",
-    top: 50,
+    // position: "absolute",
+    // top: 50,
+    // left: 0,
+    // right: 0,
+    // backgroundColor: "#fff",
+    // borderWidth: 1,
+    // borderColor: "#ddd",
+    // borderRadius: 12,
+    // zIndex: 9999,
+    // elevation: 20,
+    // overflow: "hidden",
+      position: "absolute",
+    top: 50,          // 👈 input height
     left: 0,
     right: 0,
+
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 12,
     zIndex: 9999,
     elevation: 20,
-    overflow: "hidden",
+
+    maxHeight: 140,
   },
 
   option: {

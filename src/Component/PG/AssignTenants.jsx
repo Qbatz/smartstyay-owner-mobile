@@ -33,7 +33,7 @@ import { UseSetting } from "../../Context/SettingContext";
 export default function AssignTenant({ navigation, route }) {
   const { selectedBed, onBedAdded } = route.params || {};
 
-  const { getCustomersByHostel, checkInCustomer, bookCustomer, TenantCheckIn } = useCustomer();
+  const { getCustomersByHostel, checkInCustomer, bookCustomer, TenantCheckIn, getBedsByHostelAndDate } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
   const { getBankListByHostel } = useContext(BankingContext);
   const { getBillingConfig, billingRuleData } = UseSetting();
@@ -120,6 +120,42 @@ export default function AssignTenant({ navigation, route }) {
       getBillingConfig(activeHostelId);
     }
   }, [activeHostelId]);
+
+  useEffect(() => {
+    if (!activeHostelId || !checkJoiningDate) return;
+
+    loadBedsAndPaymentModes(checkJoiningDate);
+  }, [activeHostelId, checkJoiningDate]);
+
+  const loadBedsAndPaymentModes = async (date) => {
+    if (!activeHostelId || !date) return;
+
+    try {
+      const formattedDate = dayjs(date).format("DD-MM-YYYY");
+
+      const res = await getBedsByHostelAndDate(
+        activeHostelId,
+        formattedDate
+      );
+
+      console.log("AssignTenant bookingInitializeResponse", res);
+
+      if (res?.success) {
+        // Payment modes ONLY from getBedsByHostelAndDate
+        setAccountList(res?.data?.bankDetails || []);
+
+        console.log(
+          "AssignTenant bankDetails",
+          res?.data?.bankDetails
+        );
+      } else {
+        setAccountList([]);
+      }
+    } catch (error) {
+      console.log("loadBedsAndPaymentModes error", error);
+      setAccountList([]);
+    }
+  };
 
 
 
@@ -470,7 +506,7 @@ export default function AssignTenant({ navigation, route }) {
         roomId: selectedBed.roomId,
         bedId: selectedBed.bedId,
 
-        bankId: accountSelected.bankingId,
+        bankId: accountSelected?.bankId,
         referenceNumber: referenceNumber || "",
       };
 
@@ -1336,9 +1372,11 @@ export default function AssignTenant({ navigation, route }) {
                   >
 
                     <Text style={styles.selectText}>
-                      {accountSelected
-                        ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
-                        : "Select Bank"}
+                      <Text style={styles.selectText}>
+                        {accountSelected
+                          ? `${accountSelected.holderName} - ${accountSelected.bankName}`
+                          : "Select Mode Of Transaction"}
+                      </Text>
                     </Text>
                     <Image source={DownArrow} style={styles.arrow} />
                   </TouchableOpacity>
@@ -1349,8 +1387,10 @@ export default function AssignTenant({ navigation, route }) {
 
                   {accountOpen && (
                     <View style={styles.dropdownMenu}>
-                      <ScrollView style={{ maxHeight: 150 }}>
-                        {AccountsList.map((v, i) => (
+                      <ScrollView  nestedScrollEnabled
+                          scrollEnabled={AccountsList?.length > 3}
+                          showsVerticalScrollIndicator={false}>
+                        {/* {AccountsList.map((v, i) => (
                           <TouchableOpacity
                             key={i}
                             style={styles.option}
@@ -1361,6 +1401,21 @@ export default function AssignTenant({ navigation, route }) {
                             }}
                           >
                             <Text style={styles.optionText}>{v.accountHolderName}-{v.accountType}</Text>
+                          </TouchableOpacity>
+                        ))} */}
+                        {AccountsList?.map((v) => (
+                          <TouchableOpacity
+                            key={v?.bankId}
+                            style={styles.option}
+                            onPress={() => {
+                              setAccountSelected(v);
+                              setAccountopen(false);
+                              setBankError("");
+                            }}
+                          >
+                            <Text style={styles.optionText}>
+                              {v?.holderName} - {v?.bankName}
+                            </Text>
                           </TouchableOpacity>
                         ))}
                       </ScrollView>
@@ -1908,7 +1963,7 @@ export default function AssignTenant({ navigation, route }) {
                       </Text>
                       {(showCustomRentEditor || isCustomRentSaved) ?
                         <Image source={CloseIcon} style={{ height: 10, width: 10, marginLeft: 5 }} /> :
-                         <Image source={AddRentIcon} style={{ height: 10, width: 10, marginLeft: 5 }} />}
+                        <Image source={AddRentIcon} style={{ height: 10, width: 10, marginLeft: 5 }} />}
                     </TouchableOpacity>
 
                     {(showCustomRentEditor || isCustomRentSaved) && (
@@ -1924,97 +1979,97 @@ export default function AssignTenant({ navigation, route }) {
                         </Text>
 
 
-                            {!isCustomRentSaved ? (
+                        {!isCustomRentSaved ? (
 
-                                                    <>
-                                      
+                          <>
 
-                                                        <View style={styles.amountInputWrapper}>
 
-                                                            <TextInput
-                                                                style={styles.customRentInput}
-                                                                placeholder="₹ 0.00"
-                                                                placeholderTextColor="#9CA3AF"
-                                                                keyboardType="numeric"
-                                                                value={customRentAmount}
-                                                                onChangeText={(text) => {
-                                                                    setCustomRentAmount(
-                                                                        text.replace(/[^0-9]/g, "")
-                                                                    );
-                                                                    setCustomRentError("");
-                                                                }}
-                                                            />
+                            <View style={styles.amountInputWrapper}>
 
-                                                            <TouchableOpacity
-                                                                style={styles.setBtnInside}
-                                                                onPress={() => {
+                              <TextInput
+                                style={styles.customRentInput}
+                                placeholder="₹ 0.00"
+                                placeholderTextColor="#9CA3AF"
+                                keyboardType="numeric"
+                                value={customRentAmount}
+                                onChangeText={(text) => {
+                                  setCustomRentAmount(
+                                    text.replace(/[^0-9]/g, "")
+                                  );
+                                  setCustomRentError("");
+                                }}
+                              />
 
-                                                                    if (!customRentAmount) {
-                                                                        setCustomRentError(
-                                                                            "Please enter custom rent amount"
-                                                                        );
-                                                                        return;
-                                                                    }
+                              <TouchableOpacity
+                                style={styles.setBtnInside}
+                                onPress={() => {
 
-                                                                    if (Number(customRentAmount) <= 0) {
-                                                                        setCustomRentError(
-                                                                            "Amount should be greater than zero"
-                                                                        );
-                                                                        return;
-                                                                    }
+                                  if (!customRentAmount) {
+                                    setCustomRentError(
+                                      "Please enter custom rent amount"
+                                    );
+                                    return;
+                                  }
 
-                                                                    setSavedCustomRent(customRentAmount);
-                                                                    setIsCustomRentSaved(true);
-                                                                    setShowCustomRentEditor(false);
-                                                                    setCustomRentError("");
-                                                                }}
-                                                            >
-                                                                <Text style={styles.setBtnText}>
-                                                                    ✓ Set
-                                                                </Text>
-                                                            </TouchableOpacity>
+                                  if (Number(customRentAmount) <= 0) {
+                                    setCustomRentError(
+                                      "Amount should be greater than zero"
+                                    );
+                                    return;
+                                  }
 
-                                                        </View>
+                                  setSavedCustomRent(customRentAmount);
+                                  setIsCustomRentSaved(true);
+                                  setShowCustomRentEditor(false);
+                                  setCustomRentError("");
+                                }}
+                              >
+                                <Text style={styles.setBtnText}>
+                                  ✓ Set
+                                </Text>
+                              </TouchableOpacity>
 
-                                                        {customRentError ? (
-                                                            <ErrorMessage message={customRentError} />
-                                                        ) : null}
-                                                    </>
+                            </View>
 
-                                                ) : (
+                            {customRentError ? (
+                              <ErrorMessage message={customRentError} />
+                            ) : null}
+                          </>
 
-                                                    <View style={styles.savedRow}>
+                        ) : (
 
-                                                        <Text style={styles.savedAmount}>
-                                                            ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
-                                                        </Text>
+                          <View style={styles.savedRow}>
 
-                                                        <TouchableOpacity
-                                                            onPress={() => {
+                            <Text style={styles.savedAmount}>
+                              ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
+                            </Text>
 
-                                                                setCustomRentAmount(savedCustomRent);
+                            <TouchableOpacity
+                              onPress={() => {
 
-                                                                setIsCustomRentSaved(false);
+                                setCustomRentAmount(savedCustomRent);
 
-                                                                setShowCustomRentEditor(true);
+                                setIsCustomRentSaved(false);
 
-                                                            }}
-                                                        >
-                                                            <Image
-                                                                source={require("../../Assets/Images/EditRent.png")}
-                                                                style={{
-                                                                    width: 24,
-                                                                    height: 24,
-                                                                    tintColor: "#6B7280",
-                                                                }}
-                                                            />
-                                                        </TouchableOpacity>
+                                setShowCustomRentEditor(true);
 
-                                                    </View>
+                              }}
+                            >
+                              <Image
+                                source={require("../../Assets/Images/EditRent.png")}
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  tintColor: "#6B7280",
+                                }}
+                              />
+                            </TouchableOpacity>
 
-                                                )}
+                          </View>
 
-                      
+                        )}
+
+
 
                       </View>
                     )}
@@ -2524,15 +2579,17 @@ const styles = StyleSheet.create({
 
   dropdownMenu: {
     position: "absolute",
-    top: 50,
+    top: 50,        
     left: 0,
     right: 0,
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 12,
-    zIndex: 999,
-    elevation: 10,
+    zIndex: 9999,
+    elevation: 20,
+
+    maxHeight: 140,
   },
 
   dropdownItem: {
@@ -2768,15 +2825,15 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Semibold"
   },
 
- customRentBtn: {
-        marginTop: 15,
-        backgroundColor: "#EEF2FF",
-        paddingVertical: 14,
-        borderRadius: 10,
-        flexDirection: 'row',
-        alignItems: "center", justifyContent: 'center'
+  customRentBtn: {
+    marginTop: 15,
+    backgroundColor: "#EEF2FF",
+    paddingVertical: 14,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: "center", justifyContent: 'center'
 
-    },
+  },
 
   closeBtn: {
     backgroundColor: "#1F2BA6",
@@ -2986,79 +3043,79 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
-    amountInputWrapper: {
-        marginTop: 20,
-        height: 52,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        borderRadius: 12,
-        backgroundColor: "#fff",
-        flexDirection: "row",
-        alignItems: "center",
-        paddingLeft: 14,
-        paddingRight: 6,
-    },
+  amountInputWrapper: {
+    marginTop: 20,
+    height: 52,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingLeft: 14,
+    paddingRight: 6,
+  },
 
-    customRentInput: {
-        flex: 1,
-        height: "100%",
-        paddingHorizontal: 0,
-        fontSize: 15,
-        color: "#111827",
-        fontFamily: "Gilroy-Semibold",
-    },
+  customRentInput: {
+    flex: 1,
+    height: "100%",
+    paddingHorizontal: 0,
+    fontSize: 15,
+    color: "#111827",
+    fontFamily: "Gilroy-Semibold",
+  },
 
-    setBtnInside: {
-        height: 40,
-        minWidth: 65,
-        paddingHorizontal: 12,
-        backgroundColor: "#EEF2FF",
-        borderRadius: 10,
-        justifyContent: "center",
-        alignItems: "center",
-    },
+  setBtnInside: {
+    height: 40,
+    minWidth: 65,
+    paddingHorizontal: 12,
+    backgroundColor: "#EEF2FF",
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-    setBtnText: {
-        color: "#1E45E1",
-        fontSize: 14,
-        fontFamily: "Gilroy-Semibold",
-    },
-    amountInput: {
-        flex: 1,
-        height: 45,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        paddingHorizontal: 15,
-        fontSize: 14,
-        fontFamily: "Gilroy-Bold"
-    },
+  setBtnText: {
+    color: "#1E45E1",
+    fontSize: 14,
+    fontFamily: "Gilroy-Semibold",
+  },
+  amountInput: {
+    flex: 1,
+    height: 45,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    paddingHorizontal: 15,
+    fontSize: 14,
+    fontFamily: "Gilroy-Bold"
+  },
 
-    setBtn: {
-        marginLeft: 10,
-        backgroundColor: "#EEF2FF",
-        borderRadius: 10,
-        paddingHorizontal: 18,
-        height: 45,
-        justifyContent: "center",
-    },
+  setBtn: {
+    marginLeft: 10,
+    backgroundColor: "#EEF2FF",
+    borderRadius: 10,
+    paddingHorizontal: 18,
+    height: 45,
+    justifyContent: "center",
+  },
 
-    setBtnText: {
-        color: "#1E45E1",
-        fontSize: 14,
-        fontFamily: "Gilroy-Semibold"
-    },
+  setBtnText: {
+    color: "#1E45E1",
+    fontSize: 14,
+    fontFamily: "Gilroy-Semibold"
+  },
 
-    savedRow: {
-        marginTop: 25,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
+  savedRow: {
+    marginTop: 25,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 
-    savedAmount: {
-        fontSize: 17,
-        fontFamily: "Gilroy-Bold",
-        color: "#222",
-    },
+  savedAmount: {
+    fontSize: 17,
+    fontFamily: "Gilroy-Bold",
+    color: "#222",
+  },
 });

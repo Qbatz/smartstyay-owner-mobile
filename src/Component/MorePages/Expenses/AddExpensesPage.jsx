@@ -479,6 +479,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         { value: "Hour Wage", label: "Hour Wage" },
     ];
 
+    console.log("IntializeexpensesList", IntializeexpensesList);
+    
+
     const paymentOptions =
         IntializeexpensesList?.banks?.map((b) => ({
             id: b?.bankId,

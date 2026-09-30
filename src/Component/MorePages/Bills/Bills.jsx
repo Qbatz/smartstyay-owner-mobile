@@ -14,6 +14,7 @@ import {
   BackHandler, Keyboard, Platform,
   KeyboardAvoidingView,
   FlatList
+
 } from "react-native";
 import { useFocusEffect, useNavigationState } from "@react-navigation/native";
 import { useCallback } from "react";
@@ -895,6 +896,10 @@ export default function BillsDesign({ route }) {
       hideSub.remove();
     };
   }, []);
+
+
+  console.log("refundInitDetails", refundInitDetails);
+  
 
   const maxRefund = Number(refundInitDetails?.pendingRefund || 0);
 
