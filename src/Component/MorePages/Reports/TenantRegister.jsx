@@ -210,6 +210,8 @@ const TenantRegister = ({ navigation }) => {
     //   page: 1,
     //   size: 10,
     // };
+    console.log("seetha",room)
+    console.log(floor)
     const finalMonth =
       month !== undefined ? month : selectedMonth;
 
@@ -235,7 +237,7 @@ const TenantRegister = ({ navigation }) => {
         : undefined,
 
       room: room?.length
-        ? room
+        ?  room.map(item => item.id)
         : undefined,
 
       search: search?.trim()

@@ -1018,6 +1018,9 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         }, [handleLeavePage])
     );
 
+    console.log("sitha",amount)
+    console.log("discountTH",discount)
+
 
     const handleSubmit = async () => {
         console.log("Submit Clicked");
@@ -1091,7 +1094,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                     transactionId: transactionId || "",
 
                     tax: Number(tax || 0),
-                    discount: Number(discount || 0),
+                    discount: Number(discountAmount || 0),
 
                     expenseItems: items.map((item) => ({
                         item: item.itemDetail,

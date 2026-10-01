@@ -613,7 +613,7 @@ const InvoiceRegister = ({ navigation }) => {
   (selectedInvoiceMode?.length ?? 0) > 0;
 
   // || startDateValue
-  console.log("sillana", allAppliedFilters)
+  console.log("allAppliedFilter", allAppliedFilters)
   console.log(selectedBillStatus)
   console.log(allSelectedMonth)
   console.log(selectedInvoiceType)

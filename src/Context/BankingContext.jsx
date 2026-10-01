@@ -17,6 +17,7 @@ export default function BankingProvider({ children }) {
   const [creditCardInitialize, setCreditCardInitialize] = useState(null)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [newOnlyTransactionList,setNewOnlyTransactionList]=useState([])
 
   const getErrorMessage = (error) =>
     error?.response?.data?.message ||
@@ -255,11 +256,11 @@ export default function BankingProvider({ children }) {
   const getAllTransactions = async (
     hostelId,
     page = 1,
-    size = 20,
+    size = 30,
     filters = {}
   ) => {
     try {
-      setLoading(true);
+      // setLoading(true);
       setErrorMsg("");
 
       const axios = getAxios();
@@ -285,6 +286,7 @@ export default function BankingProvider({ children }) {
 
         setBankList(res?.data?.bankList)
         setNewTransactionList(transactions);
+        setNewOnlyTransactionList(prev=> [...prev, ...res?.data?.transactions])
 
         return {
           success: true,
@@ -783,7 +785,8 @@ export default function BankingProvider({ children }) {
         AddBankAmount,
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
-        getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer , getCreditCardInitialize , creditCardPayment
+        getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer , getCreditCardInitialize , creditCardPayment,
+        newOnlyTransactionList,setNewOnlyTransactionList
       }}
 
     >

@@ -529,7 +529,10 @@ export default function TenantsScreen({ route }) {
     keyName,
     isSingle = false
   ) => (
+   
     <View style={{ marginBottom: 12 }}>
+       {console.log("optinal",options)}
+       {console.log("valuation",value)}
       <Text style={styles.label}>{label}</Text>
 
       <View style={{ position: "relative" }}>
@@ -555,7 +558,11 @@ export default function TenantsScreen({ route }) {
             numberOfLines={1}
           >
             {isSingle
-              ? value || `Select ${label}`
+              ? value?.length > 0
+                ? options
+                  .filter(item => value.includes(item.value))
+                  .map(item => item.label)
+                  .join(", ") : `Select ${label}`
               : value?.length > 0
                 ? options
                   .filter(item => value.includes(item.value))
