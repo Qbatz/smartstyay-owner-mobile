@@ -67,7 +67,7 @@ export default function NewBankingList() {
 
   const { activeHostelId } = useContext(CommonContexts);
   const { getBankOverview, NewgetBankList, bankList, getAllTransactions, newtransactionList, loading, errorMsg,
-    getBankListByHostel, AddBankAmount, newOnlyTransactionList,setNewOnlyTransactionList } =
+    getBankListByHostel, AddBankAmount, newOnlyTransactionList, setNewOnlyTransactionList } =
     useContext(BankingContext);
 
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -343,7 +343,7 @@ export default function NewBankingList() {
     }
   }
 
-  console.log("onlyTransactionList",newOnlyTransactionList)
+  console.log("onlyTransactionList", newOnlyTransactionList)
 
   useEffect(() => {
     if (activeHostelId) {
@@ -1072,7 +1072,7 @@ export default function NewBankingList() {
     setSelectedTransaction(item);
     setShowFilter(false);
   }
-
+console.log("newOnlyTransaction",newOnlyTransactionList)
 
   if (!activeHostelId && !loading) {
     return (
@@ -1179,27 +1179,29 @@ export default function NewBankingList() {
                       opacity: bankListOpacity,
                     }}
                   >
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                    >
                       {mappedBankList.map((item, index) => {
-
                         const type = item.raw?.accountType;
 
                         return (
-
                           <TouchableOpacity
-                            // key={item.id}
                             key={`${item.id}-${index}`}
                             onPress={() => {
+                              console.log("item", item?.raw);
+
+                              getBankOverview(
+                                activeHostelId,
+                                item?.id
+                              );
+
                               navigation.navigate("BankingDetails", {
                                 bankDetails: item?.raw,
                                 bankId: item?.id,
-                              })
-                              console.log("item", item?.raw,);
-
-                              getBankOverview(activeHostelId, item?.id);
-                            }
-
-                            }
+                              });
+                            }}
                             style={[
                               styles.bankCard,
 
@@ -1212,9 +1214,7 @@ export default function NewBankingList() {
                           >
 
                             {/* HEADER */}
-
                             <View style={styles.cardHeader}>
-
                               <View style={styles.headerLeft}>
 
                                 <View
@@ -1222,20 +1222,18 @@ export default function NewBankingList() {
                                     styles.iconCircle,
 
                                     type === "BANK" && {
-                                      backgroundColor: "#EEF2FF"
+                                      backgroundColor: "#EEF2FF",
                                     },
 
                                     type === "CASH" && {
-                                      backgroundColor: "#E9FFF1"
+                                      backgroundColor: "#E9FFF1",
                                     },
 
                                     type === "CARD" && {
-                                      backgroundColor: "#FFF3E8"
-                                    }
-
+                                      backgroundColor: "#FFF3E8",
+                                    },
                                   ]}
                                 >
-
                                   <Image
                                     source={
                                       type === "BANK"
@@ -1246,88 +1244,41 @@ export default function NewBankingList() {
                                     }
                                     style={styles.bankIcon}
                                   />
-
                                 </View>
 
                                 <View>
-
-
-
                                   <Text style={styles.bankName}>
                                     {item?.title}
                                   </Text>
 
-
-
                                   <Text style={styles.bankType}>
                                     {item?.subtitle}
                                   </Text>
-
                                 </View>
 
                               </View>
 
-                          
+                              {/* INFO BUTTON */}
+                              <TouchableOpacity
+                                style={styles.infoButton}
+                                activeOpacity={0.7}
+                                onPress={(e) => {
+                                  e.stopPropagation?.();
 
-                        </View> */}
+                                  setSelectedBank(item?.raw);
+                                  setShowBankInfo(true);
+                                }}
+                              >
+                                <Text style={styles.infoIconText}>
+                                  !
+                                </Text>
+                              </TouchableOpacity>
 
-
-                        <View style={styles.cardHeader}>
-                          <View style={styles.headerLeft}>
-                            <View
-                              style={[
-                                styles.iconCircle,
-                                type === "BANK" && {
-                                  backgroundColor: "#EEF2FF",
-                                },
-                                type === "CASH" && {
-                                  backgroundColor: "#E9FFF1",
-                                },
-                                type === "CARD" && {
-                                  backgroundColor: "#FFF3E8",
-                                },
-                              ]}
-                            >
-                              <Image
-                                source={
-                                  type === "BANK"
-                                    ? BankIcon
-                                    : type === "CASH"
-                                      ? CashIcon
-                                      : CardIcon
-                                }
-                                style={styles.bankIcon}
-                              />
                             </View>
 
-                            <View>
-                              <Text style={styles.bankName}>
-                                {item?.title}
-                              </Text>
-
-                              <Text style={styles.bankType}>
-                                {item?.subtitle}
-                              </Text>
-                            </View>
-                          </View>
-
-                          {/* INFO ICON */}
-                          <TouchableOpacity
-                            style={styles.infoButton}
-                            activeOpacity={0.7}
-                            onPress={(e) => {
-                              e.stopPropagation?.();
-                              setSelectedBank(item?.raw);
-                              setShowBankInfo(true);
-                            }}
-                          >
-                            <Text style={styles.infoIconText}>!</Text>
-                          </TouchableOpacity>
-                        </View>
-
-
+                            {/* BALANCE */}
                             <Text style={styles.balanceAmount}>
-                              ₹{item?.balance.toLocaleString("en-IN")}
+                              ₹{item?.balance?.toLocaleString("en-IN")}
                             </Text>
 
                             <Text style={styles.balanceLabel}>
@@ -1335,64 +1286,91 @@ export default function NewBankingList() {
                             </Text>
 
                             {/* CHIPS */}
-
                             <View style={styles.tagRow}>
 
+                              {/* BANK BRANCH */}
+                              {type === "BANK" && item?.branch ? (
+                                <View style={styles.locationChip}>
+                                  <Image
+                                    source={Location}
+                                    style={styles.smallLocation}
+                                  />
 
+                                  <Text numberOfLines={1}>
+                                    {item.branch}
+                                  </Text>
+                                </View>
+                              ) : null}
 
-                          {item.raw.accountType === "BANK" && item.branch ? (
-                            <View style={styles.locationChip}>
-                              <Image
-                                source={Location}
-                                style={styles.smallLocation}
-                              />
-                              <Text numberOfLines={1}>
-                                {item.branch}
-                              </Text>
+                              {/* UPI */}
+                              {type === "BANK" && item?.upiId ? (
+                                <View style={styles.upiChip}>
+                                  <Text numberOfLines={1}>
+                                    UPI : {item.acc}
+                                  </Text>
+                                </View>
+                              ) : null}
+
+                              {/* CARD */}
+                              {type === "CARD" ? (
+                                <View style={styles.upiChip}>
+                                  <Text numberOfLines={1}>
+                                    **** **** {item.acc?.slice(-4)}
+                                  </Text>
+                                </View>
+                              ) : null}
+
+                              {/* CASH */}
+                              {type === "CASH" ? (
+                                <View style={styles.defaultChip}>
+                                  <Text style={styles.defaultChipText}>
+                                    {item?.ResponsiblePerson}
+                                  </Text>
+                                </View>
+                              ) : null}
+
                             </View>
-                          ) : null}
 
-
-                              {
-                                type === "BANK" && item?.upiId ? (
-                                  <View style={styles.upiChip}>
-                                    <Text numberOfLines={1}>
-                                      UPI : {item.acc}
-                                    </Text>
-                                  </View>
-                                ) : null
-                              }
-
-                              {
-                                type === "CARD" && (
-                                  <View style={styles.upiChip}>
-                                    <Text numberOfLines={1}>
-                                      **** **** {item.acc?.slice(-4)}
-                                    </Text>
-                                  </View>
-                                )
-                              }
-
-                          {item?.raw?.accountType === "CASH" && (
-                            <View style={styles.defaultChip}>
-                              <Text style={styles.defaultChipText}>{item?.ResponsiblePerson}</Text>
-                            </View>
-                          )}
-                        </View>
-
+                            {/* LAST TRANSACTION */}
                             <Text style={styles.lastTxn}>
-                              {
-                                type === "CARD"
-                                  ? "Due Date : 10 Jun 2026"
-                                  : !item?.paymentMethod ? `Last Txn : ${(item?.lastTransactionDate)}`  : `Due Date : ${item?.dueDate}`
-                              }
+                              {type === "CARD"
+                                ? "Due Date : 10 Jun 2026"
+                                : !item?.paymentMethod
+                                  ? `Last Txn : ${item?.lastTransactionDate}`
+                                  : `Due Date : ${item?.dueDate}`}
                             </Text>
 
                           </TouchableOpacity>
-
                         );
-
                       })}
+
+                       <TouchableOpacity
+                    // style={[styles.addNewCard, !canWriteBanking && { opacity: 0.4 }]}
+                    // disabled={!canWriteBanking}
+
+                    style={[
+                      styles.addNewCard,
+                      (!canWriteBanking || !isSubscriptionAllow) && {
+                        opacity: 0.4,
+                      },
+                    ]}
+                    disabled={!canWriteBanking || !isSubscriptionAllow}
+                    onPress={handleAddBanking}
+                  >
+
+                    <View style={{ height: 50, width: 50 }}>
+                      <Image source={AddBankIcon} style={styles.addIcon} />
+                    </View>
+
+                    <Text style={styles.addText}>
+                      Add New
+                    </Text>
+
+                    <Text style={styles.addText}>
+                      Bank / Cash
+                    </Text>
+
+                  </TouchableOpacity>
                     </ScrollView>
                   </Animated.View>
 
@@ -1588,7 +1566,7 @@ export default function NewBankingList() {
 
               contentContainerStyle={{
                 paddingTop: 110,
-                paddingHorizontal:20,
+                paddingHorizontal: 20,
                 paddingBottom: 30,
               }}
 
@@ -1600,7 +1578,7 @@ export default function NewBankingList() {
                     style={{ width: 250, height: 180, }}
                   />
                   <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
-                    No Transaction Found 
+                    No Transaction Found
                   </Text>
                 </View>
               }
@@ -1721,86 +1699,86 @@ export default function NewBankingList() {
       </View>
 
 
-     {showBankInfo && selectedBank && (
-  <Modal
-    visible={showBankInfo}
-    transparent
-    animationType="fade"
-    statusBarTranslucent
-    onRequestClose={() => setShowBankInfo(false)}
-  >
-    <Pressable
-      style={styles.infoOverlay}
-      onPress={() => setShowBankInfo(false)}
-    >
-      <Pressable
-        style={styles.bankInfoCard}
-        onPress={(e) => e.stopPropagation()}
-      >
-
-        <View style={styles.infoCardHeader}>
-          <Text style={styles.infoCardTitle}>
-            {selectedBank?.bankName ||
-              selectedBank?.accountHolderName ||
-              "Account Details"}
-          </Text>
-
-          <TouchableOpacity
-            style={styles.infoCloseButton}
+      {showBankInfo && selectedBank && (
+        <Modal
+          visible={showBankInfo}
+          transparent
+          animationType="fade"
+          statusBarTranslucent
+          onRequestClose={() => setShowBankInfo(false)}
+        >
+          <Pressable
+            style={styles.infoOverlay}
             onPress={() => setShowBankInfo(false)}
           >
-            <Text style={styles.infoCloseText}>×</Text>
-          </TouchableOpacity>
-        </View>
+            <Pressable
+              style={styles.bankInfoCard}
+              onPress={(e) => e.stopPropagation()}
+            >
 
-        <View style={styles.infoDivider} />
+              <View style={styles.infoCardHeader}>
+                <Text style={styles.infoCardTitle}>
+                  {selectedBank?.bankName ||
+                    selectedBank?.accountHolderName ||
+                    "Account Details"}
+                </Text>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Bank Name</Text>
-          <Text style={styles.infoColon}>:</Text>
-          <Text style={styles.infoValue}>
-            {selectedBank?.bankName || "-"}
-          </Text>
-        </View>
+                <TouchableOpacity
+                  style={styles.infoCloseButton}
+                  onPress={() => setShowBankInfo(false)}
+                >
+                  <Text style={styles.infoCloseText}>×</Text>
+                </TouchableOpacity>
+              </View>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Beneficiary</Text>
-          <Text style={styles.infoColon}>:</Text>
-          <Text style={styles.infoValue}>
-            {selectedBank?.accountHolderName || "-"}
-          </Text>
-        </View>
+              <View style={styles.infoDivider} />
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Account No</Text>
-          <Text style={styles.infoColon}>:</Text>
-          <Text style={styles.infoValue}>
-            {selectedBank?.accountNumber || "-"}
-          </Text>
-        </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Bank Name</Text>
+                <Text style={styles.infoColon}>:</Text>
+                <Text style={styles.infoValue}>
+                  {selectedBank?.bankName || "-"}
+                </Text>
+              </View>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>IFSC Code</Text>
-          <Text style={styles.infoColon}>:</Text>
-          <Text style={styles.infoValue}>
-            {selectedBank?.ifscCode ||
-              selectedBank?.ifsc ||
-              "-"}
-          </Text>
-        </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Beneficiary</Text>
+                <Text style={styles.infoColon}>:</Text>
+                <Text style={styles.infoValue}>
+                  {selectedBank?.accountHolderName || "-"}
+                </Text>
+              </View>
 
-        <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>Description</Text>
-          <Text style={styles.infoColon}>:</Text>
-          <Text style={styles.infoValue}>
-            {selectedBank?.description || "-"}
-          </Text>
-        </View>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Account No</Text>
+                <Text style={styles.infoColon}>:</Text>
+                <Text style={styles.infoValue}>
+                  {selectedBank?.accountNumber || "-"}
+                </Text>
+              </View>
 
-      </Pressable>
-    </Pressable>
-  </Modal>
-)}
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>IFSC Code</Text>
+                <Text style={styles.infoColon}>:</Text>
+                <Text style={styles.infoValue}>
+                  {selectedBank?.ifscCode ||
+                    selectedBank?.ifsc ||
+                    "-"}
+                </Text>
+              </View>
+
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>Description</Text>
+                <Text style={styles.infoColon}>:</Text>
+                <Text style={styles.infoValue}>
+                  {selectedBank?.description || "-"}
+                </Text>
+              </View>
+
+            </Pressable>
+          </Pressable>
+        </Modal>
+      )}
 
 
 
@@ -3419,109 +3397,109 @@ const styles = StyleSheet.create({
     tintColor: "#B8860B",
   },
   infoButton: {
-  width: 28,
-  height: 28,
-  borderRadius: 14,
-  borderWidth: 1.5,
-  borderColor: "#718096",
-  justifyContent: "center",
-  alignItems: "center",
-  marginLeft: 8,
-},
-
-infoIconText: {
-  fontSize: 15,
-  fontFamily: "Gilroy-Bold",
-  color: "#718096",
-  lineHeight: 17,
-},
-
-infoOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.15)",
-  justifyContent: "center",
-  alignItems: "center",
-  paddingHorizontal: 24,
-},
-
-bankInfoCard: {
-  width: "100%",
-  maxWidth: 380,
-  backgroundColor: "#FFFFFF",
-  borderRadius: 18,
-  paddingHorizontal: 20,
-  paddingVertical: 18,
-
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 4,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#718096",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 8,
   },
-  shadowOpacity: 0.15,
-  shadowRadius: 10,
-  elevation: 8,
-},
 
-infoCardHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-},
+  infoIconText: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Bold",
+    color: "#718096",
+    lineHeight: 17,
+  },
 
-infoCardTitle: {
-  flex: 1,
-  fontSize: 18,
-  fontFamily: "Gilroy-Bold",
-  color: "#202020",
-},
+  infoOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.15)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
 
-infoCloseButton: {
-  width: 30,
-  height: 30,
-  borderRadius: 15,
-  backgroundColor: "#F5F5F5",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  bankInfoCard: {
+    width: "100%",
+    maxWidth: 380,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 18,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
 
-infoCloseText: {
-  fontSize: 22,
-  lineHeight: 22,
-  color: "#555",
-  fontFamily: "Gilroy-Regular",
-},
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+  },
 
-infoDivider: {
-  height: 1,
-  backgroundColor: "#EAEAEA",
-  marginVertical: 15,
-},
+  infoCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 
-infoRow: {
-  flexDirection: "row",
-  alignItems: "flex-start",
-  marginBottom: 14,
-},
+  infoCardTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontFamily: "Gilroy-Bold",
+    color: "#202020",
+  },
 
-infoLabel: {
-  width: 105,
-  fontSize: 14,
-  color: "#718096",
-  fontFamily: "Gilroy-Medium",
-},
+  infoCloseButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-infoColon: {
-  width: 18,
-  fontSize: 14,
-  color: "#333",
-  fontFamily: "Gilroy-Semibold",
-},
+  infoCloseText: {
+    fontSize: 22,
+    lineHeight: 22,
+    color: "#555",
+    fontFamily: "Gilroy-Regular",
+  },
 
-infoValue: {
-  flex: 1,
-  fontSize: 14,
-  color: "#202020",
-  fontFamily: "Gilroy-Semibold",
-},
+  infoDivider: {
+    height: 1,
+    backgroundColor: "#EAEAEA",
+    marginVertical: 15,
+  },
+
+  infoRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 14,
+  },
+
+  infoLabel: {
+    width: 105,
+    fontSize: 14,
+    color: "#718096",
+    fontFamily: "Gilroy-Medium",
+  },
+
+  infoColon: {
+    width: 18,
+    fontSize: 14,
+    color: "#333",
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  infoValue: {
+    flex: 1,
+    fontSize: 14,
+    color: "#202020",
+    fontFamily: "Gilroy-Semibold",
+  },
 
 });
