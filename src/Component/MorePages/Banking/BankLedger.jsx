@@ -379,22 +379,22 @@ leftSection:{
 },
 
 iconContainer: {
-  width: 56,
-  height: 56,
+  width: 50,
+  height: 50,
   borderRadius: 28,
   justifyContent: "center",
   alignItems: "center",
 },
 
 transactionIcon: {
-  width: 26,
-  height: 26,
+  width: 23,
+  height: 23,
   resizeMode: "contain",
   tintColor: "#FFFFFF", // white icon
 },
 
 transactionTitle:{
-    fontSize:18,
+    fontSize:15,
     color:"#222",
     fontFamily:"Gilroy-SemiBold",
 },

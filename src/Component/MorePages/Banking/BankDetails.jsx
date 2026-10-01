@@ -249,9 +249,9 @@ export default function BankDetails({ }) {
                             </View>
                         </View>
 
-                        <TouchableOpacity>
+                        {/* <TouchableOpacity>
                             <Image source={ThreeDots} style={styles.menuIcon} />
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                     </View>
 
 

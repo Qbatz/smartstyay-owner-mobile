@@ -20,7 +20,7 @@ import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 export default function AddBankAccount() {
 
   const { activeHostelId } = useContext(CommonContexts);
-  const { createBankAccount, responsiblePersonList, NewgetBankList,
+  const { createBankAccount, responsiblePersonList, NewgetBankList, getAllTransactions,
     getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel } = useContext(BankingContext);
 
 
@@ -29,6 +29,7 @@ export default function AddBankAccount() {
   const navigation = useNavigation()
 
   const [showAccountType, setShowAccountType] = useState(false);
+  const [showBankAccountType, setShowBankAccountType] = useState(false);
   const [showResponsibleperson, setShowResponsiblePerson] = useState(false);
   const [cashaccountType, setCashAccountType] = useState(null)
   const [responsibleperson, setResponsiblePerson] = useState(null)
@@ -66,6 +67,11 @@ export default function AddBankAccount() {
   const cashTypeOptions = [
     { label: "Petty Cash", value: "PETTY_CASH" },
     { label: "Office Cash", value: "OFFICE_CASH" },
+  ];
+
+  const bankAccountTypeOptions = [
+    { label: "Savings", value: "SAVINGS" },
+    { label: "Current", value: "CURRENT" },
   ];
 
   //   const responsibleOptions = users?.map(item => ({
@@ -142,18 +148,18 @@ export default function AddBankAccount() {
   ])
 
   useEffect(() => {
-  const backAction = () => {
-    handleLeavePage();
-    return true;
-  };
+    const backAction = () => {
+      handleLeavePage();
+      return true;
+    };
 
-  const subscription = BackHandler.addEventListener(
-    "hardwareBackPress",
-    backAction
-  );
+    const subscription = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
 
-  return () => subscription.remove();
-}, [handleLeavePage]);
+    return () => subscription.remove();
+  }, [handleLeavePage]);
 
   const validate = () => {
     let err = {};
@@ -161,8 +167,11 @@ export default function AddBankAccount() {
     if (!form.displayName.trim())
       err.displayName = "Please Enter Account Name";
 
-    if (!form.openingBalance)
+    if (!form.openingBalance) {
       err.openingBalance = "Please Enter Opening Balance";
+    } else if (/^0+$/.test(form.openingBalance)) {
+      err.openingBalance = "Opening Balance must be greater than 0";
+    }
 
     if (accountType === "bank") {
       if (!form.bankName.trim()) {
@@ -326,6 +335,7 @@ export default function AddBankAccount() {
         setModalMessage("Account Created Successfully");
         setShowSuccessModal(true);
         await NewgetBankList(activeHostelId);
+        await getAllTransactions(activeHostelId);
 
         setTimeout(() => {
           setShowSuccessModal(false);
@@ -541,27 +551,97 @@ export default function AddBankAccount() {
                     <ErrorMessage message={errors.ifsc} />
                   )}
                 </View>
+                <View
+                  style={[
+                    styles.half,
+                    { zIndex: showBankAccountType ? 1000 : 1 }
+                  ]}
+                >
+                  <Text style={styles.label}>
+                    Account Type <Text style={{ color: "red" }}>*</Text>
+                  </Text>
 
-                <View style={styles.half}>
-                  <Text style={styles.label}>Account Type <Text style={{ color: "red" }}>*</Text></Text>
-                  <TextInput
-                    value={form.accountCategory}
-                    placeholder="Enter Account Type"
-                    style={styles.input}
-                    onChangeText={(v) =>
-                      handleChange(
-                        "accountCategory",
-                        v.replace(/[^a-zA-Z.&\s]/g, "")
-                      )
-                    }
-                  // onChangeText={(v) => handleChange("accountCategory", v)}
-                  />
+                  <TouchableOpacity
+                    style={styles.inputBox}
+                    activeOpacity={0.8}
+                    onPress={() => {
+                      setShowBankAccountType((prev) => !prev);
+                      setShowAccountType(false);
+                      setShowResponsiblePerson(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.dropdownInputText,
+                        !form.accountCategory && styles.placeholderText,
+                      ]}
+                    >
+                      {form.accountCategory
+                        ? bankAccountTypeOptions.find(
+                          (item) => item.value === form.accountCategory
+                        )?.label
+                        : "Select Account Type"}
+                    </Text>
+
+                    <Image
+                      source={DownArrow}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        tintColor: "#555",
+                      }}
+                    />
+                  </TouchableOpacity>
+
+                  {showBankAccountType && (
+                    <View style={styles.bankAccountDropdown}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        showsVerticalScrollIndicator={false}
+                      >
+                        {bankAccountTypeOptions.map((option) => {
+                          const isSelected =
+                            form.accountCategory === option.value;
+
+                          return (
+                            <TouchableOpacity
+                              key={option.value}
+                              style={[
+                                styles.dropdownRow,
+                                isSelected && styles.dropdownRowSelected,
+                              ]}
+                              onPress={() => {
+                                handleChange(
+                                  "accountCategory",
+                                  option.value
+                                );
+
+                                setShowBankAccountType(false);
+                              }}
+                            >
+                              <Text
+                                style={
+                                  isSelected
+                                    ? styles.dropdownTextSelected
+                                    : styles.dropdownText
+                                }
+                              >
+                                {option.label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
 
                   {errors.accountCategory && (
                     <ErrorMessage message={errors.accountCategory} />
                   )}
                 </View>
               </View>
+
+
             </>
           ) : (
             <>
@@ -962,7 +1042,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#2F5BFF",
   },
   inputBox: {
-    height: 50,
+    height: 53,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#E2E2E2",
@@ -1015,5 +1095,27 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
   },
-
+  dropdownInputText: {
+    fontSize: 13,
+    color: "black",
+    fontFamily: "Gilroy-Regular",
+  },
+  placeholderText: {
+    color: "#777",
+    fontFamily: "Gilroy-Regular",
+  },
+  bankAccountDropdown: {
+    position: "absolute",
+    top: 96,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    zIndex: 9999,
+    elevation: 20,
+    maxHeight: 120,
+    overflow: "hidden",
+  },
 });
