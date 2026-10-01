@@ -14,7 +14,8 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Dimensions,
-  PanResponder, KeyboardAvoidingView, Keyboard, SafeAreaView
+  PanResponder, KeyboardAvoidingView, Keyboard, SafeAreaView,
+  FlatList
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from '@react-navigation/native';
@@ -64,7 +65,8 @@ export default function NewBankingList() {
   dayjs.extend(customParseFormat)
 
   const { activeHostelId } = useContext(CommonContexts);
-  const { getBankOverview, NewgetBankList, bankList, getAllTransactions, newtransactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
+  const { getBankOverview, NewgetBankList, bankList, getAllTransactions, newtransactionList, loading, errorMsg,
+    getBankListByHostel, AddBankAmount, newOnlyTransactionList,setNewOnlyTransactionList } =
     useContext(BankingContext);
 
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -135,6 +137,8 @@ export default function NewBankingList() {
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isSubscriptionAllow = isValidSubscription
+
+  const [pageLoading, setPageLoading] = useState(false)
 
 
 
@@ -248,6 +252,10 @@ export default function NewBankingList() {
   const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
   const [amountDropdownVisible, setAmountDropdownVisible] = useState(false);
 
+  const [transactionPage, setTransactionPage] = useState(1);
+  const [transactionLoading, setTransactionLoading] = useState(false);
+  const [hasMoreTransactions, setHasMoreTransactions] = useState(true);
+
   const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
 
 
@@ -273,9 +281,70 @@ export default function NewBankingList() {
   }, [activeHostelId]);
 
 
+
+
+  const fetchTransactions = async (
+    page = 1,
+    isRefresh = false
+  ) => {
+    if (!activeHostelId) {
+      return;
+    }
+
+
+    if (transactionLoading) {
+      return;
+    }
+
+
+    if (!isRefresh && !hasMoreTransactions) {
+      return;
+    }
+
+    try {
+      setTransactionLoading(true);
+
+      const res = await getAllTransactions(
+        activeHostelId,
+        page,
+        30
+      );
+
+      if (res?.success) {
+        const newTransactions = res?.data || [];
+
+        if (newTransactions.length < 50) {
+          setHasMoreTransactions(false);
+        }
+
+        setTransactionPage(page);
+      }
+
+    } catch (error) {
+      console.log("Transaction error:", error);
+    } finally {
+      setTransactionLoading(false);
+    }
+  };
+
+  const fetchTransactionresponse = async () => {
+    try {
+      setPageLoading(true)
+      const res = await getAllTransactions(activeHostelId);
+      if (res?.success) {
+        setPageLoading(false)
+      }
+    } catch (error) {
+      setPageLoading(false)
+    }
+  }
+
+  console.log("onlyTransactionList",newOnlyTransactionList)
+
   useEffect(() => {
     if (activeHostelId) {
-      getAllTransactions(activeHostelId);
+      fetchTransactionresponse();
+      setNewOnlyTransactionList([])
     }
   }, [activeHostelId]);
 
@@ -605,11 +674,13 @@ export default function NewBankingList() {
               : UpiIcon,
 
       raw: item,
-      lastTransactionDate: item?.lastTransactionDate
+      lastTransactionDate: item?.lastTransactionDate,
+      dueDate: item?.dueDate,
+      paymentMethod: item?.paymentMethod
     };
   });
 
-  const mappedTransactions = (newtransactionList?.transactions || []).map((t) => {
+  const mappedTransactions = (newOnlyTransactionList || []).map((t) => {
     const isCredit = t.type === "CREDIT";
     const isSelfTransfer = t.source === "SELF_TRANSFER";
     const isInvestment = t.source === "ASSETS";
@@ -955,7 +1026,7 @@ export default function NewBankingList() {
 
 
   const handleAddBanking = () => {
-      if (!canWriteBanking || !isSubscriptionAllow) return;
+    if (!canWriteBanking || !isSubscriptionAllow) return;
     navigation.navigate("AddBankAccount")
     // setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
     // setAddBankingShow(true);
@@ -1027,7 +1098,7 @@ export default function NewBankingList() {
 
   return (
     <>
-      {loading && <Loader />}
+      {loading || pageLoading && <Loader />}
       <View style={styles.container}>
 
         <View style={styles.stickyHeader}>
@@ -1090,486 +1161,475 @@ export default function NewBankingList() {
           </View> */}
         </View>
 
-        {console.log("sillana", mappedBankList)}
 
         {!loading && (
 
           <>
+            <Animated.FlatList
+              data={mappedTransactions}
+
+              ListHeaderComponent={
+                <>
+                  {/* Bank cards */}
+                  <Animated.View
+                    style={{
+                      height: bankListHeight,
+                      opacity: bankListOpacity,
+                    }}
+                  >
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                      {mappedBankList.map((item, index) => {
+
+                        const type = item.raw?.accountType;
+
+                        return (
+
+                          <TouchableOpacity
+                            // key={item.id}
+                            key={`${item.id}-${index}`}
+                            onPress={() => {
+                              navigation.navigate("BankingDetails", {
+                                bankDetails: item?.raw,
+                                bankId: item?.id,
+                              })
+                              console.log("item", item?.raw,);
+
+                              getBankOverview(activeHostelId, item?.id);
+                            }
+
+                            }
+                            style={[
+                              styles.bankCard,
+
+                              type === "CASH" && styles.cashCard,
+
+                              type === "CARD" && styles.creditCard,
+
+                              type === "BANK" && styles.bankAccountCard,
+                            ]}
+                          >
+
+                            {/* HEADER */}
+
+                            <View style={styles.cardHeader}>
+
+                              <View style={styles.headerLeft}>
+
+                                <View
+                                  style={[
+                                    styles.iconCircle,
+
+                                    type === "BANK" && {
+                                      backgroundColor: "#EEF2FF"
+                                    },
+
+                                    type === "CASH" && {
+                                      backgroundColor: "#E9FFF1"
+                                    },
+
+                                    type === "CARD" && {
+                                      backgroundColor: "#FFF3E8"
+                                    }
+
+                                  ]}
+                                >
+
+                                  <Image
+                                    source={
+                                      type === "BANK"
+                                        ? BankIcon
+                                        : type === "CASH"
+                                          ? CashIcon
+                                          : CardIcon
+                                    }
+                                    style={styles.bankIcon}
+                                  />
+
+                                </View>
+
+                                <View>
 
 
-            <Animated.ScrollView
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingTop: 110 }}
+
+                                  <Text style={styles.bankName}>
+                                    {item?.title}
+                                  </Text>
+
+
+
+                                  <Text style={styles.bankType}>
+                                    {item?.subtitle}
+                                  </Text>
+
+                                </View>
+
+                              </View>
+
+                              <TouchableOpacity>
+                                <Image source={ThreeDotsIcon} style={styles.moreIcon} />
+                              </TouchableOpacity>
+
+                            </View>
+
+                            {/* BALANCE */}
+
+
+
+                            <Text style={styles.balanceAmount}>
+                              ₹{item?.balance.toLocaleString("en-IN")}
+                            </Text>
+
+                            <Text style={styles.balanceLabel}>
+                              Balance
+                            </Text>
+
+                            {/* CHIPS */}
+
+                            <View style={styles.tagRow}>
+
+
+
+                              {item.raw.accountType === "BANK" && item.branch ? (
+                                <View style={styles.locationChip}>
+                                  <Text numberOfLines={1}>
+                                    📍 {item.branch}
+                                  </Text>
+                                </View>
+                              ) : null}
+
+
+                              {
+                                type === "BANK" && item?.upiId ? (
+                                  <View style={styles.upiChip}>
+                                    <Text numberOfLines={1}>
+                                      UPI : {item.acc}
+                                    </Text>
+                                  </View>
+                                ) : null
+                              }
+
+                              {
+                                type === "CARD" && (
+                                  <View style={styles.upiChip}>
+                                    <Text numberOfLines={1}>
+                                      **** **** {item.acc?.slice(-4)}
+                                    </Text>
+                                  </View>
+                                )
+                              }
+
+                              {item?.isDefaultAccount && (
+                                <View style={styles.defaultChip}>
+                                  <Text style={styles.defaultChipText}>Default A/C</Text>
+                                </View>
+                              )}
+
+                            </View>
+
+                            <Text style={styles.lastTxn}>
+                              {
+                                type === "CARD"
+                                  ? "Due Date : 10 Jun 2026"
+                                  : !item?.paymentMethod ? `Last Txn : ${(item?.lastTransactionDate)}`  : `Due Date : ${item?.dueDate}`
+                              }
+                            </Text>
+
+                          </TouchableOpacity>
+
+                        );
+
+                      })}
+                    </ScrollView>
+                  </Animated.View>
+
+                  {/* Filters */}
+
+                  <ScrollView
+                    horizontal
+                    persistentScrollbar={false}
+                    showsHorizontalScrollIndicator={false}
+                    style={{ flexGrow: 0 }}
+                    contentContainerStyle={{
+                      paddingLeft: 16,
+                      paddingRight: 12,
+                    }}
+                  >
+                    <View style={styles.filterRow}>
+
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                        }}
+                      >
+
+                        {/* DATE FILTER */}
+                        <TouchableOpacity
+                          style={[
+                            styles.filterBox,
+                            selectedDateFilter.length > 0 &&
+                            selectedDateFilter[0] !== "ALL" &&
+                            styles.filterBoxActive,
+                          ]}
+                          onPress={() => {
+                            setTempDateFilter(selectedDateFilter);
+                            setDateSheetOpen(true);
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.filterText,
+                              selectedDateFilter.length > 0 &&
+                              selectedDateFilter[0] !== "ALL" &&
+                              styles.filterTextActive,
+                            ]}
+                          >
+                            {selectedDateFilter.length === 0 ||
+                              selectedDateFilter[0] === "ALL"
+                              ? "All"
+                              : dateFilterOptions.find(
+                                (item) => item.value === selectedDateFilter[0]
+                              )?.label || "All"}
+                          </Text>
+
+                          <Image
+                            source={DownArrow}
+                            style={{
+                              width: 16,
+                              height: 16,
+                              marginLeft: 6,
+                            }}
+                          />
+                        </TouchableOpacity>
+
+
+                        {/* SOURCE FILTER */}
+                        <TouchableOpacity
+                          style={[
+                            styles.filterBox,
+                            selectedSource.length > 0 &&
+                            styles.filterBoxActive,
+                          ]}
+                          onPress={() => {
+                            setTempSource(selectedSource);
+                            setSourceSheetOpen(true);
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.filterText,
+                              selectedSource.length > 0 &&
+                              styles.filterTextActive,
+                            ]}
+                          >
+                            {selectedSource.length === 0
+                              ? "Source"
+                              : `${sourceOptions.find(
+                                (item) => item.value === selectedSource[0]
+                              )?.label || selectedSource[0]}${selectedSource.length > 1
+                                ? ` +${selectedSource.length - 1} more`
+                                : ""
+                              }`}
+                          </Text>
+
+                          <Image
+                            source={DownArrow}
+                            style={{
+                              width: 16,
+                              height: 16,
+                              marginLeft: 6,
+                            }}
+                          />
+                        </TouchableOpacity>
+
+                      </View>
+
+
+
+
+                    </View>
+                  </ScrollView>
+                </>
+              }
+
+              renderItem={({ item, index }) => (
+
+
+                <TouchableOpacity
+                  // key={item?.id || index}
+                  // key={item?.transactionId}
+                  style={styles.transactionCard}
+                // onPress={() => handleshowTransaction(item)}
+                >
+                  <View style={styles.leftSection}>
+                    <View
+                      style={[
+                        styles.iconContainer,
+                        {
+                          backgroundColor: item.iconBackgroundColor,
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={item.icon}
+                        style={styles.transactionIcon}
+                      />
+                    </View>
+
+                    <View style={{ marginLeft: 18 }}>
+                      <Text style={styles.transactionTitle}>
+                        {item.title}
+                      </Text>
+
+                      <Text style={styles.transactionDate}>
+                        {item.date}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.rightSection}>
+                    <Text
+                      style={[
+                        styles.transactionAmount,
+                        {
+                          color:
+                            item.type === "income"
+                              ? "#05964B"
+                              : "#EB2D2D",
+                        },
+                      ]}
+                    >
+                      {item.type === "income" ? "+" : "-"} {item.amount}
+                    </Text>
+
+                    {item.account && (
+                      <Image
+                        source={item.account}
+                        style={styles.smallIcon}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+
+              )}
+
               onScroll={Animated.event(
                 [{ nativeEvent: { contentOffset: { y: scrollY } } }],
                 { useNativeDriver: false }
               )}
+
               scrollEventThrottle={16}
-            >
-
-              {/* 
-              <Animated.View style={{ opacity: bankListOpacity }}>
-                <View style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  paddingHorizontal: 16,
-                  alignItems: "center",
-                  marginTop: 33, marginBottom: 10
-                }}>
-                  <Text style={styles.sectionTitle}>Bank List</Text>
-
-                  <TouchableOpacity
-                    style={[
-                      styles.addBankBtn,
-                      !canWriteBanking && { opacity: 0.4 }
-                    ]}
-                    disabled={!canWriteBanking}
-                    onPress={handleAddBanking}>
-                    <Text style={styles.addBankText}>Add Bank</Text>
-                  </TouchableOpacity>
-                </View>
-              </Animated.View> */}
-
-
-              <Animated.View style={{ height: bankListHeight, opacity: bankListOpacity, }}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {mappedBankList.map((item, index) => {
-
-                    const type = item.raw?.accountType;
-
-                    return (
-
-                      <TouchableOpacity
-                        // key={item.id}
-                        key={`${item.id}-${index}`}
-                        onPress={() => {
-                          navigation.navigate("BankingDetails", {
-                            bankDetails: item?.raw,
-                            bankId: item?.id,
-                          })
-                          console.log("item", item?.raw,);
-
-                          getBankOverview(activeHostelId, item?.id);
-                        }
-
-                        }
-                        style={[
-                          styles.bankCard,
-
-                          type === "CASH" && styles.cashCard,
-
-                          type === "CARD" && styles.creditCard,
-
-                          type === "BANK" && styles.bankAccountCard,
-                        ]}
-                      >
-
-                        {/* HEADER */}
-
-                        <View style={styles.cardHeader}>
-
-                          <View style={styles.headerLeft}>
-
-                            <View
-                              style={[
-                                styles.iconCircle,
-
-                                type === "BANK" && {
-                                  backgroundColor: "#EEF2FF"
-                                },
-
-                                type === "CASH" && {
-                                  backgroundColor: "#E9FFF1"
-                                },
-
-                                type === "CARD" && {
-                                  backgroundColor: "#FFF3E8"
-                                }
-
-                              ]}
-                            >
-
-                              <Image
-                                source={
-                                  type === "BANK"
-                                    ? BankIcon
-                                    : type === "CASH"
-                                      ? CashIcon
-                                      : CardIcon
-                                }
-                                style={styles.bankIcon}
-                              />
-
-                            </View>
-
-                            <View>
-
-                              {/* <Text style={styles.bankName}>
-              {type === "CASH"
-                ? "Petty Cash"
-                : item.title}
-                
-            </Text> */}
-
-                              <Text style={styles.bankName}>
-                                {item?.title}
-                              </Text>
-
-                              {/* <Text style={styles.bankType}>
-                                {type === "BANK"
-                                  ? "Bank Account"
-                                  : type === "CASH"
-                                    ? "Cash Account"
-                                    : "Credit Card"}
-                              </Text> */}
-
-                              <Text style={styles.bankType}>
-                                {item?.subtitle}
-                              </Text>
-
-                            </View>
-
-                          </View>
-
-                          <TouchableOpacity>
-                            <Image source={ThreeDotsIcon} style={styles.moreIcon} />
-                          </TouchableOpacity>
-
-                        </View>
-
-                        {/* BALANCE */}
-
-                        {/* <Text style={styles.balanceAmount}>
-                          ₹{Number(item.balance).toLocaleString("en-IN")}
-                        </Text> */}
-
-                        <Text style={styles.balanceAmount}>
-                          ₹{item?.balance.toLocaleString("en-IN")}
-                        </Text>
-
-                        <Text style={styles.balanceLabel}>
-                          Balance
-                        </Text>
-
-                        {/* CHIPS */}
-
-                        <View style={styles.tagRow}>
-
-                          {/* {
-                            type !== "CASH" && (
-                              <View style={styles.locationChip}>
-                                <Text>📍 {item?.branch}</Text>
-                              </View>
-                            )
-                          } */}
-
-                          {item.raw.accountType === "BANK" && item.branch ? (
-                            <View style={styles.locationChip}>
-                              <Text numberOfLines={1}>
-                                📍 {item.branch}
-                              </Text>
-                            </View>
-                          ) : null}
-
-                          {/* {item?.raw?.accountType === "BANK" && (
-  <View style={styles.upiChip}>
-    <Text numberOfLines={1}>
-      A/C : {item.acc}
-    </Text>
-  </View>
-)} */}
-
-
-                          {/* {item.raw.accountType === "CASH" && (
-  <View style={styles.upiChip}>
-    <Text numberOfLines={1}>
-      Cash Account
-    </Text>
-  </View>
-)} */}
-                          {
-                            type === "BANK" && item?.upiId ? (
-                              <View style={styles.upiChip}>
-                                <Text numberOfLines={1}>
-                                  UPI : {item.acc}
-                                </Text>
-                              </View>
-                            ) : null
-                          }
-
-                          {
-                            type === "CARD" && (
-                              <View style={styles.upiChip}>
-                                <Text numberOfLines={1}>
-                                  **** **** {item.acc?.slice(-4)}
-                                </Text>
-                              </View>
-                            )
-                          }
-
-                          {item?.isDefaultAccount && (
-                            <View style={styles.defaultChip}>
-                              <Text style={styles.defaultChipText}>Default A/C</Text>
-                            </View>
-                          )}
-
-                        </View>
-
-                        <Text style={styles.lastTxn}>
-                          {
-                            type === "CARD"
-                              ? "Due Date : 10 Jun 2026"
-                              : `Last Txn :   ${(item?.lastTransactionDate)}`
-                          }
-                        </Text>
-
-                      </TouchableOpacity>
-
-                    );
-
-                  })}
-
-                  {/* ADD CARD */}
-
-                  <TouchableOpacity
-                    // style={[styles.addNewCard, !canWriteBanking && { opacity: 0.4 }]}
-                    // disabled={!canWriteBanking}
-
-                    style={[
-                      styles.addNewCard,
-                      (!canWriteBanking || !isSubscriptionAllow) && {
-                        opacity: 0.4,
-                      },
-                    ]}
-                    disabled={!canWriteBanking || !isSubscriptionAllow}
-                    onPress={handleAddBanking}
-                  >
-
-                    <View style={{ height: 50, width: 50 }}>
-                      <Image source={AddBankIcon} style={styles.addIcon} />
-                    </View>
-
-                    <Text style={styles.addText}>
-                      Add New
-                    </Text>
-
-                    <Text style={styles.addText}>
-                      Bank / Cash
-                    </Text>
-
-                  </TouchableOpacity>
-                </ScrollView>
-              </Animated.View>
-
-
-
-
-              {/* <View style={[styles.rowBetween, { marginBottom: 15, marginTop: 20 }]}>
-                <Text style={styles.sectionTitle}>All Transactions</Text>
-              </View> */}
-
-              <ScrollView
-                horizontal
-                persistentScrollbar={false}
-                showsHorizontalScrollIndicator={false}
-                style={{ flexGrow: 0 }}
-                contentContainerStyle={{
-                  paddingLeft: 16,
-                  paddingRight: 12,
-                }}
-              >
-                <View style={styles.filterRow}>
-
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                    }}
-                  >
-
-                    {/* DATE FILTER */}
-                    <TouchableOpacity
-                      style={[
-                        styles.filterBox,
-                        selectedDateFilter.length > 0 &&
-                        selectedDateFilter[0] !== "ALL" &&
-                        styles.filterBoxActive,
-                      ]}
-                      onPress={() => {
-                        setTempDateFilter(selectedDateFilter);
-                        setDateSheetOpen(true);
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.filterText,
-                          selectedDateFilter.length > 0 &&
-                          selectedDateFilter[0] !== "ALL" &&
-                          styles.filterTextActive,
-                        ]}
-                      >
-                        {selectedDateFilter.length === 0 ||
-                          selectedDateFilter[0] === "ALL"
-                          ? "All"
-                          : dateFilterOptions.find(
-                            (item) => item.value === selectedDateFilter[0]
-                          )?.label || "All"}
-                      </Text>
-
-                      <Image
-                        source={DownArrow}
-                        style={{
-                          width: 16,
-                          height: 16,
-                          marginLeft: 6,
-                        }}
-                      />
-                    </TouchableOpacity>
-
-
-                    {/* SOURCE FILTER */}
-                    <TouchableOpacity
-                      style={[
-                        styles.filterBox,
-                        selectedSource.length > 0 &&
-                        styles.filterBoxActive,
-                      ]}
-                      onPress={() => {
-                        setTempSource(selectedSource);
-                        setSourceSheetOpen(true);
-                      }}
-                    >
-                      <Text
-                        style={[
-                          styles.filterText,
-                          selectedSource.length > 0 &&
-                          styles.filterTextActive,
-                        ]}
-                      >
-                        {selectedSource.length === 0
-                          ? "Source"
-                          : `${sourceOptions.find(
-                            (item) => item.value === selectedSource[0]
-                          )?.label || selectedSource[0]}${selectedSource.length > 1
-                            ? ` +${selectedSource.length - 1} more`
-                            : ""
-                          }`}
-                      </Text>
-
-                      <Image
-                        source={DownArrow}
-                        style={{
-                          width: 16,
-                          height: 16,
-                          marginLeft: 6,
-                        }}
-                      />
-                    </TouchableOpacity>
-
-                  </View>
-
-
-                  {/* FULL FILTER */}
-                  {/* <TouchableOpacity
-                    style={[
-                      styles.filterIconBtn,
-                      { marginLeft: 5 },
-                    ]}
-                    disabled={!canReadBanking}
-                    onPress={() => setShowFilter(true)}
-                  >
-                    <Image
-                      source={FilterIcon}
-                      style={{
-                        width: 18,
-                        height: 18,
-                      }}
-                    />
-                  </TouchableOpacity> */}
-
-                </View>
-              </ScrollView>
-
-
-
-              <View style={{ paddingHorizontal: 20 }}>
-                {/* <Text style={styles.todayText}>Today</Text> */}
-
-                {mappedTransactions.map((item, index) => (
-                  <TouchableOpacity
-                    key={item?.id || index}
-                    // key={item?.transactionId}
-                    style={styles.transactionCard}
-                  // onPress={() => handleshowTransaction(item)}
-                  >
-                    <View style={styles.leftSection}>
-                      <View
-                        style={[
-                          styles.iconContainer,
-                          {
-                            backgroundColor: item.iconBackgroundColor,
-                          },
-                        ]}
-                      >
-                        <Image
-                          source={item.icon}
-                          style={styles.transactionIcon}
-                        />
-                      </View>
-
-                      <View style={{ marginLeft: 18 }}>
-                        <Text style={styles.transactionTitle}>
-                          {item.title}
-                        </Text>
-
-                        <Text style={styles.transactionDate}>
-                          {item.date}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.rightSection}>
-                      <Text
-                        style={[
-                          styles.transactionAmount,
-                          {
-                            color:
-                              item.type === "income"
-                                ? "#05964B"
-                                : "#EB2D2D",
-                          },
-                        ]}
-                      >
-                        {item.type === "income" ? "+" : "-"} {item.amount}
-                      </Text>
-
-                      {item.account && (
-                        <Image
-                          source={item.account}
-                          style={styles.smallIcon}
-                        />
-                      )}
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </View>
-
-
-
-
-              {mappedTransactions && mappedTransactions?.length === 0 &&
+              keyExtractor={(item, index) =>
+                `${item?.transactionId ?? item?.id}-${index}`
+              }
+              onEndReached={() => {
+                if (
+                  !transactionLoading &&
+                  hasMoreTransactions
+                ) {
+                  fetchTransactions(transactionPage + 1);
+                }
+              }}
+              onEndReachedThreshold={0.5}
+
+              contentContainerStyle={{
+                paddingTop: 110,
+                paddingHorizontal:20,
+                paddingBottom: 30,
+              }}
+
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
                 <View style={{ alignItems: "center", marginTop: 70 }}>
                   <Image
                     source={EmptyStateImage}
                     style={{ width: 250, height: 180, }}
                   />
                   <Text style={{ marginTop: 12, fontSize: 16, color: "#888" }}>
-                    No Transaction Found
+                    No Transaction Found 
                   </Text>
                 </View>
               }
+            />
 
-            </Animated.ScrollView>
+            {/* <FlatList
+              data={mappedTransactions}
+              onEndReachedThreshold={0.5}
+              //              keyExtractor={(item, index) =>
+              //   String(item?.id ?? item?.transactionId ?? index)
+              // }
+              keyExtractor={(item, index) =>
+                `${item?.transactionId ?? item?.id}-${index}`
+              }
+              onEndReached={() => {
+                if (
+                  !transactionLoading &&
+                  hasMoreTransactions
+                ) {
+                  fetchTransactions(transactionPage + 1);
+                }
+              }}
+
+              renderItem={({ item, index }) => (
+
+
+                <TouchableOpacity
+                  // key={item?.id || index}
+                  // key={item?.transactionId}
+                  style={styles.transactionCard}
+                // onPress={() => handleshowTransaction(item)}
+                >
+                  <View style={styles.leftSection}>
+                    <View
+                      style={[
+                        styles.iconContainer,
+                        {
+                          backgroundColor: item.iconBackgroundColor,
+                        },
+                      ]}
+                    >
+                      <Image
+                        source={item.icon}
+                        style={styles.transactionIcon}
+                      />
+                    </View>
+
+                    <View style={{ marginLeft: 18 }}>
+                      <Text style={styles.transactionTitle}>
+                        {item.title}
+                      </Text>
+
+                      <Text style={styles.transactionDate}>
+                        {item.date}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.rightSection}>
+                    <Text
+                      style={[
+                        styles.transactionAmount,
+                        {
+                          color:
+                            item.type === "income"
+                              ? "#05964B"
+                              : "#EB2D2D",
+                        },
+                      ]}
+                    >
+                      {item.type === "income" ? "+" : "-"} {item.amount}
+                    </Text>
+
+                    {item.account && (
+                      <Image
+                        source={item.account}
+                        style={styles.smallIcon}
+                      />
+                    )}
+                  </View>
+                </TouchableOpacity>
+
+              )} /> */}
 
 
 

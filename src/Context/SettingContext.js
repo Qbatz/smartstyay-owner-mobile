@@ -631,6 +631,7 @@ export const SettingProvider = ({ children }) => {
 
 
   const getTenantRegisterReport = async (hostelId, filters = {}) => {
+    console.log("karana",filters)
     try {
       setLoading(true);
 

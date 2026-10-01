@@ -242,6 +242,7 @@ const ReceiptFilterSheet = ({
       type: type,
       modes: paymentmode,
       collectedBy: collectedBy,
+      period:selectedPeriod,
       minAmount: minAmount,
       maxAmount: maxAmount,
     };
@@ -253,6 +254,7 @@ const ReceiptFilterSheet = ({
       (filters.type && filters.type.length > 0) ||
       (filters.modes && filters.modes.length > 0) ||
       (filters.collectedBy && filters.collectedBy.length > 0) ||
+      filters?.period ||
       !!filters.minAmount?.toString().trim() ||
       !!filters.maxAmount?.toString().trim();;
 
@@ -364,7 +366,7 @@ const ReceiptFilterSheet = ({
               onChange={setType}
             />
 
-            <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, }}>
+            {/* <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, }}>
 
               <View style={{ flex: 1 }}>
                 <Text style={styles.label}>From </Text>
@@ -376,10 +378,7 @@ const ReceiptFilterSheet = ({
             </View>
 
             <View style={styles.dateRow}>
-              {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-              <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-              <Image source={CalendarIcon} style={styles.calIcon} />
-            </TouchableOpacity> */}
+              
               <TouchableOpacity
                 style={styles.dateBox}
                 onPress={() => setOpenFrom(true)}
@@ -406,11 +405,8 @@ const ReceiptFilterSheet = ({
                 </View>
               </TouchableOpacity>
 
-              {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-              <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-              <Image source={CalendarIcon} style={styles.calIcon} />
-            </TouchableOpacity> */}
-            </View>
+              
+            </View> */}
 
 
 
@@ -418,23 +414,34 @@ const ReceiptFilterSheet = ({
             <View style={styles.quickRow}>
               <TouchableOpacity style={[
                 styles.quickBtn,
-                selectedPeriod === "today" && styles.activeQuickBtn,
-              ]} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-                <Text style={styles.quickText}>Today</Text>
+                selectedPeriod === "THIS_MONTH" && styles.activeQuickBtn,
+              ]} onPress={() => {setSelectedPeriod("THIS_MONTH")
+                //  setFromDate(dayjs()); setToDate(dayjs());
+                  }}>
+                <Text style={[styles.quickText ,  selectedPeriod === "THIS_MONTH" && {color:'#ffffff'}]}>
+                  This Month</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={[
                 styles.quickBtn,
-                selectedPeriod === "week" && styles.activeQuickBtn,
-              ]} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-                <Text style={styles.quickText}>This Week</Text>
+                selectedPeriod === "LAST_3_MONTHS" && styles.activeQuickBtn,
+              ]} onPress={() => {
+                setSelectedPeriod("LAST_3_MONTHS")
+                //  setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week"));
+                  }}>
+                <Text style={[styles.quickText ,  selectedPeriod === "LAST_3_MONTHS" && {color:'#ffffff'}]}>
+                  Last 3 Months</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={[
                 styles.quickBtn,
-                selectedPeriod === "month" && styles.activeQuickBtn,
-              ]} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-                <Text style={styles.quickText}>This Month</Text>
+                selectedPeriod === "LAST_6_MONTHS" && styles.activeQuickBtn,
+              ]} onPress={() => { 
+                setSelectedPeriod("LAST_6_MONTHS")
+                // setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); 
+                }}>
+                <Text style={[styles.quickText ,  selectedPeriod === "LAST_6_MONTHS" && {color:'#ffffff'}]}>
+                  Last 6 Months</Text>
               </TouchableOpacity>
             </View>
 
