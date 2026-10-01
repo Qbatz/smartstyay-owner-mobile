@@ -7,12 +7,14 @@ import {
   ScrollView,
   TextInput,
   Image,
-  Platform, TouchableWithoutFeedback, KeyboardAvoidingView, BackHandler, Keyboard
+  Platform, TouchableWithoutFeedback, KeyboardAvoidingView, BackHandler, Keyboard, FlatList
 } from "react-native";
 
 import CalendarIcon from "../../Assets/Images/calendar.png";
 import BackIcon from "../../Assets/Images/Arrow_left.png";
 import UserImage from "../../Assets/Images/User.png";
+import BankIcon from "../../Assets/Images/bankBlue.png";
+import CashIcon from "../../Assets/Images/Cash_Icon.png";
 import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from '../../Context/CustomerContext';
@@ -75,10 +77,15 @@ export default function AddBookingScreen({ navigation, route }) {
   const bookingDateRef = useRef(null);
   const joiningDateRef = useRef(null);
 
+  const accountRef = useRef(null);
+  const [paymentDropdownPos, setPaymentDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+
   const [datePickerPos, setDatePickerPos] = useState({ top: 0 });
   const [datePickerTop, setDatePickerTop] = useState(0);
 
   const [isSubmitClicked, setIsSubmitClicked] = useState(false)
+
+
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -146,7 +153,7 @@ export default function AddBookingScreen({ navigation, route }) {
 
 
     if (res.success) {
-      setAccountList(res?.data?.bankDetails || []);
+      setAccountList(res?.data?.allPaymentMethods || []);
       setBeds(res?.data?.listBeds);
       console.log("Beds.......?????", beds)
     } else {
@@ -277,12 +284,17 @@ export default function AddBookingScreen({ navigation, route }) {
 
     if (isSubmitClicked) return;
 
+    const selectedPayment = AccountsList.find(item =>
+      item?.bankId === accountSelected?.bankId &&
+      item?.paymentMethodId === accountSelected?.paymentMethodId)
+
+
     const payload = {
       bookingDate: bookingDate.format("DD-MM-YYYY"),
       joiningDate: joiningDate.format("DD-MM-YYYY"),
       bookingAmount: Number(amount),
       customerId: selectedItem.customerId,
-      bankId: accountSelected?.bankId,
+      bankId: selectedPayment?.bankId,
       floorId: selectedFloor.id,
       roomId: selectedRoom.id,
       bedId: selectedBed.bedId,
@@ -370,29 +382,21 @@ export default function AddBookingScreen({ navigation, route }) {
           </View>
 
 
-          {/* <ScrollView contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 20 }}> */}
           <ScrollView
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled={true}
+            scrollEnabled={!accountOpen && !floorOpen && !roomOpen && !bedOpen}
             contentContainerStyle={{
               paddingHorizontal: 20,
-              paddingBottom: 30,     // ✅ 180 remove
+              paddingBottom: 30,
               backgroundColor: "#fff",
             }}
-            style={{ flex: 1, backgroundColor: "#fff" }}  // ✅ IMPORTANT
+            style={{ flex: 1, backgroundColor: "#fff" }}
           >
 
-
-
             <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
-            {/* <TouchableOpacity
 
-            onPress={() => {
-
-              setShowDatePicker(true);
-            }}
-            style={styles.inputBox}
-          > */}
             <TouchableOpacity
               ref={bookingDateRef}
               onPress={() => {
@@ -670,68 +674,235 @@ export default function AddBookingScreen({ navigation, route }) {
                 type="error"
               />
             )}
-            <Text style={styles.label}>Mode Of Transaction <Text style={{ color: "red" }}>*</Text></Text>
-            <View style={{ position: "relative" }}>
+
+
+            <Text style={styles.label}>
+              Mode Of Transaction{" "}
+              <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            <View style={{ position: "relative", zIndex: 1000 }}>
+
               <TouchableOpacity
-                // onPress={() => setAccountopen(!accountOpen)}
+                ref={accountRef}
+                style={styles.inputBox}
+                activeOpacity={0.8}
                 onPress={() => {
-                  setAccountopen(!accountOpen);
                   setFloorOpen(false);
                   setRoomOpen(false);
                   setBedOpen(false);
+                  setBankIdError("");
+
+                  if (accountOpen) {
+                    setAccountopen(false);
+                    return;
+                  }
+
+                  Keyboard.dismiss();             
+                  setTimeout(() => {                
+                    accountRef.current?.measureInWindow((x, y, width, height) => {
+                      setPaymentDropdownPos({ top: y + height, left: x, width });
+                      setAccountopen(true);
+                    });
+                  }, 150);                       
                 }}
-                style={styles.inputBox}
               >
 
-                <Text style={styles.selectText}>
-                  {/* {accountSelected
-                    ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
-                    : "Select Bank"} */}
-                  {accountSelected
-                    ? `${accountSelected.holderName} - ${accountSelected.bankName}`
-                    : "Select Mode Of Transaction"}
-                </Text>
-                <Image source={DownArrow} style={styles.arrow} />
+                {accountSelected ? (
+                  <View style={styles.selectedPaymentContainer}>
+
+                    {/* PAYMENT ICON */}
+                    <View
+                      style={[
+                        styles.paymentIcon,
+                        accountSelected?.accountType === "CASH"
+                          ? styles.cashIconBackground
+                          : styles.bankIconBackground,
+                      ]}
+                    >
+                      <Image
+                        source={
+                          accountSelected?.accountType === "CASH"
+                            ? CashIcon
+                            : BankIcon
+                        }
+                        style={styles.paymentIconImage}
+                      />
+                    </View>
+
+                    {/* PAYMENT DETAILS */}
+                    <View style={styles.selectedPaymentDetails}>
+
+                      <Text
+                        style={styles.selectedPaymentName}
+                        numberOfLines={1}
+                      >
+                        {accountSelected?.displayName ||
+                          accountSelected?.accountHolderName ||
+                          "Account"}
+                      </Text>
+
+                      <Text
+                        style={styles.selectedPaymentSubText}
+                        numberOfLines={1}
+                      >
+                        {accountSelected?.accountType === "CASH"
+                          ? accountSelected?.cashAccountType || "Petty Cash"
+                          : accountSelected?.paymentMethod ||
+                          accountSelected?.bankAccountType ||
+                          accountSelected?.bankName ||
+                          accountSelected?.accountType ||
+                          "Bank"}
+                      </Text>
+
+                    </View>
+
+                  </View>
+                ) : (
+                  <Text style={styles.placeholderText}>
+                    Select Mode Of Transaction
+                  </Text>
+                )}
+
+                <Image
+                  source={DownArrow}
+                  style={styles.arrow}
+                />
+
               </TouchableOpacity>
 
+
               {accountOpen && (
-                <View style={styles.dropdownMenu}>
-                  <ScrollView       nestedScrollEnabled
-                          scrollEnabled={AccountsList?.length > 3}
-                          showsVerticalScrollIndicator={false}>
-                    {/* {AccountsList.map((v, i) => (
-                      <TouchableOpacity
-                        key={i}
-                        style={styles.option}
-                        onPress={() => {
-                          setAccountSelected(v);
-                          setAccountopen(false);
-                          setBankIdError("")
-                        }}
-                      >
-                        <Text style={styles.optionText}>{v.accountHolderName}-{v.accountType}</Text>
-                      </TouchableOpacity>
-                    ))} */}
-                    {AccountsList?.map((v) => (
-                      <TouchableOpacity
-                        key={v.bankId}
-                        style={styles.option}
-                        onPress={() => {
-                          setAccountSelected(v);
-                          setAccountopen(false);
-                          setBankIdError("");
-                        }}
-                      >
-                        <Text style={styles.optionText}>
-                          {v?.holderName} - {v?.bankName}
+                <View style={styles.paymentDropdown}>
+                  <ScrollView
+                    style={{ maxHeight: 220 }}
+                    contentContainerStyle={{ flexGrow: 0 }}
+                    nestedScrollEnabled={true}
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={true}
+                    persistentScrollbar={true}
+                  >
+                    {AccountsList?.length > 0 ? (
+                      AccountsList.map((payment, index) => {
+                        const isSelected =
+                          accountSelected?.paymentMethodId === payment?.paymentMethodId &&
+                          accountSelected?.bankId === payment?.bankId;
+
+                        const isCash = payment?.accountType === "CASH";
+
+                        return (
+                          <TouchableOpacity
+                            key={`${payment?.bankId}-${payment?.paymentMethodId}-${index}`}
+                            activeOpacity={0.7}
+                            style={[
+                              styles.paymentMethodRow,
+                              isSelected && styles.paymentMethodRowSelected,
+                            ]}
+                            onPress={() => {
+                              setAccountSelected(payment);
+                              setAccountopen(false);
+                              setBankIdError("");
+                            }}
+                          >
+                            {/* ICON */}
+                            <View
+                              style={[
+                                styles.paymentMethodIcon,
+                                isCash
+                                  ? styles.cashIconBg
+                                  : styles.bankIconBg,
+                              ]}
+                            >
+                              <Image
+                                source={isCash ? CashIcon : BankIcon}
+                                style={{
+                                  width: 20,
+                                  height: 20,
+                                }}
+                              />
+                            </View>
+
+                            {/* ACCOUNT DETAILS */}
+                            <View style={styles.paymentMethodDetails}>
+                              <Text
+                                style={styles.paymentMethodName}
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                              >
+                                {payment?.displayName ||
+                                  payment?.accountHolderName ||
+                                  "Account"}
+                              </Text>
+
+                              <Text
+                                style={styles.paymentMethodSubText}
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                              >
+                                {isCash
+                                  ? payment?.cashAccountType || "Petty Cash"
+                                  : payment?.bankName
+                                    ? `${payment.bankName}${payment?.paymentMethod
+                                      ? ` - ${payment.paymentMethod}`
+                                      : ""
+                                    }`
+                                    : payment?.paymentMethod ||
+                                    payment?.bankAccountType ||
+                                    "Bank Account"}
+                              </Text>
+                            </View>
+
+                            {/* CASH / BANK */}
+                            <View
+                              style={[
+                                styles.paymentTypeBadge,
+                                isCash
+                                  ? styles.cashBadge
+                                  : styles.bankBadge,
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.paymentTypeText,
+                                  isCash
+                                    ? styles.cashText
+                                    : styles.bankText,
+                                ]}
+                              >
+                                {isCash ? "CASH" : "BANK"}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })
+                    ) : (
+                      <View style={{ padding: 15 }}>
+                        <Text
+                          style={{
+                            color: "#999",
+                            textAlign: "center",
+                            fontFamily: "Gilroy-Medium",
+                          }}
+                        >
+                          No Payment Methods Available
                         </Text>
-                      </TouchableOpacity>
-                    ))}
+                      </View>
+                    )}
                   </ScrollView>
                 </View>
               )}
+
             </View>
-            {bankIdError && <ErrorMessage message={bankIdError} type="error" />}
+
+            {bankIdError && (
+              <ErrorMessage
+                message={bankIdError}
+                type="error"
+              />
+            )}
+
+
+
             <Text style={styles.label}>Transaction Id</Text>
             <TextInput
               placeholder="Enter Transaction Id"
@@ -767,6 +938,111 @@ export default function AddBookingScreen({ navigation, route }) {
           }, 300);
         }}
       />
+
+
+      {accountOpen && (
+        <>
+          <TouchableWithoutFeedback onPress={() => setAccountopen(false)}>
+            <View style={styles.dropdownBackdrop} />
+          </TouchableWithoutFeedback>
+
+          <View
+            style={[
+              styles.paymentDropdown,
+              {
+                top: paymentDropdownPos.top,
+                left: paymentDropdownPos.left,
+                width: paymentDropdownPos.width,
+              },
+            ]}
+          >
+            <ScrollView
+              style={{ maxHeight: 220 }}
+              contentContainerStyle={{ flexGrow: 0 }}
+              nestedScrollEnabled={true}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={true}
+              persistentScrollbar={true}
+            >
+              {AccountsList?.length > 0 ? (
+                AccountsList.map((payment, index) => {
+                  const isSelected =
+                    accountSelected?.paymentMethodId === payment?.paymentMethodId &&
+                    accountSelected?.bankId === payment?.bankId;
+
+                  const isCash = payment?.accountType === "CASH";
+
+                  return (
+                    <TouchableOpacity
+                      key={`${payment?.bankId}-${payment?.paymentMethodId}-${index}`}
+                      activeOpacity={0.7}
+                      style={[
+                        styles.paymentMethodRow,
+                        isSelected && styles.paymentMethodRowSelected,
+                      ]}
+                      onPress={() => {
+                        setAccountSelected(payment);
+                        setAccountopen(false);
+                        setBankIdError("");
+                      }}
+                    >
+                      <View
+                        style={[
+                          styles.paymentMethodIcon,
+                          isCash ? styles.cashIconBg : styles.bankIconBg,
+                        ]}
+                      >
+                        <Image
+                          source={isCash ? CashIcon : BankIcon}
+                          style={{ width: 20, height: 20 }}
+                        />
+                      </View>
+
+                      <View style={styles.paymentMethodDetails}>
+                        <Text style={styles.paymentMethodName} numberOfLines={1} ellipsizeMode="tail">
+                          {payment?.displayName || payment?.accountHolderName || "Account"}
+                        </Text>
+
+                        <Text style={styles.paymentMethodSubText} numberOfLines={1} ellipsizeMode="tail">
+                          {isCash
+                            ? payment?.cashAccountType || "Petty Cash"
+                            : payment?.bankName
+                              ? `${payment.bankName}${payment?.paymentMethod ? ` - ${payment.paymentMethod}` : ""}`
+                              : payment?.paymentMethod || payment?.bankAccountType || "Bank Account"}
+                        </Text>
+                      </View>
+
+                      <View
+                        style={[
+                          styles.paymentTypeBadge,
+                          isCash ? styles.cashBadge : styles.bankBadge,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.paymentTypeText,
+                            isCash ? styles.cashText : styles.bankText,
+                          ]}
+                        >
+                          {isCash ? "CASH" : "BANK"}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })
+              ) : (
+                <View style={{ padding: 15 }}>
+                  <Text style={{ color: "#999", textAlign: "center", fontFamily: "Gilroy-Medium" }}>
+                    No Payment Methods Available
+                  </Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        </>
+      )}
+
+
 
       {showDatePicker && (
         <View style={styles.datePickerOverlay}>
@@ -959,7 +1235,7 @@ const styles = StyleSheet.create({
     // zIndex: 9999,
     // elevation: 20,
     // overflow: "hidden",
-      position: "absolute",
+    position: "absolute",
     top: 50,          // 👈 input height
     left: 0,
     right: 0,
@@ -1052,6 +1328,236 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontFamily: "Gilroy-Bold"
   },
+  selectedPaymentContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
 
+  selectedPaymentDetails: {
+    flex: 1,
+    marginLeft: 10,
+  },
+
+  selectedPaymentName: {
+    fontSize: 15,
+    color: "#111",
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  selectedPaymentSubText: {
+    fontSize: 12,
+    color: "#737373",
+    marginTop: 3,
+    fontFamily: "Gilroy-Medium",
+  },
+
+  placeholderText: {
+    color: "#777",
+    fontSize: 15,
+    fontFamily: "Gilroy-Regular",
+  },
+
+  paymentDropdown: {
+    position: "absolute",   // keep — but now top/left/width come dynamically
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D9DDE5",
+    borderRadius: 16,
+    zIndex: 9999,
+    elevation: 10,
+    maxHeight: 220,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+  },
+
+
+  dropdownBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9998,
+  },
+
+  paymentOption: {
+    minHeight: 70,
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F1F1",
+  },
+
+  paymentOptionSelected: {
+    backgroundColor: "#F4F7FF",
+  },
+
+  paymentIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 22,
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  paymentIconImage: {
+    width: 21,
+    height: 21,
+  },
+
+  cashIconBackground: {
+    backgroundColor: "#E2F7EA",
+  },
+
+  bankIconBackground: {
+    backgroundColor: "#E5EEFF",
+  },
+
+  paymentDetails: {
+    flex: 1,
+    marginLeft: 11,
+    minWidth: 0,
+  },
+
+  paymentName: {
+    fontSize: 15,
+    color: "#111",
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  paymentSubText: {
+    fontSize: 12,
+    color: "#737373",
+    marginTop: 3,
+    fontFamily: "Gilroy-Medium",
+  },
+
+  paymentTypeBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 14,
+  },
+
+  paymentMethodRow: {
+    minHeight: 82,
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+
+    backgroundColor: "#FFFFFF",
+
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F1F3",
+  },
+
+  paymentMethodRowSelected: {
+    backgroundColor: "#F5F7FF",
+  },
+
+  paymentMethodIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    marginRight: 12,
+  },
+
+  cashIconBg: {
+    backgroundColor: "#DDFBE8",
+  },
+
+  bankIconBg: {
+    backgroundColor: "#DCE8FF",
+  },
+
+  paymentMethodDetails: {
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 8,
+    minWidth: 0,
+  },
+
+  paymentMethodName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#222222",
+  },
+
+  paymentMethodSubText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#697386",
+    marginTop: 3,
+  },
+
+  paymentTypeBadge: {
+    minWidth: 64,
+
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+
+    borderRadius: 20,
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  cashBadge: {
+    backgroundColor: "#DDFBE8",
+  },
+
+  bankBadge: {
+    backgroundColor: "#DCE8FF",
+  },
+
+  paymentTypeText: {
+    fontSize: 11,
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  cashText: {
+    color: "#07883C",
+  },
+
+  bankText: {
+    color: "#2457E6",
+  },
+
+  cashBadge: {
+    backgroundColor: "#E2F7EA",
+  },
+
+  bankBadge: {
+    backgroundColor: "#E5EEFF",
+  },
+
+  paymentTypeText: {
+    fontSize: 10,
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  cashText: {
+    color: "#16803C",
+  },
+
+  bankText: {
+    color: "#285FDB",
+  },
 
 });

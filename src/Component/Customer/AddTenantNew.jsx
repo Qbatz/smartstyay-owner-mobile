@@ -43,7 +43,8 @@ import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 // import DatePicker from "react-native-date-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { UseSetting } from "../../Context/SettingContext";
-
+import BankIcon from "../../Assets/Images/bankBlue.png";
+import CashIcon from "../../Assets/Images/Cash_Icon.png";
 
 
 
@@ -131,6 +132,8 @@ export default function AddTenantNewform({ navigation, route }) {
     const { height: SCREEN_HEIGHT } = Dimensions.get("window");
     const scrollRef = useRef(null);
     const transactionRef = useRef(null);
+    const accountRef = useRef(null);
+    const [paymentDropdownPos, setPaymentDropdownPos] = useState({ top: 0, left: 0, width: 0 });
     const [isCheckingIn, setIsCheckingIn] = useState(false);
     const [showProfileSheet, setShowProfileSheet] = useState(false);
 
@@ -1583,12 +1586,59 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
         if (res.success) {
-            setAccountList(res?.data?.bankDetails || []);
+            setAccountList(res?.data?.allPaymentMethods || []);
             setBeds(res?.data?.listBeds);
         } else {
             setBeds([]);
+            setAccountList([]);
         }
     };
+
+
+    const transactionOptions = (AccountsList || []).map((item, index) => ({
+        id: `${item?.bankId || "account"}-${item?.paymentMethodId || "method"}-${index}`,
+
+        bankId: item?.bankId,
+
+        paymentMethodId: item?.paymentMethodId,
+
+        accountHolderName:
+            item?.accountHolderName ||
+            item?.displayName ||
+            "Account",
+
+        displayName:
+            item?.displayName ||
+            item?.accountHolderName ||
+            "Account",
+
+        accountType: item?.accountType,
+
+        bankName: item?.bankName,
+
+        paymentMethod: item?.paymentMethod,
+
+        cashAccountType: item?.cashAccountType,
+
+        bankAccountType: item?.bankAccountType,
+
+        accountNumber: item?.accountNumber,
+
+        branchName: item?.branchName,
+
+        // second line
+        subLabel:
+            item?.accountType === "CASH"
+                ? item?.cashAccountType || "Petty Cash"
+                : item?.bankName
+                    ? `${item.bankName}${item?.paymentMethod
+                        ? ` - ${item.paymentMethod}`
+                        : ""
+                    }`
+                    : item?.paymentMethod ||
+                    item?.bankAccountType ||
+                    "Bank Account",
+    }));
 
     const selectType = (id, type) => {
 
@@ -2045,7 +2095,7 @@ export default function AddTenantNewform({ navigation, route }) {
                     roomId: roomSelected?.id || null,
                     bedId: bedSelected?.bedId || null,
 
-                    bankId: accountSelected?.bankingId || "",
+                    bankId: accountSelected?.bankId || "",
                     referenceNumber: referenceNumber || "",
 
                     advanceAmount: Number(advanceAmount || 0),
@@ -2252,7 +2302,7 @@ export default function AddTenantNewform({ navigation, route }) {
                 //     rentalAmount || bedSelected?.rentAmount || 0
                 // ),
 
-                bankId:accountSelected?.bankId,
+                bankId: accountSelected?.bankId,
                 referenceNumber: referenceNumber?.trim() || "",
             };
 
@@ -3688,7 +3738,7 @@ export default function AddTenantNewform({ navigation, route }) {
                         keyboardShouldPersistTaps="handled"
                         keyboardDismissMode="on-drag"
                         showsVerticalScrollIndicator={false}
-                        scrollEnabled={!checkinTenantsOpen}
+                        scrollEnabled={!checkinTenantsOpen && !accountOpen}
 
 
                         contentContainerStyle={{
@@ -4381,7 +4431,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                         <TouchableOpacity
                                             style={[styles.tab, activeTab === "Booking" && styles.tabActive]}
-                                              disabled={activeTab === "Booking"}
+                                            disabled={activeTab === "Booking"}
                                             onPress={() => {
                                                 setActiveTab("Booking");
                                                 setCheckinTenantSelected(null);
@@ -4718,111 +4768,184 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
 
-                                            <Text style={styles.label}>Mode Of Transaction <Text style={{ color: "red" }}>*</Text></Text>
-                                            <View style={{ position: "relative" }}>
-                                                <TouchableOpacity
-                                                    onPress={() => setAccountopen(!accountOpen)}
-                                                    style={styles.inputBox}
-                                                >
-
-                                                    <Text style={styles.selectText}>
-                                                        {/* {accountSelected
-                                                            ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
-                                                            : "Select Bank"} */}
-                                                        {accountSelected
-                                                            ? `${accountSelected.holderName} - ${accountSelected.bankName}`
-                                                            : "Select Mode Of Transaction"}
-                                                    </Text>
-                                                    <Image source={DownArrow} style={styles.arrow} />
-                                                </TouchableOpacity>
-                                                {bankError && (
-                                                    <ErrorMessage message={bankError} type="error" />
-                                                )}
 
 
-                                                {accountOpen && (
-                                                    <View style={styles.dropdownMenu}>
-                                                        <ScrollView     style={{ maxHeight: 160 }}
-                                                            nestedScrollEnabled={true}          // ✅ Android fix
-                                                            keyboardShouldPersistTaps="handled"
-                                                            showsVerticalScrollIndicator={false}>
-                                                            {/* {AccountsList.map((v, i) => (
-                                                                <TouchableOpacity
-                                                                    key={i}
-                                                                    style={styles.option}
-                                                                    onPress={() => {
-                                                                        setAccountSelected(v);
-                                                                        setAccountopen(false);
-                                                                        setBankError("")
-                                                                    }}
-                                                                >
-                                                                    <Text style={styles.optionText}>{v.accountHolderName}-{v.accountType}</Text>
-                                                                </TouchableOpacity>
-                                                            ))} */}
-                                                             {AccountsList?.map((v) => (
-                                                                                  <TouchableOpacity
-                                                                                    key={v.bankId}
-                                                                                    style={styles.option}
-                                                                                    onPress={() => {
-                                                                                      setAccountSelected(v);
-                                                                                      setAccountopen(false);
-                                                                                      setBankError("");
-                                                                                    }}
-                                                                                  >
-                                                                                    <Text style={styles.optionText}>
-                                                                                      {v?.holderName} - {v?.bankName}
-                                                                                    </Text>
-                                                                                  </TouchableOpacity>
-                                                                                ))}
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
+                                            <Text style={styles.label}>
+                                                Mode Of Transaction{" "}
+                                                <Text style={{ color: "red" }}>*</Text>
+                                            </Text>
 
-
-                                                <Text style={styles.label}>Transaction Id</Text>
-
-                                                <TextInput
-                                                    ref={transactionRef}
-                                                    style={styles.inputBox}
-                                                    placeholder="Enter Transaction Id"
-                                                    value={referenceNumber}
-                                                    // onFocus={() => scrollInputIntoView(transactionRef)}
-
-                                                    onChangeText={(text) => {
-
-                                                        const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
-                                                        setReferenceNumber(noEmojis);
-                                                    }}
-                                                    onFocus={(e) => scrollInputIntoView(e)}
-                                                />
+                                            <View style={styles.paymentDropdownWrapper} >
 
 
                                                 <TouchableOpacity
-                                                    style={{
-                                                        flexDirection: "row",
-                                                        alignItems: "center", marginTop: 10
-                                                    }}
+                                                    ref={accountRef}
                                                     activeOpacity={0.8}
-                                                    onPress={() => setProceedBook(prev => !prev)}
-                                                >
-                                                    <View
-                                                        style={[
-                                                            styles.checkbox,
-                                                            proceedbook && styles.checkboxSelected,
-                                                        ]}
-                                                    >
-                                                        {proceedbook && (
-                                                            <Text style={styles.tick}>✓</Text>
-                                                        )}
-                                                    </View>
+                                                    style={styles.paymentSelectBox}
+                                                    onPress={() => {
+                                                        setOpenDropdown(null);
+                                                        setOpenDropdownId(null);
+                                                        setCheckinTenantsopen(false);
+                                                        setBankError("");
 
-                                                    <Text style={styles.doLater}>
-                                                        Everything is Correct – Proceed to Book
-                                                    </Text>
+                                                        if (accountOpen) {
+                                                            setAccountopen(false);
+                                                            return;
+                                                        }
+
+                                                        Keyboard.dismiss();
+                                                        setTimeout(() => {
+                                                            accountRef.current?.measureInWindow((x, y, width, height) => {
+                                                                setPaymentDropdownPos({ top: y + height, left: x, width });
+                                                                setAccountopen(true);
+                                                            });
+                                                        }, 150);
+                                                    }}
+                                                >
+                                                    {accountSelected ? (
+                                                        <View style={styles.selectedPaymentContainer}>
+
+                                                            {/* ICON */}
+                                                            <View
+                                                                style={[
+                                                                    styles.paymentMethodIcon,
+                                                                    accountSelected?.accountType === "CASH"
+                                                                        ? styles.cashIconBg
+                                                                        : styles.bankIconBg,
+                                                                ]}
+                                                            >
+                                                                <Image
+                                                                    source={
+                                                                        accountSelected?.accountType === "CASH"
+                                                                            ? CashIcon
+                                                                            : BankIcon
+                                                                    }
+                                                                    style={styles.paymentMethodIconImage}
+                                                                />
+                                                            </View>
+
+                                                            {/* NAME + PAYMENT TYPE */}
+                                                            <View style={styles.selectedPaymentDetails}>
+                                                                <Text
+                                                                    style={styles.paymentMethodName}
+                                                                    numberOfLines={1}
+                                                                    ellipsizeMode="tail"
+                                                                >
+                                                                    {accountSelected?.accountHolderName ||
+                                                                        accountSelected?.displayName ||
+                                                                        "Account"}
+                                                                </Text>
+
+                                                                <Text
+                                                                    style={styles.paymentMethodSubText}
+                                                                    numberOfLines={1}
+                                                                    ellipsizeMode="tail"
+                                                                >
+                                                                    {accountSelected?.accountType === "CASH"
+                                                                        ? accountSelected?.cashAccountType ||
+                                                                        "Petty Cash"
+                                                                        : accountSelected?.paymentMethod ||
+                                                                        accountSelected?.bankAccountType ||
+                                                                        accountSelected?.bankName ||
+                                                                        "Bank Account"}
+                                                                </Text>
+                                                            </View>
+
+                                                            {/* CASH / BANK */}
+                                                            <View
+                                                                style={[
+                                                                    styles.paymentTypeBadge,
+                                                                    accountSelected?.accountType === "CASH"
+                                                                        ? styles.cashBadge
+                                                                        : styles.bankBadge,
+                                                                ]}
+                                                            >
+                                                                <Text
+                                                                    style={[
+                                                                        styles.paymentTypeText,
+                                                                        accountSelected?.accountType === "CASH"
+                                                                            ? styles.cashText
+                                                                            : styles.bankText,
+                                                                    ]}
+                                                                >
+                                                                    {accountSelected?.accountType === "CASH"
+                                                                        ? "CASH"
+                                                                        : "BANK"}
+                                                                </Text>
+                                                            </View>
+                                                        </View>
+                                                    ) : (
+                                                        <Text style={styles.paymentPlaceholder}>
+                                                            Select Mode Of Transaction
+                                                        </Text>
+                                                    )}
+
+                                                    <Image
+                                                        source={DownArrow}
+                                                        style={styles.paymentArrow}
+                                                    />
                                                 </TouchableOpacity>
+
+                                                {/* ERROR */}
+                                                {bankError && (
+                                                    <ErrorMessage
+                                                        message={bankError}
+                                                        type="error"
+                                                    />
+                                                )}
 
 
                                             </View>
+
+                                            {/* {bankError && (
+                                                <ErrorMessage message={bankError} type="error" />
+                                            )} */}
+
+
+                                            <Text style={styles.label}>Transaction Id</Text>
+
+                                            <TextInput
+                                                ref={transactionRef}
+                                                style={styles.inputBox}
+                                                placeholder="Enter Transaction Id"
+                                                value={referenceNumber}
+                                                // onFocus={() => scrollInputIntoView(transactionRef)}
+
+                                                onChangeText={(text) => {
+
+                                                    const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
+                                                    setReferenceNumber(noEmojis);
+                                                }}
+                                                onFocus={(e) => scrollInputIntoView(e)}
+                                            />
+
+
+                                            <TouchableOpacity
+                                                style={{
+                                                    flexDirection: "row",
+                                                    alignItems: "center", marginTop: 10
+                                                }}
+                                                activeOpacity={0.8}
+                                                onPress={() => setProceedBook(prev => !prev)}
+                                            >
+                                                <View
+                                                    style={[
+                                                        styles.checkbox,
+                                                        proceedbook && styles.checkboxSelected,
+                                                    ]}
+                                                >
+                                                    {proceedbook && (
+                                                        <Text style={styles.tick}>✓</Text>
+                                                    )}
+                                                </View>
+
+                                                <Text style={styles.doLater}>
+                                                    Everything is Correct – Proceed to Book
+                                                </Text>
+                                            </TouchableOpacity>
+
+
+
 
 
 
@@ -7070,6 +7193,123 @@ export default function AddTenantNewform({ navigation, route }) {
                     </ScrollView>
                 </KeyboardAvoidingView>
 
+
+
+
+                {accountOpen && (
+                    <>
+                        <TouchableWithoutFeedback onPress={() => setAccountopen(false)}>
+                            <View style={styles.dropdownBackdrop} />
+                        </TouchableWithoutFeedback>
+
+                        <View
+                            style={[
+                                styles.paymentDropdown,
+                                {
+                                    top: paymentDropdownPos.top,
+                                    left: paymentDropdownPos.left,
+                                    width: paymentDropdownPos.width,
+                                },
+                            ]}
+                        >
+                            <ScrollView
+                                style={{ maxHeight: 220 }}
+                                contentContainerStyle={{ flexGrow: 0 }}
+                                nestedScrollEnabled={true}
+                                keyboardShouldPersistTaps="handled"
+                                showsVerticalScrollIndicator={true}
+                                persistentScrollbar={true}
+                            >
+                                {transactionOptions?.length > 0 ? (
+                                    transactionOptions.map((payment, index) => {
+                                        const isSelected =
+                                            accountSelected?.paymentMethodId === payment?.paymentMethodId &&
+                                            accountSelected?.bankId === payment?.bankId;
+
+                                        const isCash = payment?.accountType === "CASH";
+
+                                        return (
+                                            <TouchableOpacity
+                                                key={`${payment?.bankId}-${payment?.paymentMethodId}-${index}`}
+                                                activeOpacity={0.7}
+                                                style={[
+                                                    styles.paymentMethodRow,
+                                                    isSelected && styles.paymentMethodRowSelected,
+                                                ]}
+                                                onPress={() => {
+                                                    setAccountSelected(payment);
+                                                    setAccountopen(false);
+                                                    setBankError("");
+                                                }}
+                                            >
+                                                <View
+                                                    style={[
+                                                        styles.paymentMethodIcon,
+                                                        isCash ? styles.cashIconBg : styles.bankIconBg,
+                                                    ]}
+                                                >
+                                                    <Image
+                                                        source={isCash ? CashIcon : BankIcon}
+                                                        style={{ width: 20, height: 20 }}
+                                                    />
+                                                </View>
+
+                                                <View style={styles.paymentMethodDetails}>
+                                                    <Text
+                                                        style={styles.paymentMethodName}
+                                                        numberOfLines={1}
+                                                        ellipsizeMode="tail"
+                                                    >
+                                                        {payment?.displayName || payment?.accountHolderName || "Account"}
+                                                    </Text>
+
+                                                    <Text
+                                                        style={styles.paymentMethodSubText}
+                                                        numberOfLines={1}
+                                                        ellipsizeMode="tail"
+                                                    >
+                                                        {isCash
+                                                            ? payment?.cashAccountType || "Petty Cash"
+                                                            : payment?.paymentMethod ||
+                                                            payment?.bankAccountType ||
+                                                            payment?.bankName ||
+                                                            payment?.accountType ||
+                                                            "Bank"}
+                                                    </Text>
+                                                </View>
+
+                                                <View
+                                                    style={[
+                                                        styles.paymentTypeBadge,
+                                                        isCash ? styles.cashBadge : styles.bankBadge,
+                                                    ]}
+                                                >
+                                                    <Text
+                                                        style={[
+                                                            styles.paymentTypeText,
+                                                            isCash ? styles.cashText : styles.bankText,
+                                                        ]}
+                                                    >
+                                                        {isCash ? "CASH" : "BANK"}
+                                                    </Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                        );
+                                    })
+                                ) : (
+                                    <View style={{ padding: 15 }}>
+                                        <Text style={{ color: "#999", textAlign: "center", fontFamily: "Gilroy-Medium" }}>
+                                            No Payment Methods Available
+                                        </Text>
+                                    </View>
+                                )}
+                            </ScrollView>
+                        </View>
+                    </>
+                )}
+
+
+
                 {showCalendar && (
                     <View style={styles.sheetOverlay}>
                         <TouchableWithoutFeedback onPress={() => setShowCalendar(false)}>
@@ -8945,5 +9185,241 @@ const styles = StyleSheet.create({
 
     advanceDetailsContent: {
         marginTop: 8,
+    },
+    paymentDropdownWrapper: {
+        position: "relative",
+        zIndex: 9999,
+    },
+
+    paymentSelectBox: {
+        minHeight: 58,
+        borderWidth: 1,
+        borderColor: "#E1E1E1",
+        borderRadius: 14,
+
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+
+        backgroundColor: "#FFFFFF",
+    },
+
+    selectedPaymentContainer: {
+        flex: 1,
+        flexDirection: "row",
+        alignItems: "center",
+        minWidth: 0,
+    },
+
+    selectedPaymentDetails: {
+        flex: 1,
+        minWidth: 0,
+        marginLeft: 10,
+        marginRight: 8,
+    },
+
+    paymentPlaceholder: {
+        flex: 1,
+        fontSize: 15,
+        color: "#999",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    paymentArrow: {
+        width: 18,
+        height: 18,
+        tintColor: "#555",
+    },
+
+    paymentMethodIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    paymentMethodIconImage: {
+        width: 20,
+        height: 20,
+    },
+
+    cashIconBg: {
+        backgroundColor: "#DDFBE8",
+    },
+
+    bankIconBg: {
+        backgroundColor: "#DCE8FF",
+    },
+
+    paymentMethodName: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Semibold",
+        color: "#222",
+    },
+
+    paymentMethodSubText: {
+        fontSize: 13,
+        fontFamily: "Gilroy-Medium",
+        color: "#697386",
+        marginTop: 3,
+    },
+
+ paymentDropdown: {
+    position: "absolute",   
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D9DDE5",
+    borderRadius: 16,
+    zIndex: 9999,
+    elevation: 10,
+    maxHeight: 220,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+},
+dropdownBackdrop: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 9998,
+},
+
+    paymentOption: {
+        minHeight: 70,
+
+        flexDirection: "row",
+        alignItems: "center",
+
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+
+        borderBottomWidth: 1,
+        borderBottomColor: "#F1F1F1",
+    },
+
+    paymentOptionSelected: {
+        backgroundColor: "#F4F7FF",
+    },
+
+    paymentIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 22,
+
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    paymentIconImage: {
+        width: 20,
+        height: 20,
+    },
+
+    cashIconBackground: {
+        backgroundColor: "#DDFBE8",
+    },
+
+    bankIconBackground: {
+        backgroundColor: "#DCE8FF",
+    },
+
+    paymentDetails: {
+        flex: 1,
+        marginLeft: 10,
+        marginRight: 8,
+    },
+
+    paymentName: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Semibold",
+        color: "#222",
+    },
+
+    paymentSubText: {
+        fontSize: 13,
+        fontFamily: "Gilroy-Medium",
+        color: "#697386",
+        marginTop: 3,
+    },
+
+    paymentMethodRow: {
+        minHeight: 78,
+
+        flexDirection: "row",
+        alignItems: "center",
+
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+
+        backgroundColor: "#FFFFFF",
+
+        borderBottomWidth: 1,
+        borderBottomColor: "#F0F1F3",
+    },
+
+    paymentMethodRowSelected: {
+        backgroundColor: "#F5F7FF",
+    },
+
+    paymentMethodDetails: {
+        flex: 1,
+        minWidth: 0,
+
+        marginLeft: 10,
+        marginRight: 8,
+    },
+
+    paymentTypeBadge: {
+        minWidth: 62,
+
+        paddingHorizontal: 10,
+        paddingVertical: 7,
+
+        borderRadius: 18,
+
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    cashBadge: {
+        backgroundColor: "#DDFBE8",
+    },
+
+    bankBadge: {
+        backgroundColor: "#DCE8FF",
+    },
+
+    paymentTypeText: {
+        fontSize: 11,
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    cashText: {
+        color: "#07883C",
+    },
+
+    bankText: {
+        color: "#2457E6",
+    },
+
+    noPaymentMethod: {
+        paddingVertical: 20,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    noPaymentText: {
+        color: "#999",
+        fontSize: 14,
+        fontFamily: "Gilroy-Medium",
     },
 });
