@@ -63,6 +63,8 @@ import DiscountDown from "../../../Assets/Images/direction-downIcon.png";
 import BillIcon from "../../../Assets/Images/bill.png";
 import GenerateBillIcon from "../../../Assets/Images/SettleIcon.png";
 import LeftArrowIcon from "../../../Assets/Images/ArrowRight.png";
+import BankIcon from "../../../Assets/Images/bankBlue.png";
+import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 // import MoveNoticeModal from '../Customer/MoveToNoticePeriod';
 // import ReassignBedModal from '../Customer/ReAssignBed';
 // import CheckoutList from '../Customer/Checkout/CheckoutList';
@@ -823,16 +825,16 @@ export default function BillsDesign({ route }) {
   const BillsStatusStyle = getStatusStyle(selectedBill?.paymentStatus);
   const statusStyle = getStatusStyle(selectedReceipt?.paymentStatus);
 
-  useEffect(()=>{
-    if(!showFilter){
+  useEffect(() => {
+    if (!showFilter) {
       setActiveDropdown(null)
     }
-    if(!appliedFilters){
+    if (!appliedFilters) {
       setBillStatus([])
       setType([])
       setMode([])
     }
-  },[showFilter])
+  }, [showFilter])
 
 
   console.log("statusstyle", statusStyle)
@@ -899,7 +901,7 @@ export default function BillsDesign({ route }) {
 
 
   console.log("refundInitDetails", refundInitDetails);
-  
+
 
   const maxRefund = Number(refundInitDetails?.pendingRefund || 0);
 
@@ -2322,11 +2324,39 @@ export default function BillsDesign({ route }) {
 
 
 
+  const refundPaymentOptions = (
+    refundInitDetails?.allPaymentMethods || []
+  ).map((item, index) => ({
+    id: `${item?.bankId || "account"}-${index}`,
 
-  const refundBankOptions = (refundInitDetails?.listBanks || []).map((b) => ({
-    label: `${b?.bankName}`,
-    value: b?.bankId,
+    bankId: item?.bankId,
+
+    accountHolderName:
+      item?.accountHolderName ||
+      item?.displayName ||
+      "Account",
+
+    accountType: item?.accountType,
+
+    bankName: item?.bankName,
+
+    paymentMethod: item?.paymentMethod,
+
+    cashAccountType: item?.cashAccountType,
+
+    bankAccountType: item?.bankAccountType,
+
+    subLabel:
+      item?.accountType === "CASH"
+        ? item?.cashAccountType || "Petty Cash"
+        : item?.bankName
+          ? `${item.bankName}${item?.paymentMethod
+            ? ` - ${item.paymentMethod}`
+            : ""
+          }`
+          : item?.bankAccountType || "Bank Account",
   }));
+
 
   const handleReceiptMenu = (item, id) => {
 
@@ -2543,87 +2573,209 @@ export default function BillsDesign({ route }) {
   }
 
 
-  const handleSaveRefund = async () => {
-    setRefundAmountError("");
-    setRefundDateError("");
-    setRefundFromError("");
+//   const handleSaveRefund = async () => {
+//     setRefundAmountError("");
+//     setRefundDateError("");
+//     setRefundFromError("");
 
-    let valid = true;
+//     let valid = true;
 
-    if (!refundAmount || Number(refundAmount) <= 0) {
-      setRefundAmountError("Please Enter Refund Amount");
-      valid = false;
-    }
+//     if (!refundAmount || Number(refundAmount) <= 0) {
+//       setRefundAmountError("Please Enter Refund Amount");
+//       valid = false;
+//     }
 
 
-    if (!refundDate) {
-      setRefundDateError("Please Select Refund Date");
-      valid = false;
-    }
+//     if (!refundDate) {
+//       setRefundDateError("Please Select Refund Date");
+//       valid = false;
+//     }
 
-    if (!refundFrom) {
-      setRefundFromError("Please Select Refund Account");
-      valid = false;
-    }
+//     if (!refundFrom) {
+//       setRefundFromError("Please Select Refund Account");
+//       valid = false;
+//     }
 
-    if (!valid) return;
-    if (isRefundClicked) return;
-    setIsRefundClicked(true);
+//     if (!valid) return;
+//     if (isRefundClicked) return;
+//     setIsRefundClicked(true);
+
+
+//     const selectedRefundPayment = refundPaymentOptions.find(
+//     item => item?.id === refundFrom)
+
+// console.log("selectedRefundPayment", selectedRefundPayment);
+
+//     const payload = {
+//       refundAmount: String(refundAmount),
+//       refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
+//       bankId: selectedRefundPayment?.bankId,
+//       referenceNumber: transactionId || "",
+//       invoiceId: selectedBill.invoiceId,
+//       hostelId: activeHostelId,
+//     };
+
+//     console.log("payload", payload);
+
+
+//     try {
+
+//       const res = await CreateRefund({
+//         hostelId: activeHostelId,
+//         invoiceId: selectedBill?.invoiceId,
+//         payload,
+//       });
+
+//       if (res?.success) {
+//         setModalType("success");
+//         setModalMessage("Refund successfully");
+//         setShowSuccessModal(true);
+//         setTimeout(() => setShowSuccessModal(false), 1500);
+
+//         setShowBillDetails(false)
+//         GetAllBillDetails(activeHostelId);
+//         setShowRefundPayment(false);
+//         resetRefundForm();
+//         setRefundAmount("");
+//         setRefundDate(null);
+//         setRefundFrom("");
+//         setTransactionId("");
+//         setTimeout(() => {
+//           setIsRefundClicked(false)
+//         }, 1500);
+//       }
+//       else if (res?.refundableError) {
+//         setModalType("warning");
+//         setModalMessage(res?.refundableError);
+//         setShowSuccessModal(true);
+//         setTimeout(() => setShowSuccessModal(false), 1500);
+//       } else {
+//         setModalType("warning");
+//         setModalMessage(res?.message);
+//         setShowSuccessModal(true);
+//         setTimeout(() => setShowSuccessModal(false), 1500);
+//       }
+//     } catch (error) {
+//       console.log(error)
+//       setIsRefundClicked(false);
+//     }
+//   };
+
+
+const handleSaveRefund = async () => {
+  setRefundAmountError("");
+  setRefundDateError("");
+  setRefundFromError("");
+
+  let valid = true;
+
+  if (!refundAmount || Number(refundAmount) <= 0) {
+    setRefundAmountError("Please Enter Refund Amount");
+    valid = false;
+  }
+
+  if (!refundDate) {
+    setRefundDateError("Please Select Refund Date");
+    valid = false;
+  }
+
+  if (!refundFrom) {
+    setRefundFromError("Please Select Refund Account");
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  if (isRefundClicked) return;
+
+  setIsRefundClicked(true);
+
+  try {
+    const selectedRefundPayment = refundPaymentOptions.find(
+      item => item?.id === refundFrom
+    );
 
     const payload = {
       refundAmount: String(refundAmount),
       refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
-      bankId: refundFrom,
+      bankId: selectedRefundPayment?.bankId,
       referenceNumber: transactionId || "",
-      invoiceId: selectedBill.invoiceId,
+      invoiceId: selectedBill?.invoiceId,
       hostelId: activeHostelId,
     };
 
-    console.log("payload", payload);
+    const res = await CreateRefund({
+      hostelId: activeHostelId,
+      invoiceId: selectedBill?.invoiceId,
+      payload,
+    });
 
+    if (res?.success) {
+      setModalType("success");
+      setModalMessage("Refund successfully");
+      setShowSuccessModal(true);
 
-    try {
+      setShowBillDetails(false);
+      setShowRefundPayment(false);
 
-      const res = await CreateRefund({
-        hostelId: activeHostelId,
-        invoiceId: selectedBill?.invoiceId,
-        payload,
-      });
+      await GetAllBillDetails(activeHostelId);
 
-      if (res?.success) {
-        setModalType("success");
-        setModalMessage("Refund successfully");
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 1500);
+      resetRefundForm();
 
-        setShowBillDetails(false)
-        GetAllBillDetails(activeHostelId);
-        setShowRefundPayment(false);
-        resetRefundForm();
-        setRefundAmount("");
-        setRefundDate(null);
-        setRefundFrom("");
-        setTransactionId("");
-        setTimeout(() => {
-          setIsRefundClicked(false)
-        }, 1500);
-      }
-      else if (res?.refundableError) {
-        setModalType("warning");
-        setModalMessage(res?.refundableError);
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 1500);
-      } else {
-        setModalType("warning");
-        setModalMessage(res?.message);
-        setShowSuccessModal(true);
-        setTimeout(() => setShowSuccessModal(false), 1500);
-      }
-    } catch (error) {
-      console.log(error)
-      setIsRefundClicked(false);
+      setRefundAmount("");
+      setRefundDate(null);
+      setRefundFrom("");
+      setTransactionId("");
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
+
+      return;
     }
-  };
+
+    if (res?.refundableError) {
+      setModalType("warning");
+      setModalMessage(res.refundableError);
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
+
+      return;
+    }
+
+    setModalType("warning");
+    setModalMessage(
+      res?.message || "Unable to process refund"
+    );
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1500);
+
+  } catch (error) {
+
+    console.log("Refund error", error);
+
+    setModalType("warning");
+    setModalMessage(
+      error?.response?.data?.message ||
+      "Something went wrong"
+    );
+    setShowSuccessModal(true);
+
+    setTimeout(() => {
+      setShowSuccessModal(false);
+    }, 1500);
+
+  } finally {
+
+    setIsRefundClicked(false);
+  }
+};
 
 
 
@@ -3268,31 +3420,31 @@ export default function BillsDesign({ route }) {
                           )}
 
 
-                       
-                            <View style={styles.reviewBillsCard}>
 
-                              <View style={styles.reviewBillsHeader}>
-                                <View style={styles.reviewBillsTitleRow}>
+                          <View style={styles.reviewBillsCard}>
 
-                                  <Image
-                                    source={GenerateBillIcon}
-                                    style={styles.reviewBillsIcon}
-                                  />
+                            <View style={styles.reviewBillsHeader}>
+                              <View style={styles.reviewBillsTitleRow}>
 
-                                  <Text style={styles.reviewBillsTitle}>
-                                    Review & Generate Bills
-                                  </Text>
+                                <Image
+                                  source={GenerateBillIcon}
+                                  style={styles.reviewBillsIcon}
+                                />
 
-                                </View>
+                                <Text style={styles.reviewBillsTitle}>
+                                  Review & Generate Bills
+                                </Text>
+
                               </View>
+                            </View>
 
-                              <Text style={styles.reviewBillsDescription}>
-                                Review calculated invoices before generating them for tenants.
-                              </Text>
+                            <Text style={styles.reviewBillsDescription}>
+                              Review calculated invoices before generating them for tenants.
+                            </Text>
 
-                              <View style={styles.reviewBillsInfoRow}>
+                            <View style={styles.reviewBillsInfoRow}>
 
-                                 {!isJoiningDateBased && (
+                              {!isJoiningDateBased && (
 
                                 <View style={styles.reviewBillsInfoItem}>
 
@@ -3311,32 +3463,32 @@ export default function BillsDesign({ route }) {
 
                                 </View>)}
 
-              {isJoiningDateBased && (
-                                     <View style={styles.reviewBillsDateRow}>
+                              {isJoiningDateBased && (
+                                <View style={styles.reviewBillsDateRow}>
 
-                                <Text style={styles.reviewBillsLabel}>
-                                  Gen. Date :
-                                </Text>
-
-                                <Text style={styles.reviewBillsValue}>
-                                  {formatReviewDate(
-                                    availablerecurringInvoices?.invoiceDate,
-                                    true
-                                  )}
-                                </Text>
-
-                              </View>
-              )}
-           
-                                <View style={styles.reviewRequiredBadge}>
-                                  <Text style={styles.reviewRequiredText}>
-                                    Review Required
+                                  <Text style={styles.reviewBillsLabel}>
+                                    Gen. Date :
                                   </Text>
-                                </View>
 
+                                  <Text style={styles.reviewBillsValue}>
+                                    {formatReviewDate(
+                                      availablerecurringInvoices?.invoiceDate,
+                                      true
+                                    )}
+                                  </Text>
+
+                                </View>
+                              )}
+
+                              <View style={styles.reviewRequiredBadge}>
+                                <Text style={styles.reviewRequiredText}>
+                                  Review Required
+                                </Text>
                               </View>
 
-                                 {!isJoiningDateBased && (
+                            </View>
+
+                            {!isJoiningDateBased && (
 
                               <View style={styles.reviewBillsDateRow}>
 
@@ -3352,53 +3504,53 @@ export default function BillsDesign({ route }) {
                                 </Text>
 
                               </View>
-                                 )}
+                            )}
 
-                              <TouchableOpacity
-                                activeOpacity={
-                                  PGDetails?.shouldVerifyRecurring ? 0.8 : 1
+                            <TouchableOpacity
+                              activeOpacity={
+                                PGDetails?.shouldVerifyRecurring ? 0.8 : 1
+                              }
+                              disabled={!PGDetails?.shouldVerifyRecurring}
+                              style={[
+                                styles.reviewBillsButton,
+                                !PGDetails?.shouldVerifyRecurring &&
+                                styles.reviewBillsButtonDisabled,
+                              ]}
+                              onPress={() => {
+                                if (!canReadInvoice) return
+                                if (PGDetails?.shouldVerifyRecurring) {
+                                  navigation.navigate("ReviewBillsScreen");
                                 }
-                                disabled={!PGDetails?.shouldVerifyRecurring}
+                              }}
+                            >
+
+                              <Text
                                 style={[
-                                  styles.reviewBillsButton,
+                                  styles.reviewBillsButtonText,
                                   !PGDetails?.shouldVerifyRecurring &&
-                                  styles.reviewBillsButtonDisabled,
+                                  styles.reviewBillsButtonTextDisabled,
                                 ]}
-                                onPress={() => {
-                                  if (!canReadInvoice) return
-                                  if (PGDetails?.shouldVerifyRecurring) {
-                                    navigation.navigate("ReviewBillsScreen");
-                                  }
-                                }}
                               >
+                                Review Bills
+                              </Text>
 
-                                <Text
-                                  style={[
-                                    styles.reviewBillsButtonText,
-                                    !PGDetails?.shouldVerifyRecurring &&
-                                    styles.reviewBillsButtonTextDisabled,
-                                  ]}
-                                >
-                                  Review Bills
-                                </Text>
+                              <Image
+                                source={LeftArrowIcon}
+                                style={[
+                                  {
+                                    height: 20,
+                                    width: 20,
+                                    marginLeft: 10,
+                                  },
+                                  !PGDetails?.shouldVerifyRecurring &&
+                                  styles.reviewBillsArrowDisabled,
+                                ]}
+                              />
 
-                                <Image
-                                  source={LeftArrowIcon}
-                                  style={[
-                                    {
-                                      height: 20,
-                                      width: 20,
-                                      marginLeft: 10,
-                                    },
-                                    !PGDetails?.shouldVerifyRecurring &&
-                                    styles.reviewBillsArrowDisabled,
-                                  ]}
-                                />
+                            </TouchableOpacity>
 
-                              </TouchableOpacity>
+                          </View>
 
-                            </View>
-                         
                         </>
                       }
 
@@ -7017,70 +7169,219 @@ export default function BillsDesign({ route }) {
                       <Text style={styles.label}>
                         Refund From <Text style={{ color: "red" }}>*</Text>
                       </Text>
-                      {/* INPUT */}
+
+                      {/* SELECTED PAYMENT METHOD */}
                       <TouchableOpacity
-                        style={styles.inputBox}
+                        style={[
+                          styles.inputBox,
+                          styles.refundSelectedPaymentBox,
+                        ]}
                         onPress={() => {
                           setRefundFromError("");
                           setShowRefundFrom(v => !v);
                         }}
                       >
-                        <Text style={{ fontSize: 15 }}>
-                          {refundFrom
-                            ? refundBankOptions.find(o => o.value === refundFrom)?.label
-                            : "Select bank"}
-                        </Text>
+                        {refundFrom ? (
+                          (() => {
+                            const selectedPayment = refundPaymentOptions.find(
+                              item => item.id === refundFrom
+                            );
+
+                            const isCash =
+                              selectedPayment?.accountType === "CASH";
+
+                            return (
+                              <>
+                                {/* ICON */}
+                                <View
+                                  style={[
+                                    styles.refundPaymentIcon,
+                                    isCash
+                                      ? styles.cashIconBg
+                                      : styles.bankIconBg,
+                                  ]}
+                                >
+                                  <Image
+                                    source={
+                                      isCash
+                                        ? CashIcon
+                                        : BankIcon
+                                    }
+                                    style={{
+                                      width: 20,
+                                      height: 20,
+                                    }}
+                                  />
+                                </View>
+
+                                {/* NAME + PAYMENT METHOD */}
+                                <View style={styles.refundPaymentDetails}>
+
+                                  <Text
+                                    style={styles.refundPaymentName}
+                                    numberOfLines={1}
+                                  >
+                                    {selectedPayment?.accountHolderName}
+                                  </Text>
+
+                                  <Text
+                                    style={styles.refundPaymentSubText}
+                                    numberOfLines={1}
+                                  >
+                                    {isCash
+                                      ? "CASH"
+                                      : selectedPayment?.paymentMethod ||
+                                      "BANK"}
+                                  </Text>
+
+                                </View>
+                              </>
+                            );
+                          })()
+                        ) : (
+                          <Text style={styles.refundPlaceholder}>
+                            Select bank
+                          </Text>
+                        )}
 
                         <Image
                           source={DownArrow}
-                          style={{ width: 18, height: 18, tintColor: "#555" }}
+                          style={{
+                            width: 18,
+                            height: 18,
+                            tintColor: "#555",
+                          }}
                         />
                       </TouchableOpacity>
+
 
                       {/* DROPDOWN */}
                       {showRefundFrom && (
                         <View style={styles.transactiondropdown}>
+
                           <ScrollView
                             nestedScrollEnabled
-                            scrollEnabled={refundBankOptions.length > 3}
                             showsVerticalScrollIndicator={false}
                           >
-                            {refundBankOptions.map(opt => {
-                              const isSelected = refundFrom === opt.value;
+
+                            {refundPaymentOptions.map((opt) => {
+
+                              const isSelected =
+                                refundFrom === opt.id;
+
+                              const isCash =
+                                opt.accountType === "CASH";
 
                               return (
                                 <TouchableOpacity
-                                  key={opt.value}
+                                  key={opt.id}
+                                  activeOpacity={0.7}
                                   style={[
-                                    styles.dropdownRow,
-                                    isSelected && styles.dropdownRowSelected,
+                                    styles.paymentMethodRow,
+                                    isSelected &&
+                                    styles.paymentMethodRowSelected,
                                   ]}
                                   onPress={() => {
-                                    setRefundFrom(opt.value);
+
+                                    setRefundFrom(opt.id);
+
                                     setShowRefundFrom(false);
+
                                     setRefundFromError("");
                                   }}
                                 >
-                                  <Text
+
+                                  {/* ICON */}
+                                  <View
+                                    style={[
+                                      styles.paymentMethodIcon,
+                                      isCash
+                                        ? styles.cashIconBg
+                                        : styles.bankIconBg,
+                                    ]}
+                                  >
+                                    <Image
+                                      source={
+                                        isCash
+                                          ? CashIcon
+                                          : BankIcon
+                                      }
+                                      style={{
+                                        height: 20,
+                                        width: 20,
+                                      }}
+                                    />
+                                  </View>
+
+
+                                  {/* DETAILS */}
+                                  <View
                                     style={
-                                      isSelected
-                                        ? styles.dropdownTextSelected
-                                        : styles.dropdownText
+                                      styles.paymentMethodDetails
                                     }
                                   >
-                                    {opt.label}
-                                  </Text>
+
+                                    <Text
+                                      style={
+                                        styles.paymentMethodName
+                                      }
+                                      numberOfLines={1}
+                                    >
+                                      {opt.accountHolderName}
+                                    </Text>
+
+                                    <Text
+                                      style={
+                                        styles.paymentMethodSubText
+                                      }
+                                      numberOfLines={1}
+                                    >
+                                      {opt.subLabel}
+                                    </Text>
+
+                                  </View>
+
+
+                                  {/* CASH / BANK */}
+                                  <View
+                                    style={[
+                                      styles.paymentTypeBadge,
+                                      isCash
+                                        ? styles.cashBadge
+                                        : styles.bankBadge,
+                                    ]}
+                                  >
+                                    <Text
+                                      style={[
+                                        styles.paymentTypeText,
+                                        isCash
+                                          ? styles.cashText
+                                          : styles.bankText,
+                                      ]}
+                                    >
+                                      {isCash
+                                        ? "CASH"
+                                        : "BANK"}
+                                    </Text>
+                                  </View>
+
                                 </TouchableOpacity>
                               );
                             })}
+
                           </ScrollView>
                         </View>
                       )}
+
+                      {refundFromError && (
+                        <ErrorMessage
+                          message={refundFromError}
+                          type="error"
+                        />
+                      )}
+
                     </View>
 
-                    {refundFromError && (
-                      <ErrorMessage message={refundFromError} type="error" />
-                    )}
 
 
 
@@ -7738,7 +8039,7 @@ export default function BillsDesign({ route }) {
             }}
 
             onClose={() => setStatusSheetOpen(false)}
-            isSingleSelect ={true} 
+            isSingleSelect={true}
           />
 
 
@@ -7775,7 +8076,7 @@ export default function BillsDesign({ route }) {
             }}
 
             onClose={() => setTypeSheetOpen(false)}
-             isSingleSelect ={true} 
+            isSingleSelect={true}
           />
 
 
@@ -7815,7 +8116,7 @@ export default function BillsDesign({ route }) {
             }}
 
             onClose={() => setModeSheetOpen(false)}
-             isSingleSelect ={true} 
+            isSingleSelect={true}
           />
 
           {/* <FilterBottomSheet
@@ -10412,5 +10713,165 @@ const styles = StyleSheet.create({
   reviewBillsArrowDisabled: {
     opacity: 0.4,
   },
+  refundSelectedPaymentBox: {
+    height: 64,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+
+  refundPaymentIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    marginRight: 10,
+  },
+
+  refundPaymentDetails: {
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 8,
+  },
+
+  refundPaymentName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#222222",
+  },
+
+  refundPaymentSubText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#697386",
+    marginTop: 2,
+  },
+
+  refundPlaceholder: {
+    flex: 1,
+    fontSize: 15,
+    fontFamily: "Gilroy-Regular",
+    color: "#222222",
+  },
+    transactiondropdown: {
+        position: "absolute",
+        top: 100,
+        left: 0,
+        right: 0,
+
+        backgroundColor: "#FFFFFF",
+
+        borderWidth: 1,
+        borderColor: "#D9DDE5",
+
+        borderRadius: 16,
+
+        zIndex: 9999,
+        elevation: 10,
+
+        maxHeight: 220,
+
+        overflow: "hidden",
+
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 4,
+        },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+    },
+    paymentMethodRow: {
+        minHeight: 82,
+
+        flexDirection: "row",
+        alignItems: "center",
+
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+
+        backgroundColor: "#FFFFFF",
+
+        borderBottomWidth: 1,
+        borderBottomColor: "#F0F1F3",
+    },
+
+    paymentMethodRowSelected: {
+        backgroundColor: "#F5F7FF",
+    },
+
+    paymentMethodIcon: {
+        width: 34,
+        height: 34,
+
+        borderRadius: 17,
+
+        alignItems: "center",
+        justifyContent: "center",
+
+        marginRight: 12,
+    },
+
+    cashIconBg: {
+        backgroundColor: "#DDFBE8",
+    },
+
+    bankIconBg: {
+        backgroundColor: "#DCE8FF",
+    },
+
+    paymentMethodDetails: {
+        flex: 1,
+        justifyContent: "center",
+        marginRight: 8,
+    },
+
+    paymentMethodName: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+        color: "#222222",
+    },
+
+    paymentMethodSubText: {
+        fontSize: 14,
+        fontFamily: "Gilroy-Medium",
+        color: "#697386",
+
+        marginTop: 3,
+    },
+
+    paymentTypeBadge: {
+        minWidth: 64,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+
+        borderRadius: 20,
+
+        alignItems: "center",
+        justifyContent: "center",
+    },
+
+    cashBadge: {
+        backgroundColor: "#DDFBE8",
+    },
+
+    bankBadge: {
+        backgroundColor: "#DCE8FF",
+    },
+
+    paymentTypeText: {
+        fontSize: 12,
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    cashText: {
+        color: "#07883C",
+    },
+
+    bankText: {
+        color: "#2457E6",
+    },
 
 });
