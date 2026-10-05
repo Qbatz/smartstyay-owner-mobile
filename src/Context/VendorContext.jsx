@@ -12,7 +12,7 @@ export default function VendorProvider({ children }) {
   const [vendorExpensePayments, setVendorExpensePayments] = useState([]);
   const [vendorSettlementInitialize, setVendorSettlementInitialize] = useState(null);
   const [vendorComments, setVendorComments] = useState([]);
-
+  const [vendorInitialize, setVendorInitalize] = useState([]);
 
 
   const [loading, setLoading] = useState(false);
@@ -140,6 +140,47 @@ export default function VendorProvider({ children }) {
       setLoading(false);
     }
   };
+
+  const initializeVendorList = async (hostelId) => {
+    try {
+        setLoading(true);
+
+        const axios = getAxios();
+
+        const res = await axios.get(
+            `/v2/vendors/hostel/${hostelId}/vendors`
+        );
+
+        console.log("INITIALIZE VENDOR LIST RESPONSE =>", res.data);
+
+        if (res?.status === 200) {
+          setVendorInitalize(res?.data)
+            return {
+                success: true,
+                data: res?.data,
+            }
+        }
+
+        return {
+            success: false,
+            message: "Failed to get vendor list",
+        };
+
+    } catch (err) {
+        console.log(
+            "INITIALIZE VENDOR LIST ERROR =>",
+            err?.response?.data || err
+        );
+
+        return {
+            success: false,
+            message: getErrorMessage(err),
+        };
+
+    } finally {
+        setLoading(false);
+    }
+};
 
   const getVendorCategories = async (hostelId) => {
     try {
@@ -766,7 +807,7 @@ export default function VendorProvider({ children }) {
         vendorExpenses,
         vendorExpensePayments,
         vendorSettlementInitialize,
-        vendorComments,
+        vendorComments, vendorInitialize , 
         loading,
         getVendorList,
         getVendorCategories,
@@ -785,7 +826,7 @@ export default function VendorProvider({ children }) {
         addVendorComment,
         updateVendorComment,
         deleteVendorComment,
-        updateVendorCategory
+        updateVendorCategory , initializeVendorList
       }}
     >
       {children}
