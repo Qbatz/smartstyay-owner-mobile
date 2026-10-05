@@ -36,7 +36,7 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
     getVendorList,
     addVendor,
     updateVendor,
-    deleteVendor,
+    deleteVendor, initializeVendorList , vendorInitialize
   } = useContext(VendorContext);
 
   console.log("vendorList", vendorList);
@@ -85,6 +85,16 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
       });
     }
   }, [currentItem])
+
+  useEffect(() => {
+    if (activeHostelId) {
+      const res = initializeVendorList(activeHostelId)
+    }
+  }, [activeHostelId])
+
+  console.log("assetinitialize",vendorInitialize);
+  
+
 
   const validatePrice = (value) => {
     if (!value || value.trim() === "") {
@@ -287,20 +297,20 @@ export default function AddAssetSheet({ onClose, title = "Add Assets", asset: cu
   ]);
 
   useFocusEffect(
-  useCallback(() => {
-    const backAction = () => {
-      handleLeavePage();
-      return true;
-    };
+    useCallback(() => {
+      const backAction = () => {
+        handleLeavePage();
+        return true;
+      };
 
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
 
-    return () => subscription.remove();
-  }, [handleLeavePage])
-);
+      return () => subscription.remove();
+    }, [handleLeavePage])
+  );
 
 
   const validateForm = () => {
