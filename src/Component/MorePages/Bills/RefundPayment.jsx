@@ -229,31 +229,57 @@ const RefundPaymentSheet = ({
     value: item.bankingId,
   }));
 
- const refundPaymentOptions = (refundInitDetails?.allPaymentMethods || []).map(
-  (item, index) => ({
-    ...item,
-    id:
-      item?.paymentMethodId ||
-      item?.bankId ||
-      `${item?.accountHolderName}-${item?.paymentMethod}-${index}`,
+//  const refundPaymentOptions = (refundInitDetails?.allPaymentMethods || []).map(
+//   (item, index) => ({
+//     ...item,
+//     id:
+//       item?.paymentMethodId ||
+//       item?.bankId ||
+//       `${item?.accountHolderName}-${item?.paymentMethod}-${index}`,
+
+//     accountHolderName:
+//       item?.accountHolderName ||
+//       item?.displayName ||
+//       "Account",
+
+//     accountType: item?.accountType || "BANK",
+
+//     subLabel:
+//       item?.accountType === "CASH"
+//         ? item?.cashAccountType || "Petty Cash"
+//         : item?.paymentMethod || "BANK",
+//   })
+// );
+
+
+const refundPaymentOptions = (
+  refundInitDetails?.listBanks || []
+).map((item, index) => {
+  const isCash = item?.bankName
+    ?.toLowerCase()
+    ?.includes("cash");
+
+  return {
+    id: item?.bankId || `account-${index}`,
+
+    bankId: item?.bankId,
 
     accountHolderName:
-      item?.accountHolderName ||
-      item?.displayName ||
-      "Account",
+      item?.accountHolderName || "Account",
 
-    accountType: item?.accountType || "BANK",
+    bankName:
+      item?.bankName || "Bank Account",
+
+    isCash,
 
     subLabel:
-      item?.accountType === "CASH"
-        ? item?.cashAccountType || "Petty Cash"
-        : item?.paymentMethod || "BANK",
-  })
-);
+      item?.bankName || "Bank Account",
+  };
+});
 
-console.log("refundPaymentOptions", refundPaymentOptions);
 
-  // console.log("refunddetails", refundBankOptions);
+
+
   
 
 
@@ -817,8 +843,10 @@ console.log(
           item => item.id === refundFrom
         );
 
-        const isCash =
-          selectedPayment?.accountType === "CASH";
+        // const isCash =
+        //   selectedPayment?.accountType === "CASH";
+
+          const isCash = selectedPayment?.isCash;
 
         return (
           <View style={styles.selectedPaymentContent}>
@@ -902,8 +930,7 @@ console.log(
             const isSelected =
               refundFrom === opt.id;
 
-            const isCash =
-              opt.accountType === "CASH";
+            const isCash = opt.isCash;
 
             return (
               <TouchableOpacity

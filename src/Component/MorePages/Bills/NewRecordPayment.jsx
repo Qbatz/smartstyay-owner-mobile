@@ -120,49 +120,71 @@ const NewRecordPayment = ({ route }) => {
         // setBalanceAmount((selectedBill?.dueAmount || 0) - num);
     };
 
-    // const transactionOptions = (bankList || []).map((item) => ({
-    //     label: `${item.accountHolderName || "Account"} - ${item.accountType}`,
-    //     value: item.bankingId,
+
+
+    // const transactionOptions = (
+    //     InitializeRecordPaymentDetails?.allPaymentMethods || []
+    // ).map((item, index) => ({
+    //     id: `${item?.bankId || "account"}-${index}`,
+
+    //     bankId: item?.bankId,
+
+    //     accountHolderName:
+    //         item?.accountHolderName ||
+    //         item?.displayName ||
+    //         "Account",
+
+    //     accountType: item?.accountType,
+
+    //     bankName: item?.bankName,
+
+    //     paymentMethod: item?.paymentMethod,
+
+    //     cashAccountType: item?.cashAccountType,
+
+    //     bankAccountType: item?.bankAccountType,
+
+    //     // Main selected value
+    //     label:
+    //         item?.paymentMethod ||
+    //         item?.cashAccountType ||
+    //         item?.bankName ||
+    //         item?.accountHolderName ||
+    //         "Account",
+
+    //     // Dropdown second line
+    //     subLabel:
+    //         item?.accountType === "CASH"
+    //             ? item?.cashAccountType || "Petty Cash"
+    //             : item?.bankName
+    //                 ? `${item.bankName}${item?.paymentMethod ? ` - ${item.paymentMethod}` : ""}`
+    //                 : item?.bankAccountType || "Bank Account",
     // }));
 
     const transactionOptions = (
-        InitializeRecordPaymentDetails?.allPaymentMethods || []
-    ).map((item, index) => ({
-        id: `${item?.bankId || "account"}-${index}`,
+        InitializeRecordPaymentDetails?.accountInfo || []
+    ).map((item, index) => {
+        const isCash = item?.bankName?.toLowerCase()?.includes("cash");
 
-        bankId: item?.bankId,
+        return {
+            id: item?.bankId || `account-${index}`,
+            bankId: item?.bankId,
 
-        accountHolderName:
-            item?.accountHolderName ||
-            item?.displayName ||
-            "Account",
+            accountHolderName:
+                item?.accountHolderName || "Account",
 
-        accountType: item?.accountType,
+            bankName:
+                item?.bankName || "Bank Account",
 
-        bankName: item?.bankName,
+            isCash,
 
-        paymentMethod: item?.paymentMethod,
+            label:
+                item?.accountHolderName || "Account",
 
-        cashAccountType: item?.cashAccountType,
-
-        bankAccountType: item?.bankAccountType,
-
-        // Main selected value
-        label:
-            item?.paymentMethod ||
-            item?.cashAccountType ||
-            item?.bankName ||
-            item?.accountHolderName ||
-            "Account",
-
-        // Dropdown second line
-        subLabel:
-            item?.accountType === "CASH"
-                ? item?.cashAccountType || "Petty Cash"
-                : item?.bankName
-                    ? `${item.bankName}${item?.paymentMethod ? ` - ${item.paymentMethod}` : ""}`
-                    : item?.bankAccountType || "Bank Account",
-    }));
+            subLabel:
+                item?.bankName || "Bank Account",
+        };
+    });
 
 
 
@@ -254,8 +276,8 @@ const NewRecordPayment = ({ route }) => {
                 item => item.id === selectedMode
             );
 
-            console.log("selectedPaymentMethod", selectedPaymentMethod);
-            
+            console.log("selectedPaymentMethod", selectedPaymentMethod?.bankId);
+
 
             // const res = await RecordPayment({
             //     hostelId: activeHostelId,
@@ -497,79 +519,77 @@ const NewRecordPayment = ({ route }) => {
                         <View style={{ flex: 1, marginRight: 5 }}>
                             <Text style={styles.txtinputhead}>Payment method <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                         <TouchableOpacity
-    onPress={() => setShowPaymentMode(!showPaymentMode)}
-    style={[
-        styles.paidDateBox,
-        styles.selectedPaymentBox,
-        { marginRight: 4 }
-    ]}
->
-    {selectedMode ? (
-        (() => {
-            const selectedPaymentMethod = transactionOptions.find(
-                o => o.id === selectedMode
-            );
+                            <TouchableOpacity
+                                onPress={() => setShowPaymentMode(!showPaymentMode)}
+                                style={[
+                                    styles.paidDateBox,
+                                    styles.selectedPaymentBox,
+                                    { marginRight: 4 }
+                                ]}
+                            >
+                                {selectedMode ? (
+                                    (() => {
+                                        const selectedPaymentMethod = transactionOptions.find(
+                                            o => o.id === selectedMode
+                                        );
 
-            const isCash =
-                selectedPaymentMethod?.accountType === "CASH";
+                                      const isCash = selectedPaymentMethod?.isCash;
 
-            return (
-                <>
-                    {/* Icon */}
-                    <View
-                        style={[
-                            styles.selectedPaymentIcon,
-                            isCash
-                                ? styles.cashIconBg
-                                : styles.bankIconBg,
-                        ]}
-                    >
-                        <Image
-                            source={isCash ? CashIcon : BankIcon}
-                            style={{
-                                width: 20,
-                                height: 20,
-                            }}
-                        />
-                    </View>
+                                        return (
+                                            <>
+                                                {/* Icon */}
+                                                <View
+                                                    style={[
+                                                        styles.selectedPaymentIcon,
+                                                        isCash
+                                                            ? styles.cashIconBg
+                                                            : styles.bankIconBg,
+                                                    ]}
+                                                >
+                                                    <Image
+                                                        source={isCash ? CashIcon : BankIcon}
+                                                        style={{
+                                                            width: 20,
+                                                            height: 20,
+                                                        }}
+                                                    />
+                                                </View>
 
-                    {/* Name + Type */}
-                    <View style={styles.selectedPaymentDetails}>
-                        <Text
-                            style={styles.selectedPaymentName}
-                            numberOfLines={1}
-                        >
-                            {selectedPaymentMethod?.accountHolderName}
-                        </Text>
+                                                {/* Name + Type */}
+                                                <View style={styles.selectedPaymentDetails}>
+                                                    <Text
+                                                        style={styles.selectedPaymentName}
+                                                        numberOfLines={1}
+                                                    >
+                                                        {selectedPaymentMethod?.accountHolderName}
+                                                    </Text>
 
-                        <Text
-                            style={styles.selectedPaymentSubText}
-                            numberOfLines={1}
-                        >
-                            {isCash
-                                ? "CASH"
-                                : selectedPaymentMethod?.paymentMethod || "BANK"}
-                        </Text>
-                    </View>
-                </>
-            );
-        })()
-    ) : (
-        <Text style={styles.selectPaymentPlaceholder}>
-            Select payment mode
-        </Text>
-    )}
+                                                    <Text
+                                                        style={styles.selectedPaymentSubText}
+                                                        numberOfLines={1}
+                                                    >
+                                                           {selectedPaymentMethod?.bankName}
 
-    <Image
-        source={DownArrow}
-        style={{
-            width: 18,
-            height: 18,
-            tintColor: "#555",
-        }}
-    />
-</TouchableOpacity>
+                                                    </Text>
+                                                </View>
+                                            </>
+                                        );
+                                    })()
+                                ) : (
+                                    <Text style={styles.selectPaymentPlaceholder}>
+                                        Select payment mode
+                                    </Text>
+                                )}
+
+                                <Image
+                                    source={DownArrow}
+                                    style={{
+                                        width: 18,
+                                        height: 18,
+                                        tintColor: "#555",
+                                    }}
+                                />
+                            </TouchableOpacity>
 
 
                             {/* {showPaymentMode && (
@@ -644,7 +664,7 @@ const NewRecordPayment = ({ route }) => {
                                         {transactionOptions.map((opt) => {
                                             const isSelected = selectedMode === opt.id;
 
-                                            const isCash = opt.accountType === "CASH";
+                                        const isCash = opt.isCash;
 
                                             return (
                                                 <TouchableOpacity
@@ -688,7 +708,7 @@ const NewRecordPayment = ({ route }) => {
                                                             style={styles.paymentMethodName}
                                                             numberOfLines={1}
                                                         >
-                                                            {opt.accountHolderName}
+                                                              {opt.accountHolderName}
                                                         </Text>
 
                                                         <Text
@@ -1124,47 +1144,47 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     selectedPaymentBox: {
-    height: 64,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-},
+        height: 64,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+    },
 
-selectedPaymentIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+    selectedPaymentIcon: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
 
-    alignItems: "center",
-    justifyContent: "center",
+        alignItems: "center",
+        justifyContent: "center",
 
-    marginRight: 10,
-},
+        marginRight: 10,
+    },
 
-selectedPaymentDetails: {
-    flex: 1,
-    justifyContent: "center",
-    marginRight: 8,
-},
+    selectedPaymentDetails: {
+        flex: 1,
+        justifyContent: "center",
+        marginRight: 8,
+    },
 
-selectedPaymentName: {
-    fontSize: 15,
-    fontFamily: "Gilroy-Semibold",
-    color: "#222222",
-},
+    selectedPaymentName: {
+        fontSize: 15,
+        fontFamily: "Gilroy-Semibold",
+        color: "#222222",
+    },
 
-selectedPaymentSubText: {
-    fontSize: 13,
-    fontFamily: "Gilroy-Medium",
-    color: "#697386",
-    marginTop: 2,
-},
+    selectedPaymentSubText: {
+        fontSize: 13,
+        fontFamily: "Gilroy-Medium",
+        color: "#697386",
+        marginTop: 2,
+    },
 
-selectPaymentPlaceholder: {
-    flex: 1,
-    fontSize: 15,
-    fontFamily: "Gilroy-Regular",
-    color: "#222222",
-},
+    selectPaymentPlaceholder: {
+        flex: 1,
+        fontSize: 15,
+        fontFamily: "Gilroy-Regular",
+        color: "#222222",
+    },
 
 })
 export default NewRecordPayment;

@@ -496,33 +496,36 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     console.log("IntializeexpensesList", IntializeexpensesList);
 
 
-    const paymentOptions =
-        (IntializeexpensesList?.allPaymentMethods || []).map((item, index) => {
-            const isCash = item?.accountType === "CASH";
+  const paymentOptions = (
+    IntializeexpensesList?.banks || []
+).map((item, index) => {
+    const isCash =
+        item?.bankName?.toUpperCase() === "CASH";
 
-            return {
-                ...item,
+    return {
+        id: item?.bankId || `account-${index}`,
+        bankId: item?.bankId,
 
-                id: item?.bankId,
+        accountHolderName:
+            item?.holderName || "Account",
 
-                optionId: `${item?.bankId || "account"}-${item?.paymentMethodId || "method"}-${index}`,
+        displayName:
+            item?.holderName || "Account",
 
-                name:
-                    item?.accountHolderName ||
-                    item?.displayName ||
-                    item?.holderName ||
-                    "Account",
+        bankName:
+            item?.bankName || "",
 
-                subLabel: isCash
-                    ? item?.cashAccountType || "Petty Cash"
-                    : item?.bankName
-                        ? `${item.bankName}${item?.paymentMethod ? ` - ${item.paymentMethod}` : ""}`
-                        : item?.bankAccountType || "Bank Account",
-            };
-        });
+        accountType:
+            isCash ? "CASH" : "BANK",
+
+        isCash,
+
+        subLabel:
+            item?.bankName || "Bank Account",
+    };
+});
 
 
-    console.log("paymentOptions", paymentOptions);
 
     const filteredStateList = stateList?.filter((s) =>
         s.label.toLowerCase().includes(stateQuery.toLowerCase())
@@ -1018,8 +1021,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         }, [handleLeavePage])
     );
 
-    console.log("sitha",amount)
-    console.log("discountTH",discount)
+    console.log("sitha", amount)
+    console.log("discountTH", discount)
 
 
     const handleSubmit = async () => {
@@ -1029,8 +1032,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         console.log("validateExpenseForm", validateExpenseForm);
         console.log("Validation Passed");
 
-        if (isApplyTriggeredRef.current) return
-        isApplyTriggeredRef.current = true
+        if (isApplyTriggeredRef.current) return;
+
+        isApplyTriggeredRef.current = true;
+        setLoading(true);
 
         try {
 
@@ -1138,12 +1143,18 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
             }
         }
         catch (error) {
-            console.log(error)
-            isApplyTriggeredRef.current = false
+            console.log(error);
+
+            setModalType("error");
+            setModalMessage(
+                error?.message || "Something went wrong"
+            );
+            setShowSuccessModal(true);
+
+        } finally {
+            isApplyTriggeredRef.current = false;
+            setLoading(false);
         }
-        // finally {
-        //     isApplyTriggeredRef.current = false
-        // }
 
     };
 
@@ -1650,14 +1661,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                 <View
                                                     style={[
                                                         styles.paymentMethodIcon,
-                                                        selectedMode?.accountType === "CASH"
+                                                      selectedMode?.isCash
                                                             ? styles.cashIconBg
                                                             : styles.bankIconBg,
                                                     ]}
                                                 >
                                                     <Image
                                                         source={
-                                                            selectedMode?.accountType === "CASH"
+                                                            selectedMode?.isCash
                                                                 ? CashIcon
                                                                 : BankIcon
                                                         }
@@ -1675,21 +1686,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                         style={styles.paymentMethodSubText}
                                                         numberOfLines={1}
                                                     >
-                                                        {selectedMode?.accountType === "CASH"
-                                                            ? selectedMode?.cashAccountType || "Petty Cash"
-                                                            : selectedMode?.bankName
-                                                                ? `${selectedMode.bankName}${selectedMode?.paymentMethod
-                                                                    ? ` - ${selectedMode.paymentMethod}`
-                                                                    : ""
-                                                                }`
-                                                                : selectedMode?.bankAccountType || "Bank Account"}
+                                                       {selectedMode?.subLabel || "Bank Account"}
                                                     </Text>
                                                 </View>
 
                                                 <View
                                                     style={[
                                                         styles.paymentTypeBadge,
-                                                        selectedMode?.accountType === "CASH"
+                                                      selectedMode?.isCash
                                                             ? styles.cashBadge
                                                             : styles.bankBadge,
                                                     ]}
@@ -1697,12 +1701,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                     <Text
                                                         style={[
                                                             styles.paymentTypeText,
-                                                            selectedMode?.accountType === "CASH"
+                                                           selectedMode?.isCash
                                                                 ? styles.cashText
                                                                 : styles.bankText,
                                                         ]}
                                                     >
-                                                        {selectedMode?.accountType || "BANK"}
+                                                       {selectedMode?.isCash ? "CASH" : "BANK"}
                                                     </Text>
                                                 </View>
                                             </View>
@@ -2047,108 +2051,101 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
 
                                         <View ref={modePaymentRef} collapsable={false}>
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.paymentSelectBox,
-                                            isEditMode && { opacity: 0.4 },
-                                        ]}
-                                        disabled={isEditMode}
-                                        onPress={() => {
-                                            Keyboard.dismiss();
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.paymentSelectBox,
+                                                    isEditMode && { opacity: 0.4 },
+                                                ]}
+                                                disabled={isEditMode}
+                                                onPress={() => {
+                                                    Keyboard.dismiss();
 
-                                            if (!modePaymentOpen) {
-                                                modePaymentRef.current?.measureInWindow(
-                                                    (x, y, width, height) => {
-                                                        setModePaymentDropdownPos({
-                                                            top: y + height + 4,
-                                                            left: x,
-                                                            width,
-                                                        });
+                                                    if (!modePaymentOpen) {
+                                                        modePaymentRef.current?.measureInWindow(
+                                                            (x, y, width, height) => {
+                                                                setModePaymentDropdownPos({
+                                                                    top: y + height + 4,
+                                                                    left: x,
+                                                                    width,
+                                                                });
+                                                            }
+                                                        );
                                                     }
-                                                );
-                                            }
 
-                                            setModePaymentOpen(!modePaymentOpen);
-                                            setCategoryOpen(false);
-                                            setSubCategoryOpen(false);
-                                            setVendorOpen(false);
-                                        }}
-                                    >
-                                        {selectedMode ? (
-                                            <View style={styles.selectedPaymentContainer}>
-                                                <View
-                                                    style={[
-                                                        styles.paymentMethodIcon,
-                                                        selectedMode?.accountType === "CASH"
-                                                            ? styles.cashIconBg
-                                                            : styles.bankIconBg,
-                                                    ]}
-                                                >
-                                                    <Image
-                                                        source={
-                                                            selectedMode?.accountType === "CASH"
-                                                                ? CashIcon
-                                                                : BankIcon
-                                                        }
-                                                        style={styles.paymentMethodIconImage}
-                                                    />
-                                                </View>
+                                                    setModePaymentOpen(!modePaymentOpen);
+                                                    setCategoryOpen(false);
+                                                    setSubCategoryOpen(false);
+                                                    setVendorOpen(false);
+                                                }}
+                                            >
+                                                {selectedMode ? (
+                                                    <View style={styles.selectedPaymentContainer}>
+                                                        <View
+                                                            style={[
+                                                                styles.paymentMethodIcon,
+                                                              selectedMode?.isCash
+                                                                    ? styles.cashIconBg
+                                                                    : styles.bankIconBg,
+                                                            ]}
+                                                        >
+                                                            <Image
+                                                                source={
+                                                                  selectedMode?.isCash
+                                                                        ? CashIcon
+                                                                        : BankIcon
+                                                                }
+                                                                style={styles.paymentMethodIconImage}
+                                                            />
+                                                        </View>
 
-                                                <View style={styles.selectedPaymentDetails}>
-                                                    <Text style={styles.paymentMethodName}>
-                                                        {selectedMode?.displayName ||
-                                                            selectedMode?.accountHolderName ||
-                                                            selectedMode?.name}
+                                                        <View style={styles.selectedPaymentDetails}>
+                                                            <Text style={styles.paymentMethodName}>
+                                                                {selectedMode?.displayName ||
+                                                                    selectedMode?.accountHolderName ||
+                                                                    selectedMode?.name}
+                                                            </Text>
+                                                            <Text
+                                                                style={styles.paymentMethodSubText}
+                                                                numberOfLines={1}
+                                                            >
+                                                              {selectedMode?.subLabel || "Bank Account"}
+                                                            </Text>
+                                                        </View>
+
+                                                        <View
+                                                            style={[
+                                                                styles.paymentTypeBadge,
+                                                               selectedMode?.isCash
+                                                                    ? styles.cashBadge
+                                                                    : styles.bankBadge,
+                                                            ]}
+                                                        >
+                                                            <Text
+                                                                style={[
+                                                                    styles.paymentTypeText,
+                                                                  selectedMode?.isCash
+                                                                        ? styles.cashText
+                                                                        : styles.bankText,
+                                                                ]}
+                                                            >
+                                                             {selectedMode?.isCash ? "CASH" : "BANK"}
+                                                            </Text>
+                                                        </View>
+                                                    </View>
+                                                ) : (
+                                                    <Text style={styles.paymentPlaceholder}>
+                                                        Select Mode
                                                     </Text>
-                                                    <Text
-                                                        style={styles.paymentMethodSubText}
-                                                        numberOfLines={1}
-                                                    >
-                                                        {selectedMode?.accountType === "CASH"
-                                                            ? selectedMode?.cashAccountType || "Petty Cash"
-                                                            : selectedMode?.bankName
-                                                                ? `${selectedMode.bankName}${selectedMode?.paymentMethod
-                                                                    ? ` - ${selectedMode.paymentMethod}`
-                                                                    : ""
-                                                                }`
-                                                                : selectedMode?.bankAccountType || "Bank Account"}
-                                                    </Text>
-                                                </View>
+                                                )}
 
-                                                <View
-                                                    style={[
-                                                        styles.paymentTypeBadge,
-                                                        selectedMode?.accountType === "CASH"
-                                                            ? styles.cashBadge
-                                                            : styles.bankBadge,
-                                                    ]}
-                                                >
-                                                    <Text
-                                                        style={[
-                                                            styles.paymentTypeText,
-                                                            selectedMode?.accountType === "CASH"
-                                                                ? styles.cashText
-                                                                : styles.bankText,
-                                                        ]}
-                                                    >
-                                                        {selectedMode?.accountType || "BANK"}
-                                                    </Text>
-                                                </View>
-                                            </View>
-                                        ) : (
-                                            <Text style={styles.paymentPlaceholder}>
-                                                Select Mode
-                                            </Text>
-                                        )}
+                                                <Image
+                                                    source={DownArrow}
+                                                    style={styles.paymentArrow}
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
 
-                                        <Image
-                                            source={DownArrow}
-                                            style={styles.paymentArrow}
-                                        />
-                                    </TouchableOpacity>
-                                </View>
-
-                                {/* {modePaymentOpen && (
+                                        {/* {modePaymentOpen && (
                                     <View style={styles.expensesDropdownMenu}>
                                         <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
                                             {paymentOptions.length === 0 ? (
@@ -2195,13 +2192,13 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                     </View>
                                 )} */}
 
-                                {errors.paymentMethod && (
-                                    <ErrorMessage
-                                        message={errors.paymentMethod}
-                                        type="error"
-                                    />
-                                )}
-                                      
+                                        {errors.paymentMethod && (
+                                            <ErrorMessage
+                                                message={errors.paymentMethod}
+                                                type="error"
+                                            />
+                                        )}
+
                                     </>)}
 
                                 {paymentStatus === "Credit / Pending" && (
@@ -2766,8 +2763,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
-                                disabled={isApplyTriggeredRef.current}
+                                style={[ styles.submitBtn,
+                                    loading && { opacity: 0.6 }
+                                ]}
+                                disabled={loading}
                                 onPress={handleSubmit}
                             >
                                 <Text
@@ -2880,10 +2879,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                         >
                             {paymentOptions.length > 0 ? (
                                 paymentOptions.map((item, index) => {
-                                    const isSelected =
-                                        selectedMode?.bankId === item?.bankId &&
-                                        selectedMode?.paymentMethodId ===
-                                        item?.paymentMethodId;
+                              const isSelected =
+    selectedMode?.bankId === item?.bankId;
 
                                     return (
                                         <TouchableOpacity

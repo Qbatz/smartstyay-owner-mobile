@@ -1586,7 +1586,33 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
         if (res.success) {
-            setAccountList(res?.data?.allPaymentMethods || []);
+            setAccountList(
+                (res?.data?.bankDetails || []).map((item, index) => ({
+                    id: item?.bankId || `account-${index}`,
+                    bankId: item?.bankId,
+
+                    displayName: item?.holderName || "Account",
+                    accountHolderName: item?.holderName || "Account",
+
+                    bankName: item?.bankName || "",
+                    upiId: item?.upiId || "",
+                    type: item?.type || "BANK",
+                    accountType: item?.type || "BANK",
+                    isUpi: item?.isUpi || false,
+
+                    cashAccountType:
+                        item?.type === "CASH"
+                            ? item?.bankName || "Cash"
+                            : "",
+
+                    bankAccountType:
+                        item?.type !== "CASH"
+                            ? item?.bankName || "Bank Account"
+                            : "",
+
+                    paymentMethod: item?.type || "BANK",
+                }))
+            );
             setBeds(res?.data?.listBeds);
         } else {
             setBeds([]);
@@ -1595,50 +1621,41 @@ export default function AddTenantNewform({ navigation, route }) {
     };
 
 
-    const transactionOptions = (AccountsList || []).map((item, index) => ({
-        id: `${item?.bankId || "account"}-${item?.paymentMethodId || "method"}-${index}`,
+   const transactionOptions = (AccountsList || []).map((item, index) => ({
+    id: item?.bankId || `account-${index}`,
 
-        bankId: item?.bankId,
+    bankId: item?.bankId,
 
-        paymentMethodId: item?.paymentMethodId,
+    accountHolderName:
+        item?.accountHolderName ||
+        item?.displayName ||
+        "Account",
 
-        accountHolderName:
-            item?.accountHolderName ||
-            item?.displayName ||
-            "Account",
+    displayName:
+        item?.displayName ||
+        item?.accountHolderName ||
+        "Account",
 
-        displayName:
-            item?.displayName ||
-            item?.accountHolderName ||
-            "Account",
+    accountType: item?.accountType || item?.type || "BANK",
 
-        accountType: item?.accountType,
+    bankName: item?.bankName || "",
 
-        bankName: item?.bankName,
+    paymentMethod: item?.paymentMethod || item?.type || "BANK",
 
-        paymentMethod: item?.paymentMethod,
+    cashAccountType:
+        item?.cashAccountType || item?.bankName || "Cash",
 
-        cashAccountType: item?.cashAccountType,
+    bankAccountType:
+        item?.bankAccountType || item?.bankName || "Bank Account",
 
-        bankAccountType: item?.bankAccountType,
+    upiId: item?.upiId || "",
+    isUpi: item?.isUpi || false,
 
-        accountNumber: item?.accountNumber,
-
-        branchName: item?.branchName,
-
-        // second line
-        subLabel:
-            item?.accountType === "CASH"
-                ? item?.cashAccountType || "Petty Cash"
-                : item?.bankName
-                    ? `${item.bankName}${item?.paymentMethod
-                        ? ` - ${item.paymentMethod}`
-                        : ""
-                    }`
-                    : item?.paymentMethod ||
-                    item?.bankAccountType ||
-                    "Bank Account",
-    }));
+    subLabel:
+        item?.accountType === "CASH"
+            ? item?.cashAccountType || item?.bankName || "Cash"
+            : item?.bankName || item?.paymentMethod || "Bank Account",
+}));
 
     const selectType = (id, type) => {
 
@@ -7222,9 +7239,8 @@ export default function AddTenantNewform({ navigation, route }) {
                             >
                                 {transactionOptions?.length > 0 ? (
                                     transactionOptions.map((payment, index) => {
-                                        const isSelected =
-                                            accountSelected?.paymentMethodId === payment?.paymentMethodId &&
-                                            accountSelected?.bankId === payment?.bankId;
+                                      const isSelected =
+    accountSelected?.bankId === payment?.bankId;
 
                                         const isCash = payment?.accountType === "CASH";
 
@@ -9269,29 +9285,29 @@ const styles = StyleSheet.create({
         marginTop: 3,
     },
 
- paymentDropdown: {
-    position: "absolute",   
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#D9DDE5",
-    borderRadius: 16,
-    zIndex: 9999,
-    elevation: 10,
-    maxHeight: 220,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-},
-dropdownBackdrop: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 9998,
-},
+    paymentDropdown: {
+        position: "absolute",
+        backgroundColor: "#FFFFFF",
+        borderWidth: 1,
+        borderColor: "#D9DDE5",
+        borderRadius: 16,
+        zIndex: 9999,
+        elevation: 10,
+        maxHeight: 220,
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+    },
+    dropdownBackdrop: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 9998,
+    },
 
     paymentOption: {
         minHeight: 70,
