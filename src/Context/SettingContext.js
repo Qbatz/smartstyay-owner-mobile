@@ -631,7 +631,7 @@ export const SettingProvider = ({ children }) => {
 
 
   const getTenantRegisterReport = async (hostelId, filters = {}) => {
-    console.log("karana",filters)
+    console.log("karana", filters)
     try {
       setLoading(true);
 
@@ -731,6 +731,8 @@ export const SettingProvider = ({ children }) => {
         }
       );
 
+      console.log("requestur", res?.config)
+
       return {
         success: true,
         data: res.data,
@@ -745,107 +747,107 @@ export const SettingProvider = ({ children }) => {
     }
   };
 
- const downloadReceiptReport = async (hostelId, filters = {}) => {
-  if (!hostelId) {
-    return {
-      success: false,
-      message: "Invalid hostelId",
-    };
-  }
-
-  try {
-    setLoading(true);
-
-    console.log("filters", filters);
-    
-
-    const params = {
-      startDate: filters?.startDate,
-      endDate: filters?.endDate,
-      invoiceType: filters?.invoiceType,
-      collectedBy: filters?.collectedBy,
-      paymentMode: filters?.paymentMode,
-      period: filters?.period,
-    };
-
-    const cleanParams = Object.fromEntries(
-      Object.entries(params).filter(
-        ([_, value]) =>
-          value !== undefined &&
-          value !== null &&
-          value !== "" &&
-          (!Array.isArray(value) || value.length > 0)
-      )
-    );
-
-    console.log(
-      "========== RECEIPT PDF CLEAN PARAMS =========="
-    );
-    console.log(
-      JSON.stringify(cleanParams, null, 2)
-    );
-
-    const queryString = qs.stringify(cleanParams, {
-      arrayFormat: "repeat",
-    });
-
-    console.log(
-      "========== RECEIPT PDF QUERY =========="
-    );
-    console.log("queryString",queryString);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const pdfUrl =
-      `/v2/reports/download/receipts/${hostelId}?${queryString}`;
-
-    console.log(
-      "========== RECEIPT PDF URL =========="
-    );
-    console.log(pdfUrl);
-
-    const res = await axios.get(pdfUrl, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    console.log(
-      "========== RECEIPT PDF RESPONSE =========="
-    );
-    console.log(res);
-
-    if (res.status === 200) {
+  const downloadReceiptReport = async (hostelId, filters = {}) => {
+    if (!hostelId) {
       return {
-        success: true,
-        url: res.data,
+        success: false,
+        message: "Invalid hostelId",
       };
     }
 
-    return {
-      success: false,
-      message: "Download failed",
-    };
+    try {
+      setLoading(true);
 
-  } catch (err) {
-    console.log(
-      "========== RECEIPT PDF ERROR =========="
-    );
-    console.log(
-      err.response?.data || err.message
-    );
+      console.log("filters", filters);
 
-    return {
-      success: false,
-      message:
-        err.response?.data || err.message,
-    };
 
-  } finally {
-    setLoading(false);
-  }
-};
+      const params = {
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        invoiceType: filters?.invoiceType,
+        collectedBy: filters?.collectedBy,
+        paymentMode: filters?.paymentMode,
+        period: filters?.period,
+      };
+
+      const cleanParams = Object.fromEntries(
+        Object.entries(params).filter(
+          ([_, value]) =>
+            value !== undefined &&
+            value !== null &&
+            value !== "" &&
+            (!Array.isArray(value) || value.length > 0)
+        )
+      );
+
+      console.log(
+        "========== RECEIPT PDF CLEAN PARAMS =========="
+      );
+      console.log(
+        JSON.stringify(cleanParams, null, 2)
+      );
+
+      const queryString = qs.stringify(cleanParams, {
+        arrayFormat: "repeat",
+      });
+
+      console.log(
+        "========== RECEIPT PDF QUERY =========="
+      );
+      console.log("queryString", queryString);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const pdfUrl =
+        `/v2/reports/download/receipts/${hostelId}?${queryString}`;
+
+      console.log(
+        "========== RECEIPT PDF URL =========="
+      );
+      console.log(pdfUrl);
+
+      const res = await axios.get(pdfUrl, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      console.log(
+        "========== RECEIPT PDF RESPONSE =========="
+      );
+      console.log(res);
+
+      if (res.status === 200) {
+        return {
+          success: true,
+          url: res.data,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Download failed",
+      };
+
+    } catch (err) {
+      console.log(
+        "========== RECEIPT PDF ERROR =========="
+      );
+      console.log(
+        err.response?.data || err.message
+      );
+
+      return {
+        success: false,
+        message:
+          err.response?.data || err.message,
+      };
+
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const downloadExpenseReport = async (hostelId, filters) => {
     if (!hostelId) {
@@ -893,6 +895,9 @@ export const SettingProvider = ({ children }) => {
             }),
         }
       );
+      console.log("resana:", res);
+      console.log("sentbody:", res?.config?.data);
+      console.log("sentparams:", res?.config?.params);
 
       if (res.status === 200) {
         return {

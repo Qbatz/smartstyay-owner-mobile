@@ -235,10 +235,13 @@ const ExpenseRegister = ({ navigation }) => {
     },
   ];
 
+  console.log("selectedPeriod",selectedMonth)
+  console.log("allselec",allSelectedMonth)
   const handleDownloadExpenseReport = async () => {
+    console.log("allselecsinga",allSelectedMonth)
 
     const finalMonth =
-      allSelectedMonth !== undefined ? allSelectedMonth : selectedMonth;
+      allSelectedMonth || selectedMonth;
 
     const finalCategory = categoryValue !== undefined ? categoryValue : selectedCategory;
 
@@ -247,7 +250,7 @@ const ExpenseRegister = ({ navigation }) => {
     const finalPaymentMode = paymentModeValue != undefined ? paymentModeValue : selectedPayment;
 
     const filters = {
-      period: finalMonth || undefined,
+      period: selectedMonth,
       category: finalCategory.length ? finalCategory : undefined,
       subCategory: finalSubCategory.length ? finalSubCategory : undefined,
       paymentMode: finalPaymentMode.length ? finalPaymentMode : undefined,
@@ -257,8 +260,10 @@ const ExpenseRegister = ({ navigation }) => {
       size: 10,
     };
 
+    console.log("basedPeriod",filters)
 
     const res = await downloadExpenseReport(activeHostelId, filters)
+
 
     if (res?.success && res?.url) {
       await CommonModule.downloadAndViewDocument(res.url)
