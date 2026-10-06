@@ -84,20 +84,20 @@ export default function MoreDesign({ navigation }) {
     { title: "Assets", icon: Assetsimage, bg: "#FF4EB5", screen: "Assets" },
     //  ...(environment?.toUpperCase() !== "PROD"
     //   ? [
-    // { title: "Old Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
-    //    ]
-    //   : []),
+    { title: "Banking", icon: Bankingimage, bg: "#0F6EFF", screen: "Banking" },
+      //  ]
+      // : []),
 
-    // ...(environment?.toUpperCase() !== "PROD"
-    //   ? [
+     ...(environment?.toUpperCase() !== "PROD"
+       ? [
         {
-          title: "Banking",
+          title: "New Banking",
           icon: Bankingimage,
           bg: "#0F6EFF",
           screen: "NewBankingScreen",
         },
-      // ]
-      // : []),
+       ]
+       : []),
 
     // { title: "Bills", icon: Billsimage, bg: "#00C4FF", screen: "Bills" },
     {

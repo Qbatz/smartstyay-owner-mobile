@@ -2325,37 +2325,29 @@ export default function BillsDesign({ route }) {
 
 
   const refundPaymentOptions = (
-    refundInitDetails?.allPaymentMethods || []
-  ).map((item, index) => ({
-    id: `${item?.bankId || "account"}-${index}`,
+    refundInitDetails?.listBanks || []
+  ).map((item, index) => {
+    const isCash = item?.bankName
+      ?.toLowerCase()
+      ?.includes("cash");
 
-    bankId: item?.bankId,
+    return {
+      id: item?.bankId || `account-${index}`,
 
-    accountHolderName:
-      item?.accountHolderName ||
-      item?.displayName ||
-      "Account",
+      bankId: item?.bankId,
 
-    accountType: item?.accountType,
+      accountHolderName:
+        item?.accountHolderName || "Account",
 
-    bankName: item?.bankName,
+      bankName:
+        item?.bankName || "Bank Account",
 
-    paymentMethod: item?.paymentMethod,
+      isCash,
 
-    cashAccountType: item?.cashAccountType,
-
-    bankAccountType: item?.bankAccountType,
-
-    subLabel:
-      item?.accountType === "CASH"
-        ? item?.cashAccountType || "Petty Cash"
-        : item?.bankName
-          ? `${item.bankName}${item?.paymentMethod
-            ? ` - ${item.paymentMethod}`
-            : ""
-          }`
-          : item?.bankAccountType || "Bank Account",
-  }));
+      subLabel:
+        item?.bankName || "Bank Account",
+    };
+  });
 
 
   const handleReceiptMenu = (item, id) => {
@@ -2573,209 +2565,215 @@ export default function BillsDesign({ route }) {
   }
 
 
-//   const handleSaveRefund = async () => {
-//     setRefundAmountError("");
-//     setRefundDateError("");
-//     setRefundFromError("");
+  //   const handleSaveRefund = async () => {
+  //     setRefundAmountError("");
+  //     setRefundDateError("");
+  //     setRefundFromError("");
 
-//     let valid = true;
+  //     let valid = true;
 
-//     if (!refundAmount || Number(refundAmount) <= 0) {
-//       setRefundAmountError("Please Enter Refund Amount");
-//       valid = false;
-//     }
-
-
-//     if (!refundDate) {
-//       setRefundDateError("Please Select Refund Date");
-//       valid = false;
-//     }
-
-//     if (!refundFrom) {
-//       setRefundFromError("Please Select Refund Account");
-//       valid = false;
-//     }
-
-//     if (!valid) return;
-//     if (isRefundClicked) return;
-//     setIsRefundClicked(true);
+  //     if (!refundAmount || Number(refundAmount) <= 0) {
+  //       setRefundAmountError("Please Enter Refund Amount");
+  //       valid = false;
+  //     }
 
 
-//     const selectedRefundPayment = refundPaymentOptions.find(
-//     item => item?.id === refundFrom)
+  //     if (!refundDate) {
+  //       setRefundDateError("Please Select Refund Date");
+  //       valid = false;
+  //     }
 
-// console.log("selectedRefundPayment", selectedRefundPayment);
+  //     if (!refundFrom) {
+  //       setRefundFromError("Please Select Refund Account");
+  //       valid = false;
+  //     }
 
-//     const payload = {
-//       refundAmount: String(refundAmount),
-//       refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
-//       bankId: selectedRefundPayment?.bankId,
-//       referenceNumber: transactionId || "",
-//       invoiceId: selectedBill.invoiceId,
-//       hostelId: activeHostelId,
-//     };
-
-//     console.log("payload", payload);
+  //     if (!valid) return;
+  //     if (isRefundClicked) return;
+  //     setIsRefundClicked(true);
 
 
-//     try {
+  //     const selectedRefundPayment = refundPaymentOptions.find(
+  //     item => item?.id === refundFrom)
 
-//       const res = await CreateRefund({
-//         hostelId: activeHostelId,
-//         invoiceId: selectedBill?.invoiceId,
-//         payload,
-//       });
+  // console.log("selectedRefundPayment", selectedRefundPayment);
 
-//       if (res?.success) {
-//         setModalType("success");
-//         setModalMessage("Refund successfully");
-//         setShowSuccessModal(true);
-//         setTimeout(() => setShowSuccessModal(false), 1500);
+  //     const payload = {
+  //       refundAmount: String(refundAmount),
+  //       refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
+  //       bankId: selectedRefundPayment?.bankId,
+  //       referenceNumber: transactionId || "",
+  //       invoiceId: selectedBill.invoiceId,
+  //       hostelId: activeHostelId,
+  //     };
 
-//         setShowBillDetails(false)
-//         GetAllBillDetails(activeHostelId);
-//         setShowRefundPayment(false);
-//         resetRefundForm();
-//         setRefundAmount("");
-//         setRefundDate(null);
-//         setRefundFrom("");
-//         setTransactionId("");
-//         setTimeout(() => {
-//           setIsRefundClicked(false)
-//         }, 1500);
-//       }
-//       else if (res?.refundableError) {
-//         setModalType("warning");
-//         setModalMessage(res?.refundableError);
-//         setShowSuccessModal(true);
-//         setTimeout(() => setShowSuccessModal(false), 1500);
-//       } else {
-//         setModalType("warning");
-//         setModalMessage(res?.message);
-//         setShowSuccessModal(true);
-//         setTimeout(() => setShowSuccessModal(false), 1500);
-//       }
-//     } catch (error) {
-//       console.log(error)
-//       setIsRefundClicked(false);
-//     }
-//   };
+  //     console.log("payload", payload);
 
 
-const handleSaveRefund = async () => {
-  setRefundAmountError("");
-  setRefundDateError("");
-  setRefundFromError("");
+  //     try {
 
-  let valid = true;
+  //       const res = await CreateRefund({
+  //         hostelId: activeHostelId,
+  //         invoiceId: selectedBill?.invoiceId,
+  //         payload,
+  //       });
 
-  if (!refundAmount || Number(refundAmount) <= 0) {
-    setRefundAmountError("Please Enter Refund Amount");
-    valid = false;
-  }
+  //       if (res?.success) {
+  //         setModalType("success");
+  //         setModalMessage("Refund successfully");
+  //         setShowSuccessModal(true);
+  //         setTimeout(() => setShowSuccessModal(false), 1500);
 
-  if (!refundDate) {
-    setRefundDateError("Please Select Refund Date");
-    valid = false;
-  }
+  //         setShowBillDetails(false)
+  //         GetAllBillDetails(activeHostelId);
+  //         setShowRefundPayment(false);
+  //         resetRefundForm();
+  //         setRefundAmount("");
+  //         setRefundDate(null);
+  //         setRefundFrom("");
+  //         setTransactionId("");
+  //         setTimeout(() => {
+  //           setIsRefundClicked(false)
+  //         }, 1500);
+  //       }
+  //       else if (res?.refundableError) {
+  //         setModalType("warning");
+  //         setModalMessage(res?.refundableError);
+  //         setShowSuccessModal(true);
+  //         setTimeout(() => setShowSuccessModal(false), 1500);
+  //       } else {
+  //         setModalType("warning");
+  //         setModalMessage(res?.message);
+  //         setShowSuccessModal(true);
+  //         setTimeout(() => setShowSuccessModal(false), 1500);
+  //       }
+  //     } catch (error) {
+  //       console.log(error)
+  //       setIsRefundClicked(false);
+  //     }
+  //   };
 
-  if (!refundFrom) {
-    setRefundFromError("Please Select Refund Account");
-    valid = false;
-  }
 
-  if (!valid) return;
+  const handleSaveRefund = async () => {
+    setRefundAmountError("");
+    setRefundDateError("");
+    setRefundFromError("");
 
-  if (isRefundClicked) return;
+    let valid = true;
 
-  setIsRefundClicked(true);
-
-  try {
-    const selectedRefundPayment = refundPaymentOptions.find(
-      item => item?.id === refundFrom
-    );
-
-    const payload = {
-      refundAmount: String(refundAmount),
-      refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
-      bankId: selectedRefundPayment?.bankId,
-      referenceNumber: transactionId || "",
-      invoiceId: selectedBill?.invoiceId,
-      hostelId: activeHostelId,
-    };
-
-    const res = await CreateRefund({
-      hostelId: activeHostelId,
-      invoiceId: selectedBill?.invoiceId,
-      payload,
-    });
-
-    if (res?.success) {
-      setModalType("success");
-      setModalMessage("Refund successfully");
-      setShowSuccessModal(true);
-
-      setShowBillDetails(false);
-      setShowRefundPayment(false);
-
-      await GetAllBillDetails(activeHostelId);
-
-      resetRefundForm();
-
-      setRefundAmount("");
-      setRefundDate(null);
-      setRefundFrom("");
-      setTransactionId("");
-
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1500);
-
-      return;
+    if (!refundAmount || Number(refundAmount) <= 0) {
+      setRefundAmountError("Please Enter Refund Amount");
+      valid = false;
     }
 
-    if (res?.refundableError) {
+    if (!refundDate) {
+      setRefundDateError("Please Select Refund Date");
+      valid = false;
+    }
+
+    if (!refundFrom) {
+      setRefundFromError("Please Select Refund Account");
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    if (isRefundClicked) return;
+
+    setIsRefundClicked(true);
+
+    try {
+      const selectedRefundPayment = refundPaymentOptions.find(
+        item => item?.id === refundFrom
+      );
+
+      console.log("selectedRefundPayment", selectedRefundPayment);
+      
+
+      const payload = {
+        refundAmount: String(refundAmount),
+        refundDate: dayjs(refundDate).format("DD-MM-YYYY"),
+        bankId: selectedRefundPayment?.bankId,
+        referenceNumber: transactionId || "",
+        invoiceId: selectedBill?.invoiceId,
+        hostelId: activeHostelId,
+      };
+
+      console.log("refundpayload", payload);
+      
+
+      const res = await CreateRefund({
+        hostelId: activeHostelId,
+        invoiceId: selectedBill?.invoiceId,
+        payload,
+      });
+
+      if (res?.success) {
+        setModalType("success");
+        setModalMessage("Refund successfully");
+        setShowSuccessModal(true);
+
+        setShowBillDetails(false);
+        setShowRefundPayment(false);
+
+        await GetAllBillDetails(activeHostelId);
+
+        resetRefundForm();
+
+        setRefundAmount("");
+        setRefundDate(null);
+        setRefundFrom("");
+        setTransactionId("");
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1500);
+
+        return;
+      }
+
+      if (res?.refundableError) {
+        setModalType("warning");
+        setModalMessage(res.refundableError);
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1500);
+
+        return;
+      }
+
       setModalType("warning");
-      setModalMessage(res.refundableError);
+      setModalMessage(
+        res?.message || "Unable to process refund"
+      );
       setShowSuccessModal(true);
 
       setTimeout(() => {
         setShowSuccessModal(false);
       }, 1500);
 
-      return;
+    } catch (error) {
+
+      console.log("Refund error", error);
+
+      setModalType("warning");
+      setModalMessage(
+        error?.response?.data?.message ||
+        "Something went wrong"
+      );
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1500);
+
+    } finally {
+
+      setIsRefundClicked(false);
     }
-
-    setModalType("warning");
-    setModalMessage(
-      res?.message || "Unable to process refund"
-    );
-    setShowSuccessModal(true);
-
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 1500);
-
-  } catch (error) {
-
-    console.log("Refund error", error);
-
-    setModalType("warning");
-    setModalMessage(
-      error?.response?.data?.message ||
-      "Something went wrong"
-    );
-    setShowSuccessModal(true);
-
-    setTimeout(() => {
-      setShowSuccessModal(false);
-    }, 1500);
-
-  } finally {
-
-    setIsRefundClicked(false);
-  }
-};
+  };
 
 
 
@@ -7187,8 +7185,7 @@ const handleSaveRefund = async () => {
                               item => item.id === refundFrom
                             );
 
-                            const isCash =
-                              selectedPayment?.accountType === "CASH";
+                            const isCash = selectedPayment?.isCash;
 
                             return (
                               <>
@@ -7255,7 +7252,6 @@ const handleSaveRefund = async () => {
                       </TouchableOpacity>
 
 
-                      {/* DROPDOWN */}
                       {showRefundFrom && (
                         <View style={styles.transactiondropdown}>
 
@@ -7263,14 +7259,12 @@ const handleSaveRefund = async () => {
                             nestedScrollEnabled
                             showsVerticalScrollIndicator={false}
                           >
-
-                            {refundPaymentOptions.map((opt) => {
+                            {refundPaymentOptions?.map((opt) => {
 
                               const isSelected =
                                 refundFrom === opt.id;
 
-                              const isCash =
-                                opt.accountType === "CASH";
+                              const isCash = opt.isCash;
 
                               return (
                                 <TouchableOpacity
@@ -7282,11 +7276,8 @@ const handleSaveRefund = async () => {
                                     styles.paymentMethodRowSelected,
                                   ]}
                                   onPress={() => {
-
                                     setRefundFrom(opt.id);
-
                                     setShowRefundFrom(false);
-
                                     setRefundFromError("");
                                   }}
                                 >
@@ -7313,34 +7304,24 @@ const handleSaveRefund = async () => {
                                     />
                                   </View>
 
-
-                                  {/* DETAILS */}
+                                  {/* ACCOUNT DETAILS */}
                                   <View
-                                    style={
-                                      styles.paymentMethodDetails
-                                    }
+                                    style={styles.paymentMethodDetails}
                                   >
-
                                     <Text
-                                      style={
-                                        styles.paymentMethodName
-                                      }
+                                      style={styles.paymentMethodName}
                                       numberOfLines={1}
                                     >
                                       {opt.accountHolderName}
                                     </Text>
 
                                     <Text
-                                      style={
-                                        styles.paymentMethodSubText
-                                      }
+                                      style={styles.paymentMethodSubText}
                                       numberOfLines={1}
                                     >
-                                      {opt.subLabel}
+                                      {opt.bankName}
                                     </Text>
-
                                   </View>
-
 
                                   {/* CASH / BANK */}
                                   <View
@@ -7359,17 +7340,15 @@ const handleSaveRefund = async () => {
                                           : styles.bankText,
                                       ]}
                                     >
-                                      {isCash
-                                        ? "CASH"
-                                        : "BANK"}
+                                      {isCash ? "CASH" : "BANK"}
                                     </Text>
                                   </View>
 
                                 </TouchableOpacity>
                               );
                             })}
-
                           </ScrollView>
+
                         </View>
                       )}
 
@@ -10755,123 +10734,123 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Regular",
     color: "#222222",
   },
-    transactiondropdown: {
-        position: "absolute",
-        top: 100,
-        left: 0,
-        right: 0,
+  transactiondropdown: {
+    position: "absolute",
+    top: 100,
+    left: 0,
+    right: 0,
 
-        backgroundColor: "#FFFFFF",
+    backgroundColor: "#FFFFFF",
 
-        borderWidth: 1,
-        borderColor: "#D9DDE5",
+    borderWidth: 1,
+    borderColor: "#D9DDE5",
 
-        borderRadius: 16,
+    borderRadius: 16,
 
-        zIndex: 9999,
-        elevation: 10,
+    zIndex: 9999,
+    elevation: 10,
 
-        maxHeight: 220,
+    maxHeight: 220,
 
-        overflow: "hidden",
+    overflow: "hidden",
 
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.12,
-        shadowRadius: 8,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
     },
-    paymentMethodRow: {
-        minHeight: 82,
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+  },
+  paymentMethodRow: {
+    minHeight: 82,
 
-        flexDirection: "row",
-        alignItems: "center",
+    flexDirection: "row",
+    alignItems: "center",
 
-        paddingHorizontal: 14,
-        paddingVertical: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
 
-        backgroundColor: "#FFFFFF",
+    backgroundColor: "#FFFFFF",
 
-        borderBottomWidth: 1,
-        borderBottomColor: "#F0F1F3",
-    },
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F1F3",
+  },
 
-    paymentMethodRowSelected: {
-        backgroundColor: "#F5F7FF",
-    },
+  paymentMethodRowSelected: {
+    backgroundColor: "#F5F7FF",
+  },
 
-    paymentMethodIcon: {
-        width: 34,
-        height: 34,
+  paymentMethodIcon: {
+    width: 34,
+    height: 34,
 
-        borderRadius: 17,
+    borderRadius: 17,
 
-        alignItems: "center",
-        justifyContent: "center",
+    alignItems: "center",
+    justifyContent: "center",
 
-        marginRight: 12,
-    },
+    marginRight: 12,
+  },
 
-    cashIconBg: {
-        backgroundColor: "#DDFBE8",
-    },
+  cashIconBg: {
+    backgroundColor: "#DDFBE8",
+  },
 
-    bankIconBg: {
-        backgroundColor: "#DCE8FF",
-    },
+  bankIconBg: {
+    backgroundColor: "#DCE8FF",
+  },
 
-    paymentMethodDetails: {
-        flex: 1,
-        justifyContent: "center",
-        marginRight: 8,
-    },
+  paymentMethodDetails: {
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 8,
+  },
 
-    paymentMethodName: {
-        fontSize: 16,
-        fontFamily: "Gilroy-Semibold",
-        color: "#222222",
-    },
+  paymentMethodName: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+    color: "#222222",
+  },
 
-    paymentMethodSubText: {
-        fontSize: 14,
-        fontFamily: "Gilroy-Medium",
-        color: "#697386",
+  paymentMethodSubText: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Medium",
+    color: "#697386",
 
-        marginTop: 3,
-    },
+    marginTop: 3,
+  },
 
-    paymentTypeBadge: {
-        minWidth: 64,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+  paymentTypeBadge: {
+    minWidth: 64,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
 
-        borderRadius: 20,
+    borderRadius: 20,
 
-        alignItems: "center",
-        justifyContent: "center",
-    },
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-    cashBadge: {
-        backgroundColor: "#DDFBE8",
-    },
+  cashBadge: {
+    backgroundColor: "#DDFBE8",
+  },
 
-    bankBadge: {
-        backgroundColor: "#DCE8FF",
-    },
+  bankBadge: {
+    backgroundColor: "#DCE8FF",
+  },
 
-    paymentTypeText: {
-        fontSize: 12,
-        fontFamily: "Gilroy-Semibold",
-    },
+  paymentTypeText: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
 
-    cashText: {
-        color: "#07883C",
-    },
+  cashText: {
+    color: "#07883C",
+  },
 
-    bankText: {
-        color: "#2457E6",
-    },
+  bankText: {
+    color: "#2457E6",
+  },
 
 });
