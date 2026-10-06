@@ -496,33 +496,36 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     console.log("IntializeexpensesList", IntializeexpensesList);
 
 
-    const paymentOptions =
-        (IntializeexpensesList?.allPaymentMethods || []).map((item, index) => {
-            const isCash = item?.accountType === "CASH";
+  const paymentOptions = (
+    IntializeexpensesList?.banks || []
+).map((item, index) => {
+    const isCash =
+        item?.bankName?.toUpperCase() === "CASH";
 
-            return {
-                ...item,
+    return {
+        id: item?.bankId || `account-${index}`,
+        bankId: item?.bankId,
 
-                id: item?.bankId,
+        accountHolderName:
+            item?.holderName || "Account",
 
-                optionId: `${item?.bankId || "account"}-${item?.paymentMethodId || "method"}-${index}`,
+        displayName:
+            item?.holderName || "Account",
 
-                name:
-                    item?.accountHolderName ||
-                    item?.displayName ||
-                    item?.holderName ||
-                    "Account",
+        bankName:
+            item?.bankName || "",
 
-                subLabel: isCash
-                    ? item?.cashAccountType || "Petty Cash"
-                    : item?.bankName
-                        ? `${item.bankName}${item?.paymentMethod ? ` - ${item.paymentMethod}` : ""}`
-                        : item?.bankAccountType || "Bank Account",
-            };
-        });
+        accountType:
+            isCash ? "CASH" : "BANK",
+
+        isCash,
+
+        subLabel:
+            item?.bankName || "Bank Account",
+    };
+});
 
 
-    console.log("paymentOptions", paymentOptions);
 
     const filteredStateList = stateList?.filter((s) =>
         s.label.toLowerCase().includes(stateQuery.toLowerCase())
@@ -1658,14 +1661,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                 <View
                                                     style={[
                                                         styles.paymentMethodIcon,
-                                                        selectedMode?.accountType === "CASH"
+                                                      selectedMode?.isCash
                                                             ? styles.cashIconBg
                                                             : styles.bankIconBg,
                                                     ]}
                                                 >
                                                     <Image
                                                         source={
-                                                            selectedMode?.accountType === "CASH"
+                                                            selectedMode?.isCash
                                                                 ? CashIcon
                                                                 : BankIcon
                                                         }
@@ -1683,21 +1686,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                         style={styles.paymentMethodSubText}
                                                         numberOfLines={1}
                                                     >
-                                                        {selectedMode?.accountType === "CASH"
-                                                            ? selectedMode?.cashAccountType || "Petty Cash"
-                                                            : selectedMode?.bankName
-                                                                ? `${selectedMode.bankName}${selectedMode?.paymentMethod
-                                                                    ? ` - ${selectedMode.paymentMethod}`
-                                                                    : ""
-                                                                }`
-                                                                : selectedMode?.bankAccountType || "Bank Account"}
+                                                       {selectedMode?.subLabel || "Bank Account"}
                                                     </Text>
                                                 </View>
 
                                                 <View
                                                     style={[
                                                         styles.paymentTypeBadge,
-                                                        selectedMode?.accountType === "CASH"
+                                                      selectedMode?.isCash
                                                             ? styles.cashBadge
                                                             : styles.bankBadge,
                                                     ]}
@@ -1705,12 +1701,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                     <Text
                                                         style={[
                                                             styles.paymentTypeText,
-                                                            selectedMode?.accountType === "CASH"
+                                                           selectedMode?.isCash
                                                                 ? styles.cashText
                                                                 : styles.bankText,
                                                         ]}
                                                     >
-                                                        {selectedMode?.accountType || "BANK"}
+                                                       {selectedMode?.isCash ? "CASH" : "BANK"}
                                                     </Text>
                                                 </View>
                                             </View>
@@ -2087,14 +2083,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                         <View
                                                             style={[
                                                                 styles.paymentMethodIcon,
-                                                                selectedMode?.accountType === "CASH"
+                                                              selectedMode?.isCash
                                                                     ? styles.cashIconBg
                                                                     : styles.bankIconBg,
                                                             ]}
                                                         >
                                                             <Image
                                                                 source={
-                                                                    selectedMode?.accountType === "CASH"
+                                                                  selectedMode?.isCash
                                                                         ? CashIcon
                                                                         : BankIcon
                                                                 }
@@ -2112,21 +2108,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                                 style={styles.paymentMethodSubText}
                                                                 numberOfLines={1}
                                                             >
-                                                                {selectedMode?.accountType === "CASH"
-                                                                    ? selectedMode?.cashAccountType || "Petty Cash"
-                                                                    : selectedMode?.bankName
-                                                                        ? `${selectedMode.bankName}${selectedMode?.paymentMethod
-                                                                            ? ` - ${selectedMode.paymentMethod}`
-                                                                            : ""
-                                                                        }`
-                                                                        : selectedMode?.bankAccountType || "Bank Account"}
+                                                              {selectedMode?.subLabel || "Bank Account"}
                                                             </Text>
                                                         </View>
 
                                                         <View
                                                             style={[
                                                                 styles.paymentTypeBadge,
-                                                                selectedMode?.accountType === "CASH"
+                                                               selectedMode?.isCash
                                                                     ? styles.cashBadge
                                                                     : styles.bankBadge,
                                                             ]}
@@ -2134,12 +2123,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                             <Text
                                                                 style={[
                                                                     styles.paymentTypeText,
-                                                                    selectedMode?.accountType === "CASH"
+                                                                  selectedMode?.isCash
                                                                         ? styles.cashText
                                                                         : styles.bankText,
                                                                 ]}
                                                             >
-                                                                {selectedMode?.accountType || "BANK"}
+                                                             {selectedMode?.isCash ? "CASH" : "BANK"}
                                                             </Text>
                                                         </View>
                                                     </View>
@@ -2890,10 +2879,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                         >
                             {paymentOptions.length > 0 ? (
                                 paymentOptions.map((item, index) => {
-                                    const isSelected =
-                                        selectedMode?.bankId === item?.bankId &&
-                                        selectedMode?.paymentMethodId ===
-                                        item?.paymentMethodId;
+                              const isSelected =
+    selectedMode?.bankId === item?.bankId;
 
                                     return (
                                         <TouchableOpacity

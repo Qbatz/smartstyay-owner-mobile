@@ -122,30 +122,37 @@ export default function VendorSettlePayment({
 
 
 
+  const paymentOptions = (
+    initializeData?.banks || []
+  ).map((item, index) => {
+    const isCash =
+      item?.bankName?.toUpperCase() === "CASH";
 
-  const paymentOptions =
-    initializeData?.allPaymentMethods?.map((item, index) => ({
-      ...item,
-      id: item?.bankId,
-
-      optionId: `${item?.bankId || "account"}-${item?.paymentMethodId || "method"}-${index}`,
+    return {
+      id: item?.bankId || `account-${index}`,
+      bankId: item?.bankId,
 
       name:
-        item?.accountHolderName ||
-        item?.displayName ||
-        item?.holderName ||
-        "Account",
+        item?.holderName || "Account",
+
+      displayName:
+        item?.holderName || "Account",
+
+      accountHolderName:
+        item?.holderName || "Account",
+
+      bankName:
+        item?.bankName || "",
+
+      isCash,
+
+      accountType:
+        isCash ? "CASH" : "BANK",
 
       subLabel:
-        item?.accountType === "CASH"
-          ? item?.cashAccountType || "Petty Cash"
-          : item?.bankName
-            ? `${item.bankName}${item?.paymentMethod
-              ? ` - ${item.paymentMethod}`
-              : ""
-            }`
-            : item?.bankAccountType || "Bank Account",
-    })) || [];
+        item?.bankName || "Bank Account",
+    };
+  });
 
 
   const dueAmount = Number(
@@ -712,9 +719,11 @@ export default function VendorSettlePayment({
                   </Text>
                 ) : (
                   paymentOptions?.map((item) => {
+                    // const isSelected =
+                    //   selectedMode?.bankId === item?.bankId &&
+                    //   selectedMode?.paymentMethodId === item?.paymentMethodId;
                     const isSelected =
-                      selectedMode?.bankId === item?.bankId &&
-                      selectedMode?.paymentMethodId === item?.paymentMethodId;
+                      selectedMode?.bankId === item?.bankId;
 
                     return (
                       <TouchableOpacity
@@ -1582,6 +1591,7 @@ const styles = StyleSheet.create({
 
   expensesDropdownMenu: {
     marginTop: 4,
+     marginHorizontal: 16, 
     borderWidth: 1,
     borderColor: "#DDDDDD",
     borderRadius: 10,

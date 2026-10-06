@@ -153,7 +153,33 @@ export default function AddBookingScreen({ navigation, route }) {
 
 
     if (res.success) {
-      setAccountList(res?.data?.allPaymentMethods || []);
+      setAccountList(
+        (res?.data?.bankDetails || []).map((item, index) => ({
+          id: item?.bankId || `account-${index}`,
+          bankId: item?.bankId,
+
+          displayName: item?.holderName || "Account",
+          accountHolderName: item?.holderName || "Account",
+
+          bankName: item?.bankName || "",
+          upiId: item?.upiId || "",
+          type: item?.type || "BANK",
+          accountType: item?.type || "BANK",
+          isUpi: item?.isUpi || false,
+
+          cashAccountType:
+            item?.type === "CASH"
+              ? item?.bankName || "Cash"
+              : "",
+
+          bankAccountType:
+            item?.type !== "CASH"
+              ? item?.bankName || "Bank Account"
+              : "",
+
+          paymentMethod: item?.type || "BANK",
+        }))
+      );
       setBeds(res?.data?.listBeds);
       console.log("Beds.......?????", beds)
     } else {
@@ -284,9 +310,9 @@ export default function AddBookingScreen({ navigation, route }) {
 
     if (isSubmitClicked) return;
 
-    const selectedPayment = AccountsList.find(item =>
-      item?.bankId === accountSelected?.bankId &&
-      item?.paymentMethodId === accountSelected?.paymentMethodId)
+    const selectedPayment = AccountsList.find(
+      item => item?.bankId === accountSelected?.bankId
+    );
 
 
     const payload = {
@@ -698,13 +724,13 @@ export default function AddBookingScreen({ navigation, route }) {
                     return;
                   }
 
-                  Keyboard.dismiss();             
-                  setTimeout(() => {                
+                  Keyboard.dismiss();
+                  setTimeout(() => {
                     accountRef.current?.measureInWindow((x, y, width, height) => {
                       setPaymentDropdownPos({ top: y + height, left: x, width });
                       setAccountopen(true);
                     });
-                  }, 150);                       
+                  }, 150);
                 }}
               >
 
@@ -785,7 +811,6 @@ export default function AddBookingScreen({ navigation, route }) {
                     {AccountsList?.length > 0 ? (
                       AccountsList.map((payment, index) => {
                         const isSelected =
-                          accountSelected?.paymentMethodId === payment?.paymentMethodId &&
                           accountSelected?.bankId === payment?.bankId;
 
                         const isCash = payment?.accountType === "CASH";
@@ -967,7 +992,6 @@ export default function AddBookingScreen({ navigation, route }) {
               {AccountsList?.length > 0 ? (
                 AccountsList.map((payment, index) => {
                   const isSelected =
-                    accountSelected?.paymentMethodId === payment?.paymentMethodId &&
                     accountSelected?.bankId === payment?.bankId;
 
                   const isCash = payment?.accountType === "CASH";
