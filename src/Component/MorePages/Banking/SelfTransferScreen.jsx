@@ -1,5 +1,13 @@
 //this is old design 
-import React, { useRef, useEffect, useState } from "react";
+import React, {
+    useRef,
+    useEffect,
+    useState,
+    useContext,
+} from "react";
+
+import { BankingContext } from "../../../Context/BankingContext";
+import { CommonContexts } from "../../../Context/CommonContext";
 import {
     View,
     Text,
@@ -11,18 +19,299 @@ import {
     PanResponder,
     TouchableOpacity,
     ScrollView,
-    StyleSheet as RNStyleSheet
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet as RNStyleSheet, Keyboard,
+    Dimensions
 } from "react-native";
+import SuccessModal from "../../../ToastFile/ToastPage";
+import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 
-export default function SelfTransferSheet({ visible, onClose }) {
+export default function SelfTransferSheet({ visible, onClose, selfDetails, }) {
     if (!visible) return null;
 
+    const { activeHostelId } = useContext(CommonContexts);
+
+    const {
+        transferoldbankInitialize,
+        getoldbankingTransferInitialize, oldBankSelfTransfer,
+    } = useContext(BankingContext);
+
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState("");
+    const [modalType, setModalType] = useState("success");
+
     const translateY = useRef(new Animated.Value(0)).current;
-    const [selectedBank, setSelectedBank] = useState(null);   // ⭐ FIXED (added missing state)
+    const [selectedBank, setSelectedBank] = useState(null);
+    const [amount, setAmount] = useState("");
+    const [transferData, setTransferData] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    const [amountError, setAmountError] = useState("");
+    const [bankError, setBankError] = useState("");
+
+    const scrollRef = useRef(null);
+    const amountInputRef = useRef(null);
+
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
+
 
     useEffect(() => {
         translateY.setValue(0);
     }, [visible]);
+
+    useEffect(() => {
+        if (visible && activeHostelId && selfDetails?.bankingId) {
+            console.log(
+                "SELF TRANSFER INITIALIZE",
+                activeHostelId,
+                selfDetails?.bankingId
+            )
+            getoldbankingTransferInitialize(activeHostelId, selfDetails.bankingId)
+        }
+    }, [visible, activeHostelId, selfDetails?.bankingId,])
+
+    // useEffect(() => {
+    //     const keyboardShowListener = Keyboard.addListener(
+    //         "keyboardDidShow",
+    //         (e) => {
+    //             setKeyboardHeight(e.endCoordinates.height);
+    //         }
+    //     );
+
+    //     const keyboardHideListener = Keyboard.addListener(
+    //         "keyboardDidHide",
+    //         () => {
+    //             setKeyboardHeight(0);
+    //         }
+    //     );
+
+    //     return () => {
+    //         keyboardShowListener.remove();
+    //         keyboardHideListener.remove();
+    //     };
+    // }, []);
+
+    const scrollInputIntoView = (refOrNode) => {
+        if (!scrollRef.current) return;
+
+        const input = refOrNode?.current
+            ? refOrNode.current
+            : refOrNode;
+
+        if (!input) return;
+
+        setTimeout(() => {
+            input.measureInWindow?.((x, y, width, inputHeight) => {
+                const screenHeight = Dimensions.get("window").height;
+
+                const kbHeight = keyboardHeight || 300;
+
+                const visibleBottom =
+                    screenHeight - kbHeight - 30;
+
+                if (
+                    y >= 0 &&
+                    y + inputHeight <= visibleBottom
+                ) {
+                    return;
+                }
+
+                const offset =
+                    y + inputHeight - visibleBottom + 30;
+
+                scrollRef.current?.scrollTo({
+                    y: Math.max(0, offset),
+                    animated: true,
+                });
+            });
+        }, Platform.OS === "ios" ? 250 : 350);
+    };
+
+    const scrollToField = (y) => {
+        setTimeout(() => {
+            scrollRef.current?.scrollTo({
+                y,
+                animated: true,
+            });
+        }, 250);
+    };
+
+    console.log("transferoldbankInitialize", transferoldbankInitialize);
+
+
+
+    const handleTransfer = async () => {
+        // Clear previous errors
+        setBankError("");
+        setAmountError("");
+
+        let isValid = true;
+
+        // -------------------------
+        // TO BANK VALIDATION
+        // -------------------------
+
+        if (!selectedBank) {
+            setBankError("Please select a bank to transfer");
+            isValid = false;
+        }
+
+        // -------------------------
+        // AMOUNT VALIDATION
+        // -------------------------
+
+        if (!amount || amount.trim() === "") {
+            setAmountError("Please enter amount");
+            isValid = false;
+        } else if (amount.startsWith("0") || amount.startsWith(".")) {
+            setAmountError("Amount must be greater than 0");
+            isValid = false;
+        } else {
+            const dotCount = (amount.match(/\./g) || []).length;
+
+            if (dotCount > 1) {
+                setAmountError("Only one decimal point is allowed");
+                isValid = false;
+            } else {
+                const transferAmount = Number(amount);
+
+                if (
+                    !Number.isFinite(transferAmount) ||
+                    transferAmount <= 0
+                ) {
+                    setAmountError("Amount must be greater than 0");
+                    isValid = false;
+                } else {
+                    const availableBalance = Number(
+                        transferoldbankInitialize?.fromBank?.accountBalance || 0
+                    );
+
+                    if (transferAmount > availableBalance) {
+                        setAmountError(
+                            `Amount cannot exceed available balance ₹${availableBalance.toLocaleString(
+                                "en-IN"
+                            )}`
+                        );
+                        isValid = false;
+                    }
+                }
+            }
+        }
+
+        // IMPORTANT:
+        // Don't continue API call if any validation failed
+        if (!isValid) {
+            return;
+        }
+
+        // -------------------------
+        // FROM ACCOUNT VALIDATION
+        // -------------------------
+
+        const fromBankId =
+            transferoldbankInitialize?.fromBank?.bankingId;
+
+        if (!fromBankId) {
+            setBankError("From account details not available");
+            return;
+        }
+
+        if (fromBankId === selectedBank) {
+            setBankError("From and To account cannot be same");
+            return;
+        }
+
+        // -------------------------
+        // API CALL
+        // -------------------------
+
+        try {
+            setLoading(true);
+
+            const transferAmount = Number(amount);
+
+            const payload = {
+                fromBankId: fromBankId,
+                toBankId: selectedBank,
+                balance: transferAmount,
+            };
+
+            console.log(
+                "OLD BANK SELF TRANSFER PAYLOAD =>",
+                payload
+            );
+
+            const response = await oldBankSelfTransfer(
+                activeHostelId,
+                payload
+            );
+
+            console.log(
+                "OLD BANK SELF TRANSFER RESPONSE =>",
+                response
+            );
+
+            if (!response?.success) {
+                const errorMessage =
+                    response?.message ||
+                    "Failed to transfer amount";
+
+                setError(errorMessage);
+
+                setModalType("error");
+                setModalMessage(errorMessage);
+                setShowSuccessModal(true);
+
+                return;
+            }
+
+            setAmount("");
+            setSelectedBank(null);
+            setAmountError("");
+            setBankError("");
+
+            setModalType("success");
+            setModalMessage(
+                response?.data?.message ||
+                response?.message ||
+                "Amount transferred successfully"
+            );
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+                setShowSuccessModal(false);
+                onClose();
+            }, 1200);
+
+        } catch (error) {
+            console.log(
+                "SELF TRANSFER ERROR =>",
+                error?.response?.data
+            );
+
+            const errorMessage =
+                error?.response?.data?.message ||
+                error?.response?.data?.error ||
+                error?.message ||
+                "Something went wrong";
+
+            setError(errorMessage);
+
+            setModalType("error");
+            setModalMessage(errorMessage);
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+                setShowSuccessModal(false);
+            }, 1200);
+
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     const panResponder = useRef(
         PanResponder.create({
@@ -51,118 +340,242 @@ export default function SelfTransferSheet({ visible, onClose }) {
     ).current;
 
     return (
-        <View style={styles.overlay}>
+        <>
 
 
-            <TouchableWithoutFeedback onPress={onClose}>
-                <View style={RNStyleSheet.absoluteFill} />
-            </TouchableWithoutFeedback>
+            <SuccessModal
+                visible={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                message={modalMessage}
+                type={modalType}
+            />
 
-            <Animated.View
-                style={[styles.sheet, { transform: [{ translateY }] }]}
-                {...panResponder.panHandlers}
-            >
-                <View style={styles.handle} />
-
-                <ScrollView showsVerticalScrollIndicator={false}>
-
-                    <Text style={styles.title}>Self Transfer</Text>
+            <View style={styles.overlay}>
 
 
-                    <Text style={styles.sectionTitle}>From</Text>
-                    <View style={styles.bankCard}>
-                        <Image
-                            source={require("../../../Assets/Images/bankBlue.png")}
-                            style={styles.bankIcon}
-                        />
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.bankName}>Canara Bank</Text>
-                            <Text style={styles.bankNumber}>4561 2013 6210 6540</Text>
-                            <Text style={styles.bankType}>Savings A/C</Text>
-                        </View>
-                        <View style={{ alignItems: "flex-end" }}>
-                            <Text style={styles.personName}>Immanuel</Text>
-                            <Text style={styles.balance}>Avl Bal : 10,000.00</Text>
-                        </View>
-                    </View>
+                <TouchableWithoutFeedback onPress={onClose}>
+                    <View style={RNStyleSheet.absoluteFill} />
+                </TouchableWithoutFeedback>
 
+                <Animated.View
+                    style={[styles.sheet, { transform: [{ translateY }] }]}
+                    {...panResponder.panHandlers}
+                >
+                    <View style={styles.handle} />
 
-                    <Text style={styles.sectionTitle}>To</Text>
-
-
-                    <TouchableOpacity
-                        style={styles.bankCard}
-                        onPress={() => setSelectedBank(1)}
-                        activeOpacity={0.8}
+                    <KeyboardAvoidingView
+                        style={{ flex: 1 }}
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
+                        keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
                     >
-                        <Image
-                            source={require("../../../Assets/Images/bankBlue.png")}
-                            style={styles.bankIcon}
-                        />
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.bankName}>State Bank of India</Text>
-                            <Text style={styles.bankNumber}>4561 2013 6210 6540</Text>
-                            <Text style={styles.bankType}>Savings A/C</Text>
-                        </View>
-                        <View style={{ alignItems: "flex-end" }}>
-                            <Text style={styles.personName}>Sriramkumar M</Text>
-                            <Text style={styles.balance}>Avl Bal : 6,000.00</Text>
-                        </View>
+                        <ScrollView
+                            ref={scrollRef}
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="handled"
+                            keyboardDismissMode="on-drag"
+                            contentContainerStyle={{
+                                paddingBottom: 140,
+                                flexGrow: 1,
+                            }}
+                        >
+
+                            <Text style={styles.title}>Self Transfer</Text>
 
 
-                        <View style={styles.radioOuter}>
-                            {selectedBank === 1 && <View style={styles.radioInner} />}
-                        </View>
-                    </TouchableOpacity>
+                            <Text style={styles.sectionTitle}>From</Text>
+                            <View style={styles.bankCard}>
+                                <Image
+                                    source={require("../../../Assets/Images/bankBlue.png")}
+                                    style={styles.bankIcon}
+                                />
+
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.bankName}>
+                                        {transferoldbankInitialize?.fromBank?.bankName ||
+                                            transferoldbankInitialize?.fromBank?.accountType ||
+                                            "-"}
+                                    </Text>
+
+                                    {transferoldbankInitialize?.fromBank?.accountNumber && (
+                                        <Text style={styles.bankNumber}>
+                                            {transferoldbankInitialize?.fromBank?.accountNumber}
+                                        </Text>
+                                    )}
+
+                                    <Text style={styles.bankType}>
+                                        {transferoldbankInitialize?.fromBank?.accountType || ""}
+                                    </Text>
+                                </View>
+
+                                <View style={{ alignItems: "flex-end" }}>
+                                    <Text style={styles.personName}>
+                                        {transferoldbankInitialize?.fromBank?.accountHolderName || "-"}
+                                    </Text>
+
+                                    <Text style={styles.balance}>
+                                        Avl Bal : ₹{" "}
+                                        {Number(
+                                            transferoldbankInitialize?.fromBank?.accountBalance || 0
+                                        ).toLocaleString("en-IN")}
+                                    </Text>
+                                </View>
+                            </View>
 
 
-                    <TouchableOpacity
-                        style={styles.bankCard}
-                        onPress={() => setSelectedBank(2)}
-                        activeOpacity={0.8}
-                    >
-                        <Image
-                            source={require("../../../Assets/Images/bankBlue.png")}
-                            style={styles.bankIcon}
-                        />
-                        <View style={{ flex: 1 }}>
-                            <Text style={styles.bankName}>ICICI</Text>
-                            <Text style={styles.bankNumber}>4561 2013 6210 6540</Text>
-                            <Text style={styles.bankType}>Savings A/C</Text>
-                        </View>
-                        <View style={{ alignItems: "flex-end" }}>
-                            <Text style={styles.personName}>Smartstay PG</Text>
-                            <Text style={styles.balance}>Avl Bal : 2,000.00</Text>
-                        </View>
+                            <Text style={styles.sectionTitle}>To</Text>
+
+                            {(transferoldbankInitialize?.toBanks || []).map((bank) => {
+                                const isSelected =
+                                    selectedBank === bank?.bankingId;
+
+                                return (
+                                    <TouchableOpacity
+                                        key={bank?.bankingId}
+                                        style={[
+                                            styles.bankCard,
+                                            isSelected && styles.selectedBankCard,
+                                        ]}
+                                        onPress={() => {
+                                            setSelectedBank(bank?.bankingId);
+                                            setBankError("");
+                                        }}
+                                        activeOpacity={0.8}
+                                    >
+                                        <Image
+                                            source={require("../../../Assets/Images/bankBlue.png")}
+                                            style={styles.bankIcon}
+                                        />
+
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={styles.bankName}>
+                                                {bank?.bankName ||
+                                                    bank?.accountType ||
+                                                    "-"}
+                                            </Text>
+
+                                            {bank?.accountNumber && (
+                                                <Text style={styles.bankNumber}>
+                                                    {bank.accountNumber}
+                                                </Text>
+                                            )}
+
+                                            <Text style={styles.bankType}>
+                                                {bank?.accountType || ""}
+                                            </Text>
+                                        </View>
+
+                                        <View style={{ alignItems: "flex-end" }}>
+                                            <Text style={styles.personName}>
+                                                {bank?.accountHolderName || "-"}
+                                            </Text>
+
+                                            <Text style={styles.balance}>
+                                                Avl Bal : ₹{" "}
+                                                {Number(
+                                                    bank?.accountBalance || 0
+                                                ).toLocaleString("en-IN")}
+                                            </Text>
+                                        </View>
+
+                                        <View style={styles.radioOuter}>
+                                            {isSelected && (
+                                                <View style={styles.radioInner} />
+                                            )}
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })}
+
+                            {bankError ? (
+                                <ErrorMessage message={bankError} />
+                            ) : null}
+
+                            <Text style={styles.sectionTitle}>Enter Amount</Text>
+                            <TextInput
+                                ref={amountInputRef}
+                                placeholder="Please Enter Amount"
+                                style={styles.input}
+                                keyboardType="decimal-pad"
+                                onFocus={() => scrollToField(360)}
+
+                                value={amount}
+                                onChangeText={(value) => {
+                                    if (value === "") {
+                                        setAmount("");
+                                        setAmountError("");
+                                        return;
+                                    }
+
+                                    if (!/^\d*\.?\d*$/.test(value)) {
+                                        return;
+                                    }
+
+                                    const dotCount = (value.match(/\./g) || []).length;
+
+                                    if (dotCount > 1) {
+                                        setAmountError("Only one decimal point is allowed");
+                                        return;
+                                    }
+
+                                    if (value.startsWith("0") || value.startsWith(".")) {
+                                        setAmountError("Amount must be greater than 0");
+                                        return;
+                                    }
+
+                                    const numericValue = Number(value);
+
+                                    const availableBalance = Number(
+                                        transferoldbankInitialize?.fromBank?.accountBalance || 0
+                                    );
+
+                                    if (numericValue > availableBalance) {
+                                        setAmountError(
+                                            `Amount cannot exceed available balance ₹${availableBalance.toLocaleString(
+                                                "en-IN"
+                                            )}`
+                                        );
+                                        return;
+                                    }
+
+                                    setAmount(value);
+                                    setAmountError("");
+                                }}
+                            />
 
 
-                        <View style={styles.radioOuter}>
-                            {selectedBank === 2 && <View style={styles.radioInner} />}
-                        </View>
-                    </TouchableOpacity>
+                            {amountError ? (
+                                <ErrorMessage message={amountError} />
+                            ) : null}
 
 
-                    <Text style={styles.sectionTitle}>Enter Amount</Text>
-                    <TextInput
-                        placeholder="₹ 0.00"
-                        style={styles.input}
-                        keyboardType="numeric"
-                    />
+                            <View style={styles.row}>
+                                <TouchableOpacity style={styles.btnCancel} onPress={onClose}>
+                                    <Text style={styles.cancelText}>Cancel</Text>
+                                </TouchableOpacity>
 
+                                <TouchableOpacity
+                                    style={[
+                                        styles.btnTransfer,
+                                        (loading) && {
+                                            opacity: 0.5,
+                                        },
+                                    ]}
+                                    disabled={
+                                        loading
+                                    }
+                                    onPress={handleTransfer}
+                                >
+                                    <Text style={styles.transferText}>
+                                        {loading ? "Transferring..." : "Transfer"}
+                                    </Text>
+                                </TouchableOpacity>
+                            </View>
 
-                    <View style={styles.row}>
-                        <TouchableOpacity style={styles.btnCancel} onPress={onClose}>
-                            <Text style={styles.cancelText}>Cancel</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.btnTransfer}>
-                            <Text style={styles.transferText}>Transfer</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                </ScrollView>
-            </Animated.View>
-        </View>
+                        </ScrollView>
+                    </KeyboardAvoidingView>
+                </Animated.View>
+            </View>
+        </>
     );
 }
 
@@ -271,5 +684,20 @@ const styles = StyleSheet.create({
         height: 10,
         borderRadius: 10,
         backgroundColor: "#1E55E6",
+    },
+    selectedBankCard: {
+        backgroundColor: "#F5F8FF",
+        borderRadius: 12,
+        paddingHorizontal: 10,
+    },
+    errorText: {
+        color: "#E53935",
+        fontSize: 12,
+        marginTop: 6,
+        fontWeight: "500",
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingBottom: 40,
     },
 });
