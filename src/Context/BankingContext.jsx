@@ -14,6 +14,7 @@ export default function BankingProvider({ children }) {
   const [upiAppList, setUpiAppList] = useState([]);
   const [bankMethod, setBankMethod] = useState(null);
   const [transferInitialize, setTransferInitialize] = useState(null)
+  const [transferoldbankInitialize, setTransferOldBankInitialize] = useState(null)
   const [creditCardInitialize, setCreditCardInitialize] = useState(null)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -550,6 +551,122 @@ export default function BankingProvider({ children }) {
     }
   };
 
+  const getoldbankingTransferInitialize = async (hostelId, bankId) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.get(
+      `/v2/bank/transfer/initialize/${hostelId}/${bankId}`
+    );
+
+    if (res.status === 200) {
+      const data = res.data || {};
+
+      console.log("TRANSFER INITIALIZE =>", data);
+
+      setTransferOldBankInitialize(data);
+
+      return {
+        success: true,
+        data,
+      };
+    }
+
+    return {
+      success: false,
+      message: "Failed to fetch transfer initialize",
+    };
+  } catch (error) {
+    console.log(
+      "TRANSFER INITIALIZE ERROR =>",
+      error?.response?.status
+    );
+
+    console.log(
+      "TRANSFER INITIALIZE DATA =>",
+      error?.response?.data
+    );
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
+const oldBankSelfTransfer = async (hostelId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v2/bank/transfer/${hostelId}`,
+      {
+        fromBankId: payload.fromBankId,
+        toBankId: payload.toBankId,
+        balance: Number(payload.balance),
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    console.log("OLD BANK SELF TRANSFER RESPONSE =>", res?.data);
+
+    if (res.status === 200 || res.status === 201) {
+      await getBankListByHostel(hostelId);
+
+      return {
+        success: true,
+        data: res.data,
+      };
+    }
+
+    return {
+      success: false,
+      message:
+        res?.data?.message ||
+        "Failed to transfer amount",
+    };
+  } catch (error) {
+    console.log(
+      "OLD BANK SELF TRANSFER STATUS =>",
+      error?.response?.status
+    );
+
+    console.log(
+      "OLD BANK SELF TRANSFER DATA =>",
+      error?.response?.data
+    );
+
+    const msg =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      "Failed to transfer amount";
+
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const getTransferInitialize = async (
     hostelId,
@@ -776,6 +893,7 @@ export default function BankingProvider({ children }) {
         upiAppList,
         bankMethod,
         transferInitialize,
+        transferoldbankInitialize ,
         creditCardInitialize,
         loading,
         errorMsg,
@@ -786,7 +904,7 @@ export default function BankingProvider({ children }) {
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
         getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer , getCreditCardInitialize , creditCardPayment,
-        newOnlyTransactionList,setNewOnlyTransactionList
+        newOnlyTransactionList,setNewOnlyTransactionList , getoldbankingTransferInitialize , oldBankSelfTransfer
       }}
 
     >
