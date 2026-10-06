@@ -56,6 +56,7 @@ export default function Investment({
   const dueAmount = 0
 
   const [transactionId, setTransactionId] = useState("");
+  const [investorName,setInvestorName]=useState("")
   const [paidAmount, setPaidAmount] = useState("");
   const [description, setDescription] = useState("");
 
@@ -345,12 +346,17 @@ export default function Investment({
 
           </Text>
 
-          <View style={styles.inputBox}>
-            <Text>
-              test
-
-            </Text>
-          </View>
+          {/* <View style={styles.inputBox}>
+           
+          </View> */}
+          <TextInput
+          style={styles.inputBox}
+          placeholder="Enter Investor name"
+          keyboardType="name-phone-pad"
+          onChangeText={(text)=>{
+            const onlyLetters = text.replace(/[^a-zA-Z\s]/g, "");
+            setInvestorName(onlyLetters)
+          }}/>
 
 
           <Text style={styles.label}>
