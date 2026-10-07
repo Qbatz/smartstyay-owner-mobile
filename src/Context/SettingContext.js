@@ -895,9 +895,6 @@ export const SettingProvider = ({ children }) => {
             }),
         }
       );
-      console.log("resana:", res);
-      console.log("sentbody:", res?.config?.data);
-      console.log("sentparams:", res?.config?.params);
 
       if (res.status === 200) {
         return {
