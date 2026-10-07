@@ -7366,7 +7366,7 @@ export default function BillsDesign({ route }) {
 
 
                     {/* TRANSACTION ID */}
-                    <Text style={styles.label}>Transaction ID</Text>
+                  <Text style={[styles.label, { marginTop: 7 }]}>Transaction ID</Text>
                     <TextInput
                       style={styles.input}
                       placeholder="Enter transaction ID"

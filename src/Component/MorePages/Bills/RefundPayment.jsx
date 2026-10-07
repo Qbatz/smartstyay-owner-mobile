@@ -1063,7 +1063,7 @@ console.log(
 
 
             {/* TRANSACTION ID */}
-            <Text style={styles.label}>Transaction ID</Text>
+            <Text style={[styles.label, { marginTop: 13 }]}>Transaction ID</Text>
             <TextInput
               style={styles.input}
               placeholder="Enter transaction ID"
