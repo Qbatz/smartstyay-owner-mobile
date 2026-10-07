@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useContext } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, BackHandler, Linking } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, BackHandler, Linking, Platform } from "react-native";
 import FreeTrial from "../../../Assets/Images/NewBook.png";
 import Calendar from "../../../Assets/Images/calendar.png";
 import SubscriptionPlan from "../../../Assets/Images/SubscriptionPlan.png";
@@ -15,6 +15,7 @@ import ChecksIcon from "../../../Assets/Images/checks.png";
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { initialize, showCheckout, canGoBack, goBack } from "zoho-payments-react-native-sdk"
 import { PGContext } from "../../../Context/PGContext";
+import { useAppleSubscription } from "../../../Context/AppleSubscriptionContext";
 
 
 
@@ -31,6 +32,11 @@ export default function SubscriptionPlans({ navigation }) {
   const { getHostelPlans, getCurrentHostelPlan, loading, postSubscription, verfiyPayment, currentPlan } = UseSetting();
   const { activeHostelId } = useContext(CommonContexts);
   const {getParticularHostelDetails}=useContext(PGContext)
+  const {
+    isBusy: isApplePurchaseBusy,
+    purchase: purchaseAppleSubscription,
+    restore: restoreAppleSubscription,
+  } = useAppleSubscription();
 
   const insets = useSafeAreaInsets();
 
@@ -125,6 +131,13 @@ export default function SubscriptionPlans({ navigation }) {
   };
 
   const selectplan = async (planId) => {
+
+    // iOS: Apple subscription straight through StoreKit (AppleSubscriptionContext),
+    // no backend call and no hostel needed. Android continues below with the existing Zoho flow.
+    if (Platform.OS === "ios") {
+      await purchaseAppleSubscription(planId);
+      return;
+    }
 
     console.log(planId)
 
@@ -250,7 +263,7 @@ export default function SubscriptionPlans({ navigation }) {
   return (
 
     <>
-      {loading && <Loader />}
+      {(loading || isApplePurchaseBusy) && <Loader />}
       <View style={{ flex: 1, backgroundColor: "#fff", position: "relative" }}>
 
 
@@ -399,6 +412,8 @@ export default function SubscriptionPlans({ navigation }) {
             </Text>
 
 
+            {/* Only a monthly Apple subscription exists, so iOS has no yearly option. */}
+            {Platform.OS !== "ios" && (
             <View style={styles.switchContainer}>
               <TouchableOpacity
                 onPress={() => setBillingType("monthly")}
@@ -418,6 +433,7 @@ export default function SubscriptionPlans({ navigation }) {
                 </Text>
               </TouchableOpacity>
             </View>
+            )}
 
 
             {plans.map((item) => {
@@ -483,17 +499,27 @@ export default function SubscriptionPlans({ navigation }) {
                 </TouchableOpacity>
               );
             })}
+
+            {Platform.OS === "ios" && (
+              <TouchableOpacity
+                style={styles.restoreBtn}
+                disabled={isApplePurchaseBusy}
+                onPress={restoreAppleSubscription}
+              >
+                <Text style={styles.restoreText}>Restore Purchases</Text>
+              </TouchableOpacity>
+            )}
           </ScrollView>
         )}
 
         {canReadSubscription && (
           <TouchableOpacity
-            disabled={!selectedPlan.code}
+            disabled={!selectedPlan.code || isApplePurchaseBusy}
             // style={[styles.continueBtn, !selectedPlan && styles.disabledBtn]}
             style={[
               styles.continueBtn,
               { bottom: insets.bottom + 10 },
-              !selectedPlan.code && styles.disabledBtn
+              (!selectedPlan.code || isApplePurchaseBusy) && styles.disabledBtn
             ]}
             // onPress={() => {
             //   navigation.navigate("PlanDetailsScreen", {
@@ -610,6 +636,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#AAB4DD",
   },
   continueText: { color: "#fff", fontFamily: "Gilroy-Bold", fontSize: 16 },
+  restoreBtn: { alignSelf: "center", paddingVertical: 12, paddingHorizontal: 16, marginTop: 16 },
+  restoreText: { color: "#4A6CFF", fontFamily: "Gilroy-Semibold", fontSize: 14 },
   card: {
     backgroundColor: "#FFFFFF",
     borderRadius: 14,

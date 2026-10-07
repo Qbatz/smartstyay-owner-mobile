@@ -179,7 +179,7 @@ export default function PlanDetailsScreen({ route, navigation }) {
 
               <View style={styles.buttonRow}>
                 {
-                  Platform.OS === 'ios' ? null : <TouchableOpacity
+                  Platform.OS === 'android' ? null : <TouchableOpacity
                   style={styles.secondaryBtn}
                   onPress={() => navigation.navigate("SubscriptionPlans")}
                 >

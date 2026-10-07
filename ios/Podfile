@@ -42,6 +42,25 @@ installer.pods_project.targets.each do |target|
       end
     end
   end
-  
+
+    # glog 0.3.5 #includes its headers inside `namespace google`, which Clang rejects once
+    # Swift C++ interop (react-native-nitro-modules, used by react-native-iap) builds glog as
+    # a module: "import of module 'glog.glog.log_severity' appears within namespace 'google'".
+    # Backport of React Native 0.85's fix (glog module map with textual headers).
+    # Remove after upgrading to React Native 0.85 or later.
+    glog_module_map = File.join(installer.sandbox.root, 'Target Support Files', 'glog', 'glog.modulemap')
+    if File.exist?(glog_module_map)
+      File.write(glog_module_map, <<~MODULEMAP)
+        module glog {
+          textual header "glog/log_severity.h"
+          textual header "glog/logging.h"
+          textual header "glog/raw_logging.h"
+          textual header "glog/stl_logging.h"
+          textual header "glog/vlog_is_on.h"
+          export *
+        }
+      MODULEMAP
+    end
+
   end
 end

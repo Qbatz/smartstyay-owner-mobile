@@ -39,6 +39,7 @@
 		8F6A8D3D2F65CF310076194A /* smartstayOwnerApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "smartstayOwnerApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		8F6A8D3E2F65CF310076194A /* CommonModuleBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = CommonModuleBridge.m; path = smartstayOwnerApp/CommonModuleBridge.m; sourceTree = "<group>"; };
 		B6C9EF6662FF4D8D989D76F7 /* Gilroy-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Gilroy-Medium.ttf"; path = "../assets/fonts/Gilroy-Medium.ttf"; sourceTree = "<group>"; };
+		D138DAC7306C4182009416C2 /* Smartstay.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Smartstay.storekit; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -89,6 +90,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				D138DAC7306C4182009416C2 /* Smartstay.storekit */,
 				13B07FAE1A68108700A75B9A /* smartstayOwnerApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
@@ -226,9 +228,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -265,9 +271,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-smartstayOwnerApp/Pods-smartstayOwnerApp-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;

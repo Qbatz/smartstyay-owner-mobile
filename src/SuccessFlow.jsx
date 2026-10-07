@@ -110,6 +110,7 @@ import NewRecordPayment from "../src/Component/MorePages/Bills/NewRecordPayment"
 import AddBookingNewForm from "../src/Component/Customer/AddBookingNew";
 import ApplyBookingToInvoice from "../src/Component/MorePages/Bills/ApplyBookingToInvoice"
 import Requests from "../src/Component/MorePages/Requests/RequestList";
+import { AppleSubscriptionProvider } from "./Context/AppleSubscriptionContext";
 
 
 const SuccessFlow = (props) => {
@@ -132,6 +133,7 @@ const SuccessFlow = (props) => {
 
         {loginContext.getRoute === "ConfirmMpin" || loginContext.pinVerifid ?
 
+            <AppleSubscriptionProvider>
             <NavigationContainer>
                 <Navigation.Navigator screenOptions={{ headerShown: false }}>
 
@@ -243,6 +245,7 @@ const SuccessFlow = (props) => {
                      <Navigation.Screen name="Requests" component={Requests} />
                 </Navigation.Navigator>
             </NavigationContainer>
+            </AppleSubscriptionProvider>
 
             :
 
