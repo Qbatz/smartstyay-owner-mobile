@@ -25,6 +25,7 @@ import RupeeIcon from "../../../Assets/Images/Rupees.png";
 import ExpensesIcon from "../../../Assets/Images/Expenses.png";
 import ReportsAllFilterBottomSheet from "./ReportsAllFilterBottomSheet";
 import FilterIcon from "../../../Assets/Images/filter.png";
+import dayjs from "dayjs";
 
 
 const { width } = Dimensions.get("window");
@@ -235,10 +236,10 @@ const ExpenseRegister = ({ navigation }) => {
     },
   ];
 
-  console.log("selectedPeriod",selectedMonth)
-  console.log("allselec",allSelectedMonth)
+  console.log("selectedPeriod", selectedMonth)
+  console.log("allselec", allSelectedMonth)
   const handleDownloadExpenseReport = async () => {
-    console.log("allselecsinga",allSelectedMonth)
+    console.log("allselecsinga", allSelectedMonth)
 
     const finalMonth =
       allSelectedMonth || selectedMonth;
@@ -259,10 +260,30 @@ const ExpenseRegister = ({ navigation }) => {
       page: 1,
       size: 10,
     };
+    if (finalMonth === "THIS_MONTH") {
+      filters.startDate = dayjs().startOf("month").format("DD-MM-YYYY");
+      filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
+    }
 
-    console.log("basedPeriod",filters)
+    if (finalMonth === "LAST_MONTH") {
+      filters.startDate = dayjs().subtract(1, "month").startOf("month").format("DD-MM-YYYY");
+      filters.endDate = dayjs().subtract(1, "month").endOf("month").format("DD-MM-YYYY");
+    }
+
+    if (finalMonth === "LAST_3_MONTHS") {
+      filters.startDate = dayjs().subtract(2, "month").startOf("month").format("DD-MM-YYYY");
+      filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
+    }
+
+    if (finalMonth === "LAST_6_MONTHS") {
+      filters.startDate = dayjs().subtract(5, "month").startOf("month").format("DD-MM-YYYY");
+      filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
+    }
+
 
     const res = await downloadExpenseReport(activeHostelId, filters)
+
+    console.log("exportEXPENSE", res.url)
 
 
     if (res?.success && res?.url) {
@@ -323,8 +344,8 @@ const ExpenseRegister = ({ navigation }) => {
           </Text>
 
           <Text style={[styles.cardValue, { color: valueColor }]}>
-              {showRupee && "₹ "}
-             {prefix && <Text>{prefix}</Text>}
+            {showRupee && "₹ "}
+            {prefix && <Text>{prefix}</Text>}
 
             <AnimatedNumber value={value} />
 
@@ -417,7 +438,7 @@ const ExpenseRegister = ({ navigation }) => {
                 icon={ExpensesIcon}
                 tintColor="#1E45E1"
                 linearcolor="#FFF4F4"
-                 showRupee={false}
+                showRupee={false}
               />
 
               <SummaryCard
@@ -460,8 +481,8 @@ const ExpenseRegister = ({ navigation }) => {
 
             {/* All */}
 
-       
-  {/* <View style={{flexDirection:'row'}}> */}
+
+            {/* <View style={{flexDirection:'row'}}> */}
             {/* Payment */}
             <TouchableOpacity
               style={[
@@ -568,12 +589,12 @@ const ExpenseRegister = ({ navigation }) => {
     </Text>
           <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} /> */}
             </TouchableOpacity>
-              <TouchableOpacity
-                                                        style={styles.filterIconBtn}
-                                                        onPress={() => setAllFilterSheet(true)}
-                                                    >
-                                                        <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
-                                                    </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.filterIconBtn}
+              onPress={() => setAllFilterSheet(true)}
+            >
+              <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
+            </TouchableOpacity>
             {/* 
             <TouchableOpacity
              
@@ -908,8 +929,8 @@ const styles = StyleSheet.create({
   //   gap: 8,
   // },
 
-   filterRow: {
-    flexDirection: "row", alignItems: 'center', justifyContent:'space-between',
+  filterRow: {
+    flexDirection: "row", alignItems: 'center', justifyContent: 'space-between',
     marginTop: 10,
   },
 
@@ -941,7 +962,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     // gap:10
   },
-  
+
 
   activeFilter: {
     backgroundColor: "#1D4ED8",
@@ -1133,14 +1154,14 @@ const styles = StyleSheet.create({
     // paddingBottom: 0,
     marginBottom: 5, alignItems: "flex-start",
   },
-   filterIconBtn: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        // backgroundColor: "#F3F4F6",
-        justifyContent: "center",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#F3F4F6",
-    },
+  filterIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    // backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#F3F4F6",
+  },
 });
