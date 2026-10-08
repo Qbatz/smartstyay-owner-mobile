@@ -11,6 +11,7 @@ import QuestionIcon from "../../Assets/Images/help.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import { useFocusEffect } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useCustomer } from "../../Context/CustomerContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
@@ -46,7 +47,7 @@ export default function MoveNoticeSheet({
   const formatDate = (d) => dayjs(d).format("YYYY-MM-DD");
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-
+  const insets = useSafeAreaInsets();
 
   const [message, setMessage] = useState("");
   console.log("customer", customer)
@@ -343,14 +344,14 @@ export default function MoveNoticeSheet({
   // };
 
   const isCheckoutDisabled = (date) => {
-  if (!date) return true;
+    if (!date) return true;
 
-  if (!reqDate) return true;
+    if (!reqDate) return true;
 
-  if (dayjs(date).isBefore(dayjs(reqDate), "day")) return true;
+    if (dayjs(date).isBefore(dayjs(reqDate), "day")) return true;
 
-  return false;
-};
+    return false;
+  };
 
 
   const checkoutMarkedDates = {};
@@ -401,17 +402,17 @@ export default function MoveNoticeSheet({
 
 
           <View style={styles.profileRow}>
-            {customer?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic ? 
-            <Image source={{ uri: customer?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic}} style={styles.profileImg} /> :
+            {customer?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic ?
+              <Image source={{ uri: customer?.profilePic || selectedBed?.currentTenantInfo[0]?.profilePic }} style={styles.profileImg} /> :
               <View style={[styles.profileImg, { justifyContent: 'center', alignItems: 'center', backgroundColor: '#eef1ff' }]}>
-                <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold"}}>
+                <Text style={{ fontSize: 16, fontFamily: "Gilroy-Semibold" }}>
                   {customer?.initials || selectedBed?.currentTenantInfo[0]?.tenantInitials}</Text>
               </View>}
 
 
-            <View style={{ marginLeft: 12,marginRight:20 }}>
-              <Text style={[styles.name,{paddingRight:20}]}
-              numberOfLines={1}
+            <View style={{ marginLeft: 12, marginRight: 20 }}>
+              <Text style={[styles.name, { paddingRight: 20 }]}
+                numberOfLines={1}
               >{customer?.fullName || selectedBed?.currentTenantInfo[0]?.tenantFullName}</Text>
 
               <View style={styles.badgeRow}>
@@ -499,7 +500,13 @@ export default function MoveNoticeSheet({
 
           </ScrollView>
 
-          <View style={styles.footer}>
+          <View style={[
+            styles.footer,
+            {
+              paddingBottom: Math.max(insets.bottom, 50),
+            },
+          ]}
+          >
             <TouchableOpacity onPress={onClose} style={styles.CancelBtn}>
               <Text style={styles.cancel}>Cancel</Text>
             </TouchableOpacity>
@@ -739,7 +746,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
 
-  moveText: { color: "#fff", fontSize: 18, fontFamily: "Gilroy-Semibold"},
+  moveText: { color: "#fff", fontSize: 18, fontFamily: "Gilroy-Semibold" },
   calendarOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -784,7 +791,7 @@ const styles = StyleSheet.create({
 
   confirmTitle: {
     fontSize: 18,
-   fontFamily: "Gilroy-Bold",
+    fontFamily: "Gilroy-Bold",
     color: "#111",
   },
 
