@@ -1621,41 +1621,41 @@ export default function AddTenantNewform({ navigation, route }) {
     };
 
 
-   const transactionOptions = (AccountsList || []).map((item, index) => ({
-    id: item?.bankId || `account-${index}`,
+    const transactionOptions = (AccountsList || []).map((item, index) => ({
+        id: item?.bankId || `account-${index}`,
 
-    bankId: item?.bankId,
+        bankId: item?.bankId,
 
-    accountHolderName:
-        item?.accountHolderName ||
-        item?.displayName ||
-        "Account",
+        accountHolderName:
+            item?.accountHolderName ||
+            item?.displayName ||
+            "Account",
 
-    displayName:
-        item?.displayName ||
-        item?.accountHolderName ||
-        "Account",
+        displayName:
+            item?.displayName ||
+            item?.accountHolderName ||
+            "Account",
 
-    accountType: item?.accountType || item?.type || "BANK",
+        accountType: item?.accountType || item?.type || "BANK",
 
-    bankName: item?.bankName || "",
+        bankName: item?.bankName || "",
 
-    paymentMethod: item?.paymentMethod || item?.type || "BANK",
+        paymentMethod: item?.paymentMethod || item?.type || "BANK",
 
-    cashAccountType:
-        item?.cashAccountType || item?.bankName || "Cash",
+        cashAccountType:
+            item?.cashAccountType || item?.bankName || "Cash",
 
-    bankAccountType:
-        item?.bankAccountType || item?.bankName || "Bank Account",
+        bankAccountType:
+            item?.bankAccountType || item?.bankName || "Bank Account",
 
-    upiId: item?.upiId || "",
-    isUpi: item?.isUpi || false,
+        upiId: item?.upiId || "",
+        isUpi: item?.isUpi || false,
 
-    subLabel:
-        item?.accountType === "CASH"
-            ? item?.cashAccountType || item?.bankName || "Cash"
-            : item?.bankName || item?.paymentMethod || "Bank Account",
-}));
+        subLabel:
+            item?.accountType === "CASH"
+                ? item?.cashAccountType || item?.bankName || "Cash"
+                : item?.bankName || item?.paymentMethod || "Bank Account",
+    }));
 
     const selectType = (id, type) => {
 
@@ -4689,7 +4689,13 @@ export default function AddTenantNewform({ navigation, route }) {
                                             )}
                                             <Text style={styles.label}> Bed <Text style={{ color: "red" }}>*</Text></Text>
 
-                                            <View style={{ position: "relative" }}>
+                                            <View
+                                                style={{
+                                                    position: "relative",
+                                                    zIndex: openDropdown === "bed" ? 10000 : 1,
+                                                    elevation: openDropdown === "bed" ? 20 : 1,
+                                                }}
+                                            >
                                                 <TouchableOpacity
                                                     style={[styles.select, isBedDisabled && styles.disabledSelect]}
                                                     disabled={isBedDisabled}
@@ -7239,8 +7245,8 @@ export default function AddTenantNewform({ navigation, route }) {
                             >
                                 {transactionOptions?.length > 0 ? (
                                     transactionOptions.map((payment, index) => {
-                                      const isSelected =
-    accountSelected?.bankId === payment?.bankId;
+                                        const isSelected =
+                                            accountSelected?.bankId === payment?.bankId;
 
                                         const isCash = payment?.accountType === "CASH";
 

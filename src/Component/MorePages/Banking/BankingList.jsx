@@ -860,105 +860,125 @@ export default function BankingScreen() {
                 </View>
               </Animated.View>
 
+              {mappedBankList?.length > 0 ? (
+                <Animated.View style={{ height: bankListHeight, opacity: bankListOpacity }}>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    {mappedBankList && mappedBankList?.length > 0 && mappedBankList?.map((item, index) => (
+                      <View key={index} style={[
+                        styles.bankCard,
+                        item.isDeleted && {
+                          opacity: 0.5,
+                          backgroundColor: "#F3F4F6",
+                        },
+                      ]}>
 
-              <Animated.View style={{ height: bankListHeight, opacity: bankListOpacity }}>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  {mappedBankList && mappedBankList?.length > 0 && mappedBankList?.map((item, index) => (
-                    <View key={index} style={[
-                      styles.bankCard,
-                      item.isDeleted && {
-                        opacity: 0.5,
-                        backgroundColor: "#F3F4F6",
-                      },
-                    ]}>
+                        <View
+                          style={[
+                            {
+                              backgroundColor: '#f7f5ff',
+                              padding: 20,
+                              flexGrow: 1,
+                              paddingTop: 7,
+                              paddingBottom: 7,
+                            },
+                            item.isDeleted && {
+                              backgroundColor: "#E5E7EB",
+                            },
+                          ]}
+                        >
 
-                      <View
-                        style={[
-                          {
-                            backgroundColor: '#f7f5ff',
-                            padding: 20,
-                            flexGrow: 1,
-                            paddingTop: 7,
-                            paddingBottom: 7,
-                          },
-                          item.isDeleted && {
-                            backgroundColor: "#E5E7EB",
-                          },
-                        ]}
-                      >
-
-                        <View style={styles.topRow}>
-                          <View style={styles.bankLeft}>
-                            <View style={styles.bankIconBg}>
-                              <Image
-                                source={item.Icon}
-                                style={styles.bankIcon}
-                              />
+                          <View style={styles.topRow}>
+                            <View style={styles.bankLeft}>
+                              <View style={styles.bankIconBg}>
+                                <Image
+                                  source={item.Icon}
+                                  style={styles.bankIcon}
+                                />
+                              </View>
+                              <View>
+                                <Text style={styles.bankTitle}>{item.title}</Text>
+                                <Text style={styles.bankSub}>{item.subtitle}</Text>
+                              </View>
                             </View>
-                            <View>
-                              <Text style={styles.bankTitle}>{item.title}</Text>
-                              <Text style={styles.bankSub}>{item.subtitle}</Text>
+
+                            <TouchableOpacity
+                              disabled={item?.isDeleted}
+                              style={styles.moreIcon} ref={(ref) => (dotsRef.current[item.id] = ref)} onPress={() => openMenu(item)}>
+                              <Image source={ThreeDotsIcon} style={styles.popupIcon} />
+                            </TouchableOpacity>
+                          </View>
+
+
+                          <View style={styles.middleRow}>
+                            {/* LEFT SIDE */}
+                            <View style={styles.nameContainer}>
+                              <Text style={styles.name}>{item.name}</Text>
+                              <Text style={styles.acc}>{item.acc}</Text>
+                            </View>
+
+                            {/* RIGHT SIDE */}
+                            <View style={styles.defaultColumn}>
+                              <Text style={styles.defaultText}>Default Bank A/C</Text>
+                              <Text style={styles.changeText}>Change</Text>
+                              <Text
+                                style={[
+                                  styles.addAmountText,
+                                  (!canWriteBanking || item?.isDeleted) && { opacity: 0.4 }
+                                ]}
+                                disabled={!canWriteBanking || item?.isDeleted}
+                                onPress={() => {
+                                  if (!canWriteBanking || item?.isDeleted) return;
+                                  handleShowAddBalance(item);
+                                }}
+                              >
+                                + Add Amount
+                              </Text>
                             </View>
                           </View>
 
-                          <TouchableOpacity
-                            disabled={item?.isDeleted}
-                            style={styles.moreIcon} ref={(ref) => (dotsRef.current[item.id] = ref)} onPress={() => openMenu(item)}>
-                            <Image source={ThreeDotsIcon} style={styles.popupIcon} />
-                          </TouchableOpacity>
+
                         </View>
 
+                        <View style={styles.balanceRow}>
+                          <Text style={styles.balanceText}>Balance</Text>
 
-                        <View style={styles.middleRow}>
-                          {/* LEFT SIDE */}
-                          <View style={styles.nameContainer}>
-                            <Text style={styles.name}>{item.name}</Text>
-                            <Text style={styles.acc}>{item.acc}</Text>
-                          </View>
 
-                          {/* RIGHT SIDE */}
-                          <View style={styles.defaultColumn}>
-                            <Text style={styles.defaultText}>Default Bank A/C</Text>
-                            <Text style={styles.changeText}>Change</Text>
-                            <Text
-                              style={[
-                                styles.addAmountText,
-                                (!canWriteBanking || item?.isDeleted) && { opacity: 0.4 }
-                              ]}
-                              disabled={!canWriteBanking || item?.isDeleted}
-                              onPress={() => {
-                                if (!canWriteBanking || item?.isDeleted) return;
-                                handleShowAddBalance(item);
-                              }}
-                            >
-                              + Add Amount
-                            </Text>
-                          </View>
+
+
+                          <Text style={styles.balanceAmount}>
+                            ₹{item.balance.toLocaleString("en-IN")}
+                          </Text>
+
+
                         </View>
+
 
 
                       </View>
 
-                      <View style={styles.balanceRow}>
-                        <Text style={styles.balanceText}>Balance</Text>
+                    ))}
+                  </ScrollView>
+                </Animated.View>
+              ) : (
+                <View style={styles.noBankContainer}>
+                  <Text style={styles.noBankText}>
+                    No Bankings Added
+                  </Text>
 
-
-
-
-                        <Text style={styles.balanceAmount}>
-                          ₹{item.balance.toLocaleString("en-IN")}
-                        </Text>
-
-
-                      </View>
-
-
-
-                    </View>
-
-                  ))}
-                </ScrollView>
-              </Animated.View>
+                  <TouchableOpacity
+                    style={[
+                      styles.noBankAddButton,
+                      !canWriteBanking && { opacity: 0.4 },
+                    ]}
+                    disabled={!canWriteBanking}
+                    onPress={handleAddBanking}
+                  >
+                    <Text style={styles.noBankAddButtonText}>
+                      Add Bank
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
 
 
               <View style={[styles.rowBetween, { marginBottom: 15, marginTop: 20 }]}>
@@ -968,7 +988,7 @@ export default function BankingScreen() {
 
               {mappedTransactions && mappedTransactions.length > 0 && mappedTransactions?.map((t) => (
                 <TouchableOpacity key={t.id}
-                onPress={() => handleshowTransaction(t)}
+                  onPress={() => handleshowTransaction(t)}
                 >
                   {/* <View style={styles.transCard}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -1627,7 +1647,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 14,
     height: 44,
-    opacity:0.4
+    opacity: 0.4
   },
 
   searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
@@ -2281,5 +2301,37 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     fontFamily: "Gilroy-Medium",
   },
+  noBankContainer: {
+    height: 190,
+    marginHorizontal: 16,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 18,
+    backgroundColor: "#FAFAFA",
+
+    alignItems: "center",
+    justifyContent: "space-between",
+
+    paddingVertical: 20,
+},
+
+noBankText: {
+    fontSize: 15,
+    color: "#999",
+    fontFamily: "Gilroy-Semibold",
+},
+
+noBankAddButton: {
+    backgroundColor: "#3D6DFF",
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 10,
+},
+
+noBankAddButtonText: {
+    color: "#fff",
+    fontSize: 14,
+    fontFamily: "Gilroy-Semibold",
+},
 
 });
