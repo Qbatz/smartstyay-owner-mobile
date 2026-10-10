@@ -21,7 +21,7 @@ export default function ExpenseItems({expense}) {
   <View style={styles.summaryRow}>
     <Text style={styles.summaryLabel}>Subtotal</Text>
     <Text style={styles.summaryValue}>
-      ₹ {Number(expense?.subTotal || 0).toLocaleString("en-IN")}
+      ₹ {Number(expense?.actualTotalPrice || 0).toLocaleString("en-IN")}
     </Text>
   </View>
 

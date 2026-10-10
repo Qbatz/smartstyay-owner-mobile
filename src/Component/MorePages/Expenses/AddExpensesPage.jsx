@@ -436,6 +436,10 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
         return false;
     };
 
+    const removeLeadingZeros = (text) => {
+        return text.replace(/^0+(?=\d)/, "");
+    };
+
 
     const vendors = [
         { label: "Andhra Pradesh", value: "Andhra Pradesh" },
@@ -496,34 +500,34 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
     console.log("IntializeexpensesList", IntializeexpensesList);
 
 
-  const paymentOptions = (
-    IntializeexpensesList?.banks || []
-).map((item, index) => {
-    const isCash =
-        item?.bankName?.toUpperCase() === "CASH";
+    const paymentOptions = (
+        IntializeexpensesList?.banks || []
+    ).map((item, index) => {
+        const isCash =
+            item?.bankName?.toUpperCase() === "CASH";
 
-    return {
-        id: item?.bankId || `account-${index}`,
-        bankId: item?.bankId,
+        return {
+            id: item?.bankId || `account-${index}`,
+            bankId: item?.bankId,
 
-        accountHolderName:
-            item?.holderName || "Account",
+            accountHolderName:
+                item?.holderName || "Account",
 
-        displayName:
-            item?.holderName || "Account",
+            displayName:
+                item?.holderName || "Account",
 
-        bankName:
-            item?.bankName || "",
+            bankName:
+                item?.bankName || "",
 
-        accountType:
-            isCash ? "CASH" : "BANK",
+            accountType:
+                isCash ? "CASH" : "BANK",
 
-        isCash,
+            isCash,
 
-        subLabel:
-            item?.bankName || "Bank Account",
-    };
-});
+            subLabel:
+                item?.bankName || "Bank Account",
+        };
+    });
 
 
 
@@ -1424,14 +1428,25 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                             type="numberOnly"
                             inputType="numeric"
                             value={amount}
+                            // onChangeText={(text) => {
+                            //     setAmount(text);
+                            //     setErrors(prev => ({
+                            //         ...prev,
+                            //         amount: ""
+                            //     }));
+                            // }}
+
                             onChangeText={(text) => {
-                                setAmount(text);
+                                const cleaned = text.replace(/^0+(?=\d)/, "");
+
+                                setAmount(cleaned);
+
                                 setErrors(prev => ({
                                     ...prev,
                                     amount: ""
                                 }));
                             }}
-                            placeholder="₹ 5,500"
+                            placeholder="Enter Amount"
                             placeholderTextColor="#9CA3AF"
                             style={styles.input}
                         />
@@ -1661,7 +1676,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                 <View
                                                     style={[
                                                         styles.paymentMethodIcon,
-                                                      selectedMode?.isCash
+                                                        selectedMode?.isCash
                                                             ? styles.cashIconBg
                                                             : styles.bankIconBg,
                                                     ]}
@@ -1686,14 +1701,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                         style={styles.paymentMethodSubText}
                                                         numberOfLines={1}
                                                     >
-                                                       {selectedMode?.subLabel || "Bank Account"}
+                                                        {selectedMode?.subLabel || "Bank Account"}
                                                     </Text>
                                                 </View>
 
                                                 <View
                                                     style={[
                                                         styles.paymentTypeBadge,
-                                                      selectedMode?.isCash
+                                                        selectedMode?.isCash
                                                             ? styles.cashBadge
                                                             : styles.bankBadge,
                                                     ]}
@@ -1701,12 +1716,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                     <Text
                                                         style={[
                                                             styles.paymentTypeText,
-                                                           selectedMode?.isCash
+                                                            selectedMode?.isCash
                                                                 ? styles.cashText
                                                                 : styles.bankText,
                                                         ]}
                                                     >
-                                                       {selectedMode?.isCash ? "CASH" : "BANK"}
+                                                        {selectedMode?.isCash ? "CASH" : "BANK"}
                                                     </Text>
                                                 </View>
                                             </View>
@@ -2083,14 +2098,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                         <View
                                                             style={[
                                                                 styles.paymentMethodIcon,
-                                                              selectedMode?.isCash
+                                                                selectedMode?.isCash
                                                                     ? styles.cashIconBg
                                                                     : styles.bankIconBg,
                                                             ]}
                                                         >
                                                             <Image
                                                                 source={
-                                                                  selectedMode?.isCash
+                                                                    selectedMode?.isCash
                                                                         ? CashIcon
                                                                         : BankIcon
                                                                 }
@@ -2108,14 +2123,14 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                                 style={styles.paymentMethodSubText}
                                                                 numberOfLines={1}
                                                             >
-                                                              {selectedMode?.subLabel || "Bank Account"}
+                                                                {selectedMode?.subLabel || "Bank Account"}
                                                             </Text>
                                                         </View>
 
                                                         <View
                                                             style={[
                                                                 styles.paymentTypeBadge,
-                                                               selectedMode?.isCash
+                                                                selectedMode?.isCash
                                                                     ? styles.cashBadge
                                                                     : styles.bankBadge,
                                                             ]}
@@ -2123,12 +2138,12 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                             <Text
                                                                 style={[
                                                                     styles.paymentTypeText,
-                                                                  selectedMode?.isCash
+                                                                    selectedMode?.isCash
                                                                         ? styles.cashText
                                                                         : styles.bankText,
                                                                 ]}
                                                             >
-                                                             {selectedMode?.isCash ? "CASH" : "BANK"}
+                                                                {selectedMode?.isCash ? "CASH" : "BANK"}
                                                             </Text>
                                                         </View>
                                                     </View>
@@ -2467,10 +2482,15 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                             type="numberOnly"
                                             inputType="numeric"
                                             value={item.quantity}
-                                            onChangeText={(text) =>
-                                                updateItem(index, "quantity", text)
-                                            }
-                                            placeholder="0"
+                                            // onChangeText={(text) =>
+                                            //     updateItem(index, "quantity", text)
+                                            // }
+                                            onChangeText={(text) => {
+                                                const cleaned = text.replace(/^0+(?=\d)/, "");
+
+                                                updateItem(index, "quantity", cleaned);
+                                            }}
+                                            placeholder="Enter Quantity"
                                             placeholderTextColor="#9CA3AF"
                                             style={styles.input}
                                         />
@@ -2567,10 +2587,15 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                     type="numberOnly"
                                     inputType="numeric"
                                     value={item.unitPrice}
-                                    onChangeText={(text) =>
-                                        updateItem(index, "unitPrice", text)
-                                    }
-                                    placeholder="₹ 150"
+                                    // onChangeText={(text) =>
+                                    //     updateItem(index, "unitPrice", text)
+                                    // }
+                                    onChangeText={(text) => {
+                                        const cleaned = text.replace(/^0+(?=\d)/, "");
+
+                                        updateItem(index, "unitPrice", cleaned);
+                                    }}
+                                    placeholder="Enter Unit Price"
                                     placeholderTextColor="#9CA3AF"
                                     style={styles.input}
                                 />
@@ -2661,8 +2686,11 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                             type="numberOnly"
                                             inputType="numeric"
                                             value={tax}
-                                            onChangeText={setTax}
-                                            placeholder="₹ 0.00"
+                                            // onChangeText={setTax}
+                                            onChangeText={(text) => {
+                                                setTax(removeLeadingZeros(text));
+                                            }}
+                                            placeholder="Enter Tax"
                                             style={styles.taxInput}
                                         />
                                     </View>
@@ -2717,19 +2745,40 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                         type="numberOnly"
                                         inputType="numeric"
                                         value={discount}
-                                        onChangeText={(text) => {
+                                        // onChangeText={(text) => {
 
-                                            if (discountType === "percentage" && Number(text) > 100) {
-                                                setDiscountError("Discount percentage cannot exceed 100%")
-                                                return;
-                                            } else if (discountType === "amount" && Number(text) > amount) {
-                                                setDiscountError("Discount amount cannot exceed total amount")
+                                        //     if (discountType === "percentage" && Number(text) > 100) {
+                                        //         setDiscountError("Discount percentage cannot exceed 100%")
+                                        //         return;
+                                        //     } else if (discountType === "amount" && Number(text) > amount) {
+                                        //         setDiscountError("Discount amount cannot exceed total amount")
+                                        //         return;
+                                        //     }
+                                        //     setDiscount(text)
+                                        //     setDiscountError("")
+                                        // }}
+                                        onChangeText={(text) => {
+                                            const cleaned = removeLeadingZeros(text);
+
+                                            if ( discountType === "percentage" && Number(cleaned) > 100 ) {
+                                                setDiscountError(  "Discount percentage cannot exceed 100%")
+                                                return
+                                            }
+
+                                            if (
+                                                discountType === "amount" &&
+                                                Number(cleaned) > Number(amount)
+                                            ) {
+                                                setDiscountError(
+                                                    "Discount amount cannot exceed total amount"
+                                                );
                                                 return;
                                             }
-                                            setDiscount(text)
-                                            setDiscountError("")
+
+                                            setDiscount(cleaned);
+                                            setDiscountError("");
                                         }}
-                                        placeholder="₹ 0.00"
+                                        placeholder="Enter Discount"
                                         style={styles.discountInput}
                                     />
                                 </View>
@@ -2763,8 +2812,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                style={[ styles.submitBtn,
-                                    loading && { opacity: 0.6 }
+                                style={[styles.submitBtn,
+                                loading && { opacity: 0.6 }
                                 ]}
                                 disabled={loading}
                                 onPress={handleSubmit}
@@ -2879,8 +2928,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                         >
                             {paymentOptions.length > 0 ? (
                                 paymentOptions.map((item, index) => {
-                              const isSelected =
-    selectedMode?.bankId === item?.bankId;
+                                    const isSelected =
+                                        selectedMode?.bankId === item?.bankId;
 
                                     return (
                                         <TouchableOpacity
