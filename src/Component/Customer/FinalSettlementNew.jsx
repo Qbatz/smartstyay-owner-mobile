@@ -33,6 +33,11 @@ import SettlementDiscountAction from "./settlementdiscountAction"
 import SettlementCustomRentSheet from "./FinalSettlementCustomRentSheet"
 
 
+const formatAmount = (amount) => {
+  return Number(amount || 0).toLocaleString("en-IN", {
+    maximumFractionDigits: 0,
+  });
+};
 
 
 export default function FinalSettlementScreen({ navigation, route }) {
@@ -2645,8 +2650,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   ]}
                 >
                   {isNegative ? "-" : ""}₹{" "}
-                  {Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
-                  {/* {Math.round(Math.abs(Number(ReturnAmount))).toLocaleString("en-IN")} */}
+                  ₹ {formatAmount(Math.abs(Number(ReturnAmount) || 0))}
+
+
+                   {/*{Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
+                  {Math.round(Math.abs(Number(ReturnAmount))).toLocaleString("en-IN")} */}
                 </Text>
               </View>
 
