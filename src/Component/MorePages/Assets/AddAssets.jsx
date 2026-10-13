@@ -1127,7 +1127,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
-    maxHeight: "98%",
+    maxHeight: "95%",
   },
   handle: {
     width: 60,
