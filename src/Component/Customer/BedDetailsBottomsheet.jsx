@@ -30,7 +30,7 @@ import { useHasPermission } from "../../Utils/useHasPermission"
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll"
 import { useNavigation } from "@react-navigation/native";
 import { useFocusEffect } from "@react-navigation/native";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 
 // import AddFloorSheet from "./AddFloorSheet";
@@ -92,6 +92,9 @@ export default function BedDetailsSheet({
 
     const [dropPos, setDropPos] = useState({ top: 0, left: 0, width: 0 });
     const dropdownRef = useRef(null);
+
+
+        const insets = useSafeAreaInsets();
 
     const [amenityError, setAmenityError] = useState("");
     // const [loading, setLoading] = useState(false);
@@ -1165,7 +1168,8 @@ export default function BedDetailsSheet({
                     {...(!showDropdown ? panResponder.panHandlers : {})}
                     style={[
                         styles.sheet,
-                        {
+                        { 
+                             marginBottom: insets.bottom,
                             transform: [
                                 { translateY },
                                 { translateY: Animated.multiply(keyboardOffset, -1) },
@@ -1469,7 +1473,15 @@ export default function BedDetailsSheet({
                     </View>
 
                     {selectedBed && (
-                        <View style={styles.bottomCard}>
+                        <View 
+                              style={[
+                                styles.bottomCard,
+                                {
+                                    paddingBottom: Math.max(insets.bottom, 30),
+                                   
+                                },
+                            ]}
+                        >
 
                             <View style={{ flex: 1 }}>
                                 <Text style={styles.bottomTitle}>

@@ -5,11 +5,13 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
-  ScrollView, Image, BackHandler
+  ScrollView, Image, BackHandler, KeyboardAvoidingView, Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
+import { CustomerContext } from "../../../Context/CustomerContext";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
@@ -21,12 +23,14 @@ export default function AddBankAccount() {
 
   const { activeHostelId } = useContext(CommonContexts);
   const { createBankAccount, responsiblePersonList, NewgetBankList, getAllTransactions,
-    getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel } = useContext(BankingContext);
+    getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel, newtransactionList } = useContext(BankingContext);
 
-
+  const { createPaymentMethod } = useContext(CustomerContext)
   const [accountType, setAccountType] = useState("bank")
 
   const navigation = useNavigation()
+
+  const insets = useSafeAreaInsets();
 
   const [showAccountType, setShowAccountType] = useState(false);
   const [showBankAccountType, setShowBankAccountType] = useState(false);
@@ -34,8 +38,19 @@ export default function AddBankAccount() {
   const [cashaccountType, setCashAccountType] = useState(null)
   const [responsibleperson, setResponsiblePerson] = useState(null)
 
+  const [linkBank, setLinkBank] = useState(false);
   const isApplyTriggeredRef = useRef(false)
-  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+  const [showLeavePageScreen, setShowLeavePageScreen] = useState(false)
+
+  const [showCardNetwork, setShowCardNetwork] = useState(false);
+  const [showBillingCycle, setShowBillingCycle] = useState(false);
+  const [showLinkedBank, setShowLinkedBank] = useState(false);
+
+  const [errors, setErrors] = useState({});
+  const [apiErr, setApiErr] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState("success");
 
 
   const [form, setForm] = useState({
@@ -50,13 +65,46 @@ export default function AddBankAccount() {
     responsiblePerson: "",
     openingBalance: "",
     description: "",
+
+    cardNetwork: "",
+    cardHolderName: "",
+    cardLast4: "",
+    creditLimit: "",
+    billingCycle: "",
+    linkedBankId: "",
   })
 
-  const [errors, setErrors] = useState({});
-  const [apiErr, setApiErr] = useState("");
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [modalType, setModalType] = useState("success");
+  const billingCycleOptions = [
+    { label: "1st of every month", value: "1" },
+    { label: "5th of every month", value: "5" },
+    { label: "10th of every month", value: "10" },
+    { label: "15th of every month", value: "15" },
+    { label: "20th of every month", value: "20" },
+    { label: "25th of every month", value: "25" },
+    { label: "Last day of every month", value: "LAST" },
+  ];
+
+  const billingCycleDays = Array.from(
+    { length: 31 },
+    (_, i) => i + 1
+  );
+
+  const cardNetworkOptions = [
+    { label: "Visa", value: "VISA" },
+    { label: "Mastercard", value: "MASTERCARD" },
+    { label: "RuPay", value: "RUPAY" },
+    { label: "American Express", value: "AMEX" },
+  ];
+
+  const linkedBankOptions = (newtransactionList?.bankList || []).filter(
+    (item) =>
+      String(item?.accountType || "").toUpperCase() === "BANK"
+  );
+
+  console.log("linkedBankOptions", linkedBankOptions);
+
+
+
 
   useEffect(() => {
     if (activeHostelId) {
@@ -73,6 +121,30 @@ export default function AddBankAccount() {
     { label: "Savings", value: "SAVINGS" },
     { label: "Current", value: "CURRENT" },
   ];
+
+  const resetCreditFields = () => {
+    setForm((prev) => ({
+      ...prev,
+      cardNetwork: "",
+      cardHolderName: "",
+      cardLast4: "",
+      creditLimit: "",
+      billingCycle: "",
+      linkedBankId: "",
+    }));
+
+    setLinkBank(false);
+
+    setErrors((prev) => ({
+      ...prev,
+      cardNetwork: "",
+      cardHolderName: "",
+      cardLast4: "",
+      creditLimit: "",
+      billingCycle: "",
+      linkedBankId: "",
+    }));
+  };
 
   //   const responsibleOptions = users?.map(item => ({
   //   label: `${item?.firstName ?? ""} ${item?.lastName ?? ""}`.trim(),
@@ -167,10 +239,12 @@ export default function AddBankAccount() {
     if (!form.displayName.trim())
       err.displayName = "Please Enter Account Name";
 
-    if (!form.openingBalance) {
-      err.openingBalance = "Please Enter Opening Balance";
-    } else if (/^0+$/.test(form.openingBalance)) {
-      err.openingBalance = "Opening Balance must be greater than 0";
+    if (accountType !== "Credit") {
+      if (!form.openingBalance) {
+        err.openingBalance = "Please Enter Opening Balance";
+      } else if (/^0+$/.test(form.openingBalance)) {
+        err.openingBalance = "Opening Balance must be greater than 0";
+      }
     }
 
     if (accountType === "bank") {
@@ -196,9 +270,9 @@ export default function AddBankAccount() {
       }
 
       if (!form.ifsc.trim()) {
-        err.ifsc = "Please Enter IFSC Code";
+        err.ifsc = "Please Enter IFSC";
       } else if (form.ifsc.length !== 11) {
-        err.ifsc = "Please Enter Valid IFSC Code";
+        err.ifsc = "Please Enter Valid IFSC";
       }
 
       if (!form.accountCategory.trim()) {
@@ -213,6 +287,57 @@ export default function AddBankAccount() {
       if (!form.responsiblePerson.trim())
         err.responsiblePerson = "Please Enter Responsible Person";
     }
+
+    if (accountType === "Credit") {
+      if (!form.cardNetwork) {
+        err.cardNetwork = "Please Select Card Network";
+      }
+
+      if (!form.cardHolderName.trim()) {
+        err.cardHolderName = "Please Enter Card Holder Name";
+      }
+
+      if (!form.cardLast4) {
+        err.cardLast4 = "Please Enter Last 4 Digits";
+      } else if (!/^\d{4}$/.test(form.cardLast4)) {
+        err.cardLast4 = "Card Number must be 4 digits";
+      }
+
+      if (!form.displayName.trim()) {
+        err.displayName = "Please Enter Display Name";
+      }
+
+      // if (!form.billingCycle) {
+      //   err.billingCycle = "Please Select Billing Cycle";
+      // }
+
+      const selectedBankId = linkBank
+        ? form.linkedBankId
+        : "";
+
+      if (linkBank && !selectedBankId) {
+        setErrors(prev => ({
+          ...prev,
+          linkedBankId: "Please Select Bank Account",
+        }));
+        isApplyTriggeredRef.current = false;
+        return;
+      }
+
+      // if (!selectedBankId) {
+      //   setModalType("error");
+      //   setModalMessage(
+      //     "Credit Card API requires a Bank Account ID. Please link a bank account."
+      //   );
+      //   setShowSuccessModal(true);
+      //   isApplyTriggeredRef.current = false;
+      //   return;
+      // }
+    }
+
+    // if (!form.creditLimit) {
+    //     err.creditLimit = "Please Enter Credit Limit";
+    // }
 
     setErrors(err);
 
@@ -293,6 +418,98 @@ export default function AddBankAccount() {
 
     try {
 
+
+      if (accountType === "Credit") {
+        const selectedBankId = form.linkedBankId;
+
+        if (!selectedBankId) {
+          setErrors(prev => ({
+            ...prev,
+            linkedBankId: "Please Select Bank Account",
+          }));
+          return;
+        }
+
+        const payload = {
+          paymentMethod: "Credit Card",
+
+          // Common fields
+          displayName: form.displayName.trim(),
+          description: form.description.trim(),
+
+          // Card fields — same API payload structure
+          cardNumber: Number(form.cardLast4),
+          cardNetwork: form.cardNetwork,
+          cardHolderName: form.cardHolderName.trim(),
+
+          // Credit Card fields
+          creditLimit: Number(form.creditLimit) || "",
+          billingCycle: form.billingCycle,
+        };
+
+        console.log("creditcardpayload", payload, selectedBankId);
+
+
+        try {
+          const res = await createPaymentMethod(
+            activeHostelId,
+            selectedBankId,
+            payload,
+            null
+          );
+
+          if (res?.success) {
+            await getBankMethod(
+              activeHostelId,
+              selectedBankId
+            );
+
+            await NewgetBankList(activeHostelId);
+            await getAllTransactions(activeHostelId);
+
+            setModalType("success");
+            setModalMessage(
+              res?.message ||
+              "Credit Card Added Successfully"
+            );
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+              setShowSuccessModal(false);
+              navigation.goBack();
+            }, 1200);
+          } else {
+            setModalType("error");
+            setModalMessage(
+              res?.message || "Failed to add Credit Card"
+            );
+            setShowSuccessModal(true);
+
+            setTimeout(() => {
+              setShowSuccessModal(false);
+            }, 1200);
+          }
+        } catch (error) {
+          console.log("Credit Card API Error:", error);
+
+          setModalType("error");
+          setModalMessage(
+            error?.message || "Failed to add Credit Card"
+          );
+          setShowSuccessModal(true)
+
+          setTimeout(() => {
+            setShowSuccessModal(false);
+          }, 1200);
+        } finally {
+          isApplyTriggeredRef.current = false;
+        }
+
+        return;
+      }
+
+
+
       const payload =
         accountType === "bank"
           ? {
@@ -368,260 +585,541 @@ export default function AddBankAccount() {
         type={modalType}
       />
 
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          {/* <TouchableOpacity onPress={() => navigation.goBack()}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            {/* <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={{ fontSize: 22 }}>←</Text>
           </TouchableOpacity> */}
-          <TouchableOpacity onPress={handleLeavePage}>
-            <Image source={ArrowLeft} style={styles.backIcon} />
-          </TouchableOpacity>
-
-          <Text style={styles.title}>Add New Account</Text>
-        </View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 30 }}
-        >
-          <Text style={{
-            fontSize: 15,
-            marginBottom: 20,
-            marginTop: 15,
-            color: "#222", fontFamily: "Gilroy-Semibold"
-          }}>
-            Select Type <Text style={{ color: "red" }}>*</Text>
-          </Text>
-
-          <View style={styles.accountTypeRow}>
-
-            <TouchableOpacity
-              style={styles.accountTypeItem}
-              onPress={() => {
-                setAccountType("bank");
-                resetCashFields();
-                resetCommonFields();
-              }}
-            >
-              <View style={styles.radioOuter}>
-                {accountType === "bank" && (
-                  <View style={styles.radioInner} />
-                )}
-              </View>
-
-              <Text style={styles.accountTypeText}>
-                Bank Account
-              </Text>
+            <TouchableOpacity onPress={handleLeavePage}>
+              <Image source={ArrowLeft} style={styles.backIcon} />
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.accountTypeItem}
-              onPress={() => {
-                setAccountType("cash");
-                resetBankFields();
-                resetCommonFields();
-              }}
-            >
-              <View style={styles.radioOuter}>
-                {accountType === "cash" && (
-                  <View style={styles.radioInner} />
-                )}
-              </View>
-
-              <Text style={styles.accountTypeText}>
-                Cash Account
-              </Text>
-            </TouchableOpacity>
-
+            <Text style={styles.title}>Add New Account</Text>
           </View>
 
-          <Text style={styles.label}>Account Name / Display Name <Text style={{ color: "red" }}>*</Text></Text>
-          <TextInput
-            value={form.displayName}
-            placeholder="Enter Account Name"
-            style={styles.input}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{
+              paddingBottom: Math.max(insets.bottom, 30) + 20,
+              flexGrow: 1,
+            }}
+          >
+            <Text style={{
+              fontSize: 15,
+              marginBottom: 20,
+              marginTop: 15,
+              color: "#222", fontFamily: "Gilroy-Semibold"
+            }}>
+              Select Type <Text style={{ color: "red" }}>*</Text>
+            </Text>
 
+            <View style={styles.accountTypeRow}>
 
-            onChangeText={(v) =>
-              handleChange(
-                "displayName",
-                v.replace(/[^a-zA-Z.&\s]/g, "")
-              )
-            }
-          />
-
-          {errors.displayName && (
-            <ErrorMessage
-              message={errors.displayName}
-              type="error"
-            />
-          )}
-
-          {accountType === "bank" ? (
-            <>
-              <Text style={styles.label}>Bank Name <Text style={{ color: "red" }}>*</Text></Text>
-              <TextInput
-                value={form.bankName}
-                placeholder="Enter Bank Name"
-                style={styles.input}
-                autoCapitalize="words"
-                onChangeText={(v) =>
-                  handleChange(
-                    "bankName",
-                    v.replace(/[^a-zA-Z.&\s]/g, "")
-                  )
-                }
-              />
-
-              {errors.bankName && (
-                <ErrorMessage
-                  message={errors.bankName}
-                  type="error"
-                />
-              )}
-
-              <Text style={styles.label}>Account Holder Name <Text style={{ color: "red" }}>*</Text></Text>
-              <TextInput
-                value={form.accountHolder}
-                placeholder="Enter Holder Name"
-                style={styles.input}
-                onChangeText={(v) =>
-                  handleChange(
-                    "accountHolder",
-                    v.replace(/[^a-zA-Z\s]/g, "")
-                  )
-                }
-              />
-
-              {errors.accountHolder && (
-                <ErrorMessage
-                  message={errors.accountHolder}
-                  type="error"
-                />
-              )}
-
-              <Text style={styles.label}>Account Number <Text style={{ color: "red" }}>*</Text></Text>
-              <TextInput
-                value={form.accountNumber}
-                placeholder="Enter Account Number"
-                keyboardType="number-pad"
-                maxLength={18}
-                style={styles.input}
-                onChangeText={(v) =>
-                  handleChange(
-                    "accountNumber",
-                    v.replace(/[^0-9]/g, "")
-                  )
-                }
-              />
-
-              {errors.accountNumber && (
-                <ErrorMessage
-                  message={errors.accountNumber}
-                  type="error"
-                />
-              )}
-
-              <Text style={styles.label}>Bank Branch <Text style={{ color: "red" }}>*</Text></Text>
-              <TextInput
-                value={form.branch}
-                placeholder="Enter Branch"
-                style={styles.input}
-                onChangeText={(v) => handleChange("branch", v)}
-              />
-
-              {errors.branch && (
-                <ErrorMessage message={errors.branch} />
-              )}
-
-              <View style={styles.row}>
-                <View style={styles.half}>
-                  <Text style={styles.label}>IFSC Code <Text style={{ color: "red" }}>*</Text></Text>
-                  <TextInput
-                    value={form.ifsc}
-                    placeholder="Enter Ifsc Code"
-                    autoCapitalize="characters"
-                    maxLength={11}
-                    style={styles.input}
-                    onChangeText={handleIfscChange}
-                  />
-
-                  {errors.ifsc && (
-                    <ErrorMessage message={errors.ifsc} />
+              <TouchableOpacity
+                style={styles.accountTypeItem}
+                onPress={() => {
+                  setAccountType("bank");
+                  resetCashFields();
+                  resetCommonFields();
+                  resetCreditFields();
+                }}
+              >
+                <View style={styles.radioOuter}>
+                  {accountType === "bank" && (
+                    <View style={styles.radioInner} />
                   )}
                 </View>
-                <View
-                  style={[
-                    styles.half,
-                    { zIndex: showBankAccountType ? 1000 : 1 }
-                  ]}
-                >
+
+                <Text style={styles.accountTypeText}>
+                  Bank Account
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.accountTypeItem}
+                onPress={() => {
+                  setAccountType("cash");
+                  resetBankFields();
+                  resetCommonFields();
+                  resetCreditFields();
+                }}
+              >
+                <View style={styles.radioOuter}>
+                  {accountType === "cash" && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+
+                <Text style={styles.accountTypeText}>
+                  Cash Account
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.accountTypeItem}
+                onPress={() => {
+                  setAccountType("Credit");
+                  resetBankFields();
+                  resetCreditFields();
+                }}
+              >
+                <View style={styles.radioOuter}>
+                  {accountType === "Credit" && (
+                    <View style={styles.radioInner} />
+                  )}
+                </View>
+
+                <Text style={styles.accountTypeText}>
+                  Credit Card
+                </Text>
+              </TouchableOpacity>
+
+
+            </View>
+
+            {accountType !== "Credit" && (
+              <>
+
+                <Text style={styles.label}>Account Name / Display Name <Text style={{ color: "red" }}>*</Text></Text>
+                <TextInput
+                  value={form.displayName}
+                  placeholder="Enter Account Name"
+                  style={styles.input}
+
+
+                  onChangeText={(v) =>
+                    handleChange(
+                      "displayName",
+                      v.replace(/[^a-zA-Z.&\s]/g, "")
+                    )
+                  }
+                />
+
+                {errors.displayName && (
+                  <ErrorMessage
+                    message={errors.displayName}
+                    type="error"
+                  />
+                )}
+
+              </>
+            )
+            }
+
+            {accountType === "bank" ? (
+              <>
+                <Text style={styles.label}>Bank Name <Text style={{ color: "red" }}>*</Text></Text>
+                <TextInput
+                  value={form.bankName}
+                  placeholder="Enter Bank Name"
+                  style={styles.input}
+                  autoCapitalize="words"
+                  onChangeText={(v) =>
+                    handleChange(
+                      "bankName",
+                      v.replace(/[^a-zA-Z.&\s]/g, "")
+                    )
+                  }
+                />
+
+                {errors.bankName && (
+                  <ErrorMessage
+                    message={errors.bankName}
+                    type="error"
+                  />
+                )}
+
+                <Text style={styles.label}>Account Holder Name <Text style={{ color: "red" }}>*</Text></Text>
+                <TextInput
+                  value={form.accountHolder}
+                  placeholder="Enter Holder Name"
+                  style={styles.input}
+                  onChangeText={(v) =>
+                    handleChange(
+                      "accountHolder",
+                      v.replace(/[^a-zA-Z\s]/g, "")
+                    )
+                  }
+                />
+
+                {errors.accountHolder && (
+                  <ErrorMessage
+                    message={errors.accountHolder}
+                    type="error"
+                  />
+                )}
+
+                <Text style={styles.label}>Account Number <Text style={{ color: "red" }}>*</Text></Text>
+                <TextInput
+                  value={form.accountNumber}
+                  placeholder="Enter Account Number"
+                  keyboardType="number-pad"
+                  maxLength={18}
+                  style={styles.input}
+                  onChangeText={(v) =>
+                    handleChange(
+                      "accountNumber",
+                      v.replace(/[^0-9]/g, "")
+                    )
+                  }
+                />
+
+                {errors.accountNumber && (
+                  <ErrorMessage
+                    message={errors.accountNumber}
+                    type="error"
+                  />
+                )}
+
+                <Text style={styles.label}>Bank Branch <Text style={{ color: "red" }}>*</Text></Text>
+                <TextInput
+                  value={form.branch}
+                  placeholder="Enter Branch"
+                  style={styles.input}
+                  onChangeText={(v) => handleChange("branch", v)}
+                />
+
+                {errors.branch && (
+                  <ErrorMessage message={errors.branch} />
+                )}
+
+                <View style={styles.row}>
+                  <View style={styles.half}>
+                    <Text style={styles.label}>IFSC Code <Text style={{ color: "red" }}>*</Text></Text>
+                    <TextInput
+                      value={form.ifsc}
+                      placeholder="Enter Ifsc Code"
+                      autoCapitalize="characters"
+                      maxLength={11}
+                      style={styles.input}
+                      onChangeText={handleIfscChange}
+                    />
+
+                    {errors.ifsc && (
+                      <ErrorMessage message={errors.ifsc} />
+                    )}
+                  </View>
+                  <View
+                    style={[
+                      styles.half,
+                      { zIndex: showBankAccountType ? 1000 : 1 }
+                    ]}
+                  >
+                    <Text style={styles.label}>
+                      Account Type <Text style={{ color: "red" }}>*</Text>
+                    </Text>
+
+                    <TouchableOpacity
+                      style={styles.inputBox}
+                      activeOpacity={0.8}
+                      onPress={() => {
+                        setShowBankAccountType((prev) => !prev);
+                        setShowAccountType(false);
+                        setShowResponsiblePerson(false);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.dropdownInputText,
+                          !form.accountCategory && styles.placeholderText,
+                        ]}
+                      >
+                        {form.accountCategory
+                          ? bankAccountTypeOptions.find(
+                            (item) => item.value === form.accountCategory
+                          )?.label
+                          : "Select Account Type"}
+                      </Text>
+
+                      <Image
+                        source={DownArrow}
+                        style={{
+                          width: 18,
+                          height: 18,
+                          tintColor: "#555",
+                        }}
+                      />
+                    </TouchableOpacity>
+
+                    {showBankAccountType && (
+                      <View style={styles.bankAccountDropdown}>
+                        <ScrollView
+                          nestedScrollEnabled
+                          showsVerticalScrollIndicator={false}
+                        >
+                          {bankAccountTypeOptions.map((option) => {
+                            const isSelected =
+                              form.accountCategory === option.value;
+
+                            return (
+                              <TouchableOpacity
+                                key={option.value}
+                                style={[
+                                  styles.dropdownRow,
+                                  isSelected && styles.dropdownRowSelected,
+                                ]}
+                                onPress={() => {
+                                  handleChange(
+                                    "accountCategory",
+                                    option.value
+                                  );
+
+                                  setShowBankAccountType(false);
+                                }}
+                              >
+                                <Text
+                                  style={
+                                    isSelected
+                                      ? styles.dropdownTextSelected
+                                      : styles.dropdownText
+                                  }
+                                >
+                                  {option.label}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </ScrollView>
+                      </View>
+                    )}
+
+                    {errors.accountCategory && (
+                      <ErrorMessage message={errors.accountCategory} />
+                    )}
+                  </View>
+                </View>
+
+
+              </>
+            ) : accountType === "cash" ? (
+              <>
+
+
+                <View style={{ position: "relative" }}>
                   <Text style={styles.label}>
-                    Account Type <Text style={{ color: "red" }}>*</Text>
+                    Cash Account Type <Text style={{ color: "red", fontSize: 19 }}>*</Text>
                   </Text>
 
+                  {/* INPUT */}
+                  <TouchableOpacity
+                    style={styles.inputBox}
+                    onPress={() => {
+                      // setModeError("");
+                      setShowAccountType(v => !v);
+                    }}
+                  >
+                    {/* <Text style={{ fontSize: 15 }}>
+                    {cashaccountType
+                      ? transactionOptions.find(o => o.value === cashaccountType)?.label
+                      : "Select Account Type "}
+                  </Text> */}
+                    <Text style={{ fontSize: 15 }}>
+                      {cashaccountType
+                        ? cashTypeOptions.find(x => x.value === cashaccountType)?.label
+                        : "Select Cash Type"}
+                    </Text>
+
+                    <Image
+                      source={DownArrow}
+                      style={{ width: 18, height: 18, tintColor: "#555" }}
+                    />
+                  </TouchableOpacity>
+
+                  {/* DROPDOWN */}
+                  {showAccountType && (
+                    <View style={styles.transactiondropdown}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        scrollEnabled={cashTypeOptions.length > 3}
+                        showsVerticalScrollIndicator={false}
+                      >
+                        {cashTypeOptions.map(opt => {
+                          const isSelected = cashaccountType === opt.value;
+
+                          return (
+                            <TouchableOpacity
+                              key={opt.value}
+                              style={[
+                                styles.dropdownRow,
+                                isSelected && styles.dropdownRowSelected,
+                              ]}
+                              onPress={() => {
+                                handleChange("cashType", opt.value);
+                                setCashAccountType(opt.value);
+                                setShowAccountType(false);
+                              }}
+                            >
+                              <Text
+                                style={
+                                  isSelected
+                                    ? styles.dropdownTextSelected
+                                    : styles.dropdownText
+                                }
+                              >
+                                {opt.label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
+
+                  {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
+                </View>
+
+                <View style={{ position: "relative" }}>
+                  <Text style={styles.label}>
+                    Responsible Person  <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                  </Text>
+
+                  {/* INPUT */}
+                  <TouchableOpacity
+                    style={styles.inputBox}
+                    onPress={() => {
+                      // setModeError("");
+                      setShowResponsiblePerson(v => !v);
+                    }}
+                  >
+
+                    <Text style={{ fontSize: 15 }}>
+                      {responsibleperson
+                        ? responsiblePersonList
+                          .find(x => x.userId === responsibleperson)
+                          ?.firstName +
+                        " " +
+                        (responsiblePersonList.find(
+                          x => x.userId === responsibleperson
+                        )?.lastName || "")
+                        : "Select Responsible Person"}
+                    </Text>
+
+                    <Image
+                      source={DownArrow}
+                      style={{ width: 18, height: 18, tintColor: "#555" }}
+                    />
+                  </TouchableOpacity>
+
+                  {/* DROPDOWN */}
+                  {showResponsibleperson && (
+                    <View style={styles.transactiondropdown}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        scrollEnabled={responsiblePersonList.length > 3}
+                        showsVerticalScrollIndicator={false}
+                      >
+                        {responsiblePersonList.map((item) => {
+                          const label = `${item.firstName ?? ""} ${item.lastName ?? ""}`.trim();
+                          const isSelected = responsibleperson === item.userId;
+
+                          return (
+                            <TouchableOpacity
+                              key={item.userId}
+                              style={[
+                                styles.dropdownRow,
+                                isSelected && styles.dropdownRowSelected,
+                              ]}
+                              onPress={() => {
+                                setResponsiblePerson(item.userId);
+
+                                handleChange("responsiblePerson", item.userId);
+
+                                setShowResponsiblePerson(false);
+                              }}
+                            >
+                              <Text
+                                style={
+                                  isSelected
+                                    ? styles.dropdownTextSelected
+                                    : styles.dropdownText
+                                }
+                              >
+                                {label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
+
+                  {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
+                </View>
+              </>
+            ) : (
+              <>
+                {/* Card Network */}
+                <Text style={styles.label}>
+                  Card Network
+                  <Text style={{ color: "red" }}> *</Text>
+                </Text>
+
+                <View style={{ position: "relative", zIndex: 3000 }}>
                   <TouchableOpacity
                     style={styles.inputBox}
                     activeOpacity={0.8}
                     onPress={() => {
-                      setShowBankAccountType((prev) => !prev);
                       setShowAccountType(false);
                       setShowResponsiblePerson(false);
+                      setShowBankAccountType(false);
+                      setShowCardNetwork(prev => !prev);
                     }}
                   >
                     <Text
                       style={[
                         styles.dropdownInputText,
-                        !form.accountCategory && styles.placeholderText,
+                        !form.cardNetwork && styles.placeholderText,
                       ]}
                     >
-                      {form.accountCategory
-                        ? bankAccountTypeOptions.find(
-                          (item) => item.value === form.accountCategory
+                      {form.cardNetwork
+                        ? cardNetworkOptions.find(
+                          x => x.value === form.cardNetwork
                         )?.label
-                        : "Select Account Type"}
+                        : "Select Card Network"}
                     </Text>
 
                     <Image
                       source={DownArrow}
-                      style={{
-                        width: 18,
-                        height: 18,
-                        tintColor: "#555",
-                      }}
+                      style={styles.dropdownArrow}
                     />
                   </TouchableOpacity>
 
-                  {showBankAccountType && (
-                    <View style={styles.bankAccountDropdown}>
+                  {showCardNetwork && (
+                    <View style={styles.creditDropdown}>
                       <ScrollView
                         nestedScrollEnabled
                         showsVerticalScrollIndicator={false}
                       >
-                        {bankAccountTypeOptions.map((option) => {
-                          const isSelected =
-                            form.accountCategory === option.value;
+                        {cardNetworkOptions.map(option => {
+                          const selected =
+                            form.cardNetwork === option.value;
 
                           return (
                             <TouchableOpacity
                               key={option.value}
                               style={[
                                 styles.dropdownRow,
-                                isSelected && styles.dropdownRowSelected,
+                                selected &&
+                                styles.dropdownRowSelected,
                               ]}
                               onPress={() => {
                                 handleChange(
-                                  "accountCategory",
+                                  "cardNetwork",
                                   option.value
                                 );
-
-                                setShowBankAccountType(false);
+                                setShowCardNetwork(false);
                               }}
                             >
                               <Text
                                 style={
-                                  isSelected
+                                  selected
                                     ? styles.dropdownTextSelected
                                     : styles.dropdownText
                                 }
@@ -634,231 +1132,412 @@ export default function AddBankAccount() {
                       </ScrollView>
                     </View>
                   )}
-
-                  {errors.accountCategory && (
-                    <ErrorMessage message={errors.accountCategory} />
-                  )}
                 </View>
-              </View>
+
+                {errors.cardNetwork && (
+                  <ErrorMessage message={errors.cardNetwork} />
+                )}
 
 
-            </>
-          ) : (
-            <>
-
-
-              <View style={{ position: "relative" }}>
+                {/* Card Holder */}
                 <Text style={styles.label}>
-                  Cash Account Type <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                  Card Holder Name
+                  <Text style={{ color: "red" }}> *</Text>
                 </Text>
 
-                {/* INPUT */}
+                <TextInput
+                  value={form.cardHolderName}
+                  placeholder="Enter Card Holder Name"
+                  style={styles.input}
+                  autoCapitalize="words"
+                  onChangeText={(v) =>
+                    handleChange(
+                      "cardHolderName",
+                      v.replace(/[^a-zA-Z\s]/g, "")
+                    )
+                  }
+                />
+
+                {errors.cardHolderName && (
+                  <ErrorMessage message={errors.cardHolderName} />
+                )}
+
+
+                {/* Last 4 Digits */}
+                <Text style={styles.label}>
+                  Card Number (Last 4 Digits)
+                  <Text style={{ color: "red" }}> *</Text>
+                </Text>
+
+                <TextInput
+                  value={form.cardLast4}
+                  placeholder="Enter last 4 digits"
+                  style={styles.input}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  secureTextEntry={false}
+                  onChangeText={(v) => {
+                    const value = v.replace(/[^0-9]/g, "");
+
+                    handleChange("cardLast4", value);
+                  }}
+                />
+
+                {errors.cardLast4 && (
+                  <ErrorMessage message={errors.cardLast4} />
+                )}
+
+
+                {/* Display Name */}
+                <Text style={styles.label}>
+                  Display Name
+                  <Text style={{ color: "red" }}> *</Text>
+                </Text>
+
+                <TextInput
+                  value={form.displayName}
+                  placeholder="Enter Display Name"
+                  style={styles.input}
+                  onChangeText={(v) =>
+                    handleChange(
+                      "displayName",
+                      v.replace(/[^a-zA-Z0-9.&\s-]/g, "")
+                    )
+                  }
+                />
+
+                {errors.displayName && (
+                  <ErrorMessage message={errors.displayName} />
+                )}
+
+
+                {/* Credit Limit */}
+                <Text style={styles.label}>
+                  Credit Limit
+                </Text>
+
+                <TextInput
+                  value={form.creditLimit}
+                  placeholder="Enter Credit Limit"
+                  style={styles.input}
+                  keyboardType="numeric"
+                  onChangeText={(v) => {
+                    const value = v.replace(/[^0-9]/g, "");
+
+                    if (value.length > 1 && value.startsWith("0")) {
+                      return;
+                    }
+
+                    handleChange("creditLimit", value);
+                  }}
+                />
+
+                {errors.creditLimit && (
+                  <ErrorMessage message={errors.creditLimit} />
+                )}
+
+
+                {/* Billing Cycle */}
+                <Text style={styles.label}>
+                  Billing Cycle
+                  {/* <Text style={{ color: "red" }}> *</Text> */}
+                </Text>
+
                 <TouchableOpacity
                   style={styles.inputBox}
+                  activeOpacity={0.8}
                   onPress={() => {
-                    // setModeError("");
-                    setShowAccountType(v => !v);
+                    setShowBillingCycle(prev => !prev);
+
+                    setShowCardNetwork(false);
+                    setShowLinkedBank(false);
+                    setShowAccountType(false);
+                    setShowResponsiblePerson(false);
+                    setShowBankAccountType(false);
                   }}
                 >
-                  {/* <Text style={{ fontSize: 15 }}>
-                    {cashaccountType
-                      ? transactionOptions.find(o => o.value === cashaccountType)?.label
-                      : "Select Account Type "}
-                  </Text> */}
-                  <Text style={{ fontSize: 15 }}>
-                    {cashaccountType
-                      ? cashTypeOptions.find(x => x.value === cashaccountType)?.label
-                      : "Select Cash Type"}
+                  <Text
+                    style={[
+                      styles.dropdownInputText,
+                      !form.billingCycle && styles.placeholderText,
+                    ]}
+                  >
+                    {form.billingCycle
+                      ? `${String(form.billingCycle).padStart(2, "0")}`
+                      : "Select Billing Cycle"}
                   </Text>
 
                   <Image
                     source={DownArrow}
-                    style={{ width: 18, height: 18, tintColor: "#555" }}
+                    style={[
+                      styles.dropdownArrow,
+                      {
+                        transform: [
+                          {
+                            rotate: showBillingCycle
+                              ? "180deg"
+                              : "0deg",
+                          },
+                        ],
+                      },
+                    ]}
                   />
                 </TouchableOpacity>
 
-                {/* DROPDOWN */}
-                {showAccountType && (
-                  <View style={styles.transactiondropdown}>
-                    <ScrollView
-                      nestedScrollEnabled
-                      scrollEnabled={cashTypeOptions.length > 3}
-                      showsVerticalScrollIndicator={false}
-                    >
-                      {cashTypeOptions.map(opt => {
-                        const isSelected = cashaccountType === opt.value;
+                {showBillingCycle && (
+                  <View style={styles.creditBillingDateGrid}>
+                    {billingCycleDays.map((day) => {
+                      const selected =
+                        String(form.billingCycle) === String(day);
 
-                        return (
-                          <TouchableOpacity
-                            key={opt.value}
+                      return (
+                        <TouchableOpacity
+                          key={day}
+                          style={[
+                            styles.billingDateItem,
+                            selected &&
+                            styles.billingDateSelected,
+                          ]}
+                          onPress={() => {
+                            handleChange(
+                              "billingCycle",
+                              String(day)
+                            );
+
+                            setShowBillingCycle(false);
+                          }}
+                        >
+                          <Text
                             style={[
-                              styles.dropdownRow,
-                              isSelected && styles.dropdownRowSelected,
+                              styles.billingDateText,
+                              selected && {
+                                color: "#fff",
+                              },
                             ]}
-                            onPress={() => {
-                              handleChange("cashType", opt.value);
-                              setCashAccountType(opt.value);
-                              setShowAccountType(false);
-                            }}
                           >
-                            <Text
-                              style={
-                                isSelected
-                                  ? styles.dropdownTextSelected
-                                  : styles.dropdownText
-                              }
-                            >
-                              {opt.label}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
+                            {day < 10
+                              ? `0${day}`
+                              : day}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 )}
 
-                {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
-              </View>
-
-              <View style={{ position: "relative" }}>
-                <Text style={styles.label}>
-                  Responsible Person  <Text style={{ color: "red", fontSize: 19 }}>*</Text>
-                </Text>
-
-                {/* INPUT */}
-                <TouchableOpacity
-                  style={styles.inputBox}
-                  onPress={() => {
-                    // setModeError("");
-                    setShowResponsiblePerson(v => !v);
-                  }}
-                >
-
-                  <Text style={{ fontSize: 15 }}>
-                    {responsibleperson
-                      ? responsiblePersonList
-                        .find(x => x.userId === responsibleperson)
-                        ?.firstName +
-                      " " +
-                      (responsiblePersonList.find(
-                        x => x.userId === responsibleperson
-                      )?.lastName || "")
-                      : "Select Responsible Person"}
-                  </Text>
-
-                  <Image
-                    source={DownArrow}
-                    style={{ width: 18, height: 18, tintColor: "#555" }}
+                {errors.billingCycle && (
+                  <ErrorMessage
+                    message={errors.billingCycle}
+                    type="error"
                   />
-                </TouchableOpacity>
-
-                {/* DROPDOWN */}
-                {showResponsibleperson && (
-                  <View style={styles.transactiondropdown}>
-                    <ScrollView
-                      nestedScrollEnabled
-                      scrollEnabled={responsiblePersonList.length > 3}
-                      showsVerticalScrollIndicator={false}
-                    >
-                      {responsiblePersonList.map((item) => {
-                        const label = `${item.firstName ?? ""} ${item.lastName ?? ""}`.trim();
-                        const isSelected = responsibleperson === item.userId;
-
-                        return (
-                          <TouchableOpacity
-                            key={item.userId}
-                            style={[
-                              styles.dropdownRow,
-                              isSelected && styles.dropdownRowSelected,
-                            ]}
-                            onPress={() => {
-                              setResponsiblePerson(item.userId);
-
-                              handleChange("responsiblePerson", item.userId);
-
-                              setShowResponsiblePerson(false);
-                            }}
-                          >
-                            <Text
-                              style={
-                                isSelected
-                                  ? styles.dropdownTextSelected
-                                  : styles.dropdownText
-                              }
-                            >
-                              {label}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
                 )}
 
-                {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
-              </View>
-            </>
-          )}
 
-          <Text style={styles.label}>Current Opening Balance <Text style={{ color: "red" }}>*</Text></Text>
-          <TextInput
-            value={form.openingBalance}
-            placeholder="Enter Amount"
-            keyboardType="numeric"
-            style={styles.input}
-            // onChangeText={(v) =>
-            //   handleChange(
-            //     "openingBalance",
-            //     v.replace(/[^0-9.]/g, "")
-            //   )
-            // }
-            onChangeText={(v) => {
-              const value = v.replace(/[^0-9]/g, "");
+                {/* Link Bank */}
+                <View style={styles.linkBankHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.label}>
+                      Link a bank account
+                    </Text>
 
-              if (value.length > 1 && value.startsWith("0")) {
-                return;
-              }
+                    <Text style={styles.linkBankDescription}>
+                      Link this card to a bank account used for
+                      card payments.
+                    </Text>
+                  </View>
 
-              handleChange("openingBalance", value);
-            }}
-          />
+                  <TouchableOpacity
+                    style={[
+                      styles.checkbox,
+                      linkBank && styles.checkboxActive,
+                    ]}
+                    onPress={() => {
+                      setLinkBank(prev => !prev);
 
-          {errors.openingBalance && (
-            <ErrorMessage
-              message={errors.openingBalance}
-              type="error"
-            />
-          )}
+                      if (linkBank) {
+                        handleChange("linkedBankId", "");
+                      }
+                    }}
+                  >
+                    {linkBank && (
+                      <Text style={styles.checkmark}>✓</Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
 
-          <Text style={styles.note}>
-            Important: This amount sets your current opening balance. Double-check this figure, as an incorrect balance will miscalculate the final total.
-          </Text>
 
-          <Text style={styles.label}>Description</Text>
+                {linkBank && (
+                  <>
+                    <View
+                      style={{
+                        position: "relative",
+                        zIndex: showLinkedBank ? 9999 : 1,
+                        elevation: showLinkedBank ? 20 : 0,
+                      }}
+                    >
+                      <Text style={styles.label}>
+                        Select Bank
+                        <Text style={{ color: "red" }}> *</Text>
+                      </Text>
 
-          <TextInput
-            multiline
-            numberOfLines={5}
-            placeholder="Enter the description"
-            style={styles.textArea}
-          />
+                      <TouchableOpacity
+                        style={styles.inputBox}
+                        activeOpacity={0.8}
+                        onPress={() => {
+                          setShowLinkedBank(prev => !prev);
+                          setShowCardNetwork(false);
+                          setShowBillingCycle(false);
+                        }}
+                      >
+                        <Text
+                          style={[
+                            styles.dropdownInputText,
+                            !form.linkedBankId && styles.placeholderText,
+                          ]}
+                        >
+                          {linkedBankOptions.find(
+                            item => String(item?.bankId) === String(form.linkedBankId)
+                          )?.bankName || "Select Bank Account"}
+                        </Text>
 
-          <View style={styles.footer}>
-            <TouchableOpacity style={styles.cancelBtn} onPress={handleLeavePage}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
+                        <Image
+                          source={DownArrow}
+                          style={styles.dropdownArrow}
+                        />
+                      </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
-              disabled={isApplyTriggeredRef.current}
-              onPress={handleCreate}>
-              <Text style={styles.submitText}>
-                Create Account
+                      {showLinkedBank && (
+                        <View style={styles.creditDropdown}>
+                          <ScrollView
+                            nestedScrollEnabled
+                            keyboardShouldPersistTaps="handled"
+                            showsVerticalScrollIndicator={false}
+                          >
+                            {linkedBankOptions?.map(item => (
+                              <TouchableOpacity
+                                key={item?.bankId}
+                                style={styles.dropdownRow}
+                                onPress={() => {
+                                  handleChange("linkedBankId", item?.bankId);
+                                  setShowLinkedBank(false);
+                                }}
+                              >
+                                <Text style={styles.dropdownText}>
+                                  {item?.bankName || item?.displayName || "Unnamed Bank"}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+
+                            {linkedBankOptions?.length === 0 && (
+                              <Text style={{ padding: 12, color: "#666" }}>
+                                No bank accounts available
+                              </Text>
+                            )}
+                          </ScrollView>
+                        </View>
+                      )}
+                    </View>
+                  </>
+                )}
+
+
+                {linkBank && errors.linkedBankId && (
+                  <ErrorMessage
+                    message={errors.linkedBankId}
+                    type="error"
+                  />
+                )}
+
+
+
+                {/* <Text style={styles.label}>
+                Description
               </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </View>
+
+              <TextInput
+                multiline
+                numberOfLines={4}
+                value={form.description}
+                placeholder="Describe the notes..."
+                style={styles.textArea}
+                onChangeText={(v) =>
+                  handleChange("description", v)
+                }
+              /> */}
+
+
+              </>
+            )
+            }
+
+
+
+            {accountType !== "Credit" && (
+              <>
+
+                <Text style={styles.label}>Current Opening Balance <Text style={{ color: "red" }}>*</Text></Text>
+                <TextInput
+                  value={form.openingBalance}
+                  placeholder="Enter Amount"
+                  keyboardType="numeric"
+                  style={styles.input}
+                  onChangeText={(v) => {
+                    const value = v.replace(/[^0-9]/g, "");
+                    if (value.length > 1 && value.startsWith("0")) {
+                      return;
+                    }
+                    handleChange("openingBalance", value);
+                  }}
+                />
+
+                {errors.openingBalance && (
+                  <ErrorMessage
+                    message={errors.openingBalance}
+                    type="error"
+                  />
+                )}
+
+                <Text style={styles.note}>
+                  Important: This amount sets your current opening balance. Double-check this figure, as an incorrect balance will miscalculate the final total.
+                </Text>
+
+              </>
+            )}
+
+
+
+            <Text style={styles.label}>Description</Text>
+            <TextInput
+              multiline
+              numberOfLines={5}
+              placeholder="Enter the description"
+              style={styles.textArea}
+            />
+
+            <View
+              style={[styles.footer,
+              {
+                marginBottom: Math.max(insets.bottom, 30),
+              },
+              ]}
+            >
+              <TouchableOpacity style={styles.cancelBtn} onPress={handleLeavePage}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.submitBtn, isApplyTriggeredRef.current && { opacity: 0.6 }]}
+                disabled={isApplyTriggeredRef.current}
+                onPress={handleCreate}>
+                <Text style={styles.submitText}>
+                  Create Account
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+
+      </KeyboardAvoidingView>
 
       <LeavePageScreen
         visible={showLeavePageScreen}
@@ -881,7 +1560,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingTop: 50,
-    paddingHorizontal: 20,
+    paddingHorizontal: 14,
   },
 
   header: {
@@ -1007,9 +1686,9 @@ const styles = StyleSheet.create({
   },
   backIcon: { width: 20, height: 20, marginRight: 10 },
   accountTypeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 10,
+    flexDirection: "column",
+    // alignItems: "center",
+    marginBottom: 10, gap: 10
   },
 
   accountTypeItem: {
@@ -1117,5 +1796,94 @@ const styles = StyleSheet.create({
     elevation: 20,
     maxHeight: 120,
     overflow: "hidden",
+  },
+  dropdownArrow: {
+    width: 18,
+    height: 18,
+    tintColor: "#555",
+  },
+
+  creditDropdown: {
+    position: "absolute",
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    zIndex: 9999,
+    elevation: 20,
+    maxHeight: 180,
+    overflow: "hidden",
+  },
+
+  linkBankHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+  },
+
+  linkBankDescription: {
+    color: "#64748B",
+    fontSize: 13,
+    lineHeight: 18,
+    fontFamily: "Gilroy-Regular",
+    marginTop: -3,
+    paddingRight: 15,
+  },
+
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderWidth: 1,
+    borderColor: "#555",
+    borderRadius: 5,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  checkboxActive: {
+    backgroundColor: "#2F5BFF",
+    borderColor: "#2F5BFF",
+  },
+
+  checkmark: {
+    color: "#fff",
+    fontSize: 15,
+    fontFamily: "Gilroy-Bold",
+  },
+  creditBillingDateGrid: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 14,
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+
+    flexDirection: "row",
+    flexWrap: "wrap",
+
+    backgroundColor: "#fff",
+  },
+
+  billingDateItem: {
+    width: "20%",
+    height: 32,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    borderRadius: 16,
+  },
+
+  billingDateSelected: {
+    backgroundColor: "#2F5BFF",
+  },
+
+  billingDateText: {
+    fontSize: 16,
+    color: "#111",
+    fontFamily: "Gilroy-Medium",
   },
 });

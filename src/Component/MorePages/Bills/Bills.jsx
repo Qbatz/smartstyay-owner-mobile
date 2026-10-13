@@ -520,7 +520,7 @@ export default function BillsDesign({ route }) {
       showReceiptDetails ||
       showRecordPayment ||
       showRefundPayment ||
-      showRecuringBillDetail
+      showRecuringBillDetail || statusSheetOpen || typeSheetOpen || modesheetOpen
     ) {
       setShowTabBar(false)
     } else {
@@ -531,7 +531,7 @@ export default function BillsDesign({ route }) {
     showReceiptDetails,
     showRecordPayment,
     showRefundPayment,
-    showRecuringBillDetail])
+    showRecuringBillDetail , statusSheetOpen , typeSheetOpen , modesheetOpen])
 
 
   useLayoutEffect(() => {

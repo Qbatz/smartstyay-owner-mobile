@@ -5,9 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  TextInput, Image, TouchableWithoutFeedback
+  TextInput, Image, TouchableWithoutFeedback, KeyboardAvoidingView, Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { CustomerContext } from "../../../Context/CustomerContext";
@@ -36,6 +37,8 @@ export default function AddPaymentMethod() {
   const route = useRoute();
 
   const { bankDetails, bankId } = route.params || {}
+
+  const insets = useSafeAreaInsets();
 
   console.log("bankDetails", bankDetails);
   console.log("upiAppList", upiAppList);
@@ -312,670 +315,710 @@ export default function AddPaymentMethod() {
         message={modalMessage}
         type={modalType}
       />
-      <View style={styles.container}>
-        {/* <Text style={styles.title}>Add Payment Method</Text> */}
 
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Image source={ArrowLeft} style={styles.backIcon} />
-          </TouchableOpacity>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View style={styles.container}>
 
-          <Text style={styles.title}>Add Payment Method</Text>
-        </View>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image source={ArrowLeft} style={styles.backIcon} />
+            </TouchableOpacity>
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-        >
-          <Text style={styles.label}>
-            Select Type <Text style={{ color: "red", fontSize: 19 }}>*</Text>
-          </Text>
+            <Text style={styles.title}>Add Payment Method</Text>
+          </View>
 
-          <Radio value="upi" label="UPI" />
-          <Radio value="credit" label="Credit Card" />
-          <Radio value="debit" label="Debit Card" />
-          {/* <Radio value="qr" label="QR Code" /> */}
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{
+              paddingBottom: Math.max(insets.bottom, 30) + 20,
+              flexGrow: 1,
+            }}
+          >
+            <Text style={styles.label}>
+              Select Type <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+            </Text>
 
-          {/* UPI */}
+            <Radio value="upi" label="UPI" />
+            <Radio value="credit" label="Credit Card" />
+            <Radio value="debit" label="Debit Card" />
+            {/* <Radio value="qr" label="QR Code" /> */}
 
-          {type === "upi" && (
-            <>
-              <Text style={styles.label}>Linked Bank <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              <TextInput
-                placeholder="Select Bank"
-                style={styles.input}
-                value={bankDetails?.bankName || "N/A"}
-                editable={false}
-              />
-              {errors.bankId && (
-                <ErrorMessage message={errors.bankId} />
-              )}
+            {/* UPI */}
 
-              <View style={{ position: "relative" }}>
-                <Text style={styles.label}>
-                  UPI App   <Text style={{ color: "red", fontSize: 19 }}>*</Text>
-                </Text>
+            {type === "upi" && (
+              <>
+                <Text style={styles.label}>Linked Bank <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                <TextInput
+                  placeholder="Select Bank"
+                  style={styles.input}
+                  value={bankDetails?.bankName || "N/A"}
+                  editable={false}
+                />
+                {errors.bankId && (
+                  <ErrorMessage message={errors.bankId} />
+                )}
 
-                <TouchableOpacity
-                  style={styles.inputBox}
-                  onPress={() => setShowUPIApp(v => !v)}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {selectedUpiData ? (
-                      <>
-                        {selectedUpiData.image ? (
-                          <Image
-                            source={{ uri: selectedUpiData.image }}
-                            style={styles.logo}
-                          />
-                        ) : (
-                          <View style={styles.initialCircle}>
-                            <Text style={styles.initialText}>
-                              {selectedUpiData.name.charAt(0).toUpperCase()}
-                            </Text>
-                          </View>
-                        )}
+                <View style={{ position: "relative" }}>
+                  <Text style={styles.label}>
+                    UPI App   <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                  </Text>
 
-                        <Text style={styles.selectedText}>
-                          {selectedUpiData.name}
-                        </Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: "#777" }}>
-                        Select UPI App
-                      </Text>
-                    )}
-                  </View>
-
-                  <Image
-                    source={DownArrow}
-                    style={{ width: 18, height: 18 }}
-                  />
-                </TouchableOpacity>
-
-                {showupiapp && (
-                  <View style={styles.transactiondropdown}>
-                    <ScrollView
-                      nestedScrollEnabled
-                      scrollEnabled={upiAppList.length > 3}
-                      showsVerticalScrollIndicator={false}
-                    >
-
-
-                      {upiAppList.map((item) => {
-                        const isSelected = selectedupi === item.id;
-
-                        return (
-                          <TouchableOpacity
-                            key={item.id}
-                            style={[
-                              styles.dropdownRow,
-                              isSelected && styles.dropdownRowSelected,
-                            ]}
-                            onPress={() => {
-                              setSelectedUpi(item.id);
-                              setShowUPIApp(false);
-                            }}
-                          >
-                            <View style={{ flexDirection: "row", alignItems: "center" }}>
-                              {item.image ? (
-                                <Image
-                                  source={{ uri: item.image }}
-                                  style={styles.logo}
-                                />
-                              ) : (
-                                <View style={styles.initialCircle}>
-                                  <Text style={styles.initialText}>
-                                    {item.name.charAt(0).toUpperCase()}
-                                  </Text>
-                                </View>
-                              )}
-
-                              <Text
-                                style={
-                                  isSelected
-                                    ? styles.dropdownTextSelected
-                                    : styles.dropdownText
-                                }
-                              >
-                                {item.name}
+                  <TouchableOpacity
+                    style={styles.inputBox}
+                    // onPress={() => setShowUPIApp(v => !v)}
+                    onPress={() => {
+                      setShowUPIApp(v => !v);
+                    }}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      {selectedUpiData ? (
+                        <>
+                          {selectedUpiData.image ? (
+                            <Image
+                              source={{ uri: selectedUpiData.image }}
+                              style={styles.logo}
+                            />
+                          ) : (
+                            <View style={styles.initialCircle}>
+                              <Text style={styles.initialText}>
+                                {selectedUpiData.name.charAt(0).toUpperCase()}
                               </Text>
                             </View>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
-                )}
+                          )}
 
-                {errors.upiApp && (
-                  <ErrorMessage message={errors.upiApp} />
-                )}
-
-                {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
-              </View>
-
-              <Text style={styles.label}>UPI ID <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              <TextInput
-                placeholder="smartstay@oksbi"
-                style={styles.input}
-                value={form.upiId}
-                onChangeText={(text) => handleChange("upiId", text)}
-              />
-
-              {errors.upiId && (
-                <ErrorMessage message={errors.upiId} />
-              )}
-
-
-              <Text style={styles.label}>Display Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              <TextInput
-                placeholder="Gpay UPI"
-                style={styles.input}
-                value={form.displayName}
-                onChangeText={(text) => handleChange("displayName", text)}
-              />
-
-              {errors.displayName && (
-                <ErrorMessage message={errors.displayName} />
-              )}
-
-              <Text style={styles.label}>Add QR Image <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              {qrAttachments.length === 0 ? (
-                <TouchableOpacity
-                  style={styles.uploadCard}
-                  activeOpacity={0.8}
-                  onPress={pickQrImage}
-                >
-                  <View style={styles.uploadIconBox}>
-                    <Image
-                      source={UploadIcon}
-                      style={styles.uploadIcon}
-                    />
-                  </View>
-
-                  <Text style={styles.uploadTitle}>
-                    Choose Image to Upload
-                  </Text>
-
-                  <Text style={styles.uploadSubTitle}>
-                    JPG, PNG UP TO 3MB
-                  </Text>
-                </TouchableOpacity>
-              ) : (
-                <View style={styles.previewCard}>
-                  <Image
-                    source={{ uri: qrImage?.uri }}
-                    style={styles.previewImage}
-                  />
-
-                  <View style={styles.fileInfoRow}>
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={styles.fileName}
-                        numberOfLines={1}
-                      >
-                        {qrImage?.fileName}
-                      </Text>
-
-                      <Text style={styles.fileSize}>
-                        {((qrImage?.fileSize || 0) / 1024).toFixed(0)} KB
-                      </Text>
+                          <Text style={styles.selectedText}>
+                            {selectedUpiData.name}
+                          </Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: "#777" }}>
+                          Select UPI App
+                        </Text>
+                      )}
                     </View>
 
-                    <TouchableOpacity
-                      onPress={removeQrImage}
-                      style={styles.deleteBtn}
-                    >
-                      <Text
-                        style={{
-                          color: "#FF4D4F",
-                          fontSize: 20,
-                        }}
+                    <Image
+                      source={DownArrow}
+                      style={{ width: 18, height: 18 }}
+                    />
+                  </TouchableOpacity>
+
+                  {showupiapp && (
+                    <View style={styles.transactiondropdown}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        scrollEnabled={upiAppList.length > 3}
+                        showsVerticalScrollIndicator={false}
                       >
-                        ✕
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
+
+
+                        {upiAppList.map((item) => {
+                          const isSelected = selectedupi === item.id;
+
+                          return (
+                            <TouchableOpacity
+                              key={item.id}
+                              style={[
+                                styles.dropdownRow,
+                                isSelected && styles.dropdownRowSelected,
+                              ]}
+                              onPress={() => {
+                                setSelectedUpi(item.id);
+                                setShowUPIApp(false);
+                              }}
+                            >
+                              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                {item.image ? (
+                                  <Image
+                                    source={{ uri: item.image }}
+                                    style={styles.logo}
+                                  />
+                                ) : (
+                                  <View style={styles.initialCircle}>
+                                    <Text style={styles.initialText}>
+                                      {item.name.charAt(0).toUpperCase()}
+                                    </Text>
+                                  </View>
+                                )}
+
+                                <Text
+                                  style={
+                                    isSelected
+                                      ? styles.dropdownTextSelected
+                                      : styles.dropdownText
+                                  }
+                                >
+                                  {item.name}
+                                </Text>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
+
+                  {errors.upiApp && (
+                    <ErrorMessage message={errors.upiApp} />
+                  )}
+
+                  {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
                 </View>
-              )}
 
-              {errors.qrImage && (
-                <ErrorMessage message={errors.qrImage} />
-              )}
+                <Text style={styles.label}>UPI ID <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                <TextInput
+                  placeholder="Enter UPI"
+                  style={styles.input}
+                  value={form.upiId}
+                  onChangeText={(text) => handleChange("upiId", text)}
+                />
 
-
-
-            </>
-          )}
-
-          {/* Credit */}
-
-          {type === "credit" && (
-            <>
-              <Text style={styles.label}>Linked Bank <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              <TextInput
-                placeholder="Select Bank"
-                style={styles.input}
-                value={bankDetails?.bankName || "N/A"}
-                editable={false}
-              />
-
-              {errors.bankId && (
-                <ErrorMessage message={errors.bankId} />
-              )}
+                {errors.upiId && (
+                  <ErrorMessage message={errors.upiId} />
+                )}
 
 
-              <View style={{ position: "relative" }}>
-                <Text style={styles.label}>
-                  Card Network  <Text style={{ color: "red", fontSize: 19 }}>*</Text>
-                </Text>
+                <Text style={styles.label}>Display Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                <TextInput
+                  placeholder="Enter Display Name"
+                  style={styles.input}
+                  value={form.displayName}
+                  onChangeText={(text) => handleChange("displayName", text)}
+                />
 
+                {errors.displayName && (
+                  <ErrorMessage message={errors.displayName} />
+                )}
 
-                <TouchableOpacity
-                  style={styles.inputBox}
-                  onPress={() => setShowUPIApp(v => !v)}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {selectedUpiData ? (
-                      <>
-                        {selectedUpiData.image ? (
-                          <Image
-                            source={{ uri: selectedUpiData.image }}
-                            style={styles.logo}
-                          />
-                        ) : (
-                          <View style={styles.initialCircle}>
-                            <Text style={styles.initialText}>
-                              {selectedUpiData.name.charAt(0).toUpperCase()}
-                            </Text>
-                          </View>
-                        )}
+                <Text style={styles.label}>Add QR Image <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                {qrAttachments.length === 0 ? (
+                  <TouchableOpacity
+                    style={styles.uploadCard}
+                    activeOpacity={0.8}
+                    onPress={pickQrImage}
+                  >
+                    <View style={styles.uploadIconBox}>
+                      <Image
+                        source={UploadIcon}
+                        style={styles.uploadIcon}
+                      />
+                    </View>
 
-                        <Text style={styles.selectedText}>
-                          {selectedUpiData.name}
+                    <Text style={styles.uploadTitle}>
+                      Choose Image to Upload
+                    </Text>
+
+                    <Text style={styles.uploadSubTitle}>
+                      JPG, PNG UP TO 3MB
+                    </Text>
+                  </TouchableOpacity>
+                ) : (
+                  <View style={styles.previewCard}>
+                    <Image
+                      source={{ uri: qrImage?.uri }}
+                      style={styles.previewImage}
+                    />
+
+                    <View style={styles.fileInfoRow}>
+                      <View style={{ flex: 1 }}>
+                        <Text
+                          style={styles.fileName}
+                          numberOfLines={1}
+                        >
+                          {qrImage?.fileName}
                         </Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: "#777" }}>
-                        Select UPI App
-                      </Text>
-                    )}
+
+                        <Text style={styles.fileSize}>
+                          {((qrImage?.fileSize || 0) / 1024).toFixed(0)} KB
+                        </Text>
+                      </View>
+
+                      <TouchableOpacity
+                        onPress={removeQrImage}
+                        style={styles.deleteBtn}
+                      >
+                        <Text
+                          style={{
+                            color: "#FF4D4F",
+                            fontSize: 20,
+                          }}
+                        >
+                          ✕
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
+                )}
 
-                  <Image
-                    source={DownArrow}
-                    style={{ width: 18, height: 18 }}
-                  />
-                </TouchableOpacity>
-
-                {showupiapp && (
-                  <View style={styles.transactiondropdown}>
-                    <ScrollView
-                      nestedScrollEnabled
-                      scrollEnabled={upiAppList.length > 3}
-                      showsVerticalScrollIndicator={false}
-                    >
+                {errors.qrImage && (
+                  <ErrorMessage message={errors.qrImage} />
+                )}
 
 
-                      {upiAppList.map((item) => {
-                        const isSelected = selectedupi === item.id;
 
-                        return (
-                          <TouchableOpacity
-                            key={item.id}
-                            style={[
-                              styles.dropdownRow,
-                              isSelected && styles.dropdownRowSelected,
-                            ]}
-                            onPress={() => {
-                              setSelectedUpi(item.id);
-                              setShowUPIApp(false);
-                            }}
-                          >
-                            <View style={{ flexDirection: "row", alignItems: "center" }}>
-                              {item.image ? (
-                                <Image
-                                  source={{ uri: item.image }}
-                                  style={styles.logo}
-                                />
-                              ) : (
-                                <View style={styles.initialCircle}>
-                                  <Text style={styles.initialText}>
-                                    {item.name.charAt(0).toUpperCase()}
-                                  </Text>
-                                </View>
-                              )}
+              </>
+            )}
 
-                              <Text
-                                style={
-                                  isSelected
-                                    ? styles.dropdownTextSelected
-                                    : styles.dropdownText
-                                }
-                              >
-                                {item.name}
+            {/* Credit */}
+
+            {type === "credit" && (
+              <>
+                <Text style={styles.label}>Linked Bank <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                <TextInput
+                  placeholder="Select Bank"
+                  style={styles.input}
+                  value={bankDetails?.bankName || "N/A"}
+                  editable={false}
+                />
+
+                {errors.bankId && (
+                  <ErrorMessage message={errors.bankId} />
+                )}
+
+
+                <View style={{ position: "relative" }}>
+                  <Text style={styles.label}>
+                    Card Network  <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                  </Text>
+
+
+                  <TouchableOpacity
+                    style={styles.inputBox}
+                    // onPress={() => setShowUPIApp(v => !v)}
+                    onPress={() => {
+                      setShowUPIApp(v => !v);
+                    }}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      {selectedUpiData ? (
+                        <>
+                          {selectedUpiData.image ? (
+                            <Image
+                              source={{ uri: selectedUpiData.image }}
+                              style={styles.logo}
+                            />
+                          ) : (
+                            <View style={styles.initialCircle}>
+                              <Text style={styles.initialText}>
+                                {selectedUpiData.name.charAt(0).toUpperCase()}
                               </Text>
                             </View>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
+                          )}
+
+                          <Text style={styles.selectedText}>
+                            {selectedUpiData.name}
+                          </Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: "#777" }}>
+                          Select UPI App
+                        </Text>
+                      )}
+                    </View>
+
+                    <Image
+                      source={DownArrow}
+                      style={{ width: 18, height: 18 }}
+                    />
+                  </TouchableOpacity>
+
+                  {showupiapp && (
+                    <View style={styles.transactiondropdown}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        scrollEnabled={upiAppList.length > 3}
+                        showsVerticalScrollIndicator={false}
+                      >
+
+
+                        {upiAppList.map((item) => {
+                          const isSelected = selectedupi === item.id;
+
+                          return (
+                            <TouchableOpacity
+                              key={item.id}
+                              style={[
+                                styles.dropdownRow,
+                                isSelected && styles.dropdownRowSelected,
+                              ]}
+                              // onPress={() => {
+                              //   setSelectedUpi(item.id);
+                              //   setShowUPIApp(false);
+                              // }}
+
+                              onPress={() => {
+                                setSelectedUpi(item.id);
+                                setShowUPIApp(false);
+
+                                setErrors(prev => ({
+                                  ...prev,
+                                  cardNetwork: "",
+                                }));
+                              }}
+
+                            >
+                              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                {item.image ? (
+                                  <Image
+                                    source={{ uri: item.image }}
+                                    style={styles.logo}
+                                  />
+                                ) : (
+                                  <View style={styles.initialCircle}>
+                                    <Text style={styles.initialText}>
+                                      {item.name.charAt(0).toUpperCase()}
+                                    </Text>
+                                  </View>
+                                )}
+
+                                <Text
+                                  style={
+                                    isSelected
+                                      ? styles.dropdownTextSelected
+                                      : styles.dropdownText
+                                  }
+                                >
+                                  {item.name}
+                                </Text>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
+
+                  {errors.cardNetwork && (
+                    <ErrorMessage message={errors.cardNetwork} />
+                  )}
+                  {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
+                </View>
+
+                <Text style={styles.label}>Card Holder Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                <TextInput
+                  placeholder="Enter Card Holder "
+                  style={styles.input}
+                  value={form.cardHolderName}
+                  onChangeText={(text) =>
+                    handleChange("cardHolderName", text)
+                  }
+                />
+
+                {errors.cardHolderName && (
+                  <ErrorMessage message={errors.cardHolderName} />
                 )}
 
-                {errors.cardNetwork && (
-                  <ErrorMessage message={errors.cardNetwork} />
+                <Text style={styles.label}>
+                  Card Number (Last 4 Digits) <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                </Text>
+                <TextInput
+                  placeholder="Enter Card Number"
+                  style={styles.input}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  value={form.cardNumber}
+                  onChangeText={(text) =>
+                    handleChange(
+                      "cardNumber",
+                      text.replace(/[^0-9]/g, "")
+                    )
+                  }
+                />
+                {errors.cardNumber && (
+                  <ErrorMessage message={errors.cardNumber} />
                 )}
-                {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
-              </View>
 
-              <Text style={styles.label}>Card Holder Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              <TextInput
-                placeholder="Holder Name"
-                style={styles.input}
-                value={form.cardHolderName}
-                onChangeText={(text) =>
-                  handleChange("cardHolderName", text)
-                }
-              />
+                <Text style={styles.label}>
+                  Display Name <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                </Text>
+                <TextInput
+                  placeholder="Enter Display Name"
+                  style={styles.input}
+                  value={form.displayName}
+                  onChangeText={(text) =>
+                    handleChange("displayName", text)
+                  }
+                />
 
-              {errors.cardHolderName && (
-                <ErrorMessage message={errors.cardHolderName} />
-              )}
+                {errors.displayName && (
+                  <ErrorMessage message={errors.displayName} />
+                )}
 
-              <Text style={styles.label}>
-                Card Number (Last 4 Digits) <Text style={{ color: "red", fontSize: 19 }}>*</Text>
-              </Text>
-              <TextInput
-                placeholder="1234"
-                style={styles.input}
-                keyboardType="number-pad"
-                maxLength={4}
-                value={form.cardNumber}
-                onChangeText={(text) =>
-                  handleChange(
-                    "cardNumber",
-                    text.replace(/[^0-9]/g, "")
-                  )
-                }
-              />
-              {errors.cardNumber && (
-                <ErrorMessage message={errors.cardNumber} />
-              )}
+                <Text style={styles.label}>
+                  Credit Limit
+                </Text>
+                <TextInput
+                  placeholder="Enter Credit Limit"
+                  style={styles.input}
+                  keyboardType="number-pad"
+                  value={form.creditLimit}
+                  onChangeText={(text) =>
+                    handleChange(
+                      "creditLimit",
+                      text.replace(/[^0-9]/g, "")
+                    )
+                  }
+                />
 
-              <Text style={styles.label}>
-                Display Name <Text style={{ color: "red", fontSize: 19 }}>*</Text>
-              </Text>
-              <TextInput
-                placeholder="Hostel Credit Card"
-                style={styles.input}
-                value={form.displayName}
-                onChangeText={(text) =>
-                  handleChange("displayName", text)
-                }
-              />
+                {errors.creditLimit && (
+                  <ErrorMessage message={errors.creditLimit} />
+                )}
 
-              {errors.displayName && (
-                <ErrorMessage message={errors.displayName} />
-              )}
+                <Text style={styles.label}>
+                  Billing Cycle (Days)
+                  {/* <Text style={{ color: "red", fontSize: 19 }}>*</Text> */}
+                </Text>
 
-              <Text style={styles.label}>
-                Credit Limit
-              </Text>
-              <TextInput
-                placeholder="Enter Credit Limit"
-                style={styles.input}
-                keyboardType="number-pad"
-                value={form.creditLimit}
-                onChangeText={(text) =>
-                  handleChange(
-                    "creditLimit",
-                    text.replace(/[^0-9]/g, "")
-                  )
-                }
-              />
+                <TextInput
+                  placeholder="Enter Billing Cycle in Days"
+                  style={styles.input}
+                  keyboardType="number-pad"
+                  value={form.billingCycle}
+                  onChangeText={(text) =>
+                    handleChange(
+                      "billingCycle",
+                      text.replace(/[^0-9]/g, "")
+                    )
+                  }
+                />
 
-              {errors.creditLimit && (
-                <ErrorMessage message={errors.creditLimit} />
-              )}
-
-              <Text style={styles.label}>
-                Billing Cycle (Days)
-                {/* <Text style={{ color: "red", fontSize: 19 }}>*</Text> */}
-              </Text>
-
-              <TextInput
-                placeholder="Enter Billing Cycle in Days"
-                style={styles.input}
-                keyboardType="number-pad"
-                value={form.billingCycle}
-                onChangeText={(text) =>
-                  handleChange(
-                    "billingCycle",
-                    text.replace(/[^0-9]/g, "")
-                  )
-                }
-              />
-
-              {/* {errors.billingCycle && (
+                {/* {errors.billingCycle && (
                 <ErrorMessage message={errors.billingCycle} />
               )} */}
 
-            </>
-          )}
+              </>
+            )}
 
-          {/* Debit */}
+            {/* Debit */}
 
-          {type === "debit" && (
-            <>
-              <Text style={styles.label}>Linked Bank <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              <TextInput
-                placeholder="Select Bank"
-                style={styles.input}
-                value={bankDetails?.bankName || "N/A"}
-                editable={false}
-              />
+            {type === "debit" && (
+              <>
+                <Text style={styles.label}>Linked Bank <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                <TextInput
+                  placeholder="Select Bank"
+                  style={styles.input}
+                  value={bankDetails?.bankName || "N/A"}
+                  editable={false}
+                />
 
-              {errors.bankId && (
-                <ErrorMessage message={errors.bankId} />
-              )}
-
-
-              <View style={{ position: "relative" }}>
-                <Text style={styles.label}>
-                  Card Network  <Text style={{ color: "red", fontSize: 19 }}>*</Text>
-                </Text>
-
-                <TouchableOpacity
-                  style={styles.inputBox}
-                  onPress={() => setShowUPIApp(v => !v)}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center" }}>
-                    {selectedUpiData ? (
-                      <>
-                        {selectedUpiData.image ? (
-                          <Image
-                            source={{ uri: selectedUpiData.image }}
-                            style={styles.logo}
-                          />
-                        ) : (
-                          <View style={styles.initialCircle}>
-                            <Text style={styles.initialText}>
-                              {selectedUpiData.name.charAt(0).toUpperCase()}
-                            </Text>
-                          </View>
-                        )}
-
-                        <Text style={styles.selectedText}>
-                          {selectedUpiData.name}
-                        </Text>
-                      </>
-                    ) : (
-                      <Text style={{ color: "#777" }}>
-                        Select UPI App
-                      </Text>
-                    )}
-                  </View>
-
-                  <Image
-                    source={DownArrow}
-                    style={{ width: 18, height: 18 }}
-                  />
-                </TouchableOpacity>
-
-                {showupiapp && (
-                  <View style={styles.transactiondropdown}>
-                    <ScrollView
-                      nestedScrollEnabled
-                      scrollEnabled={upiAppList.length > 3}
-                      showsVerticalScrollIndicator={false}
-                    >
+                {errors.bankId && (
+                  <ErrorMessage message={errors.bankId} />
+                )}
 
 
-                      {upiAppList.map((item) => {
-                        const isSelected = selectedupi === item.id;
+                <View style={{ position: "relative" }}>
+                  <Text style={styles.label}>
+                    Card Network  <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                  </Text>
 
-                        return (
-                          <TouchableOpacity
-                            key={item.id}
-                            style={[
-                              styles.dropdownRow,
-                              isSelected && styles.dropdownRowSelected,
-                            ]}
-                            onPress={() => {
-                              setSelectedUpi(item.id);
-                              setShowUPIApp(false);
-                            }}
-                          >
-                            <View style={{ flexDirection: "row", alignItems: "center" }}>
-                              {item.image ? (
-                                <Image
-                                  source={{ uri: item.image }}
-                                  style={styles.logo}
-                                />
-                              ) : (
-                                <View style={styles.initialCircle}>
-                                  <Text style={styles.initialText}>
-                                    {item.name.charAt(0).toUpperCase()}
-                                  </Text>
-                                </View>
-                              )}
-
-                              <Text
-                                style={
-                                  isSelected
-                                    ? styles.dropdownTextSelected
-                                    : styles.dropdownText
-                                }
-                              >
-                                {item.name}
+                  <TouchableOpacity
+                    style={styles.inputBox}
+                    onPress={() => setShowUPIApp(v => !v)}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center" }}>
+                      {selectedUpiData ? (
+                        <>
+                          {selectedUpiData.image ? (
+                            <Image
+                              source={{ uri: selectedUpiData.image }}
+                              style={styles.logo}
+                            />
+                          ) : (
+                            <View style={styles.initialCircle}>
+                              <Text style={styles.initialText}>
+                                {selectedUpiData.name.charAt(0).toUpperCase()}
                               </Text>
                             </View>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
+                          )}
+
+                          <Text style={styles.selectedText}>
+                            {selectedUpiData.name}
+                          </Text>
+                        </>
+                      ) : (
+                        <Text style={{ color: "#777" }}>
+                          Select UPI App
+                        </Text>
+                      )}
+                    </View>
+
+                    <Image
+                      source={DownArrow}
+                      style={{ width: 18, height: 18 }}
+                    />
+                  </TouchableOpacity>
+
+                  {showupiapp && (
+                    <View style={styles.transactiondropdown}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        scrollEnabled={upiAppList.length > 3}
+                        showsVerticalScrollIndicator={false}
+                      >
+
+
+                        {upiAppList.map((item) => {
+                          const isSelected = selectedupi === item.id;
+
+                          return (
+                            <TouchableOpacity
+                              key={item.id}
+                              style={[
+                                styles.dropdownRow,
+                                isSelected && styles.dropdownRowSelected,
+                              ]}
+                              // onPress={() => {
+                              //   setSelectedUpi(item.id);
+                              //   setShowUPIApp(false);
+                              // }}
+
+
+                              onPress={() => {
+                                setSelectedUpi(item.id);
+                                setShowUPIApp(false);
+
+                                setErrors(prev => ({
+                                  ...prev,
+                                  cardNetwork: "",
+                                }));
+                              }}
+
+                            >
+                              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                {item.image ? (
+                                  <Image
+                                    source={{ uri: item.image }}
+                                    style={styles.logo}
+                                  />
+                                ) : (
+                                  <View style={styles.initialCircle}>
+                                    <Text style={styles.initialText}>
+                                      {item.name.charAt(0).toUpperCase()}
+                                    </Text>
+                                  </View>
+                                )}
+
+                                <Text
+                                  style={
+                                    isSelected
+                                      ? styles.dropdownTextSelected
+                                      : styles.dropdownText
+                                  }
+                                >
+                                  {item.name}
+                                </Text>
+                              </View>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
+                  {errors.cardNetwork && (
+                    <ErrorMessage message={errors.cardNetwork} />
+                  )}
+                  {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
+                </View>
+
+                <Text style={styles.label}>Card Holder Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                <TextInput
+                  placeholder="Emter Card Holder"
+                  style={styles.input}
+                  value={form.cardHolderName}
+                  onChangeText={(text) =>
+                    handleChange("cardHolderName", text)
+                  }
+                />
+                {errors.cardHolderName && (
+                  <ErrorMessage message={errors.cardHolderName} />
                 )}
-                {errors.cardNetwork && (
-                  <ErrorMessage message={errors.cardNetwork} />
+
+                <Text style={styles.label}>
+                  Card Number (Last 4 Digits)<Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                </Text>
+                <TextInput
+                  placeholder="Enter Card Number"
+                  style={styles.input}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  value={form.cardNumber}
+                  onChangeText={(text) =>
+                    handleChange(
+                      "cardNumber",
+                      text.replace(/[^0-9]/g, "")
+                    )
+                  }
+                />
+
+                {errors.cardNumber && (
+                  <ErrorMessage message={errors.cardNumber} />
                 )}
-                {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
-              </View>
 
-              <Text style={styles.label}>Card Holder Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-              <TextInput
-                placeholder="Holder Name"
-                style={styles.input}
-                value={form.cardHolderName}
-                onChangeText={(text) =>
-                  handleChange("cardHolderName", text)
-                }
-              />
-              {errors.cardHolderName && (
-                <ErrorMessage message={errors.cardHolderName} />
-              )}
+                <Text style={styles.label}>
+                  Display Name<Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                </Text>
+                <TextInput
+                  placeholder="Enter Display Name"
+                  style={styles.input}
+                  value={form.displayName}
+                  onChangeText={(text) =>
+                    handleChange("displayName", text)
+                  }
+                />
 
-              <Text style={styles.label}>
-                Card Number (Last 4 Digits)<Text style={{ color: "red", fontSize: 19 }}>*</Text>
-              </Text>
-              <TextInput
-                placeholder="1234"
-                style={styles.input}
-                keyboardType="number-pad"
-                maxLength={4}
-                value={form.cardNumber}
-                onChangeText={(text) =>
-                  handleChange(
-                    "cardNumber",
-                    text.replace(/[^0-9]/g, "")
-                  )
-                }
-              />
+                {errors.displayName && (
+                  <ErrorMessage message={errors.displayName} />
+                )}
+              </>
+            )}
 
-              {errors.cardNumber && (
-                <ErrorMessage message={errors.cardNumber} />
-              )}
-
-              <Text style={styles.label}>
-                Display Name<Text style={{ color: "red", fontSize: 19 }}>*</Text>
-              </Text>
-              <TextInput
-                placeholder="Hostel Credit Card"
-                style={styles.input}
-                value={form.displayName}
-                onChangeText={(text) =>
-                  handleChange("displayName", text)
-                }
-              />
-
-              {errors.displayName && (
-                <ErrorMessage message={errors.displayName} />
-              )}
-            </>
-          )}
-
-          {/* QR */}
+            {/* QR */}
 
 
 
-          <Text style={styles.label}>
-            Description
-          </Text>
+            <Text style={styles.label}>
+              Description
+            </Text>
 
-          <TextInput
-            multiline
-            numberOfLines={5}
-            style={styles.textArea}
-            placeholder="Enter Description"
-            value={form.description}
-            onChangeText={(text) =>
-              handleChange("description", text)
-            }
-          />
+            <TextInput
+              multiline
+              numberOfLines={5}
+              style={styles.textArea}
+              placeholder="Enter Description"
+              value={form.description}
+              onChangeText={(text) =>
+                handleChange("description", text)
+              }
+            />
 
-          <View style={styles.footer}>
-            <TouchableOpacity onPress={() => navigation.goBack()}
-              style={styles.cancelBtn}
-            >
-              <Text>Cancel</Text>
-            </TouchableOpacity>
+            <View style={styles.footer}>
+              <TouchableOpacity onPress={() => navigation.goBack()}
+                style={styles.cancelBtn}
+              >
+                <Text>Cancel</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={[
-                styles.saveBtn,
-                isApplyTriggeredRef.current && { opacity: 0.6 },
-              ]}
-              disabled={isApplyTriggeredRef.current}
-              onPress={handleCreate}
-            >
-              <Text style={{ color: "#fff" }}>
-                Create Method
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </View>
+              <TouchableOpacity
+                style={[
+                  styles.saveBtn,
+                  isApplyTriggeredRef.current && { opacity: 0.6 },
+                ]}
+                disabled={isApplyTriggeredRef.current}
+                onPress={handleCreate}
+              >
+                <Text style={{ color: "#fff" }}>
+                  Create Method
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
 
 
     </>
