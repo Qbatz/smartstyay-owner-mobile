@@ -311,7 +311,7 @@ export default function NewBankingList() {
       const res = await getAllTransactions(
         activeHostelId,
         page,
-        30
+        50
       );
 
       if (res?.success) {

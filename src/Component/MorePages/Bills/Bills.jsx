@@ -363,6 +363,7 @@ export default function BillsDesign({ route }) {
 
   const [showRetainer, setShowRetainer] = useState(false)
 
+
   useEffect(() => {
     Animated.timing(unpaidRotate, {
       toValue: openUnpaid ? 1 : 0,
@@ -2688,7 +2689,7 @@ export default function BillsDesign({ route }) {
       );
 
       console.log("selectedRefundPayment", selectedRefundPayment);
-      
+
 
       const payload = {
         refundAmount: String(refundAmount),
@@ -2700,7 +2701,7 @@ export default function BillsDesign({ route }) {
       };
 
       console.log("refundpayload", payload);
-      
+
 
       const res = await CreateRefund({
         hostelId: activeHostelId,
@@ -3408,11 +3409,14 @@ export default function BillsDesign({ route }) {
                                 </View>
                               </ScrollView>
 
-                              <TouchableOpacity onPress={handleResetFilters}>
-                                <Text style={styles.resetTextSmall}>
-                                  Reset
-                                </Text>
-                              </TouchableOpacity>
+                              {(appliedFilters?.createdBy.length > 0 || appliedFilters?.modes.length > 0 || appliedFilters?.paymentStatus?.length > 0 ||
+                                appliedFilters?.type.length > 0 || appliedFilters?.endDate != null || appliedFilters?.startDate != null) &&
+                                <TouchableOpacity onPress={handleResetFilters}>
+                                  <Text style={styles.resetTextSmall}>
+                                    Reset
+                                  </Text>
+                                </TouchableOpacity>
+                              }
 
                             </View>
                           )}
@@ -7366,7 +7370,7 @@ export default function BillsDesign({ route }) {
 
 
                     {/* TRANSACTION ID */}
-                  <Text style={[styles.label, { marginTop: 7 }]}>Transaction ID</Text>
+                    <Text style={[styles.label, { marginTop: 7 }]}>Transaction ID</Text>
                     <TextInput
                       style={styles.input}
                       placeholder="Enter transaction ID"
@@ -7569,7 +7573,7 @@ export default function BillsDesign({ route }) {
 
 
                 <View style={styles.bottomButtons}>
-                  <TouchableOpacity style={styles.resetBtn}
+                  <TouchableOpacity style={styles.resetBtn} 
                     onPress={() => {
                       setFromDate(null);
                       setToDate(null);
@@ -7578,6 +7582,9 @@ export default function BillsDesign({ route }) {
                       setType([]);
                       setMode([]);
                       setFilterError("")
+                      setShowFilter(false)
+
+                      handleResetFilters()
                     }}
                   >
                     <Text style={styles.resetBtnText}>Reset All</Text>
@@ -7996,6 +8003,15 @@ export default function BillsDesign({ route }) {
               setTempStatus([]);
               setBillStatus([]);
               setStatusSheetOpen(false);
+              setFromDate(null);
+              setToDate(null);
+              setBillStatus([]);
+              setType([]);
+              setMode([]);
+              setCreatedBy([]);
+
+              setAppliedFilters(null);
+              setFilterError("")
 
               await applyTopFilters({
                 paymentStatus: [],
@@ -8033,6 +8049,15 @@ export default function BillsDesign({ route }) {
               setTempType([]);
               setType([]);
               setTypeSheetOpen(false);
+              setFromDate(null);
+              setToDate(null);
+              setBillStatus([]);
+              setType([]);
+              setMode([]);
+              setCreatedBy([]);
+
+              setAppliedFilters(null);
+              setFilterError("")
 
               await applyTopFilters({
                 paymentStatus: billStatus,
@@ -8073,6 +8098,15 @@ export default function BillsDesign({ route }) {
               setTempmode([]);
               setMode([]);
               setModeSheetOpen(false);
+              setFromDate(null);
+              setToDate(null);
+              setBillStatus([]);
+              setType([]);
+              setMode([]);
+              setCreatedBy([]);
+
+              setAppliedFilters(null);
+              setFilterError("")
 
               await applyTopFilters({
                 paymentStatus: billStatus,
