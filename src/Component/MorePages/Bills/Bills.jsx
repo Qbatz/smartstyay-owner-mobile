@@ -150,6 +150,8 @@ export default function BillsDesign({ route }) {
   const [showPayments, setShowPayments] = useState(false);
   const [showDiscountSheet, setShowDiscountSheet] = useState(false);
 
+  const [showBillDetails, setShowBillDetails] = useState(false);
+  const [selectedBill, setSelectedBill] = useState(null);
 
   const {
     canWriteModule: canWriteInvoice,
@@ -531,7 +533,7 @@ export default function BillsDesign({ route }) {
     showReceiptDetails,
     showRecordPayment,
     showRefundPayment,
-    showRecuringBillDetail , statusSheetOpen , typeSheetOpen , modesheetOpen])
+    showRecuringBillDetail, statusSheetOpen, typeSheetOpen, modesheetOpen])
 
 
   useLayoutEffect(() => {
@@ -780,8 +782,7 @@ export default function BillsDesign({ route }) {
   console.log("BillDetails", BillDetails);
 
 
-  const [showBillDetails, setShowBillDetails] = useState(false);
-  const [selectedBill, setSelectedBill] = useState(null);
+
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -4211,12 +4212,12 @@ export default function BillsDesign({ route }) {
 
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
-                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Refundable Advance</Text>
+                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Total Refundable</Text>
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
 
-                              ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
+                              ₹ {BillPdfdetails?.advanceItems?.availableAdvanceBalance || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -4225,16 +4226,27 @@ export default function BillsDesign({ route }) {
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
                             <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>
+                              Total Recoverable
+                            </Text>
+                          </View>
+                          <View>
+                            <Text style={styles.amountValue}>
+                              ₹ {BillPdfdetails?.invoiceInfo?.totalPayable || 0}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                          <View>
+                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>
                               {BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND" ? "Refundable Rent" : "Payable Rent"}</Text>
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
-
                               ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0}
-                              {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
-                        </View>
+                        </View> */}
 
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
@@ -7573,7 +7585,7 @@ export default function BillsDesign({ route }) {
 
 
                 <View style={styles.bottomButtons}>
-                  <TouchableOpacity style={styles.resetBtn} 
+                  <TouchableOpacity style={styles.resetBtn}
                     onPress={() => {
                       setFromDate(null);
                       setToDate(null);

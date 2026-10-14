@@ -420,15 +420,15 @@ export default function AddBankAccount() {
 
 
       if (accountType === "Credit") {
-        const selectedBankId = form.linkedBankId;
+        const selectedBankId = form.linkedBankId || null
 
-        if (!selectedBankId) {
-          setErrors(prev => ({
-            ...prev,
-            linkedBankId: "Please Select Bank Account",
-          }));
-          return;
-        }
+        // if (!selectedBankId) {
+        //   setErrors(prev => ({
+        //     ...prev,
+        //     linkedBankId: "Please Select Bank Account",
+        //   }));
+        //   return;
+        // }
 
         const payload = {
           paymentMethod: "Credit Card",
@@ -450,6 +450,11 @@ export default function AddBankAccount() {
         console.log("creditcardpayload", payload, selectedBankId);
 
 
+console.log("HOSTEL ID:", activeHostelId);
+console.log("SELECTED BANK ID:", selectedBankId);
+console.log("CREDIT CARD PAYLOAD:", payload);
+
+
         try {
           const res = await createPaymentMethod(
             activeHostelId,
@@ -457,6 +462,9 @@ export default function AddBankAccount() {
             payload,
             null
           );
+
+          console.log("creditcardresponse", res);
+          
 
           if (res?.success) {
             await getBankMethod(
