@@ -885,7 +885,7 @@ export default function OverviewTab({ customerDetails,
                     !disableFinancialEdit && isSubscriptionAllow && (
                       <>
                         {
-                          !["VACATED", "NOTICE"].includes(status) && (
+                          !["VACATED", "NOTICE", "SETTLEMENT_GENERATED"].includes(status) && (
                             <TouchableOpacity
                               disabled={disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable}
                               style={(disableFinancialEdit || !canUpdateTenant || !isJoiningDateEditable) && { opacity: 0.4 }}
@@ -981,7 +981,7 @@ export default function OverviewTab({ customerDetails,
                     <>
 
                       {
-                        !["VACATED", "NOTICE"].includes(status) && (
+                        !["VACATED", "NOTICE","SETTLEMENT_GENERATED"].includes(status) && (
                           <TouchableOpacity
                             disabled={
                               disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable}
