@@ -85,11 +85,18 @@ const CreateInvoice = ({ }) => {
     const [openDetailIndex, setOpenDetailIndex] = useState(null)
 
 
+    // const detailOptions = [
+    //     "Advance",
+    //     "Room Rent",
+    //     "Other",
+    // ]
+
     const detailOptions = [
         "Advance",
         "Room Rent",
+        "EB",
         "Other",
-    ]
+    ];
 
     // const getDetailOptions = (currentIndex) => {
     //     const hasAdvance = items.some(
@@ -112,48 +119,82 @@ const CreateInvoice = ({ }) => {
     //     });
     // }
 
-    const getDetailOptions = (currentIndex) => {
 
-        // EDIT 
+   const getDetailOptions = (currentIndex) => {
+  if (isEditMode) {
+    if (items[currentIndex]?.isExisting) return [];
+    return ["Other"];
+  }
 
-        if (isEditMode) {
+  // Advance selected in another row: no more options
+  const hasAdvance = items.some(
+    (item, index) =>
+      index !== currentIndex &&
+      item?.itemDetail === "Advance"
+  );
 
-            // Existing API item -> cannot change type
-            if (items[currentIndex]?.isExisting) {
-                return [];
-            }
+  if (hasAdvance) return [];
 
-            // New item -> ONLY Other
-            return ["Other"];
-        }
+  const hasRoomRent = items.some(
+    (item, index) =>
+      index !== currentIndex &&
+      item?.itemDetail === "Room Rent"
+  );
+
+  const hasEB = items.some(
+    (item, index) =>
+      index !== currentIndex &&
+      item?.itemDetail === "EB"
+  );
+
+  return detailOptions.filter((option) => {
+    if (option === "Room Rent") return !hasRoomRent;
+
+    if (option === "EB") return !hasEB;
+
+    return true;
+  });
+};
 
 
-        // ADD 
+    // const getDetailOptions = (currentIndex) => {
 
-        const hasAdvance = items.some(
-            (item, index) =>
-                index !== currentIndex &&
-                item?.itemDetail === "Advance"
-        );
 
-        if (hasAdvance) {
-            return [];
-        }
+    //     if (isEditMode) {
 
-        const hasRoomRent = items.some(
-            (item, index) =>
-                index !== currentIndex &&
-                item?.itemDetail === "Room Rent"
-        );
+    //         if (items[currentIndex]?.isExisting) {
+    //             return [];
+    //         }
 
-        return detailOptions.filter(option => {
-            if (option === "Room Rent") {
-                return !hasRoomRent;
-            }
+    //         return ["Other"];
+    //     }
 
-            return true;
-        });
-    };
+
+
+    //     const hasAdvance = items.some(
+    //         (item, index) =>
+    //             index !== currentIndex &&
+    //             item?.itemDetail === "Advance"
+    //     );
+
+    //     if (hasAdvance) {
+    //         return [];
+    //     }
+
+    //     const hasRoomRent = items.some(
+    //         (item, index) =>
+    //             index !== currentIndex &&
+    //             item?.itemDetail === "Room Rent"
+    //     );
+
+    //     return detailOptions.filter(option => {
+    //         if (option === "Room Rent") {
+    //             return !hasRoomRent;
+    //         }
+
+    //         return true;
+    //     });
+    // };
 
 
     const [showSuccessModal, setShowSuccessModal] = useState(false)
@@ -303,42 +344,89 @@ const CreateInvoice = ({ }) => {
 
     const handleDetailChange = (index, value) => {
         if (value === "Advance") {
-            setItems(prev => [{
-                ...prev[index],
-                itemDetail: "Advance",
-                retainerType: "",
-            }]);
+            setItems([
+                {
+                    ...items[index],
+                    itemDetail: "Advance",
+                    retainerType: "",
+                    am_name: "",
+                },
+            ]);
+
             setOpenDetailIndex(null);
             setErrors({});
             return;
         }
 
-        const duplicate = items.some(
-            (item, itemIndex) =>
-                itemIndex !== index && item?.itemDetail === value &&
-                ["Room Rent"].includes(value)
-        );
-
-        if (duplicate) {
+        // Prevent duplicate Room Rent and EB
+        if (
+            ["Room Rent", "EB"].includes(value) &&
+            items.some(
+                (item, itemIndex) =>
+                    itemIndex !== index && item?.itemDetail === value
+            )
+        ) {
             return;
         }
 
-        setItems(prev => {
+        setItems((prev) => {
             const updated = [...prev];
+
             updated[index] = {
                 ...updated[index],
                 itemDetail: value,
-                ...(value !== "Other" ? { retainerType: "" } : {}),
+                ...(value !== "Other" ? { retainerType: "", am_name: "" } : {}),
             };
+
             return updated;
         });
 
         setOpenDetailIndex(null);
-        setErrors(prev => ({
+
+        setErrors((prev) => ({
             ...prev,
             [`itemDetail_${index}`]: "",
         }));
     };
+
+    // const handleDetailChange = (index, value) => {
+    //     if (value === "Advance") {
+    //         setItems(prev => [{
+    //             ...prev[index],
+    //             itemDetail: "Advance",
+    //             retainerType: "",
+    //         }]);
+    //         setOpenDetailIndex(null);
+    //         setErrors({});
+    //         return;
+    //     }
+
+    //     const duplicate = items.some(
+    //         (item, itemIndex) =>
+    //             itemIndex !== index && item?.itemDetail === value &&
+    //             ["Room Rent"].includes(value)
+    //     );
+
+    //     if (duplicate) {
+    //         return;
+    //     }
+
+    //     setItems(prev => {
+    //         const updated = [...prev];
+    //         updated[index] = {
+    //             ...updated[index],
+    //             itemDetail: value,
+    //             ...(value !== "Other" ? { retainerType: "" } : {}),
+    //         };
+    //         return updated;
+    //     });
+
+    //     setOpenDetailIndex(null);
+    //     setErrors(prev => ({
+    //         ...prev,
+    //         [`itemDetail_${index}`]: "",
+    //     }));
+    // };
 
     const handleDeleteRow = (index) => {
         setItems(prev =>
@@ -518,7 +606,7 @@ const CreateInvoice = ({ }) => {
                 // --------------------------------
 
                 const invoiceDateValue =
-                    bill?.invoiceDate ||              
+                    bill?.invoiceDate ||
                     editBillData?.invoiceDate;
 
                 if (invoiceDateValue) {
@@ -961,26 +1049,41 @@ const CreateInvoice = ({ }) => {
                         ? Number(discount || 0)
                         : "",
 
-                invoiceItems:
-                    items.map((item) => ({
-
-                        invoiceItem:
-                            item.itemDetail === "Other"
-                                ? (item.am_name || "").trim()
-
-                                : item.itemDetail ===
-                                    "Advance"
-                                    ? "ADDITIONAL_ADVANCE"
-
-                                    : item.itemDetail ===
-                                        "Room Rent"
-                                        ? "RENT"
-
+                invoiceItems: items?.map((item) => ({
+                    invoiceItem:
+                        item?.itemDetail === "Other"
+                            ? (item?.am_name || "").trim()
+                            : item?.itemDetail === "Advance"
+                                ? "ADDITIONAL_ADVANCE"
+                                : item?.itemDetail === "Room Rent"
+                                    ? "RENT"
+                                    : item?.itemDetail === "EB"
+                                        ? "EB"
                                         : "OTHER",
 
-                        amount:
-                            Number(item.amount || 0),
-                    })),
+                    amount: Number(item?.amount || 0),
+                })),
+
+                // invoiceItems:
+                //     items.map((item) => ({
+
+                //         invoiceItem:
+                //             item.itemDetail === "Other"
+                //                 ? (item.am_name || "").trim()
+
+                //                 : item.itemDetail ===
+                //                     "Advance"
+                //                     ? "ADDITIONAL_ADVANCE"
+
+                //                     : item.itemDetail ===
+                //                         "Room Rent"
+                //                         ? "RENT"
+
+                //                         : "OTHER",
+
+                //         amount:
+                //             Number(item.amount || 0),
+                //     })),
             };
 
 
@@ -1907,7 +2010,7 @@ const CreateInvoice = ({ }) => {
                                 styles.saveButton,
                                 isSubmitClicked && styles.saveButtonDisabled
                             ]}
-                            >
+                        >
                             <Text style={styles.saveButtonText}>
                                 {isEditMode ? "Save Changes" : "Save & Generate"}
                             </Text>
