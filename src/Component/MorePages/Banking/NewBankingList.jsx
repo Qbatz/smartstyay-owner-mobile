@@ -627,64 +627,145 @@ export default function NewBankingList() {
   //   };
   // });
 
+  // const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
+  //   const type = item.accountType;
+
+  //   return {
+  //     id: item.bankId,
+
+  //     title:
+  //       type === "BANK"
+  //         ? item.bankName || "Bank"
+  //         : type === "CASH"
+  //           ? "Cash"
+  //           : type === "CARD"
+  //             ? "Card"
+  //             : "UPI",
+
+  //     subtitle:
+  //       type === "BANK"
+  //         ? "Bank Account"
+  //         : type === "CASH"
+  //           ? "Cash Account"
+  //           : type === "CARD"
+  //             ? "Card"
+  //             : "UPI",
+
+  //     name: item.accountHolderName,
+
+  //     acc:
+  //       type === "BANK"
+  //         ? item.accountNumber
+  //         : type === "CARD"
+  //           ? item.cardNumber
+  //           : type === "UPI"
+  //             ? item.upiId
+  //             : "",
+
+  //     balance: Number(item.balance ?? 0),
+
+  //     branch: item.branchName || "",
+
+  //     isDefaultAccount: item?.isDefaultAccount,
+
+  //     ResponsiblePerson: item?.responsiblePerson,
+
+  //     Icon:
+  //       type === "BANK"
+  //         ? BankIcon
+  //         : type === "CASH"
+  //           ? CashIcon
+  //           : type === "CARD"
+  //             ? CardIcon
+  //             : UpiIcon,
+
+  //     raw: item,
+  //     lastTransactionDate: item?.lastTransactionDate,
+  //     dueDate: item?.dueDate,
+  //     paymentMethod: item?.paymentMethod
+  //   };
+  // });
+
+
   const mappedBankList = (newtransactionList?.bankList || []).map((item) => {
-    const type = item.accountType;
+    const isCreditCard = item?.paymentMethod === "Credit Card";
+    const isDebitCard = item?.paymentMethod === "DEBIT_CARD"
+    const isBank = !isCreditCard && item?.paymentMethod === "BANK";
+    const isCash = item?.accountType === "CASH";
+    const isUpi = item?.accountType === "UPI";
+
+    // Credit Card and Bank Account must have different IDs.
+    const id = isCreditCard
+      ? item?.paymentMethodId
+      : item?.bankId || item?.paymentMethodId;
 
     return {
-      id: item.bankId,
+      id,
+      type: isCreditCard
+        ? "CARD"
+        : isBank
+          ? "BANK"
+          : isCash
+            ? "CASH"
+            : isUpi
+              ? "UPI"
+              : item?.accountType,
 
-      title:
-        type === "BANK"
-          ? item.bankName || "Bank"
-          : type === "CASH"
-            ? "Cash"
-            : type === "CARD"
-              ? "Card"
-              : "UPI",
+      title: isCreditCard
+        ? `${item?.displayName || "Card"} - Credit Card`
+        : isBank
+          ? `${item?.displayName || item?.bankName || "Bank"} - BANK`
+          : isCash
+            ? item?.cashAccountType || "Cash"
+            : item?.displayName || item?.bankName || "UPI",
 
-      subtitle:
-        type === "BANK"
-          ? "Bank Account"
-          : type === "CASH"
+      subtitle: isCreditCard
+        ? "Credit Card"
+        : isBank
+          ? "BANK"
+          : isCash
             ? "Cash Account"
-            : type === "CARD"
-              ? "Card"
-              : "UPI",
+            : "UPI",
 
-      name: item.accountHolderName,
+      name: item?.accountHolderName,
+      acc: isCreditCard || isDebitCard
+        ? item?.cardNumber
+        : isBank
+          ? item?.accountNumber
+          : isUpi
+            ? item?.upiId
+            : "",
+      // acc: isCreditCard
+      //   ? item?.cardNumber
+      //   : isBank
+      //     ? item?.accountNumber
+      //     : isUpi
+      //       ? item?.upiId
+      //       : "",
 
-      acc:
-        type === "BANK"
-          ? item.accountNumber
-          : type === "CARD"
-            ? item.cardNumber
-            : type === "UPI"
-              ? item.upiId
-              : "",
-
-      balance: Number(item.balance ?? 0),
-
-      branch: item.branchName || "",
-
+      balance: Number(item?.balance ?? 0),
+      branch: item?.branchName || "",
+      bankName: item?.bankName || "",
+      displayName: item?.displayName || "",
+      ResponsiblePerson: item?.responsiblePerson || "",
       isDefaultAccount: item?.isDefaultAccount,
+      lastTransactionDate: item?.lastTransactionDate ?? null,
+      dueDate: item?.dueDate ?? null,
+      paymentMethod: item?.paymentMethod,
+      isDebitcardtrue: isDebitCard,
 
-      ResponsiblePerson: item?.responsiblePerson,
-
-      Icon:
-        type === "BANK"
+      Icon: isCreditCard
+        ? CardIcon
+        : isBank
           ? BankIcon
-          : type === "CASH"
+          : isCash
             ? CashIcon
-            : type === "CARD"
-              ? CardIcon
-              : UpiIcon,
+            : UpiIcon,
 
       raw: item,
-      lastTransactionDate: item?.lastTransactionDate,
-      dueDate: item?.dueDate,
-      paymentMethod: item?.paymentMethod
     };
   });
+
 
   const mappedTransactions = (newOnlyTransactionList || []).map((t) => {
     const isCredit = t.type === "CREDIT";
@@ -1072,7 +1153,7 @@ export default function NewBankingList() {
     setSelectedTransaction(item);
     setShowFilter(false);
   }
-console.log("newOnlyTransaction",newOnlyTransactionList)
+  console.log("newOnlyTransaction", newOnlyTransactionList)
 
   if (!activeHostelId && !loading) {
     return (
@@ -1184,7 +1265,7 @@ console.log("newOnlyTransaction",newOnlyTransactionList)
                       showsHorizontalScrollIndicator={false}
                     >
                       {mappedBankList.map((item, index) => {
-                        const type = item.raw?.accountType;
+                        const type = item?.type;
 
                         return (
                           <TouchableOpacity
@@ -1226,7 +1307,7 @@ console.log("newOnlyTransaction",newOnlyTransactionList)
                                     },
 
                                     type === "CASH" && {
-                                      backgroundColor: "#E9FFF1",
+                                      backgroundColor: "#c0e8cf",
                                     },
 
                                     type === "CARD" && {
@@ -1288,8 +1369,7 @@ console.log("newOnlyTransaction",newOnlyTransactionList)
                             {/* CHIPS */}
                             <View style={styles.tagRow}>
 
-                              {/* BANK BRANCH */}
-                              {type === "BANK" && item?.branch ? (
+                              {/* {type === "BANK" && item?.branch ? (
                                 <View style={styles.locationChip}>
                                   <Image
                                     source={Location}
@@ -1298,6 +1378,14 @@ console.log("newOnlyTransaction",newOnlyTransactionList)
 
                                   <Text numberOfLines={1}>
                                     {item.branch}
+                                  </Text>
+                                </View>
+                              ) : null} */}
+
+                              {(type === "BANK" || type === "CARD") && item?.raw?.bankName ? (
+                                <View style={styles.defaultChip}>
+                                  <Text style={styles.defaultChipText}>
+                                    {item?.raw?.bankName}
                                   </Text>
                                 </View>
                               ) : null}
@@ -1312,10 +1400,10 @@ console.log("newOnlyTransaction",newOnlyTransactionList)
                               ) : null}
 
                               {/* CARD */}
-                              {type === "CARD" ? (
+                              {item?.isDebitcardtrue ? (
                                 <View style={styles.upiChip}>
                                   <Text numberOfLines={1}>
-                                    **** **** {item.acc?.slice(-4)}
+                                    **** **** {item?.acc?.slice(-4)}
                                   </Text>
                                 </View>
                               ) : null}
@@ -1332,45 +1420,51 @@ console.log("newOnlyTransaction",newOnlyTransactionList)
                             </View>
 
                             {/* LAST TRANSACTION */}
+
                             <Text style={styles.lastTxn}>
+                              {type === "CARD" || item?.paymentMethod
+                                ? `Due Date : ${item?.dueDate || "-"}`
+                                : `Last Txn : ${item?.lastTransactionDate || "-"}`}
+                            </Text>
+                            {/* <Text style={styles.lastTxn}>
                               {type === "CARD"
                                 ? "Due Date : 10 Jun 2026"
                                 : !item?.paymentMethod
                                   ? `Last Txn : ${item?.lastTransactionDate}`
                                   : `Due Date : ${item?.dueDate}`}
-                            </Text>
+                            </Text> */}
 
                           </TouchableOpacity>
                         );
                       })}
 
-                       <TouchableOpacity
-                    // style={[styles.addNewCard, !canWriteBanking && { opacity: 0.4 }]}
-                    // disabled={!canWriteBanking}
+                      <TouchableOpacity
+                        // style={[styles.addNewCard, !canWriteBanking && { opacity: 0.4 }]}
+                        // disabled={!canWriteBanking}
 
-                    style={[
-                      styles.addNewCard,
-                      (!canWriteBanking || !isSubscriptionAllow) && {
-                        opacity: 0.4,
-                      },
-                    ]}
-                    disabled={!canWriteBanking || !isSubscriptionAllow}
-                    onPress={handleAddBanking}
-                  >
+                        style={[
+                          styles.addNewCard,
+                          (!canWriteBanking || !isSubscriptionAllow) && {
+                            opacity: 0.4,
+                          },
+                        ]}
+                        disabled={!canWriteBanking || !isSubscriptionAllow}
+                        onPress={handleAddBanking}
+                      >
 
-                    <View style={{ height: 50, width: 50 }}>
-                      <Image source={AddBankIcon} style={styles.addIcon} />
-                    </View>
+                        <View style={{ height: 50, width: 50 }}>
+                          <Image source={AddBankIcon} style={styles.addIcon} />
+                        </View>
 
-                    <Text style={styles.addText}>
-                      Add New
-                    </Text>
+                        <Text style={styles.addText}>
+                          Add New
+                        </Text>
 
-                    <Text style={styles.addText}>
-                      Bank / Cash
-                    </Text>
+                        <Text style={styles.addText}>
+                          Bank / Cash
+                        </Text>
 
-                  </TouchableOpacity>
+                      </TouchableOpacity>
                     </ScrollView>
                   </Animated.View>
 
@@ -2393,8 +2487,8 @@ const styles = StyleSheet.create({
     height: 265,
     backgroundColor: "#FFF",
     borderRadius: 24,
-    marginHorizontal: 16,
-    padding: 14,
+    marginHorizontal: 13,
+    padding: 12,
     overflow: "visible",
     shadowColor: "#000",
     shadowOpacity: 0.3,
@@ -2500,10 +2594,11 @@ const styles = StyleSheet.create({
   upiChip: {
     backgroundColor: "#EEF2FF",
     borderRadius: 10,
-    paddingHorizontal: 14,
+    paddingHorizontal: 10,
     height: 34,
     justifyContent: "center",
     marginRight: 8,
+    marginLeft:8,
     flex: 1,
   },
 
