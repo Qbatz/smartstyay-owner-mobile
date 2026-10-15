@@ -23,7 +23,8 @@ export default function AddBankAccount() {
 
   const { activeHostelId } = useContext(CommonContexts);
   const { createBankAccount, responsiblePersonList, NewgetBankList, getAllTransactions,
-    getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel, newtransactionList } = useContext(BankingContext);
+    getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel, newtransactionList, upiAppList,
+    getQrCardTypeList, getBankMethod } = useContext(BankingContext);
 
   const { createPaymentMethod } = useContext(CustomerContext)
   const [accountType, setAccountType] = useState("bank")
@@ -89,17 +90,39 @@ export default function AddBankAccount() {
     (_, i) => i + 1
   );
 
-  const cardNetworkOptions = [
-    { label: "Visa", value: "VISA" },
-    { label: "Mastercard", value: "MASTERCARD" },
-    { label: "RuPay", value: "RUPAY" },
-    { label: "American Express", value: "AMEX" },
-  ];
+  // const cardNetworkOptions = [
+  //   { label: "Visa", value: "VISA" },
+  //   { label: "Mastercard", value: "MASTERCARD" },
+  //   { label: "RuPay", value: "RUPAY" },
+  //   { label: "American Express", value: "AMEX" },
+  // ];
 
-  const linkedBankOptions = (newtransactionList?.bankList || []).filter(
-    (item) =>
-      String(item?.accountType || "").toUpperCase() === "BANK"
-  );
+
+  const linkedBankOptions = React.useMemo(() => {
+    const bankList = newtransactionList?.bankList || [];
+
+    const filteredBanks = bankList.filter(
+      (item) =>
+        String(item?.accountType || "").toUpperCase() === "BANK" &&
+        item?.paymentMethodId === null
+    );
+
+    const uniqueBanks = Array.from(
+      new Map(
+        filteredBanks.map((item) => [
+          String(item?.bankId),
+          item,
+        ])
+      ).values()
+    );
+
+    return uniqueBanks.map((item) => ({
+      ...item,
+      label: `${item?.displayName || ""} - ${item?.bankName || "Bank"}`,
+      value: item?.bankId,
+    }));
+  }, [newtransactionList?.bankList]);
+
 
   console.log("linkedBankOptions", linkedBankOptions);
 
@@ -110,7 +133,13 @@ export default function AddBankAccount() {
     if (activeHostelId) {
       getResponsiblePersonList(activeHostelId);
     }
-  }, [activeHostelId]);
+  }, [activeHostelId])
+
+  useEffect(() => {
+    getQrCardTypeList("CARD");
+  }, []);
+
+  const cardNetworkOptions = upiAppList || []
 
   const cashTypeOptions = [
     { label: "Petty Cash", value: "PETTY_CASH" },
@@ -315,6 +344,8 @@ export default function AddBankAccount() {
         ? form.linkedBankId
         : "";
 
+
+
       if (linkBank && !selectedBankId) {
         setErrors(prev => ({
           ...prev,
@@ -420,7 +451,7 @@ export default function AddBankAccount() {
 
 
       if (accountType === "Credit") {
-        const selectedBankId = form.linkedBankId || null
+        const selectedBankId = linkBank ? form.linkedBankId : "";
 
         // if (!selectedBankId) {
         //   setErrors(prev => ({
@@ -432,27 +463,19 @@ export default function AddBankAccount() {
 
         const payload = {
           paymentMethod: "Credit Card",
-
-          // Common fields
           displayName: form.displayName.trim(),
           description: form.description.trim(),
-
-          // Card fields — same API payload structure
           cardNumber: Number(form.cardLast4),
-          cardNetwork: form.cardNetwork,
+          cardNetwork: Number(form.cardNetwork),
           cardHolderName: form.cardHolderName.trim(),
-
-          // Credit Card fields
           creditLimit: Number(form.creditLimit) || "",
-          billingCycle: form.billingCycle,
+          billingCycle: form.billingCycle || "",
         };
 
         console.log("creditcardpayload", payload, selectedBankId);
-
-
-console.log("HOSTEL ID:", activeHostelId);
-console.log("SELECTED BANK ID:", selectedBankId);
-console.log("CREDIT CARD PAYLOAD:", payload);
+        console.log("HOSTEL ID:", activeHostelId);
+        console.log("SELECTED BANK ID:", selectedBankId);
+        console.log("CREDIT CARD PAYLOAD:", payload);
 
 
         try {
@@ -464,7 +487,7 @@ console.log("CREDIT CARD PAYLOAD:", payload);
           );
 
           console.log("creditcardresponse", res);
-          
+
 
           if (res?.success) {
             await getBankMethod(
@@ -1086,11 +1109,15 @@ console.log("CREDIT CARD PAYLOAD:", payload);
                         !form.cardNetwork && styles.placeholderText,
                       ]}
                     >
-                      {form.cardNetwork
+                      {/* {form.cardNetwork
                         ? cardNetworkOptions.find(
                           x => x.value === form.cardNetwork
                         )?.label
-                        : "Select Card Network"}
+                        : "Select Card Network"} */}
+
+                      {upiAppList?.find(
+                        item => String(item?.id) === String(form.cardNetwork)
+                      )?.name || "Select Card Network"}
                     </Text>
 
                     <Image
@@ -1105,23 +1132,19 @@ console.log("CREDIT CARD PAYLOAD:", payload);
                         nestedScrollEnabled
                         showsVerticalScrollIndicator={false}
                       >
-                        {cardNetworkOptions.map(option => {
+                        {cardNetworkOptions?.map(item => {
                           const selected =
-                            form.cardNetwork === option.value;
+                            String(form.cardNetwork) === String(item?.id);
 
                           return (
                             <TouchableOpacity
-                              key={option.value}
+                              key={item.id}
                               style={[
                                 styles.dropdownRow,
-                                selected &&
-                                styles.dropdownRowSelected,
+                                selected && styles.dropdownRowSelected,
                               ]}
                               onPress={() => {
-                                handleChange(
-                                  "cardNetwork",
-                                  option.value
-                                );
+                                handleChange("cardNetwork", item?.id);
                                 setShowCardNetwork(false);
                               }}
                             >
@@ -1132,7 +1155,7 @@ console.log("CREDIT CARD PAYLOAD:", payload);
                                     : styles.dropdownText
                                 }
                               >
-                                {option.label}
+                                {item?.name}
                               </Text>
                             </TouchableOpacity>
                           );
@@ -1405,7 +1428,7 @@ console.log("CREDIT CARD PAYLOAD:", payload);
                         >
                           {linkedBankOptions.find(
                             item => String(item?.bankId) === String(form.linkedBankId)
-                          )?.bankName || "Select Bank Account"}
+                          )?.label || "Select Bank"}
                         </Text>
 
                         <Image
@@ -1421,20 +1444,34 @@ console.log("CREDIT CARD PAYLOAD:", payload);
                             keyboardShouldPersistTaps="handled"
                             showsVerticalScrollIndicator={false}
                           >
-                            {linkedBankOptions?.map(item => (
-                              <TouchableOpacity
-                                key={item?.bankId}
-                                style={styles.dropdownRow}
-                                onPress={() => {
-                                  handleChange("linkedBankId", item?.bankId);
-                                  setShowLinkedBank(false);
-                                }}
-                              >
-                                <Text style={styles.dropdownText}>
-                                  {item?.bankName || item?.displayName || "Unnamed Bank"}
-                                </Text>
-                              </TouchableOpacity>
-                            ))}
+                            {linkedBankOptions?.map((item) => {
+                              const isSelected =
+                                String(form.linkedBankId) === String(item?.bankId);
+
+                              return (
+                                <TouchableOpacity
+                                  key={String(item?.bankId)}
+                                  style={[
+                                    styles.dropdownRow,
+                                    isSelected && styles.dropdownRowSelected,
+                                  ]}
+                                  onPress={() => {
+                                    handleChange("linkedBankId", item?.bankId);
+                                    setShowLinkedBank(false);
+                                  }}
+                                >
+                                  <Text
+                                    style={
+                                      isSelected
+                                        ? styles.dropdownTextSelected
+                                        : styles.dropdownText
+                                    }
+                                  >
+                                    {item.label}
+                                  </Text>
+                                </TouchableOpacity>
+                              );
+                            })}
 
                             {linkedBankOptions?.length === 0 && (
                               <Text style={{ padding: 12, color: "#666" }}>
@@ -1444,6 +1481,7 @@ console.log("CREDIT CARD PAYLOAD:", payload);
                           </ScrollView>
                         </View>
                       )}
+
                     </View>
                   </>
                 )}
