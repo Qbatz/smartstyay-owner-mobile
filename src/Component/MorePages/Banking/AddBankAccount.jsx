@@ -24,7 +24,7 @@ export default function AddBankAccount() {
   const { activeHostelId } = useContext(CommonContexts);
   const { createBankAccount, responsiblePersonList, NewgetBankList, getAllTransactions,
     getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel, newtransactionList, upiAppList,
-    getQrCardTypeList, getBankMethod } = useContext(BankingContext);
+    getQrCardTypeList, getBankMethod, createCreditCardAccount } = useContext(BankingContext);
 
   const { createPaymentMethod } = useContext(CustomerContext)
   const [accountType, setAccountType] = useState("bank")
@@ -85,6 +85,8 @@ export default function AddBankAccount() {
     { label: "Last day of every month", value: "LAST" },
   ];
 
+
+
   const billingCycleDays = Array.from(
     { length: 31 },
     (_, i) => i + 1
@@ -96,6 +98,14 @@ export default function AddBankAccount() {
   //   { label: "RuPay", value: "RUPAY" },
   //   { label: "American Express", value: "AMEX" },
   // ];
+
+  const cardNetworkOptions = [
+    { label: "VISA", value: "VISA" },
+    { label: "RuPay", value: "RUPAY" },
+    { label: "Mastercard", value: "MASTER_CARD" },
+    { label: "American Express", value: "AMERICAN_EXPRESS" },
+    { label: "Diners Club", value: "DINNERS_CLUB" },
+  ];
 
 
   const linkedBankOptions = React.useMemo(() => {
@@ -139,7 +149,7 @@ export default function AddBankAccount() {
     getQrCardTypeList("CARD");
   }, []);
 
-  const cardNetworkOptions = upiAppList || []
+  // const cardNetworkOptions = upiAppList || []
 
   const cashTypeOptions = [
     { label: "Petty Cash", value: "PETTY_CASH" },
@@ -450,59 +460,47 @@ export default function AddBankAccount() {
     try {
 
 
-      if (accountType === "Credit") {
-        const selectedBankId = linkBank ? form.linkedBankId : "";
 
-        // if (!selectedBankId) {
-        //   setErrors(prev => ({
-        //     ...prev,
-        //     linkedBankId: "Please Select Bank Account",
-        //   }));
-        //   return;
-        // }
+      if (accountType === "Credit") {
+        const selectedBankId = linkBank
+          ? form.linkedBankId
+          : "";
 
         const payload = {
-          paymentMethod: "Credit Card",
+          holderName: form.cardHolderName.trim(),
+          bankName: "",
           displayName: form.displayName.trim(),
+          branchName: "",
+          accountNo: "",
+          ifscCode: "",
           description: form.description.trim(),
-          cardNumber: Number(form.cardLast4),
-          cardNetwork: Number(form.cardNetwork),
-          cardHolderName: form.cardHolderName.trim(),
-          creditLimit: Number(form.creditLimit) || "",
-          billingCycle: form.billingCycle || "",
+          isDefault: linkBank,
+          accountType: "CARD",
+          linkedBankId: selectedBankId || "",
+          bankAccountType: "",
+          openingBalance: 0,
+          cashAccountType: "",
+          responsiblePerson: "",
+          cardNumber: String(form.cardLast4),
+          creditLimit: Number(form.creditLimit) || 0,
+          billingCycle: Number(form.billingCycle) || 0,
+          cardNetwork: form.cardNetwork,
         };
 
-        console.log("creditcardpayload", payload, selectedBankId);
-        console.log("HOSTEL ID:", activeHostelId);
-        console.log("SELECTED BANK ID:", selectedBankId);
-        console.log("CREDIT CARD PAYLOAD:", payload);
-
+        console.log("CREATE CREDIT CARD PAYLOAD =>", payload);
 
         try {
-          const res = await createPaymentMethod(
+          const res = await createCreditCardAccount(
             activeHostelId,
-            selectedBankId,
-            payload,
-            null
+            payload
           );
 
-          console.log("creditcardresponse", res);
-
-
           if (res?.success) {
-            await getBankMethod(
-              activeHostelId,
-              selectedBankId
-            );
-
             await NewgetBankList(activeHostelId);
             await getAllTransactions(activeHostelId);
 
             setModalType("success");
-            setModalMessage(
-              res?.message ||
-              "Credit Card Added Successfully"
-            );
+            setModalMessage(res?.message || "Credit Card Added Successfully")
             setShowSuccessModal(true);
 
             setTimeout(() => {
@@ -518,26 +516,27 @@ export default function AddBankAccount() {
 
             setTimeout(() => {
               setShowSuccessModal(false);
-            }, 1200);
+            }, 1500);
           }
         } catch (error) {
-          console.log("Credit Card API Error:", error);
+          console.log("CREATE CREDIT CARD ERROR =>", error);
 
           setModalType("error");
           setModalMessage(
             error?.message || "Failed to add Credit Card"
           );
-          setShowSuccessModal(true)
+          setShowSuccessModal(true);
 
           setTimeout(() => {
             setShowSuccessModal(false);
-          }, 1200);
+          }, 1500);
         } finally {
           isApplyTriggeredRef.current = false;
         }
 
         return;
       }
+
 
 
 
@@ -1114,10 +1113,9 @@ export default function AddBankAccount() {
                           x => x.value === form.cardNetwork
                         )?.label
                         : "Select Card Network"} */}
-
-                      {upiAppList?.find(
-                        item => String(item?.id) === String(form.cardNetwork)
-                      )?.name || "Select Card Network"}
+                      {cardNetworkOptions.find(
+                        item => item?.value === form.cardNetwork
+                      )?.label || "Select Card Network"}
                     </Text>
 
                     <Image
@@ -1133,18 +1131,17 @@ export default function AddBankAccount() {
                         showsVerticalScrollIndicator={false}
                       >
                         {cardNetworkOptions?.map(item => {
-                          const selected =
-                            String(form.cardNetwork) === String(item?.id);
+                          const selected = form.cardNetwork === item?.value;
 
                           return (
                             <TouchableOpacity
-                              key={item.id}
+                              key={item?.value}
                               style={[
                                 styles.dropdownRow,
                                 selected && styles.dropdownRowSelected,
                               ]}
                               onPress={() => {
-                                handleChange("cardNetwork", item?.id);
+                                handleChange("cardNetwork", item?.value);
                                 setShowCardNetwork(false);
                               }}
                             >
@@ -1155,7 +1152,7 @@ export default function AddBankAccount() {
                                     : styles.dropdownText
                                 }
                               >
-                                {item?.name}
+                                {item?.label}
                               </Text>
                             </TouchableOpacity>
                           );
@@ -1862,6 +1859,7 @@ const styles = StyleSheet.create({
     elevation: 20,
     maxHeight: 180,
     overflow: "hidden",
+
   },
 
   linkBankHeader: {
@@ -1905,7 +1903,7 @@ const styles = StyleSheet.create({
     borderColor: "#E5E7EB",
     borderRadius: 14,
     paddingVertical: 12,
-    paddingHorizontal: 4,
+    paddingHorizontal: 2,
 
     flexDirection: "row",
     flexWrap: "wrap",
