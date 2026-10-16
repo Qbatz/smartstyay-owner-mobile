@@ -109,18 +109,22 @@ export default function AddBankAccount() {
 
 
   const linkedBankOptions = React.useMemo(() => {
-    const bankList = newtransactionList?.bankList || [];
+    const bankList = Array.isArray(newtransactionList?.bankV2Lists)
+      ? newtransactionList.bankV2Lists
+      : [];
 
-    const filteredBanks = bankList.filter(
-      (item) =>
-        String(item?.accountType || "").toUpperCase() === "BANK" &&
-        item?.paymentMethodId === null
-    );
+    const filteredBanks = bankList.filter((item) => {
+      return (
+        String(item?.accountType || "").trim().toUpperCase() === "BANK" &&
+        !!item?.bankId
+      );
+    });
 
+    // Duplicate bankId remove
     const uniqueBanks = Array.from(
       new Map(
         filteredBanks.map((item) => [
-          String(item?.bankId),
+          String(item.bankId),
           item,
         ])
       ).values()
@@ -128,10 +132,18 @@ export default function AddBankAccount() {
 
     return uniqueBanks.map((item) => ({
       ...item,
-      label: `${item?.displayName || ""} - ${item?.bankName || "Bank"}`,
-      value: item?.bankId,
+      label: [
+        item?.displayName,
+        item?.bankName,
+        item?.accountNumber
+          ? `•••• ${String(item.accountNumber).slice(-4)}`
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" - "),
+      value: item.bankId,
     }));
-  }, [newtransactionList?.bankList]);
+  }, [newtransactionList?.bankV2Lists]);
 
 
   console.log("linkedBankOptions", linkedBankOptions);
@@ -1469,7 +1481,6 @@ export default function AddBankAccount() {
                                 </TouchableOpacity>
                               );
                             })}
-
                             {linkedBankOptions?.length === 0 && (
                               <Text style={{ padding: 12, color: "#666" }}>
                                 No bank accounts available

@@ -72,6 +72,7 @@ export default function ReportsAllFilterBottomSheet({
     const [selectedType, setSelectedType] = useState(null)
     const [selectedCreatedBy, setSelectedCreatedBy] = useState(null)
     const [selectedMode, setSelectedMode] = useState(null)
+    const [dropdownResetKey, setDropdownResetKey] = useState(0);
 
     const [startDate, setStartDate] = useState(null);
     const [endDate, setEndDate] = useState(null);
@@ -375,7 +376,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                         <Text style={styles.label}>Bill Status</Text>
 
-                                        <FilterDropdown
+                                        <FilterDropdown 
+                                         key={`bill-status-${dropdownResetKey}`}
                                             options={filters?.paymentStatus}
                                             value={selectedStatus}
                                             multiSelect={true}
@@ -392,7 +394,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                         <Text style={styles.label}>Period</Text>
 
-                                        <FilterDropdown
+                                        <FilterDropdown 
+                                         key={`bill-period-${dropdownResetKey}`}
                                             options={filters?.periods}
                                             value={selectedPeriod}
                                             // onSelect={(value) => {
@@ -463,7 +466,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                         <Text style={styles.label}>Type</Text>
 
-                                        <FilterDropdown
+                                        <FilterDropdown 
+                                        key={`invoice-type-${dropdownResetKey}`}
                                             options={filters?.invoiceTypes}
                                             value={selectedType}
                                             multiSelect={true}
@@ -478,6 +482,7 @@ export default function ReportsAllFilterBottomSheet({
                                         <Text style={styles.label}>Created By</Text>
 
                                         <FilterDropdown
+                                        key={`invoice-created-by-${dropdownResetKey}`}
                                             options={filters?.createdBy}
                                             value={selectedCreatedBy}
                                             multiSelect={true}
@@ -492,6 +497,7 @@ export default function ReportsAllFilterBottomSheet({
 
                                         <Text style={styles.label}>Mode</Text>
                                         <FilterDropdown
+                                        key={`invoice-mode-${dropdownResetKey}`}
                                             options={filters?.invoiceModes}
                                             value={selectedMode}
                                             multiSelect={true}
@@ -610,6 +616,7 @@ export default function ReportsAllFilterBottomSheet({
 
 
                                 <FilterDropdown
+                                key={`receipt-payment-mode-${dropdownResetKey}`}
                                     title="Payment Mode"
                                     options={
                                         filters?.paymentMode
@@ -628,6 +635,7 @@ export default function ReportsAllFilterBottomSheet({
 
 
                                 <FilterDropdown
+                                key={`receipt-invoice-type-${dropdownResetKey}`}
                                     title="Invoice Type"
                                     options={
                                         filters?.invoiceType
@@ -644,7 +652,8 @@ export default function ReportsAllFilterBottomSheet({
                                 />
 
 
-                                <FilterDropdown
+                                <FilterDropdown 
+                                key={`receipt-collected-by-${dropdownResetKey}`}
                                     title="Collected By"
                                     options={
                                         filters?.collectedBy
@@ -673,6 +682,7 @@ export default function ReportsAllFilterBottomSheet({
                                 <Text style={styles.label}> Tenants</Text>
 
                                 <FilterDropdown
+                                key={`tenant-${dropdownResetKey}`}
                                     options={tenantList}
                                     value={selectedTenants}
                                     onSelect={(value) => {
@@ -689,6 +699,7 @@ export default function ReportsAllFilterBottomSheet({
                                 <Text style={styles.label}>Tenant Status</Text>
 
                                 <FilterDropdown
+                                key={`tenant-status-${dropdownResetKey}`}
                                     options={filters?.tenantStatus}
                                     value={selectedStatus}
                                     multiSelect={true}
@@ -706,6 +717,7 @@ export default function ReportsAllFilterBottomSheet({
                                 <Text style={styles.label}>Period</Text>
 
                                 <FilterDropdown
+                                key={`tenant-period-${dropdownResetKey}`}
                                     options={filters?.period}
                                     value={selectedPeriod}
                                     onSelect={(value) => {
@@ -719,6 +731,7 @@ export default function ReportsAllFilterBottomSheet({
                                 <Text style={styles.label}>Sharing Type</Text>
 
                                 <FilterDropdown
+                                key={`tenant-sharing-${dropdownResetKey}`}
                                     options={filters?.sharingType}
                                     value={selectedSharing}
                                     multiSelect={true}
@@ -732,7 +745,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                 <Text style={styles.label}>Floor</Text>
 
-                                <FilterDropdown
+                                <FilterDropdown 
+                                key={`tenant-floor-${dropdownResetKey}`}
                                     options={filters?.floor}
                                     value={selectedFloor}
                                     multiSelect={true}
@@ -754,7 +768,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                 <Text style={styles.label}>Room</Text>
 
-                                <FilterDropdown
+                                <FilterDropdown 
+                                key={`tenant-room-${dropdownResetKey}`}
                                     options={filteredRooms}
                                     value={selectedRoom}
                                     multiSelect={true}
@@ -785,7 +800,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                 <Text style={styles.label}>Category</Text>
 
-                                <FilterDropdown
+                                <FilterDropdown 
+                                key={`expense-category-${dropdownResetKey}`}
                                     options={filters?.category}
                                     value={category}
                                     multiSelect={true}
@@ -802,7 +818,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                 <Text style={styles.label}>SubCategory</Text>
 
-                                <FilterDropdown
+                                <FilterDropdown 
+                                key={`expense-subcategory-${dropdownResetKey}`}
                                     options={filteredSubCategory}
                                     value={subCategory}
                                     multiSelect={true}
@@ -817,6 +834,7 @@ export default function ReportsAllFilterBottomSheet({
                                 <Text style={styles.label}>Period</Text>
 
                                 <FilterDropdown
+                                key={`expense-period-${dropdownResetKey}`}
                                     options={filters?.period}
                                     value={selectedPeriod}
                                     onSelect={(value) => {
@@ -829,7 +847,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                 <Text style={styles.label}>Payment Mode</Text>
 
-                                <FilterDropdown
+                                <FilterDropdown 
+                                key={`expense-payment-mode-${dropdownResetKey}`}
                                     options={filters?.paymentMode}
                                     value={selectedMode}
                                     multiSelect={true}
@@ -843,7 +862,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                 <Text style={styles.label}>Paid to</Text>
 
-                                <FilterDropdown
+                                <FilterDropdown 
+                                key={`expense-vendor-${dropdownResetKey}`}
                                     options={filters?.vendors}
                                     value={vendor}
                                     onSelect={(value) => {
@@ -864,7 +884,8 @@ export default function ReportsAllFilterBottomSheet({
 
                                 <Text style={styles.label}>Created by</Text>
 
-                                <FilterDropdown
+                                <FilterDropdown 
+                                key={`expense-created-by-${dropdownResetKey}`}
                                     options={filters?.createdBy}
                                     value={selectedCreatedBy}
                                     multiSelect={true}
@@ -943,7 +964,7 @@ export default function ReportsAllFilterBottomSheet({
                             // Clear errors
                             setError("");
                             setErrorMsg("");
-
+                            setDropdownResetKey(prev => prev + 1);
                             // Parent reset / API reset
                             onReset();
                         }}

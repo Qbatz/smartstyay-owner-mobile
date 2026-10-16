@@ -97,13 +97,19 @@ export default function CreditCardPayment({
     }
   }, [activeHostelId])
 
-  const creditCardOptions =
-    creditCardInitialize?.creditCards?.map((item) => ({
-      id: item.bankId,
-      paymentMethodId: item.paymentMethodId,
-      name: `${item.displayName} - Credit Card`,
-      ...item,
-    })) || [];
+ 
+const creditCardOptions =
+  creditCardInitialize?.availableCreditCards?.map((item) => ({
+    id: item?.cardId,
+    name: item?.bankName || item?.cardNetwork,
+    displayName: item?.bankName || item?.cardNetwork,
+    cardId: item?.cardId,
+    cardNumber: item?.cardNumber,
+    cardNetwork: item?.cardNetwork,
+    payableAmount: item?.payableAmount,
+    ...item,
+  })) || [];
+
 
   const paymentMethodOptions =
     creditCardInitialize?.otherPaymentMethods?.map((item) => ({
@@ -260,7 +266,7 @@ export default function CreditCardPayment({
     if (!validateForm()) return;
 
     const payload = {
-      creditCardAccount: selectedCreditCard?.paymentMethodId,
+      creditCardAccount: selectedCreditCard?.cardId,
       paymentMethod: selectedPaymentMethod?.bankId,
       transactionId,
       amount: Number(paidAmount),
@@ -776,9 +782,10 @@ export default function CreditCardPayment({
                         </View>
                       )}
 
-                      <Text style={styles.selectedText}>
-                        {selectedPaymentMethod.displayName}
-                      </Text>
+                    <Text style={styles.selectedText}>
+  {selectedCreditCard?.displayName} - ****{" "}
+  {selectedCreditCard?.cardNumber}
+</Text>
                     </>
                   ) : (
                     <Text style={{ color: "#777" }}>
@@ -845,7 +852,7 @@ export default function CreditCardPayment({
                                   : styles.dropdownText
                               }
                             >
-                              {item.displayName}
+                           {item?.displayName} - **** {item?.cardNumber}
                             </Text>
                           </View>
                         </TouchableOpacity>
