@@ -421,11 +421,25 @@ export default function AddPaymentMethod() {
       console.log("PAYLOAD =>", payload);
       console.log("QR IMAGE =>", qrImage);
 
+
+const selectedQrImage = type === "upi" && qrImage?.uri
+  ? {
+      uri: qrImage.uri,
+      type: qrImage.type || "image/jpeg",
+      name: qrImage.fileName || `qr_${Date.now()}.jpg`,
+    }
+  : null;
+
+console.log("QR UPLOAD FILE =>", selectedQrImage);
+
+
+
+
       const res = await createPaymentMethod(
         activeHostelId,
         bankId,
         payload,
-        type === "upi" ? qrImage : null
+        type === "upi" ? selectedQrImage : null
       );
 
       if (res.success) {

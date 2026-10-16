@@ -285,7 +285,7 @@ export default function BankingProvider({ children }) {
 
         const transactions = res?.data || []
 
-        setBankList(res?.data?.bankList)
+        setBankList(res?.data?.bankV2Lists)
         setNewTransactionList(transactions);
         setNewOnlyTransactionList(prev => [...prev, ...res?.data?.transactions])
 
