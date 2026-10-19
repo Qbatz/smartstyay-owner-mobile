@@ -35,6 +35,10 @@ export default function TransactionSheet({
       canDeleteModule: canDeleteBanking,
     } = useHasPermission("Banking")
 
+    const isCreditCardAccount =
+  bankDetails?.accountType === "CARD" &&
+  bankDetails?.cardType === "CREDIT_CARD";
+
   const translateY = useRef(
     new Animated.Value(SHEET_HEIGHT)
   ).current;
@@ -48,7 +52,8 @@ export default function TransactionSheet({
   }, [visible]);
 
 
-
+  console.log("bankDetails", bankDetails);
+  
 
 
   const closeSheet = () => {
@@ -120,6 +125,7 @@ export default function TransactionSheet({
       title: "Credit Card Payment",
       icon: require("../../../Assets/Images/CreditCardIcon.png"),
       screen: "CreditCardPayment",
+       disabled: !isCreditCardAccount,
       // disabled: !canWriteBanking
     },
     {
