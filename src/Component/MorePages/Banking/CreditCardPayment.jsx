@@ -97,54 +97,89 @@ export default function CreditCardPayment({
     }
   }, [activeHostelId])
 
- 
-const creditCardOptions =
-  creditCardInitialize?.availableCreditCards?.map((item) => ({
-    id: item?.cardId,
-    name: item?.bankName || item?.cardNetwork,
-    displayName: item?.bankName || item?.cardNetwork,
-    cardId: item?.cardId,
-    cardNumber: item?.cardNumber,
-    cardNetwork: item?.cardNetwork,
-    payableAmount: item?.payableAmount,
-    ...item,
-  })) || [];
+  const { bankDetails } = route?.params || {};
 
+  const selectedBankId = bankDetails?.bankId;
 
-  const paymentMethodOptions =
-    creditCardInitialize?.otherPaymentMethods?.map((item) => ({
-      id: item.bankId,
-      paymentMethodId: item.paymentMethodId,
-      name:
-        item.accountType === "CASH"
-          ? item.displayName
-          : `${item.displayName} - ${item.bankName}`,
+  const creditCardOptions = (
+    creditCardInitialize?.availableCreditCards || []
+  )
+    .filter(
+      item => item?.cardId === selectedBankId
+    )
+    .map(item => ({
       ...item,
-    })) || [];
+      id: item?.cardId,
+      displayName:
+        item?.displayName ||
+        item?.bankName ||
+        item?.cardNetwork ||
+        (item?.cardNumber
+          ? `Credit Card - **** ${item.cardNumber}`
+          : "Credit Card"),
+    }));
 
 
+  // const creditCardOptions =
+  //   (creditCardInitialize?.availableCreditCards || []).map((item) => ({
+  //     ...item,
+  //     id: item?.cardId,
+  //     cardId: item?.cardId,
+  //     displayName:
+  //       item?.displayName ||
+  //       item?.bankName ||
+  //       item?.cardNetwork ||
+  //       (item?.cardNumber
+  //         ? `Credit Card - **** ${item?.cardNumber}`
+  //         : "Credit Card"),
+  //   }));
 
 
-  // const paymentOptions =
-  //   vendorSettlementInitialize?.banks?.map((b) => ({
-  //     id: b?.bankId,
-  //     name: `${b?.holderName} - ${b?.bankName}`,
-  //   })) || [];
+  const paymentMethodOptions = (creditCardInitialize?.otherPaymentMethods || [])
+    .filter(item => item?.bankId !== selectedCreditCard?.cardId)
+    .map((item, index) => ({
+      ...item,
+
+      id: `${item?.bankId}_${item?.paymentMethodId ?? item?.accountType}_${index}`,
+
+      displayName:
+        item?.displayName ||
+        item?.bankName ||
+        item?.cardHolderName ||
+        item?.accountType ||
+        "Payment Method",
+    }));
 
 
+  useEffect(() => {
+    if (!selectedBankId || !creditCardInitialize?.availableCreditCards) {
+      return;
+    }
+
+    const matchedCard =
+      creditCardInitialize.availableCreditCards.find(
+        item => item?.cardId === selectedBankId
+      );
+
+    if (matchedCard) {
+      setSelectedCreditCard({
+        ...matchedCard,
+        id: matchedCard.cardId,
+        displayName:
+          matchedCard?.displayName ||
+          matchedCard?.bankName ||
+          matchedCard?.cardNetwork ||
+          (matchedCard?.cardNumber
+            ? `Credit Card - **** ${matchedCard?.cardNumber}`
+            : "Credit Card"),
+      });
+    } else {
+      setSelectedCreditCard(null);
+    }
+  }, [selectedBankId, creditCardInitialize?.availableCreditCards]);
 
 
   const today = dayjs();
-
-  // const isDisabledDate = (d) => {
-  //     if (!d) return false;
-
-  //     if (d.isAfter(today, "day")) return true;
-
-  //     if ( minDate && d.isBefore(minDate, "day")) return true;
-
-  //     return false;
-  // }
 
 
   const isDisabledDate = (d) => {
@@ -270,7 +305,7 @@ const creditCardOptions =
       paymentMethod: selectedPaymentMethod?.bankId,
       transactionId,
       amount: Number(paidAmount),
-      settlementDate: dayjs(purchaseDate).format("YYYY-MM-DD"),
+      settlementDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
       description,
     };
 
@@ -307,155 +342,7 @@ const creditCardOptions =
 
 
 
-  //    const payload = {
-  //   paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
 
-  //   creditCardBankId: selectedCreditCard?.bankId,
-  //   creditCardPaymentMethodId:
-  //     selectedCreditCard?.paymentMethodId,
-
-  //   paymentBankId:
-  //     selectedPaymentMethod?.bankId,
-
-  //   paymentMethodId:
-  //     selectedPaymentMethod?.paymentMethodId,
-
-  //   amount: Number(paidAmount),
-  //   notes: description,
-  // };
-
-
-
-
-
-
-  //   const autoDistributeAmount = (totalPaid) => {
-  //     if (!isVendorSettlement) return;
-
-  //     const expenses = vendorSettlementInitialize?.expenses || [];
-  //     let remaining = Number(totalPaid) || 0;
-  //     const newAmounts = {};
-
-  //     expenses.forEach((exp) => {
-  //       const maxAllowed = Number(exp.totalBalance || 0);
-  //       const toApply = Math.min(remaining, maxAllowed);
-  //       newAmounts[exp.expenseId] = toApply > 0 ? String(toApply) : "";
-  //       remaining -= toApply;
-  //     });
-
-  //     setVendorAppliedAmounts(newAmounts);
-  //   };
-
-  //   const handleSubmit = async () => {
-
-  //     if (!validateForm()) return;
-
-  //       if (isApplyTriggeredRef.current) return
-  //     isApplyTriggeredRef.current = true
-
-  //      try {
-
-  //     let response;
-
-
-
-  //     if (isVendorSettlement) {
-  //       const payload = {
-  //         images: attachments?.map(item => item?.uri) || [],
-  //         payLoads: {
-  //           paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-  //           bankId: String(selectedMode?.id),
-  //           paymentMethod: String(selectedMode?.id),
-  //           transactionId,
-  //           notes: description,
-  //           expenses: vendorExpensesPayload,
-  //         },
-  //       };
-
-  //       response = await settleVendorPayment(
-  //         vendor?.id,
-  //         payload,
-  //       );
-
-  //       if (response?.success) {
-  //         setModalType("success");
-  //         setModalMessage("Created Succesfully");
-  //         setShowSuccessModal(true)
-
-  //         const res = await getVendorDetails(vendor?.id)
-
-  //         setTimeout(() => {
-  //           setShowSuccessModal(false)
-  //           navigation.goBack()
-  //         }, 1500);
-  //       }
-  //       else {
-
-  //         setModalType("error")
-  //         setModalMessage(response?.message || "Something went wrong")
-  //         setShowSuccessModal(true)
-
-  //         setTimeout(() => {
-  //           setShowSuccessModal(false)
-  //         }, 1500);
-  //       }
-
-  //     } else {
-
-  //       const payload = {
-  //         images: attachments?.map(item => item?.uri) || [],
-  //         payLoads: {
-  //           paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-  //           bankId: String(selectedMode?.id),
-  //           paymentMethod: String(selectedMode?.id),
-  //           transactionId,
-  //           notes: description,
-  //           paidAmount: Number(paidAmount),
-  //         },
-  //       };
-
-  //       console.log(
-  //         "EXPENSE SETTLE PAYLOAD",
-  //         JSON.stringify(payload, null, 2)
-  //       );
-
-  //       response = await settleExpense(
-  //         expense?.expenseId,
-  //         payload
-  //       );
-
-  //       if (response?.success) {
-  //         setModalType("success");
-  //         setModalMessage("Created Succesfully");
-  //         setShowSuccessModal(true)
-
-  //         const result = await GetExpenseById(activeHostelId, expense?.expenseId);
-
-  //         setTimeout(() => {
-  //           setShowSuccessModal(false)
-  //           navigation.goBack()
-  //         }, 1500);
-  //       }
-  //       else {
-
-  //         setModalType("error")
-  //         setModalMessage(response?.message || "Something went wrong")
-  //         setShowSuccessModal(true)
-
-  //         setTimeout(() => {
-  //           setShowSuccessModal(false)
-  //         }, 1500);
-  //       }
-  //     }
-  //   }
-  //    catch (error) {
-  //     console.log(error);
-  //   } finally {
-  //     isApplyTriggeredRef.current = false;
-  //   }
-
-
-  //   }
 
 
 
@@ -510,13 +397,11 @@ const creditCardOptions =
 
               <Text style={styles.label}>
                 Credit Card Account
-                {/* {isVendorSettlement
-              ? "Vendor / Business Name *"
-              : "Expense Name *"} */}
               </Text>
 
               <TouchableOpacity
                 style={styles.inputBox}
+                disabled={creditCardOptions?.length <= 1}
                 onPress={() => {
                   setPaymentMethodOpen(false);
                   setCreditCardOpen(prev => !prev);
@@ -584,12 +469,11 @@ const creditCardOptions =
                     showsVerticalScrollIndicator={false}
                   >
                     {creditCardOptions.map(item => {
-                      const isSelected =
-                        selectedCreditCard?.paymentMethodId === item.paymentMethodId;
+                      const isSelected = selectedCreditCard?.cardId === item?.cardId;
 
                       return (
                         <TouchableOpacity
-                          key={item.paymentMethodId}
+                          key={item?.cardId}
                           style={[
                             styles.dropdownRow,
                             isSelected && styles.dropdownRowSelected,
@@ -597,10 +481,14 @@ const creditCardOptions =
                           onPress={() => {
                             setSelectedCreditCard(item);
                             setCreditCardOpen(false);
+                            setSelectedPaymentMethod((previous) =>
+                              previous?.bankId === item.cardId ? null : previous
+                            );
 
-                            setErrors(prev => ({
+                            setErrors((prev) => ({
                               ...prev,
                               creditCard: "",
+                              paymentMethod: "",
                             }));
                           }}
                         >
@@ -782,10 +670,12 @@ const creditCardOptions =
                         </View>
                       )}
 
-                    <Text style={styles.selectedText}>
-  {selectedCreditCard?.displayName} - ****{" "}
-  {selectedCreditCard?.cardNumber}
-</Text>
+                      <Text style={styles.selectedText}>
+                        {selectedPaymentMethod?.displayName}
+                        {selectedPaymentMethod?.cardNumber
+                          ? ` - **** ${selectedPaymentMethod?.cardNumber}`
+                          : ""}
+                      </Text>
                     </>
                   ) : (
                     <Text style={{ color: "#777" }}>
@@ -809,18 +699,17 @@ const creditCardOptions =
                       No mode found
                     </Text>
                   ) : (
-                    paymentMethodOptions.map(item => {
+                    (paymentMethodOptions.map(item => {
                       const isSelected =
-                        selectedPaymentMethod?.paymentMethodId === item.paymentMethodId;
+                        selectedPaymentMethod?.id === item?.id;
 
                       return (
                         <TouchableOpacity
-                          key={item.paymentMethodId}
+                          key={item?.id}
                           style={[
                             styles.dropdownRow,
                             isSelected && styles.dropdownRowSelected,
                           ]}
-
                           onPress={() => {
                             setSelectedPaymentMethod(item);
                             setPaymentMethodOpen(false);
@@ -831,19 +720,17 @@ const creditCardOptions =
                             }));
                           }}
                         >
-                          <View style={{ flexDirection: "row", alignItems: "center" }}>
-                            {item.image ? (
-                              <Image
-                                source={{ uri: item.image }}
-                                style={styles.logo}
-                              />
-                            ) : (
-                              <View style={styles.initialCircle}>
-                                <Text style={styles.initialText}>
-                                  {item.displayName?.charAt(0)?.toUpperCase()}
-                                </Text>
-                              </View>
-                            )}
+                          <View
+                            style={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                            }}
+                          >
+                            <View style={styles.initialCircle}>
+                              <Text style={styles.initialText}>
+                                {item?.displayName?.charAt(0)?.toUpperCase()}
+                              </Text>
+                            </View>
 
                             <Text
                               style={
@@ -852,12 +739,15 @@ const creditCardOptions =
                                   : styles.dropdownText
                               }
                             >
-                           {item?.displayName} - **** {item?.cardNumber}
+                              {item?.displayName}
+                              {item?.cardNumber
+                                ? ` - **** ${item?.cardNumber}`
+                                : ""}
                             </Text>
                           </View>
                         </TouchableOpacity>
                       );
-                    })
+                    }))
                   )}
                 </ScrollView>
               </View>
@@ -911,6 +801,7 @@ const creditCardOptions =
             >
               <TouchableOpacity
                 style={styles.cancelBtn}
+                  onPress={() => navigation.goBack()}
               >
                 <Text style={{ fontFamily: "Gilroy-Semibold" }}>
                   Cancel
