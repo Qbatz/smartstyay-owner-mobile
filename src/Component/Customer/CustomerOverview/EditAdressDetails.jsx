@@ -32,7 +32,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Loader from "../../Loader/Loader";
 const { height } = Dimensions.get("window");
-const SHEET_HEIGHT = height * 0.85;
+const SHEET_HEIGHT = height * 0.80;
 
 const STATES = [
   "Tamil Nadu",
@@ -365,6 +365,7 @@ export default function EditManualAddressSheet({
             },
           ]}
         >
+                   <View style={styles.handle} />
           <KeyboardAvoidingView
             style={{ flex: 1 }}
             behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -579,7 +580,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#D1D5DB",
     borderRadius: 3,
     alignSelf: "center",
-    marginBottom: 12,
+    // marginBottom: 12,
   },
   title: {
     fontSize: 18,

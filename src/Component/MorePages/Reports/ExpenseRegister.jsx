@@ -64,6 +64,8 @@ const ExpenseRegister = ({ navigation }) => {
   const [allSelectedMonth, setAllSelectedMonth] = useState("")
   const [paymentModeValue, setPaymentModeValue] = useState([])
   const [createdValue, setCreatedByValue] = useState([])
+  const [selectedStartDate,setSelectedStartDate]=useState("")
+  const [selectedEndDate, setSelectedEndDate]=useState("")
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -181,8 +183,15 @@ const ExpenseRegister = ({ navigation }) => {
     };
 
     GetExpenseRegisterReport(activeHostelId, filters).then(res => {
+      console.log("filteredExpense",res)
+
       if (res.success) {
         setExpenseData(res?.data);
+        setSelectedStartDate(res?.data?.summary?.startDate)
+        setSelectedEndDate(res?.data?.summary?.endDate)
+      }else{
+         setSelectedStartDate("")
+        setSelectedEndDate("")
       }
     });
   }
@@ -252,6 +261,8 @@ const ExpenseRegister = ({ navigation }) => {
 
     const filters = {
       period: selectedMonth,
+      startDate: selectedStartDate,
+      endDate: selectedEndDate,
       category: finalCategory.length ? finalCategory : undefined,
       subCategory: finalSubCategory.length ? finalSubCategory : undefined,
       paymentMode: finalPaymentMode.length ? finalPaymentMode : undefined,
@@ -260,26 +271,27 @@ const ExpenseRegister = ({ navigation }) => {
       page: 1,
       size: 10,
     };
-    if (finalMonth === "THIS_MONTH") {
-      filters.startDate = dayjs().startOf("month").format("DD-MM-YYYY");
-      filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
-    }
+    // if (finalMonth === "THIS_MONTH") {
+    //   filters.startDate = dayjs().startOf("month").format("DD-MM-YYYY");
+    //   filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
+    // }
 
-    if (finalMonth === "LAST_MONTH") {
-      filters.startDate = dayjs().subtract(1, "month").startOf("month").format("DD-MM-YYYY");
-      filters.endDate = dayjs().subtract(1, "month").endOf("month").format("DD-MM-YYYY");
-    }
+    // if (finalMonth === "LAST_MONTH") {
+    //   filters.startDate = dayjs().subtract(1, "month").startOf("month").format("DD-MM-YYYY");
+    //   filters.endDate = dayjs().subtract(1, "month").endOf("month").format("DD-MM-YYYY");
+    // }
 
-    if (finalMonth === "LAST_3_MONTHS") {
-      filters.startDate = dayjs().subtract(2, "month").startOf("month").format("DD-MM-YYYY");
-      filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
-    }
+    // if (finalMonth === "LAST_3_MONTHS") {
+    //   filters.startDate = dayjs().subtract(2, "month").startOf("month").format("DD-MM-YYYY");
+    //   filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
+    // }
 
-    if (finalMonth === "LAST_6_MONTHS") {
-      filters.startDate = dayjs().subtract(5, "month").startOf("month").format("DD-MM-YYYY");
-      filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
-    }
+    // if (finalMonth === "LAST_6_MONTHS") {
+    //   filters.startDate = dayjs().subtract(5, "month").startOf("month").format("DD-MM-YYYY");
+    //   filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
+    // }
 
+    console.log("karunas",filters)
 
     const res = await downloadExpenseReport(activeHostelId, filters)
 
@@ -287,7 +299,7 @@ const ExpenseRegister = ({ navigation }) => {
 
 
     if (res?.success && res?.url) {
-      await CommonModule.downloadAndViewDocument(res.url)
+      // await CommonModule.downloadAndViewDocument(res.url)
     }
   }
 
@@ -705,6 +717,8 @@ const ExpenseRegister = ({ navigation }) => {
           setTempMonth("");
           setSelectedMonth("");
           setMonthSheetOpen(false);
+          setSelectedStartDate("")
+          setSelectedEndDate("")
           applyExpenseFilters("", selectedCategory, selectedPayment);
         }}
         onApply={() => {
@@ -807,6 +821,8 @@ const ExpenseRegister = ({ navigation }) => {
           setPaymentModeValue([]), setCreatedByValue([])
           setVendorValue("")
           setAllFilterSheet(false)
+           setSelectedStartDate("")
+          setSelectedEndDate("")
           applyExpenseFilters("", [], [], [], [], "")
         }}
         onApply={() => {

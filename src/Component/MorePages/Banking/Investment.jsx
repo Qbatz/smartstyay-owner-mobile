@@ -238,7 +238,7 @@ export default function Investment({
         paymentMethodId: "",
         amount: Number(paidAmount),
         description: description?.trim(),
-        transactionDate: dayjs(purchaseDate).format("YYYY-MM-DD"),
+        transactionDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
         transactionId: transactionId?.trim(),
         investorName: route.params?.bankDetails?.responsiblePersonName || "",
       };

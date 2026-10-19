@@ -150,6 +150,8 @@ export default function BillsDesign({ route }) {
   const [showPayments, setShowPayments] = useState(false);
   const [showDiscountSheet, setShowDiscountSheet] = useState(false);
 
+  const [showBillDetails, setShowBillDetails] = useState(false);
+  const [selectedBill, setSelectedBill] = useState(null);
 
   const {
     canWriteModule: canWriteInvoice,
@@ -363,6 +365,7 @@ export default function BillsDesign({ route }) {
 
   const [showRetainer, setShowRetainer] = useState(false)
 
+
   useEffect(() => {
     Animated.timing(unpaidRotate, {
       toValue: openUnpaid ? 1 : 0,
@@ -519,7 +522,7 @@ export default function BillsDesign({ route }) {
       showReceiptDetails ||
       showRecordPayment ||
       showRefundPayment ||
-      showRecuringBillDetail
+      showRecuringBillDetail || statusSheetOpen || typeSheetOpen || modesheetOpen
     ) {
       setShowTabBar(false)
     } else {
@@ -530,7 +533,7 @@ export default function BillsDesign({ route }) {
     showReceiptDetails,
     showRecordPayment,
     showRefundPayment,
-    showRecuringBillDetail])
+    showRecuringBillDetail, statusSheetOpen, typeSheetOpen, modesheetOpen])
 
 
   useLayoutEffect(() => {
@@ -779,8 +782,7 @@ export default function BillsDesign({ route }) {
   console.log("BillDetails", BillDetails);
 
 
-  const [showBillDetails, setShowBillDetails] = useState(false);
-  const [selectedBill, setSelectedBill] = useState(null);
+
 
   const getStatusStyle = (status) => {
     switch (status) {
@@ -2688,7 +2690,7 @@ export default function BillsDesign({ route }) {
       );
 
       console.log("selectedRefundPayment", selectedRefundPayment);
-      
+
 
       const payload = {
         refundAmount: String(refundAmount),
@@ -2700,7 +2702,7 @@ export default function BillsDesign({ route }) {
       };
 
       console.log("refundpayload", payload);
-      
+
 
       const res = await CreateRefund({
         hostelId: activeHostelId,
@@ -3408,11 +3410,14 @@ export default function BillsDesign({ route }) {
                                 </View>
                               </ScrollView>
 
-                              <TouchableOpacity onPress={handleResetFilters}>
-                                <Text style={styles.resetTextSmall}>
-                                  Reset
-                                </Text>
-                              </TouchableOpacity>
+                              {(appliedFilters?.createdBy.length > 0 || appliedFilters?.modes.length > 0 || appliedFilters?.paymentStatus?.length > 0 ||
+                                appliedFilters?.type.length > 0 || appliedFilters?.endDate != null || appliedFilters?.startDate != null) &&
+                                <TouchableOpacity onPress={handleResetFilters}>
+                                  <Text style={styles.resetTextSmall}>
+                                    Reset
+                                  </Text>
+                                </TouchableOpacity>
+                              }
 
                             </View>
                           )}
@@ -4207,12 +4212,12 @@ export default function BillsDesign({ route }) {
 
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
-                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Refundable Advance</Text>
+                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>Total Refundable</Text>
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
 
-                              ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
+                              ₹ {BillPdfdetails?.advanceItems?.availableAdvanceBalance || 0}
                               {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
@@ -4221,16 +4226,27 @@ export default function BillsDesign({ route }) {
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
                             <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>
+                              Total Recoverable
+                            </Text>
+                          </View>
+                          <View>
+                            <Text style={styles.amountValue}>
+                              ₹ {BillPdfdetails?.invoiceInfo?.totalPayable || 0}
+                            </Text>
+                          </View>
+                        </View>
+
+                        {/* <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                          <View>
+                            <Text style={{ fontSize: 13, fontFamily: "Gilroy-Medium" }}>
                               {BillPdfdetails?.invoiceInfo?.status === "PARTIAL_REFUND" ? "Refundable Rent" : "Payable Rent"}</Text>
                           </View>
                           <View>
                             <Text style={styles.amountValue}>
-
                               ₹ {BillPdfdetails?.currentMonthRentInfo?.currentMonthPayableAmount || 0}
-                              {/* ₹ {pay?.amount ? Number(pay.amount).toFixed(2) : "0.00"} */}
                             </Text>
                           </View>
-                        </View>
+                        </View> */}
 
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
@@ -4246,6 +4262,31 @@ export default function BillsDesign({ route }) {
                             </Text>
                           </View>
                         </View>
+
+                        {BillPdfdetails?.deductionsInfo?.listDeductions?.map(
+                          (item, index) => (
+                            <View
+                              key={`${item?.item}-${index}`}
+                              style={{
+                                marginTop: 10,
+                                flexDirection: "row",
+                                justifyContent: "space-between",
+                              }}
+                            >
+                              <Text
+                                style={{
+                                  fontSize: 13,
+                                  fontFamily: "Gilroy-Medium",
+                                  color: "#6B7280",
+                                }}
+                              >
+                                {item?.item
+                                  ? `${item?.item.charAt(0).toUpperCase()}${item?.item.slice(1)} - ${Number(item?.amount || 0).toLocaleString("en-IN")}`
+                                  : "-"}
+                              </Text>
+                            </View>
+                          )
+                        )}
 
                         <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                           <View>
@@ -7366,7 +7407,7 @@ export default function BillsDesign({ route }) {
 
 
                     {/* TRANSACTION ID */}
-                  <Text style={[styles.label, { marginTop: 7 }]}>Transaction ID</Text>
+                    <Text style={[styles.label, { marginTop: 7 }]}>Transaction ID</Text>
                     <TextInput
                       style={styles.input}
                       placeholder="Enter transaction ID"
@@ -7578,6 +7619,9 @@ export default function BillsDesign({ route }) {
                       setType([]);
                       setMode([]);
                       setFilterError("")
+                      setShowFilter(false)
+
+                      handleResetFilters()
                     }}
                   >
                     <Text style={styles.resetBtnText}>Reset All</Text>
@@ -7996,6 +8040,15 @@ export default function BillsDesign({ route }) {
               setTempStatus([]);
               setBillStatus([]);
               setStatusSheetOpen(false);
+              setFromDate(null);
+              setToDate(null);
+              setBillStatus([]);
+              setType([]);
+              setMode([]);
+              setCreatedBy([]);
+
+              setAppliedFilters(null);
+              setFilterError("")
 
               await applyTopFilters({
                 paymentStatus: [],
@@ -8033,6 +8086,15 @@ export default function BillsDesign({ route }) {
               setTempType([]);
               setType([]);
               setTypeSheetOpen(false);
+              setFromDate(null);
+              setToDate(null);
+              setBillStatus([]);
+              setType([]);
+              setMode([]);
+              setCreatedBy([]);
+
+              setAppliedFilters(null);
+              setFilterError("")
 
               await applyTopFilters({
                 paymentStatus: billStatus,
@@ -8073,6 +8135,15 @@ export default function BillsDesign({ route }) {
               setTempmode([]);
               setMode([]);
               setModeSheetOpen(false);
+              setFromDate(null);
+              setToDate(null);
+              setBillStatus([]);
+              setType([]);
+              setMode([]);
+              setCreatedBy([]);
+
+              setAppliedFilters(null);
+              setFilterError("")
 
               await applyTopFilters({
                 paymentStatus: billStatus,
