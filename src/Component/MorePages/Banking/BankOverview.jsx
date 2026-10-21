@@ -119,27 +119,28 @@ export default function BankOverview({ expense }) {
 <SummaryCard
   icon={RupeeIcon}
   title="Opening Balance"
-  value={overview?.openingBalance || 0}
+  value={overview?.depositAmount || 0}
   prefix="₹ "
 />
 
 <SummaryCard
   icon={PeopleIcon}
   title="inflow (Income)"
- value={overview?.depositAmount || 0}
+ value={overview?.invoiceAmount || 0}
+   prefix="₹ "
 />
 
 <SummaryCard
   icon={CategoryIcon}
   title="Outflow (Expenses)"
   value={overview?.expenseAmount || 0}
-  suffix=" %"
+  prefix="₹ "
 />
 <SummaryCard
   icon={CategoryIcon}
   title="Transfers"
   value={overview?.selfTransferAmount || 0}
-  suffix=" %"
+   prefix="₹ "
 />
 
 
@@ -167,7 +168,7 @@ export default function BankOverview({ expense }) {
 
       <InfoItem
         label="Account Holder Name"
-        value={bankDetails?.accountHolderName || "N/A"}
+        value={bankDetails?.accountHolder || "N/A"}
         icon={CategoryIcon}
       />
 
@@ -180,7 +181,7 @@ export default function BankOverview({ expense }) {
 
        <InfoItem
         label="IFSC Code"
-       value={bankDetails?.ifscCode || "N/A"}
+       value={overview?.ifscCode || "N/A"}
        icon={InfoIcon}
       />
 

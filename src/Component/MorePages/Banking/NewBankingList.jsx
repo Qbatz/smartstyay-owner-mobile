@@ -707,87 +707,84 @@ export default function NewBankingList() {
 
 
   const mappedBankList = (
-    Array.isArray(newtransactionList?.bankV2Lists)? newtransactionList?.bankV2Lists : []).map((item) => {
-    const accountType = String(item?.accountType || "").toUpperCase();
-    const cardType = String(item?.cardType || "").toUpperCase();
+    Array.isArray(newtransactionList?.bankV2Lists) ? newtransactionList?.bankV2Lists : []).map((item) => {
+      const accountType = String(item?.accountType || "").toUpperCase();
+      const cardType = String(item?.cardType || "").toUpperCase();
 
-    const isBank = accountType === "BANK";
-    const isCard = accountType === "CARD";
-    const isCreditCard = isCard && cardType === "CREDIT_CARD";
-    const isDebitCard = isCard && cardType === "DEBIT_CARD";
-    const isCash = accountType === "CASH";
-    const isUpi = accountType === "UPI";
+      const isBank = accountType === "BANK";
+      const isCard = accountType === "CARD";
+      const isCreditCard = isCard && cardType === "CREDIT_CARD";
+      const isDebitCard = isCard && cardType === "DEBIT_CARD";
+      const isCash = accountType === "CASH";
+      const isUpi = accountType === "UPI";
 
-    return {
-      // Use the ID returned by the new banking API
-      id: item?.bankId,
+      return {
+        // Use the ID returned by the new banking API
+        id: item?.bankId,
 
-      type: isCard ? "CARD" : accountType,
+        type: isCard ? "CARD" : accountType,
 
-      title: isBank
-        ? item?.bankName || item?.displayName || "Bank Account"
-        : isCard
-          ? item?.displayName || "Card"
-          : isCash
-            ? item?.displayName || item?.cashAccountType || "Cash"
-            : isUpi
-              ? item?.displayName || item?.upiId || "UPI"
-              : item?.displayName || "Account",
-
-      subtitle: isBank
-        ? item?.displayName || "Bank Account"
-        : isCreditCard
-          ? "Credit Card"
-          : isDebitCard
-            ? "Debit Card"
-            : isCard
-              ? item?.cardType || "Card"
-              : isCash
-                ? item?.cashAccountType || "Cash Account"
-                : isUpi
-                  ? "UPI"
-                  : accountType,
-
-      // New API field names
-      name: item?.accountHolder || "",
-      acc: isBank
-        ? item?.accountNumber || ""
-        : isCard
-          ? item?.cardNumber || ""
-          : isUpi
-            ? item?.upiId || ""
-            : "",
-
-      balance: Number(item?.balance ?? 0),
-
-      branch: item?.branchName || "",
-      bankName: item?.bankName || "",
-      displayName: item?.displayName || "",
-      ResponsiblePerson: item?.responsiblePerson || "",
-
-      isDefaultAccount: item?.isDefaultAccount,
-      lastTransactionDate: item?.lastTransactionDate ?? null,
-      dueDate: item?.dueDate ?? null,
-
-      // Preserve the actual card type from the response
-      cardType: item?.cardType || null,
-      paymentMethod: item?.paymentMethod || null,
-      isDebitcardtrue: isDebitCard,
-      isCreditCard,
-
-      Icon: isBank
-        ? BankIcon
-        : isCash
-          ? CashIcon
+        title: isBank
+          ? `${item?.bankName || "Bank"} - ${item?.displayName || ""}`.trim()
           : isCard
-            ? CardIcon
-            : isUpi
-              ? UpiIcon
-              : BankIcon,
+            ? `${item?.displayName || "Card"} - ${isCreditCard ? "Credit Card" : "Debit Card"
+            }`
+            : isCash
+              ? item?.cashAccountType || item?.displayName || "Cash"
+              : isUpi
+                ? item?.displayName || item?.upiId || "UPI"
+                : item?.displayName || "Account",
 
-      raw: item,
-    };
-  });
+        subtitle: isBank
+          ? "Bank Account"
+          : isCard
+            ? "Card Account"
+            : isCash
+              ? "Cash Account"
+              : isUpi
+                ? "UPI"
+                : accountType,
+
+        // New API field names
+        name: item?.accountHolder || "",
+        acc: isBank
+          ? item?.accountNumber || ""
+          : isCard
+            ? item?.cardNumber || ""
+            : isUpi
+              ? item?.upiId || ""
+              : "",
+
+        balance: Number(item?.balance ?? 0),
+
+        branch: item?.branchName || "",
+        bankName: item?.bankName || "",
+        displayName: item?.displayName || "",
+        ResponsiblePerson: item?.responsiblePerson || "",
+
+        isDefaultAccount: item?.isDefaultAccount,
+        lastTransactionDate: item?.lastTransactionDate ?? null,
+        dueDate: item?.dueDate ?? null,
+
+        // Preserve the actual card type from the response
+        cardType: item?.cardType || null,
+        paymentMethod: item?.paymentMethod || null,
+        isDebitcardtrue: isDebitCard,
+        isCreditCard,
+
+        Icon: isBank
+          ? BankIcon
+          : isCash
+            ? CashIcon
+            : isCard
+              ? CardIcon
+              : isUpi
+                ? UpiIcon
+                : BankIcon,
+
+        raw: item,
+      };
+    });
 
 
 
@@ -1393,7 +1390,7 @@ export default function NewBankingList() {
                             {/* CHIPS */}
                             <View style={styles.tagRow}>
 
-                              {/* {type === "BANK" && item?.branch ? (
+                              {type === "BANK" && item?.branch ? (
                                 <View style={styles.locationChip}>
                                   <Image
                                     source={Location}
@@ -1401,18 +1398,18 @@ export default function NewBankingList() {
                                   />
 
                                   <Text numberOfLines={1}>
-                                    {item.branch}
+                                    {item?.branch}
                                   </Text>
                                 </View>
-                              ) : null} */}
+                              ) : null}
 
-                              {(type === "BANK" || type === "CARD") && item?.raw?.bankName ? (
+                              {/* {(type === "BANK" || type === "CARD") && item?.raw?.bankName ? (
                                 <View style={styles.defaultChip}>
                                   <Text style={styles.defaultChipText}>
                                     {item?.raw?.bankName}
                                   </Text>
                                 </View>
-                              ) : null}
+                              ) : null} */}
 
                               {/* UPI */}
                               {type === "BANK" && item?.upiId ? (
@@ -1424,32 +1421,32 @@ export default function NewBankingList() {
                               ) : null}
 
                               {/* CARD */}
-                              {item?.isDebitcardtrue ? (
+                              {type === "CARD" && (
                                 <View style={styles.upiChip}>
                                   <Text numberOfLines={1}>
-                                    **** **** {item?.acc?.slice(-4)}
+                                    **** **** **** {item?.acc?.slice(-4) || "----"}
                                   </Text>
                                 </View>
-                              ) : null}
+                              )}
 
                               {/* CASH */}
-                              {type === "CASH" ? (
+                              {type === "CASH" && (
                                 <View style={styles.defaultChip}>
                                   <Text style={styles.defaultChipText}>
-                                    {item?.ResponsiblePerson}
+                                    {item?.name || item?.raw?.accountHolderName || "Cash"}
                                   </Text>
                                 </View>
-                              ) : null}
+                              )}
 
                             </View>
 
                             {/* LAST TRANSACTION */}
 
-                            <Text style={styles.lastTxn}>
+                            {/* <Text style={styles.lastTxn}>
                               {type === "CARD" || item?.paymentMethod
                                 ? `Due Date : ${item?.dueDate || "-"}`
                                 : `Last Txn : ${item?.lastTransactionDate || "-"}`}
-                            </Text>
+                            </Text> */}
                             {/* <Text style={styles.lastTxn}>
                               {type === "CARD"
                                 ? "Due Date : 10 Jun 2026"
@@ -1876,7 +1873,7 @@ export default function NewBankingList() {
                 <Text style={styles.infoLabel}>Beneficiary</Text>
                 <Text style={styles.infoColon}>:</Text>
                 <Text style={styles.infoValue}>
-                  {selectedBank?.accountHolderName || "-"}
+                  {selectedBank?.accountHolder || "-"}
                 </Text>
               </View>
 
