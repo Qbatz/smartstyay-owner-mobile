@@ -49,22 +49,22 @@ export default function BankLinkedMethods() {
 
   const navigation = useNavigation()
 
-const getPaymentIcon = (item) => {
-  if (item?.paymentMethod === "UPI" && item?.upiAppImage) {
-    return { uri: item.upiAppImage };
-  }
+  const getPaymentIcon = (item) => {
+    if (item?.paymentMethod === "UPI" && item?.upiAppImage) {
+      return { uri: item.upiAppImage };
+    }
 
-  switch (item?.paymentMethod) {
-    case "Debit Card":
-      return require("../../../Assets/Images/Cardblue.png");
+    switch (item?.paymentMethod) {
+      case "Debit Card":
+        return require("../../../Assets/Images/Cardblue.png");
 
-    case "Credit Card":
-      return require("../../../Assets/Images/Cardorange.png");
+      case "Credit Card":
+        return require("../../../Assets/Images/Cardorange.png");
 
-    default:
-      return require("../../../Assets/Images/Cardblue.png");
-  }
-};
+      default:
+        return require("../../../Assets/Images/Cardblue.png");
+    }
+  };
 
   const getBadgeStyle = (method) => {
     switch (method) {
@@ -217,8 +217,12 @@ const getPaymentIcon = (item) => {
 
           <Text style={styles.subtitle}>
             {isCard
-              ? `**** **** **** ${item.cardNumber}`
-              : item.upiId || "-"}
+              ? `**** **** **** ${item?.cardNumber}`
+              : item?.paymentMethod === "BANK"
+                ? "BANK"
+                : item?.paymentMethod === "UPI"
+                  ? item?.upiId || "-"
+                  : "-"}
           </Text>
         </View>
 
@@ -235,7 +239,7 @@ const getPaymentIcon = (item) => {
                 { color: getBadgeTextColor(item.paymentMethod) },
               ]}
             >
-              {item.paymentMethod}
+              {item?.paymentMethod}
             </Text>
           </View>
 
