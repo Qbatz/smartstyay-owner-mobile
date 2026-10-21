@@ -34,13 +34,13 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>SmartStay needs access to your camera so you can capture photos.</string>
+	<string>SmartStay needs access to your camera for KYC verification and to capture room photos, belongings, and damages.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>SmartStay needs permission to save images to your photo library.</string>
+	<string>SmartStay needs permission to upload room photos, belongings, and damages.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>SmartStay needs access to your photo library so you can select images to upload.</string>
+	<string>SmartStay needs access to your photo library to upload room photos, belongings, and damages.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
