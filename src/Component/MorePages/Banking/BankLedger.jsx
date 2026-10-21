@@ -102,14 +102,28 @@ const BankLedger = () => {
   const formatDate = (date) => {
     if (!date) return "-";
 
-    const d = new Date(date.replace(" ", "T"));
+    let d;
 
-    return d.toLocaleString("en-IN", {
+    if (
+      typeof date === "string" &&
+      /^\d{2}\/\d{2}\/\d{4}$/.test(date)
+    ) {
+      const [day, month, year] = date.split("/");
+      d = new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day)
+      );
+    } else {
+      d = new Date(date);
+    }
+
+    if (Number.isNaN(d.getTime())) return "-";
+
+    return d.toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "short",
       year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 

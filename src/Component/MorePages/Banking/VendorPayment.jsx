@@ -343,11 +343,17 @@ export default function VendorPayment({
         },
       };
 
-      response = await settleVendorPayment(
-        vendorId,
-        payload,
-        // attachments  
-      );
+      // response = await settleVendorPayment(
+      //   vendorId,
+      //   payload,
+      // );
+
+       response = await settleVendorPayment(
+          activeHostelId,
+         vendorId,
+          payload,
+          attachments
+        );
 
       if (response?.success) {
         setModalType("success");

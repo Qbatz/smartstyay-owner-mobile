@@ -1629,62 +1629,131 @@ export const CustomerProvider = ({ children }) => {
     }
   }
 
-  const settleVendorPayment = async (vendorId, payload, images = []) => {
-    try {
-      setLoading(true);
+  // const settleVendorPayment = async (vendorId, payload, images = []) => {
+  //   try {
+  //     setLoading(true);
 
-      const token = await retriveData("token");
-      const axios = getAxios();
+  //     const token = await retriveData("token");
+  //     const axios = getAxios();
 
-      const formData = new FormData();
+  //     const formData = new FormData();
 
-      formData.append("payLoads", {
-        string: JSON.stringify(payload.payLoads),
-        type: "application/json",
+  //     formData.append("payLoads", {
+  //       string: JSON.stringify(payload.payLoads),
+  //       type: "application/json",
+  //     });
+
+  //     images.forEach((image, index) => {
+  //       if (image?.uri) {
+  //         formData.append("images", {
+  //           uri: image.uri,
+  //           type: image.type || "image/jpeg",
+  //           name: image.fileName || `vendor_settle_${index}.jpg`,
+  //         });
+  //       }
+  //     });
+
+  //     const res = await axios.post(
+  //       `/v2/vendors/settle/${vendorId}`,
+  //       formData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
+
+  //     if (res?.status === 200 || res?.status === 201) {
+  //       return { success: true, data: res.data };
+  //     }
+
+  //     return { success: false, message: "Vendor settlement failed" };
+  //   } catch (error) {
+  //     console.log("SETTLE VENDOR ERROR ", error?.response?.data || error);
+  //     if (error?.response?.status === 401) {
+  //       await AutoLogout(loginContext);
+  //     }
+  //     return {
+  //       success: false,
+  //       message:
+  //         error?.response?.data?.message ||
+  //         JSON.stringify(error?.response?.data) ||
+  //         "Something went wrong",
+  //     };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // }
+
+
+const settleVendorPayment = async (
+  hostelId,
+  vendorId,
+  payload,
+  images = []
+) => {
+  try {
+    setLoading(true);
+
+    const token = await retriveData("token");
+    const axios = getAxios();
+    const formData = new FormData();
+
+    formData.append(
+      "payLoads",
+      JSON.stringify(payload.payLoads)
+    );
+
+    images.forEach((image, index) => {
+      if (!image?.uri) return;
+
+      formData.append("images", {
+        uri: image.uri,
+        type: image.type || "image/jpeg",
+        name:
+          image.fileName ||
+          `vendor_settle_${index}.jpg`,
       });
+    });
 
-      images.forEach((image, index) => {
-        if (image?.uri) {
-          formData.append("images", {
-            uri: image.uri,
-            type: image.type || "image/jpeg",
-            name: image.fileName || `vendor_settle_${index}.jpg`,
-          });
-        }
-      });
-
-      const res = await axios.post(
-        `/v2/vendors/settle/${vendorId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-
-      if (res?.status === 200 || res?.status === 201) {
-        return { success: true, data: res.data };
+    const res = await axios.post(
+      `/v2/vendors/settle/${hostelId}/${vendorId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       }
+    );
 
-      return { success: false, message: "Vendor settlement failed" };
-    } catch (error) {
-      console.log("SETTLE VENDOR ERROR ", error?.response?.data || error);
-      if (error?.response?.status === 401) {
-        await AutoLogout(loginContext);
-      }
-      return {
-        success: false,
-        message:
-          error?.response?.data?.message ||
-          JSON.stringify(error?.response?.data) ||
-          "Something went wrong",
-      };
-    } finally {
-      setLoading(false);
+    return {
+      success: true,
+      data: res.data,
+    };
+  } catch (error) {
+    console.log(
+      "SETTLE VENDOR ERROR",
+      error?.response?.data || error?.message || error
+    );
+
+    if (error?.response?.status === 401) {
+      await AutoLogout(loginContext);
     }
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error?.message ||
+        "Something went wrong",
+    };
+  } finally {
+    setLoading(false);
   }
+};
+
+
 
   const RequestKYC = async (customerId) => {
     if (!customerId) {
