@@ -148,8 +148,13 @@ export default function BankingProvider({ children }) {
 
       if (res.status === 200) {
         console.log("res", res.data);
-
-        const banks = res?.data?.banks || res.data?.data || res.data?.banks || [];
+        const banks = Array.isArray(res?.data?.banks)
+          ? res?.data?.banks
+          : Array.isArray(res?.data?.listBanks)
+            ? res.data.listBanks
+            : Array.isArray(res?.data?.data)
+              ? res?.data?.data
+              : [];
 
         setBankList(banks);
 
@@ -280,21 +285,35 @@ export default function BankingProvider({ children }) {
         { params }
       );
 
+
       if (res.status === 200) {
-        console.log("All Transactions =>", res.data);
+        const responseData = res?.data ?? {};
 
-        const transactions = res?.data || []
+        const bankV2Lists = Array.isArray(responseData?.bankV2Lists)
+          ? responseData.bankV2Lists
+          : Array.isArray(responseData?.listBanks)
+            ? responseData?.listBanks
+            : [];
 
-        setBankList(res?.data?.bankV2Lists)
-        setNewTransactionList(transactions);
-        setNewOnlyTransactionList(prev => [...prev, ...res?.data?.transactions])
+        const transactions = Array.isArray(responseData?.transactions)
+          ? responseData?.transactions
+          : [];
+
+        setBankList(bankV2Lists);
+        setNewTransactionList(responseData);
+
+        setNewOnlyTransactionList((prev) => [
+          ...(Array.isArray(prev) ? prev : []),
+          ...transactions,
+        ]);
 
         return {
           success: true,
-          data: transactions,
-          response: res.data,
+          data: responseData,
+          response: responseData,
         };
       }
+
 
       return {
         success: false,
@@ -959,7 +978,7 @@ export default function BankingProvider({ children }) {
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
         getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer, getCreditCardInitialize, creditCardPayment,
-        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer , createCreditCardAccount
+        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount
       }}
 
     >

@@ -260,7 +260,25 @@ export default function NewBankingList() {
   const [transactionLoading, setTransactionLoading] = useState(false);
   const [hasMoreTransactions, setHasMoreTransactions] = useState(true);
 
-  const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+  // const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+
+    // API format: DD/MM/YYYY
+    const parsedDate = dayjs(date, "DD/MM/YYYY", true);
+
+    if (parsedDate.isValid()) {
+      return parsedDate.format("DD MMM YYYY");
+    }
+
+    // Fallback for ISO date strings
+    const fallbackDate = dayjs(date);
+
+    return fallbackDate.isValid()
+      ? fallbackDate.format("DD MMM YYYY")
+      : "-";
+  };
 
 
   const dummyData = [
@@ -688,7 +706,8 @@ export default function NewBankingList() {
 
 
 
-  const mappedBankList = (newtransactionList?.bankV2Lists || []).map((item) => {
+  const mappedBankList = (
+    Array.isArray(newtransactionList?.bankV2Lists)? newtransactionList?.bankV2Lists : []).map((item) => {
     const accountType = String(item?.accountType || "").toUpperCase();
     const cardType = String(item?.cardType || "").toUpperCase();
 
@@ -799,7 +818,7 @@ export default function NewBankingList() {
         maximumFractionDigits: 2,
       })}`,
 
-      date: dayjs(t.createdAt).format("DD MMM YYYY, hh:mm A"),
+      date: formatDate(t?.createdAt),
 
       icon: isSelfTransfer
         ? SelfTransIcon
