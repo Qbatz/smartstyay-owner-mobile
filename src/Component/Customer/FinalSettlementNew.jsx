@@ -2649,8 +2649,8 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     { color: isNegative ? "#D70000" : "#16A34A" },
                   ]}
                 >
-                  {isNegative ? "-" : ""}₹{" "}
-                  ₹ {formatAmount(Math.abs(Number(ReturnAmount) || 0))}
+                  ₹{" "}{isNegative ? "-" : ""}
+                   {formatAmount(Math.abs(Number(ReturnAmount) || 0))}
 
 
                    {/*{Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}

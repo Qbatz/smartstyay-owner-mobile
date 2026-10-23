@@ -8,6 +8,7 @@ export default function BankingProvider({ children }) {
   const [bankList, setBankList] = useState([]);
   const [transactionList, setTransactionList] = useState([]);
   const [newtransactionList, setNewTransactionList] = useState([]);
+  const [newtransactionList, setNewTransactionList] = useState([]);
   const [responsiblePersonList, setResponsiblePersonList] = useState([]);
   const [bankOverview, setBankOverview] = useState(null);
   const [bankTransactionHistory, setBankTransactionHistory] = useState([]);
@@ -18,6 +19,7 @@ export default function BankingProvider({ children }) {
   const [creditCardInitialize, setCreditCardInitialize] = useState(null)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [newOnlyTransactionList, setNewOnlyTransactionList] = useState([])
   const [newOnlyTransactionList, setNewOnlyTransactionList] = useState([])
 
   const getErrorMessage = (error) =>
@@ -148,8 +150,13 @@ export default function BankingProvider({ children }) {
 
       if (res.status === 200) {
         console.log("res", res.data);
-
-        const banks = res?.data?.banks || res.data?.data || res.data?.banks || [];
+        const banks = Array.isArray(res?.data?.banks)
+          ? res?.data?.banks
+          : Array.isArray(res?.data?.listBanks)
+            ? res.data.listBanks
+            : Array.isArray(res?.data?.data)
+              ? res?.data?.data
+              : [];
 
         setBankList(banks);
 
@@ -280,28 +287,35 @@ export default function BankingProvider({ children }) {
         { params }
       );
 
+
       if (res.status === 200) {
-        console.log("All Transactions =>", res.data);
+        const responseData = res?.data ?? {};
 
-        const transactions = res?.data || [];
-        const newTransactionList = res?.data?.transactions;
-        const currentPage = res?.data?.currentPage;
+        const bankV2Lists = Array.isArray(responseData?.bankV2Lists)
+          ? responseData.bankV2Lists
+          : Array.isArray(responseData?.listBanks)
+            ? responseData?.listBanks
+            : [];
 
-        setBankList(res?.data?.bankList)
-        setNewTransactionList(transactions);
+        const transactions = Array.isArray(responseData?.transactions)
+          ? responseData?.transactions
+          : [];
 
-        if (currentPage === 1) {
-          setNewOnlyTransactionList(newTransactionList)
-        } else {
-          setNewOnlyTransactionList(prev => [...prev, ...res?.data?.transactions])
-        }
+        setBankList(bankV2Lists);
+        setNewTransactionList(responseData);
+
+        setNewOnlyTransactionList((prev) => [
+          ...(Array.isArray(prev) ? prev : []),
+          ...transactions,
+        ]);
 
         return {
           success: true,
-          data: transactions,
-          response: res.data,
+          data: responseData,
+          response: responseData,
         };
       }
+
 
       return {
         success: false,
@@ -888,6 +902,61 @@ export default function BankingProvider({ children }) {
     }
   }
 
+
+  const createCreditCardAccount = async (hostelId, payload) => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.post(
+        `/v3/bank/${hostelId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (res?.status === 200 || res?.status === 201) {
+        return {
+          success: true,
+          data: res.data,
+          message:
+            res?.data?.message ||
+            "Credit Card Added Successfully",
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to create credit card",
+      };
+    } catch (error) {
+      console.log(
+        "CREATE CREDIT CARD STATUS =>",
+        error?.response?.status
+      );
+      console.log(
+        "CREATE CREDIT CARD ERROR =>",
+        error?.response?.data
+      );
+
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   return (
     <BankingContext.Provider
       value={{
@@ -911,7 +980,7 @@ export default function BankingProvider({ children }) {
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
         getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer, getCreditCardInitialize, creditCardPayment,
-        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer
+        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount
       }}
 
     >

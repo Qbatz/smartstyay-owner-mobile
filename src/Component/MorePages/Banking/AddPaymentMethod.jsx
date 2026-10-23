@@ -27,7 +27,7 @@ export default function AddPaymentMethod() {
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, addBanking, editBanking,
     errorMsg, getBankListByHostel, upiAppList,
-    getQrCardTypeList, getBankMethod } =
+    getQrCardTypeList, getBankMethod, createCreditCardAccount } =
     useContext(BankingContext);
 
   const { createPaymentMethod } = useContext(CustomerContext)
@@ -56,6 +56,9 @@ export default function AddPaymentMethod() {
   const [type, setType] = useState("upi");
   const navigation = useNavigation()
 
+  const [showBillingCycle, setShowBillingCycle] = useState(false);
+
+
   const [form, setForm] = useState({
     bankId: "",
     upiId: "",
@@ -80,16 +83,58 @@ export default function AddPaymentMethod() {
     getQrCardTypeList("UPI")
   }, [])
 
+  const STATIC_CARD_NETWORKS = [
+    { id: "VISA", name: "VISA" },
+    { id: "RUPAY", name: "RuPay" },
+    { id: "MASTER_CARD", name: "Mastercard" },
+    { id: "AMERICAN_EXPRESS", name: "American Express" },
+    { id: "DINNERS_CLUB", name: "Diners Club" },
+  ];
+
+  const STATIC_UPI_APPS = [
+    { id: "GPAY", name: "Gpay" },
+    { id: "PHONE_PE", name: "PhonePe" },
+    { id: "PAYTM", name: "Paytm" },
+    { id: "AMAZON_PAY", name: "Amazon Pay" },
+    { id: "WHATSAPP_PAY", name: "WhatsApp Pay" },
+    { id: "CRED_PAY", name: "Cred Pay" },
+    { id: "SBI_PAY", name: "SBI Pay" },
+  ];
 
 
-  const handleTypeChange = async (value) => {
+  const billingCycleDays = Array.from(
+    { length: 31 },
+    (_, i) => i + 1
+  );
+
+
+
+  // const handleTypeChange = async (value) => {
+  //   setType(value);
+  //   setSelectedUpi(null);
+
+  //   const apiType = value === "upi" ? "UPI" : "CARD";
+
+  //   await getQrCardTypeList(apiType);
+  // };
+
+
+  const handleTypeChange = (value) => {
     setType(value);
     setSelectedUpi(null);
+    setShowUPIApp(false);
 
-    const apiType = value === "upi" ? "UPI" : "CARD";
-
-    await getQrCardTypeList(apiType);
+    setErrors({});
   };
+
+  const dropdownOptions =
+    type === "upi"
+      ? STATIC_UPI_APPS
+      : STATIC_CARD_NETWORKS;
+
+  const selectedUpiData = dropdownOptions?.find(
+    (item) => item.id === selectedupi
+  );
 
   const pickQrImage = () => {
     ImagePicker.launchImageLibrary(
@@ -134,9 +179,9 @@ export default function AddPaymentMethod() {
       </Text>
     </TouchableOpacity>
   )
-  const selectedUpiData = upiAppList.find(
-    x => x.id === selectedupi
-  )
+  // const selectedUpiData = upiAppList.find(
+  //   x => x.id === selectedupi
+  // )
 
 
 
@@ -177,8 +222,8 @@ export default function AddPaymentMethod() {
       if (!form.displayName.trim())
         err.displayName = "Please Enter Display Name";
 
-      if (!form.qrImage)
-        err.qrImage = "Please Upload QR Image";
+      // if (!form.qrImage)
+      //   err.qrImage = "Please Upload QR Image";
     }
 
     /////////
@@ -227,6 +272,98 @@ export default function AddPaymentMethod() {
 
     try {
 
+
+      if (type === "credit") {
+        const payload = {
+          holderName: form.cardHolderName.trim(),
+          bankName: "",
+          displayName: form.displayName.trim(),
+          branchName: "",
+          accountNo: "",
+          ifscCode: "",
+          description: form.description.trim(),
+          isDefault: true,
+          accountType: "CARD",
+          linkedBankId: bankId || "",
+          bankAccountType: "",
+          openingBalance: 0,
+          cashAccountType: "",
+          responsiblePerson: "",
+          cardNumber: String(form.cardNumber),
+          creditLimit: Number(form.creditLimit) || 0,
+          billingCycle: Number(form.billingCycle) || 0,
+
+          // Keep this only if the new API accepts cardNetwork.
+          cardNetwork: selectedupi,
+        };
+
+        console.log("NEW CREDIT CARD API PAYLOAD =>", payload);
+
+        const res = await createCreditCardAccount(
+          activeHostelId,
+          payload
+        );
+
+        if (res?.success) {
+          await getBankListByHostel(activeHostelId);
+          await getBankMethod(activeHostelId, bankId);
+
+          setModalType("success");
+          setModalMessage(
+            res?.message || "Credit Card Added Successfully"
+          );
+          setShowSuccessModal(true);
+
+          setTimeout(() => {
+            setShowSuccessModal(false);
+            navigation.goBack();
+          }, 1500);
+        } else {
+          setModalType("error");
+          setModalMessage(
+            res?.message || "Failed to add Credit Card"
+          );
+          setShowSuccessModal(true);
+
+          setTimeout(() => {
+            setShowSuccessModal(false);
+          }, 1500);
+        }
+
+        return;
+      }
+
+
+      // const payload = {
+      //   paymentMethod:
+      //     type === "upi"
+      //       ? "UPI"
+      //       : type === "credit"
+      //         ? "Credit Card"
+      //         : "Debit Card",
+
+      //   upiId: type === "upi" ? form.upiId.trim() : "",
+      //   upiApp: type === "upi" ? selectedupi : "",
+      //   linkedUpiId: "",
+
+      //   displayName: form.displayName.trim(),
+      //   description: form.description.trim(),
+
+      //   cardNumber: type !== "upi" ? Number(form.cardNumber) : "",
+      //   cardNetwork: type !== "upi" ? selectedupi : 0,
+      //   cardHolderName: type !== "upi" ? form.cardHolderName.trim() : "",
+
+      //   creditLimit:
+      //     type === "credit"
+      //       ? (Number(form.creditLimit) || "")
+      //       : "",
+
+      //   billingCycle:
+      //     type === "credit"
+      //       ? ("06/08/2026" || "")
+      //       : "",
+      // };
+
       const payload = {
         paymentMethod:
           type === "upi"
@@ -235,30 +372,47 @@ export default function AddPaymentMethod() {
               ? "Credit Card"
               : "Debit Card",
 
-        // UPI
-        upiId: type === "upi" ? form.upiId.trim() : "",
-        upiApp: type === "upi" ? selectedupi : "",
-        linkedUpiId: "",
+        upiId:
+          type === "upi"
+            ? form.upiId.trim()
+            : "",
 
-        // Common
+        upiApp:
+          type === "upi"
+            ? selectedupi
+            : "",
+
+        cardNetwork:
+          type !== "upi"
+            ? selectedupi
+            : "",
+
+        cardNumber:
+          type !== "upi"
+            ? Number(form.cardNumber)
+            : "",
+
+        cardHolderName:
+          type !== "upi"
+            ? form.cardHolderName.trim()
+            : "",
+
         displayName: form.displayName.trim(),
         description: form.description.trim(),
 
-        // Card
-        cardNumber: type !== "upi" ? Number(form.cardNumber) : "",
-        cardNetwork: type !== "upi" ? selectedupi : 0,
-        cardHolderName: type !== "upi" ? form.cardHolderName.trim() : "",
-
-        // Credit only
         creditLimit:
           type === "credit"
-            ? (Number(form.creditLimit) || "")
+            ? Number(form.creditLimit) || ""
             : "",
+
+        // billingCycle:
+        //   type === "credit"
+        //     ? form.billingCycle || ""
+        //     : "",
 
         billingCycle:
           type === "credit"
-            ? ("06/08/2026" || "")
-            // ? (form.billingCycle || "")
+            ? form.billingCycle || ""
             : "",
       };
 
@@ -267,11 +421,25 @@ export default function AddPaymentMethod() {
       console.log("PAYLOAD =>", payload);
       console.log("QR IMAGE =>", qrImage);
 
+
+const selectedQrImage = type === "upi" && qrImage?.uri
+  ? {
+      uri: qrImage.uri,
+      type: qrImage.type || "image/jpeg",
+      name: qrImage.fileName || `qr_${Date.now()}.jpg`,
+    }
+  : null;
+
+console.log("QR UPLOAD FILE =>", selectedQrImage);
+
+
+
+
       const res = await createPaymentMethod(
         activeHostelId,
         bankId,
         payload,
-        type === "upi" ? qrImage : null
+        type === "upi" ? selectedQrImage : null
       );
 
       if (res.success) {
@@ -376,7 +544,7 @@ export default function AddPaymentMethod() {
                     }}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      {selectedUpiData ? (
+                      {/* {selectedUpiData ? (
                         <>
                           {selectedUpiData.image ? (
                             <Image
@@ -399,7 +567,14 @@ export default function AddPaymentMethod() {
                         <Text style={{ color: "#777" }}>
                           Select UPI App
                         </Text>
-                      )}
+                      )} */}
+                      <Text style={styles.selectedText}>
+                        {selectedUpiData
+                          ? selectedUpiData.name
+                          : type === "upi"
+                            ? "Select UPI App"
+                            : "Select Card Network"}
+                      </Text>
                     </View>
 
                     <Image
@@ -412,39 +587,41 @@ export default function AddPaymentMethod() {
                     <View style={styles.transactiondropdown}>
                       <ScrollView
                         nestedScrollEnabled
-                        scrollEnabled={upiAppList.length > 3}
+                        scrollEnabled={dropdownOptions.length > 3}
                         showsVerticalScrollIndicator={false}
                       >
-
-
-                        {upiAppList.map((item) => {
-                          const isSelected = selectedupi === item.id;
+                        {dropdownOptions?.map((item) => {
+                          const isSelected = selectedupi === item?.id;
 
                           return (
                             <TouchableOpacity
-                              key={item.id}
+                              key={item?.id}
                               style={[
                                 styles.dropdownRow,
                                 isSelected && styles.dropdownRowSelected,
                               ]}
                               onPress={() => {
-                                setSelectedUpi(item.id);
+                                setSelectedUpi(item?.id);
                                 setShowUPIApp(false);
+
+                                setErrors((prev) => ({
+                                  ...prev,
+                                  upiApp: "",
+                                  cardNetwork: "",
+                                }));
                               }}
                             >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                {item.image ? (
-                                  <Image
-                                    source={{ uri: item.image }}
-                                    style={styles.logo}
-                                  />
-                                ) : (
-                                  <View style={styles.initialCircle}>
-                                    <Text style={styles.initialText}>
-                                      {item.name.charAt(0).toUpperCase()}
-                                    </Text>
-                                  </View>
-                                )}
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <View style={styles.initialCircle}>
+                                  <Text style={styles.initialText}>
+                                    {item?.name.charAt(0).toUpperCase()}
+                                  </Text>
+                                </View>
 
                                 <Text
                                   style={
@@ -453,7 +630,7 @@ export default function AddPaymentMethod() {
                                       : styles.dropdownText
                                   }
                                 >
-                                  {item.name}
+                                  {item?.name}
                                 </Text>
                               </View>
                             </TouchableOpacity>
@@ -495,7 +672,7 @@ export default function AddPaymentMethod() {
                   <ErrorMessage message={errors.displayName} />
                 )}
 
-                <Text style={styles.label}>Add QR Image <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                <Text style={styles.label}>Add QR Image </Text>
                 {qrAttachments.length === 0 ? (
                   <TouchableOpacity
                     style={styles.uploadCard}
@@ -554,10 +731,10 @@ export default function AddPaymentMethod() {
                     </View>
                   </View>
                 )}
-
+{/* 
                 {errors.qrImage && (
                   <ErrorMessage message={errors.qrImage} />
-                )}
+                )} */}
 
 
 
@@ -595,7 +772,7 @@ export default function AddPaymentMethod() {
                     }}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      {selectedUpiData ? (
+                      {/* {selectedUpiData ? (
                         <>
                           {selectedUpiData.image ? (
                             <Image
@@ -618,7 +795,15 @@ export default function AddPaymentMethod() {
                         <Text style={{ color: "#777" }}>
                           Select UPI App
                         </Text>
-                      )}
+                      )} */}
+
+                      <Text style={styles.selectedText}>
+                        {selectedUpiData
+                          ? selectedUpiData.name
+                          : type === "upi"
+                            ? "Select UPI App"
+                            : "Select Card Network"}
+                      </Text>
                     </View>
 
                     <Image
@@ -631,50 +816,41 @@ export default function AddPaymentMethod() {
                     <View style={styles.transactiondropdown}>
                       <ScrollView
                         nestedScrollEnabled
-                        scrollEnabled={upiAppList.length > 3}
+                        scrollEnabled={dropdownOptions?.length > 3}
                         showsVerticalScrollIndicator={false}
                       >
-
-
-                        {upiAppList.map((item) => {
-                          const isSelected = selectedupi === item.id;
+                        {dropdownOptions?.map((item) => {
+                          const isSelected = selectedupi === item?.id;
 
                           return (
                             <TouchableOpacity
-                              key={item.id}
+                              key={item?.id}
                               style={[
                                 styles.dropdownRow,
                                 isSelected && styles.dropdownRowSelected,
                               ]}
-                              // onPress={() => {
-                              //   setSelectedUpi(item.id);
-                              //   setShowUPIApp(false);
-                              // }}
-
                               onPress={() => {
-                                setSelectedUpi(item.id);
+                                setSelectedUpi(item?.id);
                                 setShowUPIApp(false);
 
-                                setErrors(prev => ({
+                                setErrors((prev) => ({
                                   ...prev,
+                                  upiApp: "",
                                   cardNetwork: "",
                                 }));
                               }}
-
                             >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                {item.image ? (
-                                  <Image
-                                    source={{ uri: item.image }}
-                                    style={styles.logo}
-                                  />
-                                ) : (
-                                  <View style={styles.initialCircle}>
-                                    <Text style={styles.initialText}>
-                                      {item.name.charAt(0).toUpperCase()}
-                                    </Text>
-                                  </View>
-                                )}
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <View style={styles.initialCircle}>
+                                  <Text style={styles.initialText}>
+                                    {item?.name.charAt(0).toUpperCase()}
+                                  </Text>
+                                </View>
 
                                 <Text
                                   style={
@@ -683,7 +859,7 @@ export default function AddPaymentMethod() {
                                       : styles.dropdownText
                                   }
                                 >
-                                  {item.name}
+                                  {item?.name}
                                 </Text>
                               </View>
                             </TouchableOpacity>
@@ -769,23 +945,83 @@ export default function AddPaymentMethod() {
                   <ErrorMessage message={errors.creditLimit} />
                 )}
 
-                <Text style={styles.label}>
-                  Billing Cycle (Days)
-                  {/* <Text style={{ color: "red", fontSize: 19 }}>*</Text> */}
-                </Text>
+                <Text style={styles.label}>Billing Cycle</Text>
 
-                <TextInput
-                  placeholder="Enter Billing Cycle in Days"
-                  style={styles.input}
-                  keyboardType="number-pad"
-                  value={form.billingCycle}
-                  onChangeText={(text) =>
-                    handleChange(
-                      "billingCycle",
-                      text.replace(/[^0-9]/g, "")
-                    )
-                  }
-                />
+                <TouchableOpacity
+                  style={styles.inputBox}
+                  activeOpacity={0.8}
+                  onPress={() => setShowBillingCycle(prev => !prev)}
+                >
+                  <Text
+                    style={[
+                      styles.selectedText,
+                      !form.billingCycle && { color: "#777" },
+                    ]}
+                  >
+                    {form.billingCycle
+                      ? String(form.billingCycle).padStart(2, "0")
+                      : "Select Billing Cycle"}
+                  </Text>
+
+                  <Image
+                    source={DownArrow}
+                    style={{
+                      width: 18,
+                      height: 18,
+                      transform: [
+                        { rotate: showBillingCycle ? "180deg" : "0deg" },
+                      ],
+                    }}
+                  />
+                </TouchableOpacity>
+
+                {showBillingCycle && (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                      borderWidth: 1,
+                      borderColor: "#E2E2E2",
+                      borderRadius: 14,
+                      paddingVertical: 12,
+                      paddingHorizontal: 4,
+                      marginTop: 10,
+                    }}
+                  >
+                    {billingCycleDays.map(day => {
+                      const selected =
+                        String(form.billingCycle) === String(day);
+
+                      return (
+                        <TouchableOpacity
+                          key={day}
+                          onPress={() => {
+                            handleChange("billingCycle", String(day));
+                            setShowBillingCycle(false);
+                          }}
+                          style={{
+                            width: "20%",
+                            height: 32,
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderRadius: 16,
+                            backgroundColor: selected ? "#2F5BFF" : "transparent",
+                          }}
+                        >
+                          <Text
+                            style={{
+                              fontSize: 16,
+                              color: selected ? "#FFFFFF" : "#222222",
+                              fontFamily: "Gilroy-Regular",
+                            }}
+                          >
+                            {String(day).padStart(2, "0")}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
+                )}
 
                 {/* {errors.billingCycle && (
                 <ErrorMessage message={errors.billingCycle} />
@@ -821,7 +1057,7 @@ export default function AddPaymentMethod() {
                     onPress={() => setShowUPIApp(v => !v)}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center" }}>
-                      {selectedUpiData ? (
+                      {/* {selectedUpiData ? (
                         <>
                           {selectedUpiData.image ? (
                             <Image
@@ -844,7 +1080,14 @@ export default function AddPaymentMethod() {
                         <Text style={{ color: "#777" }}>
                           Select UPI App
                         </Text>
-                      )}
+                      )} */}
+                      <Text style={styles.selectedText}>
+                        {selectedUpiData
+                          ? selectedUpiData.name
+                          : type === "upi"
+                            ? "Select UPI App"
+                            : "Select Card Network"}
+                      </Text>
                     </View>
 
                     <Image
@@ -857,51 +1100,41 @@ export default function AddPaymentMethod() {
                     <View style={styles.transactiondropdown}>
                       <ScrollView
                         nestedScrollEnabled
-                        scrollEnabled={upiAppList.length > 3}
+                        scrollEnabled={dropdownOptions.length > 3}
                         showsVerticalScrollIndicator={false}
                       >
-
-
-                        {upiAppList.map((item) => {
+                        {dropdownOptions?.map((item) => {
                           const isSelected = selectedupi === item.id;
 
                           return (
                             <TouchableOpacity
-                              key={item.id}
+                              key={item?.id}
                               style={[
                                 styles.dropdownRow,
                                 isSelected && styles.dropdownRowSelected,
                               ]}
-                              // onPress={() => {
-                              //   setSelectedUpi(item.id);
-                              //   setShowUPIApp(false);
-                              // }}
-
-
                               onPress={() => {
-                                setSelectedUpi(item.id);
+                                setSelectedUpi(item?.id);
                                 setShowUPIApp(false);
 
-                                setErrors(prev => ({
+                                setErrors((prev) => ({
                                   ...prev,
+                                  upiApp: "",
                                   cardNetwork: "",
                                 }));
                               }}
-
                             >
-                              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                                {item.image ? (
-                                  <Image
-                                    source={{ uri: item.image }}
-                                    style={styles.logo}
-                                  />
-                                ) : (
-                                  <View style={styles.initialCircle}>
-                                    <Text style={styles.initialText}>
-                                      {item.name.charAt(0).toUpperCase()}
-                                    </Text>
-                                  </View>
-                                )}
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <View style={styles.initialCircle}>
+                                  <Text style={styles.initialText}>
+                                    {item?.name.charAt(0).toUpperCase()}
+                                  </Text>
+                                </View>
 
                                 <Text
                                   style={
@@ -910,7 +1143,7 @@ export default function AddPaymentMethod() {
                                       : styles.dropdownText
                                   }
                                 >
-                                  {item.name}
+                                  {item?.name}
                                 </Text>
                               </View>
                             </TouchableOpacity>

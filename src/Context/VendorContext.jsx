@@ -645,6 +645,9 @@ export default function VendorProvider({ children }) {
       setLoading(false);
     }
   }
+
+
+  
   const getVendorComments = async (
     vendorId
   ) => {

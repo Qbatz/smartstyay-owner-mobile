@@ -8,6 +8,7 @@ import {
   TextInput,
   Image, TouchableWithoutFeedback
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ArrowLeft from "../../../Assets/Images/directionleft.png";
 import * as ImagePicker from "react-native-image-picker";
 import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
@@ -37,6 +38,8 @@ export default function VendorSettlePayment({
   const isExpenseSettlement = type === "expense";
 
   const isApplyTriggeredRef = useRef(false);
+
+    const insets = useSafeAreaInsets();
 
 
   const { settleExpense, settleVendorPayment } = useContext(CustomerContext);;
@@ -120,40 +123,25 @@ export default function VendorSettlePayment({
 
   console.log("initializeData", initializeData);
 
+  const paymentOptions = (initializeData?.banks || []).map(
+    (item, index) => {
+      const isCash =
+        item?.bankName?.toUpperCase() === "CASH";
 
-
-  const paymentOptions = (
-    initializeData?.banks || []
-  ).map((item, index) => {
-    const isCash =
-      item?.bankName?.toUpperCase() === "CASH";
-
-    return {
-      id: item?.bankId || `account-${index}`,
-      bankId: item?.bankId,
-
-      name:
-        item?.holderName || "Account",
-
-      displayName:
-        item?.holderName || "Account",
-
-      accountHolderName:
-        item?.holderName || "Account",
-
-      bankName:
-        item?.bankName || "",
-
-      isCash,
-
-      accountType:
-        isCash ? "CASH" : "BANK",
-
-      subLabel:
-        item?.bankName || "Bank Account",
-    };
-  });
-
+      return {
+        id: item?.bankId || `account-${index}`,
+        bankId: item?.bankId,
+        label: item?.bankName || item?.holderName || "Account",
+        name: item?.holderName || "Account",
+        displayName: item?.holderName || "Account",
+        accountHolderName: item?.holderName || "Account",
+        bankName: item?.bankName || "",
+        isCash,
+        accountType: isCash ? "CASH" : "BANK",
+        subLabel: item?.bankName || "Bank Account",
+      };
+    }
+  );
 
   const dueAmount = Number(
     isVendorSettlement
@@ -347,21 +335,28 @@ export default function VendorSettlePayment({
 
       if (isVendorSettlement) {
         const payload = {
-          images: attachments?.map(item => item?.uri) || [],
+          // images: attachments?.map(item => item?.uri) || [],
           payLoads: {
             paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-            bankId: String(selectedMode?.id),
-            paymentMethod: String(selectedMode?.id),
+            bankId: String(selectedMode?.bankId),
+            paymentMethod: selectedMode?.label,
             transactionId,
             notes: description,
             expenses: vendorExpensesPayload,
           },
         };
+        
+
+        // response = await settleVendorPayment(
+        //   vendor?.id,
+        //   payload,
+        // );
 
         response = await settleVendorPayment(
+          activeHostelId,
           vendor?.id,
           payload,
-          // attachments  
+          attachments
         );
 
         if (response?.success) {
@@ -718,7 +713,7 @@ export default function VendorSettlePayment({
                     No mode found
                   </Text>
                 ) : (
-                  paymentOptions?.map((item) => {
+                  paymentOptions?.map((item, index) => {
                     // const isSelected =
                     //   selectedMode?.bankId === item?.bankId &&
                     //   selectedMode?.paymentMethodId === item?.paymentMethodId;
@@ -727,7 +722,7 @@ export default function VendorSettlePayment({
 
                     return (
                       <TouchableOpacity
-                        key={item?.optionId}
+                        key={String(item?.bankId || `account-${index}`)}
                         style={[
                           styles.paymentMethodRow,
                           isSelected && styles.paymentMethodRowSelected,
@@ -1140,7 +1135,13 @@ export default function VendorSettlePayment({
           {/* Footer */}
 
           <View
-            style={styles.footer}
+            // style={styles.footer}
+            style={[
+                styles.footer,
+                {
+                  marginBottom: Math.max(insets.bottom, 20),
+                },
+              ]}
           >
             <TouchableOpacity
               style={styles.cancelBtn}
@@ -1591,7 +1592,7 @@ const styles = StyleSheet.create({
 
   expensesDropdownMenu: {
     marginTop: 4,
-     marginHorizontal: 16, 
+    marginHorizontal: 16,
     borderWidth: 1,
     borderColor: "#DDDDDD",
     borderRadius: 10,

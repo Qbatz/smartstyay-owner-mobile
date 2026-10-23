@@ -1075,7 +1075,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
         if (isSubmittingRef.current) return;
         isSubmittingRef.current = true;
 
-
+        let checkInSucceeded = false;
 
         try {
             setIsCheckingIn(true)
@@ -1132,6 +1132,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
             console.log("checkined", res)
 
             if (res.success) {
+
+                checkInSucceeded = true;
                 setModalType("success");
                 setMessage(res.data);
                 setShowSuccess(true);
@@ -1151,13 +1153,29 @@ export default function NewTenantCheckIn({ navigation, route }) {
                     setShowSuccess(false);
                 }, 800)
             }
-        } catch (error) {
-            console.log(error)
-            setIsCheckingIn(false)
         }
-        finally {
-            isSubmittingRef.current = false;
+
+        catch (error) {
+            console.log("Check-in error:", error);
+
+            setModalType("error");
+            setMessage(
+                error?.response?.data?.message ||
+                error?.message ||
+                "Check-in failed. Please try again."
+            );
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 1500);
+        } finally {
+            if (!checkInSucceeded) {
+                isSubmittingRef.current = false;
+                setIsCheckingIn(false);
+            }
         }
+
 
     }
 
@@ -2324,15 +2342,22 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
 
                                     <TouchableOpacity
+
+
                                         style={[
                                             styles.primaryBtn,
-                                            // hideCheckInSaveDraft && { flex: 1 },
-                                            (!proceedcheckin || isSubmittingRef.current) && styles.disabledBtn,
+                                            (!proceedcheckin ||
+                                                isCheckingIn ||
+                                                isSubmittingRef.current) && styles.disabledBtn,
                                         ]}
-                                        disabled={!proceedcheckin || isSubmittingRef.current}
+                                        disabled={
+                                            !proceedcheckin ||
+                                            isCheckingIn ||
+                                            isSubmittingRef.current
+                                        }
                                         onPress={handleCheckIn}
                                     >
-                                        <Text style={styles.primaryText}>Check In</Text>
+                                        <Text style={styles.primaryText}>{isCheckingIn ? "Checking In..." : "Check In"}</Text>
                                     </TouchableOpacity>
 
                                 </View>
@@ -2922,30 +2947,30 @@ const styles = StyleSheet.create({
     //     padding: 18,
     // },
     customRentCard: {
-    marginTop: 12,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#C8D3FF",
-    padding: 16,
-    position: "relative",
-},
-customRentArrow: {
-    position: "absolute",
-    top: -12,
-    right: 38,
+        marginTop: 12,
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#C8D3FF",
+        padding: 16,
+        position: "relative",
+    },
+    customRentArrow: {
+        position: "absolute",
+        top: -12,
+        right: 38,
 
-    width: 0,
-    height: 0,
+        width: 0,
+        height: 0,
 
-    borderLeftWidth: 12,
-    borderRightWidth: 12,
-    borderBottomWidth: 12,
+        borderLeftWidth: 12,
+        borderRightWidth: 12,
+        borderBottomWidth: 12,
 
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    borderBottomColor: "#C8D3FF",
-},
+        borderLeftColor: "transparent",
+        borderRightColor: "transparent",
+        borderBottomColor: "#C8D3FF",
+    },
 
     customRentTitle: {
         fontSize: 18,
