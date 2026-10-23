@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,9 +10,14 @@ import {
   ScrollView,
   Image, TouchableWithoutFeedback
 } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 import { BankingContext } from "../../../Context/BankingContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useHasPermission } from "../../../Utils/useHasPermission";
+import { ExpensesContext } from "../../../Context/ExpensesContext";
+import { VendorContext } from "../../../Context/VendorContext";
+import { CustomerContext } from "../../../Context/CustomerContext";
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 
 const { height } = Dimensions.get("window");
@@ -28,16 +33,70 @@ export default function TransactionSheet({
     bankOverview, bankList, transactionList, loading, errorMsg, getBankListByHostel, AddBankAmount } =
     useContext(BankingContext);
   const { activeHostelId } = useContext(CommonContexts);
-   const {
-      canWriteModule: canWriteBanking,
-      canReadModule: canReadBanking,
-      canUpdateModule: canUpdateBanking,
-      canDeleteModule: canDeleteBanking,
-    } = useHasPermission("Banking")
 
-    const isCreditCardAccount =
-  bankDetails?.accountType === "CARD" &&
-  bankDetails?.cardType === "CREDIT_CARD";
+  const {
+    IntializeexpensesList,
+    GetInitializeExpense,
+  } = useContext(ExpensesContext);
+
+  const {
+    vendorList,
+    getVendorList,
+    setVendorList,
+    loading: vendorLoading,
+  } = useContext(CustomerContext);
+
+  const [modalType, setModalType] = useState("warning");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const expenseCategoryList =
+    IntializeexpensesList?.listExpenses || [];
+
+  const vendorListData = Array.isArray(vendorList?.vendors)
+    ? vendorList.vendors
+    : Array.isArray(vendorList)
+      ? vendorList
+      : [];
+
+
+
+
+
+
+
+  const {
+    canWriteModule: canWriteBanking,
+    canReadModule: canReadBanking,
+    canUpdateModule: canUpdateBanking,
+    canDeleteModule: canDeleteBanking,
+  } = useHasPermission("Banking")
+
+  useEffect(() => {
+    if (!activeHostelId) return;
+
+    GetInitializeExpense(activeHostelId);
+    // getVendorList(activeHostelId);
+  }, [activeHostelId]);
+
+
+
+  useFocusEffect(
+    useCallback(() => {
+      if (activeHostelId) {
+        getVendorList(activeHostelId);
+      } else {
+        setVendorList([])
+      }
+    }, [activeHostelId])
+  );
+
+  console.log("vendorListData", vendorList);
+
+
+  const isCreditCardAccount =
+    bankDetails?.accountType === "CARD" &&
+    bankDetails?.cardType === "CREDIT_CARD";
 
   const translateY = useRef(
     new Animated.Value(SHEET_HEIGHT)
@@ -53,7 +112,7 @@ export default function TransactionSheet({
 
 
   console.log("bankDetails", bankDetails);
-  
+
 
 
   const closeSheet = () => {
@@ -125,7 +184,7 @@ export default function TransactionSheet({
       title: "Credit Card Payment",
       icon: require("../../../Assets/Images/CreditCardIcon.png"),
       screen: "CreditCardPayment",
-       disabled: !isCreditCardAccount,
+      disabled: !isCreditCardAccount,
       // disabled: !canWriteBanking
     },
     {
@@ -185,7 +244,60 @@ export default function TransactionSheet({
   //   })
   // }
 
+  // const handleItemPress = async (item) => {
+  //   if (item.title === "Transfer") {
+  //     const res = await getTransferInitialize(
+  //       activeHostelId,
+  //       bankId
+  //     );
+
+  //     if (!res?.success) return;
+  //   }
+
+  //   Animated.timing(translateY, {
+  //     toValue: SHEET_HEIGHT,
+  //     duration: 220,
+  //     useNativeDriver: true,
+  //   }).start(() => {
+  //     onClose?.();
+
+  //     navigation.navigate(item.screen, {
+  //       bankId,
+  //       bankDetails,
+  //     });
+  //   });
+  // }
   const handleItemPress = async (item) => {
+    if (
+      item.title === "Expense" &&
+      expenseCategoryList?.length === 0
+    ) {
+      setModalType("warning");
+      setMessage("Please add an expense category first");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
+
+      return;
+    }
+
+    if (
+      item.title === "Vendor Payment" &&
+      vendorListData?.length === 0
+    ) {
+      setModalType("warning");
+      setMessage("Please add a vendor first");
+      setShowSuccess(true);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 1500);
+
+      return;
+    }
+
     if (item.title === "Transfer") {
       const res = await getTransferInitialize(
         activeHostelId,
@@ -212,72 +324,81 @@ export default function TransactionSheet({
   if (!mounted) return null;
 
   return (
-    <View style={styles.wrapper} pointerEvents="box-none">
-      {/* 
+
+    <>
+      <SuccessModal
+        visible={showSuccess}
+        message={message}
+        type={modalType}
+      />
+
+      <View style={styles.wrapper} pointerEvents="box-none">
+        {/* 
     <TouchableOpacity
       activeOpacity={1}
       style={styles.backdrop}
       onPress={closeSheet}
     /> */}
 
-      <TouchableWithoutFeedback onPress={closeSheet}>
-        <View style={styles.backdrop} />
-      </TouchableWithoutFeedback>
+        <TouchableWithoutFeedback onPress={closeSheet}>
+          <View style={styles.backdrop} />
+        </TouchableWithoutFeedback>
 
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          styles.sheet,
-          {
-            transform: [{ translateY }],
-          },
-        ]}
-      >
-        <View style={styles.handle} />
-
-        <Text style={styles.title}>
-          Add Transaction
-        </Text>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.sheet,
+            {
+              transform: [{ translateY }],
+            },
+          ]}
         >
-          <View style={styles.grid}>
-            {DATA.map((item, index) => (
-              // <TouchableOpacity
-              //   key={index}
-              //   style={styles.item}
-              //   activeOpacity={0.8}
-              //   onPress={() => handleItemPress(item)}
-              // >
-              <TouchableOpacity
-                key={index}
-                disabled={item.disabled}
-                style={[
-                  styles.item,
-                  item.disabled && styles.disabledItem,
-                ]}
-                activeOpacity={item.disabled ? 1 : 0.8}
-                onPress={() => handleItemPress(item)}
-              >
-                <View style={styles.iconBox}>
-                  <Image
-                    source={item.icon}
-                    style={styles.icon}
-                  />
-                </View>
+          <View style={styles.handle} />
 
-                <Text style={styles.label}>
-                  {item.title}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </ScrollView>
+          <Text style={styles.title}>
+            Add Transaction
+          </Text>
 
-      </Animated.View>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.grid}>
+              {DATA.map((item, index) => (
+                // <TouchableOpacity
+                //   key={index}
+                //   style={styles.item}
+                //   activeOpacity={0.8}
+                //   onPress={() => handleItemPress(item)}
+                // >
+                <TouchableOpacity
+                  key={index}
+                  disabled={item.disabled}
+                  style={[
+                    styles.item,
+                    item.disabled && styles.disabledItem,
+                  ]}
+                  activeOpacity={item.disabled ? 1 : 0.8}
+                  onPress={() => handleItemPress(item)}
+                >
+                  <View style={styles.iconBox}>
+                    <Image
+                      source={item.icon}
+                      style={styles.icon}
+                    />
+                  </View>
 
-    </View>
+                  <Text style={styles.label}>
+                    {item.title}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+
+        </Animated.View>
+
+      </View>
+    </>
   );
 }
 
@@ -366,18 +487,18 @@ const styles = StyleSheet.create({
     color: "#00000",
   },
   disabledItem: {
-  opacity: 0.45,
-},
+    opacity: 0.45,
+  },
 
-disabledIconBox: {
-  backgroundColor: "#F3F4F6",
-},
+  disabledIconBox: {
+    backgroundColor: "#F3F4F6",
+  },
 
-disabledIcon: {
-  tintColor: "#9CA3AF",
-},
+  disabledIcon: {
+    tintColor: "#9CA3AF",
+  },
 
-disabledLabel: {
-  color: "#9CA3AF",
-},
+  disabledLabel: {
+    color: "#9CA3AF",
+  },
 });

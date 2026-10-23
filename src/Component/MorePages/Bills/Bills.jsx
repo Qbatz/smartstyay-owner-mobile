@@ -2049,17 +2049,40 @@ export default function BillsDesign({ route }) {
   };
 
 
+  // const handleResetFilters = async () => {
+  //   if (!canReadInvoice) return;
+  //   setFromDate(null);
+  //   setToDate(null);
+  //   setBillStatus([]);
+  //   setType([]);
+  //   setMode([]);
+  //   setCreatedBy([]);
+
+  //   setAppliedFilters(null);
+  //   setFilterError("")
+
+  //   await GetAllBillDetails(activeHostelId);
+  // }
+
   const handleResetFilters = async () => {
     if (!canReadInvoice) return;
+
     setFromDate(null);
     setToDate(null);
+
     setBillStatus([]);
     setType([]);
     setMode([]);
+
+    setTempmode([]);
+
     setCreatedBy([]);
 
+    setTempStatus([]);
+    setTempType([]);
+
     setAppliedFilters(null);
-    setFilterError("")
+    setFilterError("");
 
     await GetAllBillDetails(activeHostelId);
   };
@@ -3229,8 +3252,38 @@ export default function BillsDesign({ route }) {
                             <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
                           </TouchableOpacity>
 
-
                           <TouchableOpacity
+                            style={[
+                              styles.filterBox,
+                              tempmode.length > 0 && styles.filterBoxActive,
+                            ]}
+                            onPress={() => {
+                              setTempmode(mode);
+                              setModeSheetOpen(true);
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.filterText,
+                                tempmode.length > 0 && styles.filterTextActive,
+                              ]}
+                            >
+                              {tempmode.length === 0
+                                ? "Mode"
+                                : `${tempmode[0]}${tempmode.length > 1
+                                  ? ` +${tempmode.length - 1} more`
+                                  : ""
+                                }`}
+                            </Text>
+
+                            <Image
+                              source={DownArrow}
+                              style={{ width: 16, height: 16, marginLeft: 6 }}
+                            />
+                          </TouchableOpacity>
+
+
+                          {/* <TouchableOpacity
                             style={[
                               styles.filterBox,
                               tempmode.length > 0 && styles.filterBoxActive,
@@ -3252,7 +3305,7 @@ export default function BillsDesign({ route }) {
                                 }`}
                             </Text>
                             <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-                          </TouchableOpacity>
+                          </TouchableOpacity> */}
 
 
 

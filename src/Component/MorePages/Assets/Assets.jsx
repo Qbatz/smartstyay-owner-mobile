@@ -949,7 +949,7 @@ const handleAssignAsset = async () => {
 
               <View style={{ marginTop: 8 }}>
                 <Text style={styles.label}>Mode of Payment</Text>
-                <Text style={styles.value}>CASH</Text>
+                <Text style={styles.value}>N/A</Text>
               </View>
 
 
