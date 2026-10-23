@@ -7,7 +7,7 @@ export const BankingContext = createContext();
 export default function BankingProvider({ children }) {
   const [bankList, setBankList] = useState([]);
   const [transactionList, setTransactionList] = useState([]);
-    const [newtransactionList, setNewTransactionList] = useState([]);
+  const [newtransactionList, setNewTransactionList] = useState([]);
   const [responsiblePersonList, setResponsiblePersonList] = useState([]);
   const [bankOverview, setBankOverview] = useState(null);
   const [bankTransactionHistory, setBankTransactionHistory] = useState([]);
@@ -18,7 +18,7 @@ export default function BankingProvider({ children }) {
   const [creditCardInitialize, setCreditCardInitialize] = useState(null)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const [newOnlyTransactionList,setNewOnlyTransactionList]=useState([])
+  const [newOnlyTransactionList, setNewOnlyTransactionList] = useState([])
 
   const getErrorMessage = (error) =>
     error?.response?.data?.message ||
@@ -283,11 +283,18 @@ export default function BankingProvider({ children }) {
       if (res.status === 200) {
         console.log("All Transactions =>", res.data);
 
-        const transactions = res?.data || []
+        const transactions = res?.data || [];
+        const newTransactionList = res?.data?.transactions;
+        const currentPage = res?.data?.currentPage;
 
         setBankList(res?.data?.bankList)
         setNewTransactionList(transactions);
-        setNewOnlyTransactionList(prev=> [...prev, ...res?.data?.transactions])
+
+        if (currentPage === 1) {
+          setNewOnlyTransactionList(newTransactionList)
+        } else {
+          setNewOnlyTransactionList(prev => [...prev, ...res?.data?.transactions])
+        }
 
         return {
           success: true,
@@ -552,120 +559,120 @@ export default function BankingProvider({ children }) {
   };
 
   const getoldbankingTransferInitialize = async (hostelId, bankId) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const res = await axios.get(
-      `/v2/bank/transfer/initialize/${hostelId}/${bankId}`
-    );
+      const res = await axios.get(
+        `/v2/bank/transfer/initialize/${hostelId}/${bankId}`
+      );
 
-    if (res.status === 200) {
-      const data = res.data || {};
+      if (res.status === 200) {
+        const data = res.data || {};
 
-      console.log("TRANSFER INITIALIZE =>", data);
+        console.log("TRANSFER INITIALIZE =>", data);
 
-      setTransferOldBankInitialize(data);
+        setTransferOldBankInitialize(data);
 
-      return {
-        success: true,
-        data,
-      };
-    }
-
-    return {
-      success: false,
-      message: "Failed to fetch transfer initialize",
-    };
-  } catch (error) {
-    console.log(
-      "TRANSFER INITIALIZE ERROR =>",
-      error?.response?.status
-    );
-
-    console.log(
-      "TRANSFER INITIALIZE DATA =>",
-      error?.response?.data
-    );
-
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const oldBankSelfTransfer = async (hostelId, payload) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const axios = getAxios();
-
-    const res = await axios.put(
-      `/v2/bank/transfer/${hostelId}`,
-      {
-        fromBankId: payload.fromBankId,
-        toBankId: payload.toBankId,
-        balance: Number(payload.balance),
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
+        return {
+          success: true,
+          data,
+        };
       }
-    );
-
-    console.log("OLD BANK SELF TRANSFER RESPONSE =>", res?.data);
-
-    if (res.status === 200 || res.status === 201) {
-      await getBankListByHostel(hostelId);
 
       return {
-        success: true,
-        data: res.data,
+        success: false,
+        message: "Failed to fetch transfer initialize",
       };
+    } catch (error) {
+      console.log(
+        "TRANSFER INITIALIZE ERROR =>",
+        error?.response?.status
+      );
+
+      console.log(
+        "TRANSFER INITIALIZE DATA =>",
+        error?.response?.data
+      );
+
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return {
-      success: false,
-      message:
-        res?.data?.message ||
-        "Failed to transfer amount",
-    };
-  } catch (error) {
-    console.log(
-      "OLD BANK SELF TRANSFER STATUS =>",
-      error?.response?.status
-    );
+  const oldBankSelfTransfer = async (hostelId, payload) => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    console.log(
-      "OLD BANK SELF TRANSFER DATA =>",
-      error?.response?.data
-    );
+      const axios = getAxios();
 
-    const msg =
-      error?.response?.data?.message ||
-      error?.response?.data?.error ||
-      "Failed to transfer amount";
+      const res = await axios.put(
+        `/v2/bank/transfer/${hostelId}`,
+        {
+          fromBankId: payload.fromBankId,
+          toBankId: payload.toBankId,
+          balance: Number(payload.balance),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    setErrorMsg(msg);
+      console.log("OLD BANK SELF TRANSFER RESPONSE =>", res?.data);
 
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      if (res.status === 200 || res.status === 201) {
+        await getBankListByHostel(hostelId);
+
+        return {
+          success: true,
+          data: res.data,
+        };
+      }
+
+      return {
+        success: false,
+        message:
+          res?.data?.message ||
+          "Failed to transfer amount",
+      };
+    } catch (error) {
+      console.log(
+        "OLD BANK SELF TRANSFER STATUS =>",
+        error?.response?.status
+      );
+
+      console.log(
+        "OLD BANK SELF TRANSFER DATA =>",
+        error?.response?.data
+      );
+
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Failed to transfer amount";
+
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
   const getTransferInitialize = async (
@@ -832,54 +839,54 @@ const oldBankSelfTransfer = async (hostelId, payload) => {
   }
 
   const creditCardPayment = async (hostelId, payload) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const res = await axios.put(
-      `/v3/bank/creditCard/payment/${hostelId}`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const res = await axios.put(
+        `/v3/bank/creditCard/payment/${hostelId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (res.status === 200 || res.status === 201) {
+        return {
+          success: true,
+          data: res.data,
+        };
       }
-    );
 
-    if (res.status === 200 || res.status === 201) {
       return {
-        success: true,
-        data: res.data,
+        success: false,
+        message: "Failed to update credit card payment",
       };
+    } catch (error) {
+      console.log(
+        "CREDIT CARD PAYMENT STATUS =>",
+        error?.response?.status
+      );
+      console.log(
+        "CREDIT CARD PAYMENT DATA =>",
+        error?.response?.data
+      );
+
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      success: false,
-      message: "Failed to update credit card payment",
-    };
-  } catch (error) {
-    console.log(
-      "CREDIT CARD PAYMENT STATUS =>",
-      error?.response?.status
-    );
-    console.log(
-      "CREDIT CARD PAYMENT DATA =>",
-      error?.response?.data
-    );
-
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
   }
-}
 
   return (
     <BankingContext.Provider
@@ -893,7 +900,7 @@ const oldBankSelfTransfer = async (hostelId, payload) => {
         upiAppList,
         bankMethod,
         transferInitialize,
-        transferoldbankInitialize ,
+        transferoldbankInitialize,
         creditCardInitialize,
         loading,
         errorMsg,
@@ -903,8 +910,8 @@ const oldBankSelfTransfer = async (hostelId, payload) => {
         AddBankAmount,
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
-        getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer , getCreditCardInitialize , creditCardPayment,
-        newOnlyTransactionList,setNewOnlyTransactionList , getoldbankingTransferInitialize , oldBankSelfTransfer
+        getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer, getCreditCardInitialize, creditCardPayment,
+        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer
       }}
 
     >

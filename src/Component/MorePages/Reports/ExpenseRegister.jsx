@@ -299,7 +299,7 @@ const ExpenseRegister = ({ navigation }) => {
 
 
     if (res?.success && res?.url) {
-      // await CommonModule.downloadAndViewDocument(res.url)
+      await CommonModule.downloadAndViewDocument(res.url)
     }
   }
 
