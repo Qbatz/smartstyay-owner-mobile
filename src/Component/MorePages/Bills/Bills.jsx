@@ -136,7 +136,8 @@ export default function BillsDesign({ route }) {
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
     GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter,
-    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills, GetRecurringInvoicesForReview, availablerecurringInvoices } = useContext(BillContext)
+    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills, GetRecurringInvoicesForReview, 
+    availablerecurringInvoices } = useContext(BillContext)
 
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
@@ -173,6 +174,7 @@ export default function BillsDesign({ route }) {
 
 
   console.log("BillDetails", BillDetails?.listInvoices);
+   console.log("BillDetails", BillDetails);
 
   const filterOptions = BillDetails?.filterOptions;
 
