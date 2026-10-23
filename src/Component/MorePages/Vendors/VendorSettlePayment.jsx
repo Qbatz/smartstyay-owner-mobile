@@ -8,6 +8,7 @@ import {
   TextInput,
   Image, TouchableWithoutFeedback
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ArrowLeft from "../../../Assets/Images/directionleft.png";
 import * as ImagePicker from "react-native-image-picker";
 import InvoiceLinkIcon from "../../../Assets/Images/Invoice_Link.png";
@@ -37,6 +38,8 @@ export default function VendorSettlePayment({
   const isExpenseSettlement = type === "expense";
 
   const isApplyTriggeredRef = useRef(false);
+
+    const insets = useSafeAreaInsets();
 
 
   const { settleExpense, settleVendorPayment } = useContext(CustomerContext);;
@@ -342,6 +345,7 @@ export default function VendorSettlePayment({
             expenses: vendorExpensesPayload,
           },
         };
+        
 
         // response = await settleVendorPayment(
         //   vendor?.id,
@@ -1131,7 +1135,13 @@ export default function VendorSettlePayment({
           {/* Footer */}
 
           <View
-            style={styles.footer}
+            // style={styles.footer}
+            style={[
+                styles.footer,
+                {
+                  marginBottom: Math.max(insets.bottom, 20),
+                },
+              ]}
           >
             <TouchableOpacity
               style={styles.cancelBtn}
