@@ -897,7 +897,7 @@ export default function BookingToInvoice() {
                                     Available Balance
                                 </Text>
                                 <Text style={{ fontFamily: "Gilroy-Bold", }}>
-                                    - ₹ {remainingBalance.toFixed(2)}
+                                     ₹ {remainingBalance.toFixed(2)}
                                 </Text>
                             </View>
 

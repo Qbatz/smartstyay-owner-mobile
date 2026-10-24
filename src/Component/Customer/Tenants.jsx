@@ -521,7 +521,7 @@ export default function TenantsScreen({ route }) {
     value: i?.type,
   }));
 
-  const renderFilterDropdown = (
+  const   renderFilterDropdown = (
     label,
     value,
     setValue,
@@ -529,7 +529,10 @@ export default function TenantsScreen({ route }) {
     keyName,
     isSingle = false
   ) => (
+   
     <View style={{ marginBottom: 12 }}>
+       {console.log("optinal",options)}
+       {console.log("valuation",value)}
       <Text style={styles.label}>{label}</Text>
 
       <View style={{ position: "relative" }}>
@@ -555,13 +558,17 @@ export default function TenantsScreen({ route }) {
             numberOfLines={1}
           >
             {isSingle
-              ? value || "Select"
+              ? value?.length > 0
+                ? options
+                  .filter(item => value.includes(item.value))
+                  .map(item => item.label)
+                  .join(", ") : `Select ${label}`
               : value?.length > 0
                 ? options
                   .filter(item => value.includes(item.value))
                   .map(item => item.label)
                   .join(", ")
-                : "Select"}
+                : `Select ${label}`}
           </Text>
 
           <Text style={styles.arrow}>⌄</Text>
@@ -767,6 +774,15 @@ export default function TenantsScreen({ route }) {
     activeTab, showReAssignbed
   ]);
 
+  useEffect(()=>{
+    if(showFilter){
+      setTempFilterStatus([])
+      setTempFilterSharing([])
+      setTempFilterMonth("")
+      setActiveDropdown(null)
+    }
+  },[showFilter])
+
 
   //   useLayoutEffect(() => {
   //     const backAction = () => {
@@ -849,9 +865,9 @@ export default function TenantsScreen({ route }) {
         ? []
         : tempFilterStatus;
 
-    setTenantStatusFilter(finalStatus);
-    setSharingTypeFilter(tempFilterSharing);
-    setSelectedMonth(tempFilterMonth);
+    // setTenantStatusFilter(finalStatus);
+    // setSharingTypeFilter(tempFilterSharing);
+    // setSelectedMonth(tempFilterMonth);
 
     await fetchCustomers(
       finalStatus,
@@ -1064,7 +1080,10 @@ export default function TenantsScreen({ route }) {
     setSelectedMonth("");
 
     setTempTenantStatus([]);
+    setTempFilterStatus([])
+    setTempFilterSharing([])
     setTempSharingType([]);
+    setTempFilterMonth("")
     setTempMonth("");
 
     setSearchText("");
@@ -1267,7 +1286,7 @@ export default function TenantsScreen({ route }) {
                   <View style={styles.emptyContainer}>
                     <Image source={EmptyState} style={styles.emptyImage} />
 
-                    {appliedFilters ? (
+                    {appliedFilters || tempFilterStatus.length > 0 || tempFilterSharing.length>0 || !!tempFilterMonth? (
                       <>
                         <Text style={styles.emptyText}>
                           No tenants found{"\n"}
@@ -1445,7 +1464,18 @@ export default function TenantsScreen({ route }) {
                     </ScrollView>
                   )
                 }
-
+  {console.log("abilash",tempFilterStatus)}
+   {console.log("abiash",tempFilterSharing)}
+   {console.log("seetha",tempFilterMonth)}
+                {(appliedFilters || tempFilterStatus.length>0 ||  tempFilterSharing.length >0 || !!tempFilterMonth) && filteredTenants?.length >0
+                // (tenantStatusFilter.length > 0  || sharingTypeFilter?.length > 0 || tempFilterStatus.length>0 
+                // || tempFilterSharing.length >0 || tempFilterMonth || selectedMonth)
+                 && (
+                  <TouchableOpacity onPress={handleResetFilters}
+                  style={{marginLeft:15}}>
+                    <Text style={{fontSize:14,fontFamily:'Gilroy-Bold',color:'#2d5fff'}}>Reset</Text>
+                  </TouchableOpacity>
+                )} 
 
 
                 {!loading &&
@@ -2588,7 +2618,8 @@ export default function TenantsScreen({ route }) {
                 tempFilterSharing,
                 setTempFilterSharing,
                 sharingTypeOptions,
-                "filterSharing"
+                "filterSharing",
+                //  true
               )}
 
               {renderFilterDropdown(
@@ -2804,7 +2835,7 @@ export default function TenantsScreen({ route }) {
           options={tenantStatusOptions}
           selectedValues={tempTenantStatus}
           setSelectedValues={setTempTenantStatus}
-
+           isSingleSelect={true}
           onReset={async () => {
             setTempTenantStatus([]);
             setTenantStatusFilter([]);
@@ -2837,7 +2868,7 @@ export default function TenantsScreen({ route }) {
           options={sharingTypeOptions}
           selectedValues={tempSharingType}
           setSelectedValues={setTempSharingType}
-
+          isSingleSelect={true}
           onReset={async () => {
             setTempSharingType([]);
             setSharingTypeFilter([]);
@@ -3081,8 +3112,8 @@ const styles = StyleSheet.create({
   //   elevation: 5,
   // },
   dropdownMenu: {
-    position: "absolute",
-    top: 52,
+    // position: "absolute",
+    top: 6,
     left: 0,
     right: 0,
     backgroundColor: "#fff",

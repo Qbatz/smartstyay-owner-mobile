@@ -89,11 +89,11 @@ const ConfirmMPin = ({ route }) => {
       return;
     }
     const data = {
-      pin: Number(pin),
+      pin: String(pin),
       platform: Platform.OS,
     }
 
-
+console.log("localdata",data)
     const res = await CreateMpin(data);
 
     console.log("response", res);

@@ -264,7 +264,7 @@ export default function KycPendingSheet({
                     >
 
                         <Text style={styles.pendingText}>
-                            <Text style={styles.pendingCount}>2</Text> Pending action(s)
+                            Pending Actions
                         </Text>
 
                         <View style={styles.divider} />
@@ -330,8 +330,8 @@ export default function KycPendingSheet({
                                 >
                                     {isVerified
                                         ? "Completed"
-                                        : isRequested
-                                            ? "Reminder Sent"
+                                        : canRiseRequestAgain
+                                            ? "Reminder Again"
                                             : "Send Reminder"}
                                 </Text>
                             </TouchableOpacity>
@@ -339,7 +339,7 @@ export default function KycPendingSheet({
                         </View>
 
 
-                        <View style={styles.actionCard}>
+                        {/* <View style={styles.actionCard}>
 
                             <View style={styles.titleRow}>
                                 <Text style={styles.cardTitle}>
@@ -361,7 +361,7 @@ export default function KycPendingSheet({
                                 </Text>
                             </TouchableOpacity>
 
-                        </View>
+                        </View> */}
 
 
 

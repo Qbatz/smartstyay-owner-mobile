@@ -51,7 +51,7 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails,
-    downloadReceipt, shareReceiptOnWhatsapp, ReceiptFilter } = useContext(BillContext);
+    downloadReceipt, shareReceiptOnWhatsapp, ReceiptFilter,onlyReceiptList,setOnlyReceiptList } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   console.log("receiptsList", receiptsList);
@@ -108,6 +108,9 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
+  const [receiptPage,setReceiptPage]=useState(1);
+  const[pageLoading,setPageLoading]=useState(false);
+  const[hasMoreReceipt,setHasMoreReceipt]=useState(true)
 
   const detailsY = useRef(new Animated.Value(0)).current;
   const detailsSheetY = useRef(new Animated.Value(0)).current;
@@ -507,9 +510,45 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
       .join(", ");
 
 
+    
+  const onEndReachFetchReceiptList=async(page=1, isRefresh=false)=>{
+
+    if (!activeHostelId) {
+      return;
+    }
 
 
+    if (pageLoading) {
+      return;
+    }
 
+
+    if (!isRefresh && !hasMoreReceipt) {
+      return;
+    }
+
+    try{
+       const res= await ReceiptFilter({hostelId: activeHostelId,
+        keyword: "",
+        page: page,
+        size: 20})
+
+        console.log("onlyNewReceiptlist",res)
+        if(res?.success){
+          const newReceiptList= res?.data?.listReceipts || [];
+
+          if(newReceiptList.length < 20){
+            setHasMoreReceipt(false)
+          }
+
+          setReceiptPage(page)
+        }
+    }catch(error){
+      console.log(error)
+    }
+  }
+
+console.log("someone",onlyReceiptList)
 
 
 
@@ -638,7 +677,7 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
               )}
 
             <FlatList
-              data={receiptsList?.listReceipts || []}
+              data={onlyReceiptList || []}
               renderItem={renderItem}
               keyExtractor={(item) => item.transactionId}
               showsVerticalScrollIndicator={false}
@@ -648,6 +687,12 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
               }}
               ListEmptyComponent={!loading && <EmptyReceiptState />}
                onScroll={handleScroll}
+               onEndReached={()=>{
+                if(!pageLoading && hasMoreReceipt){
+                    onEndReachFetchReceiptList(receiptPage + 1)
+                }}
+                }
+                 onEndReachedThreshold={0.5}
             />
           </>
         )}

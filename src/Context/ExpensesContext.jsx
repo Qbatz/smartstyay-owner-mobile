@@ -215,6 +215,7 @@ if (filters.categoryId && filters.categoryId !== 0) {
       };
     }
   } catch (error) {
+    console.log("extraError",getErrorMessage(error))
     return {
       success: false,
       message: getErrorMessage(error),

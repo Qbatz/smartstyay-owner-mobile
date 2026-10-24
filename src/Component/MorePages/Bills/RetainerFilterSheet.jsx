@@ -27,6 +27,7 @@ const RetainerFilterSheet = ({
     visible,
     onClose,
     onApply,
+    appliedFilters,
     setAppliedFilters,
     onResetFilter
 }) => {
@@ -219,6 +220,28 @@ const RetainerFilterSheet = ({
         return () => sub.remove();
     }, [visible]);
 
+    useEffect(() => {
+        if (visible) {
+
+            setActiveDropdown(null)
+            if (!appliedFilters) {
+                setRetainerType([])
+                setStatus([]);
+                //  setPaymentMethod] = useState([]);
+                setAvailableBalance([]);
+                setShowMoreFilters(false);
+                setSelectedFloor([])
+                setSelectedRoom([])
+
+                setFromDate(null);
+                setToDate(null);
+                setSelectedPeriod("")
+                setMinAmount(null);
+                setMaxAmount(null)
+            }
+        }
+    }, [visible])
+
 
     // new design changes ==>
 
@@ -249,59 +272,59 @@ const RetainerFilterSheet = ({
             setFilterError("Please select Start Date");
             return;
         }
-const selectedFloorId =
-    selectedFloor?.length > 0 ? selectedFloor[0] : undefined;
+        const selectedFloorId =
+            selectedFloor?.length > 0 ? selectedFloor[0] : undefined;
 
-const selectedRoomId =
-    selectedRoom?.length > 0 ? selectedRoom[0] : undefined;
+        const selectedRoomId =
+            selectedRoom?.length > 0 ? selectedRoom[0] : undefined;
 
-const selectedFloorOption = floorOptions.find(
-    item => String(item.value) === String(selectedFloorId)
-);
+        const selectedFloorOption = floorOptions.find(
+            item => String(item.value) === String(selectedFloorId)
+        );
 
-const selectedRoomOption = roomOptions.find(
-    item => String(item.value) === String(selectedRoomId)
-);
+        const selectedRoomOption = roomOptions.find(
+            item => String(item.value) === String(selectedRoomId)
+        );
 
-const filters = {
-    startDate: fromDate
-        ? dayjs(fromDate).format("DD/MM/YYYY")
-        : undefined,
+        const filters = {
+            startDate: fromDate
+                ? dayjs(fromDate).format("DD/MM/YYYY")
+                : undefined,
 
-    endDate: toDate
-        ? dayjs(toDate).format("DD/MM/YYYY")
-        : undefined,
+            endDate: toDate
+                ? dayjs(toDate).format("DD/MM/YYYY")
+                : undefined,
 
-    status: status?.length > 0
-        ? status[0]
-        : undefined,
+            status: status?.length > 0
+                ? status[0]
+                : undefined,
 
-    type: retainerType?.length > 0
-        ? retainerType
-        : undefined,
+            type: retainerType?.length > 0
+                ? retainerType
+                : undefined,
 
-    period: selectedPeriod || undefined,
+            period: selectedPeriod || undefined,
 
-    // API-ku ID
-    floor: selectedFloorId,
+            // API-ku ID
+            floor: selectedFloorId,
 
-    // UI-ku Name
-    floorName: selectedFloorOption?.label,
+            // UI-ku Name
+            floorName: selectedFloorOption?.label,
 
-    // API-ku ID
-    room: selectedRoomId,
+            // API-ku ID
+            room: selectedRoomId,
 
-    // UI-ku Name
-    roomName: selectedRoomOption?.label,
+            // UI-ku Name
+            roomName: selectedRoomOption?.label,
 
-    minAmount: minAmount
-        ? Number(minAmount)
-        : undefined,
+            minAmount: minAmount
+                ? Number(minAmount)
+                : undefined,
 
-    maxAmount: maxAmount
-        ? Number(maxAmount)
-        : undefined,
-};
+            maxAmount: maxAmount
+                ? Number(maxAmount)
+                : undefined,
+        };
 
         // const filters = {
         //     startDate: fromDate
@@ -345,6 +368,7 @@ const filters = {
             (filters.paymentStatus && filters.paymentStatus.length > 0) ||
             (filters.type && filters.type.length > 0) ||
             (filters?.period) ||
+            (filters.status && filters.status.length >0 ) ||
             (filters.modes && filters.modes.length > 0) ||
             (filters.collectedBy && filters.collectedBy.length > 0) ||
             (filters.floor && filters?.floor.length > 0) ||

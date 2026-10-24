@@ -33,8 +33,14 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>SmartStay needs access to your camera so you can capture photos.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>SmartStay needs permission to save images to your photo library.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>SmartStay needs access to your photo library so you can select images to upload.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
@@ -58,11 +64,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-  <key>NSPhotoLibraryUsageDescription</key>
-  <string>SmartStay needs access to your photo library so you can select images to upload.</string>
-  <key>NSPhotoLibraryAddUsageDescription</key>
-  <string>SmartStay needs permission to save images to your photo library.</string>
-  <key>NSCameraUsageDescription</key>
-  <string>SmartStay needs access to your camera so you can capture photos.</string>
 </dict>
 </plist>

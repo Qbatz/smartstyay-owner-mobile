@@ -97,6 +97,7 @@ export default function JobDetailsSheet({
 
     const [iosPickerType, setIosPickerType] = useState(null);
     const [iosTempTime, setIosTempTime] = useState(new Date());
+    const [isSubmitClicked, setIsSubmitClicked] = useState(false)
 
     const formatTime = (date) => {
         if (!date) return "";
@@ -482,7 +483,7 @@ export default function JobDetailsSheet({
         return () => backHandler.remove();
     }, [visible])
 
-      useEffect(() => {
+    useEffect(() => {
         const keyboardShowListener = Keyboard.addListener(
             "keyboardDidShow",
             (e) => {
@@ -601,7 +602,15 @@ export default function JobDetailsSheet({
             endTime;
 
         if (!hasJobData) {
-            return true;
+            setMessage("Please Enter at least one Job Detail");
+            setModalType("warning");
+            setShowSuccess(true);
+
+            setTimeout(() => {
+                setShowSuccess(false);
+            }, 1500);
+
+            return false;
         }
 
         if (!companyName.trim()) {
@@ -719,6 +728,9 @@ export default function JobDetailsSheet({
         if (!validateJobDetails()) {
             return;
         }
+
+        if (isSubmitClicked) return;
+
 
         // Existing jobs from GET API
         const existingJobs = Array.isArray(
@@ -884,44 +896,50 @@ export default function JobDetailsSheet({
         // =====================================================
         // SAME API FOR ADD + EDIT
         // =====================================================
-        const res = await UpdateJobDetails(
-            activeHostelId,
-            customerDetails?.customerId,
-            currentPayload
-        );
-
-        console.log("UpdateJobDetails RESPONSE =>", res);
-
-        if (res?.success) {
-            setMessage(
-                isEditMode
-                    ? "Updated Successfully"
-                    : "Saved Successfully"
+        try {
+            setIsSubmitClicked(true)
+            const res = await UpdateJobDetails(
+                activeHostelId,
+                customerDetails?.customerId,
+                currentPayload
             );
 
-            setModalType("success");
-            setShowSuccess(true);
+            console.log("UpdateJobDetails RESPONSE =>", res);
 
-            setTimeout(() => {
-                setShowSuccess(false);
+            if (res?.success) {
+                setMessage(
+                    isEditMode
+                        ? "Updated Successfully"
+                        : "Saved Successfully"
+                );
 
-                onSuccess?.();
+                setModalType("success");
+                setShowSuccess(true);
 
-                closeSheet();
-            }, 1500);
+                setTimeout(() => {
+                    setShowSuccess(false);
 
-        } else {
-            setMessage(
-                res?.message ||
-                "Job Details update failed"
-            );
+                    onSuccess?.();
+                    setIsSubmitClicked(false)
+                    closeSheet();
+                }, 1500);
 
-            setModalType("error");
-            setShowSuccess(true);
+            } else {
+                setMessage(
+                    res?.message ||
+                    "Job Details update failed"
+                );
 
-            setTimeout(() => {
-                setShowSuccess(false);
-            }, 1200);
+                setModalType("error");
+                setShowSuccess(true);
+
+                setTimeout(() => {
+                    setShowSuccess(false);
+                    setIsSubmitClicked(false)
+                }, 1200);
+            }
+        } catch (errror) {
+            setIsSubmitClicked(false)
         }
     };
 
@@ -1240,15 +1258,31 @@ export default function JobDetailsSheet({
                                     <Image source={ClockIcon} style={styles.clockIcon} />
                                 </TouchableOpacity>
                             </View>
-                            {startTimeError ? <ErrorMessage message={startTimeError} /> : null}
-                            {endTimeError ? <ErrorMessage message={endTimeError} /> : null}
+
+
+                            <View style={styles.shiftErrorRow}>
+                                <View style={styles.shiftErrorColumn}>
+                                    {startTimeError ? (
+                                        <ErrorMessage message={startTimeError} />
+                                    ) : null}
+                                </View>
+
+                                <View style={styles.shiftToErrorColumn}>
+                                    {endTimeError ? (
+                                        <ErrorMessage message={endTimeError} />
+                                    ) : null}
+                                </View>
+                            </View>
+
+
 
                             <View style={styles.footer}>
                                 <TouchableOpacity onPress={closeSheet}>
                                     <Text style={[styles.cancel, { marginRight: 20 }]}>Cancel</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={styles.updateBtn} onPress={handleUpdate}>
+                                <TouchableOpacity style={[styles.updateBtn, isSubmitClicked && { opacity: 0.4 }]} onPress={handleUpdate}
+                                    disabled={isSubmitClicked}>
                                     <Text style={styles.updateText}> {isEditMode ? "Update" : "Save"}</Text>
                                 </TouchableOpacity>
                             </View>
@@ -1665,4 +1699,23 @@ const styles = StyleSheet.create({
         width: "100%",
         height: 210,
     },
+
+    shiftErrorRow: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "flex-start",
+        columnGap: 15,
+        marginTop: 8,
+    },
+
+    shiftErrorColumn: {
+       
+         width:"50%",
+        alignItems: "flex-start",
+    },
+    shiftToErrorColumn: {
+          width:"50%",
+        alignItems: "flex-end",
+    },
+
 });

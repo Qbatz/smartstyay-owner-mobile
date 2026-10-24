@@ -863,7 +863,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   };
   const handleCreateBill = () => {
     if (!canWriteInvoice) return;
-    navigation.navigate("CreateBills", { mode: "addBill", customerDetails })
+    // navigation.navigate("CreateBills", { mode: "addBill", customerDetails })
+    navigation.navigate("CreateInvoice", { mode: "add", customerDetails  })
   }
 
   const handleCreateRetainer = () => {

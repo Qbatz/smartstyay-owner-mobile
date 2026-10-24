@@ -11,6 +11,7 @@ import {
   ScrollView,
   BackHandler,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { useCustomer } from "../../../Context/CustomerContext";
@@ -23,16 +24,18 @@ export default function EditAdvanceAmountSheet({
   customerDetails,
   onSuccess,
 }) {
-    const { editAdvanceAmount } = useCustomer();
+  const { editAdvanceAmount } = useCustomer();
   const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
   const keyboardOffset = useRef(new Animated.Value(0)).current;
+
+  const insets = useSafeAreaInsets()
 
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
   const [amountError, setAmountError] = useState("");
   const [error, setError] = useState("");
 
- 
+
   const resetState = () => {
     setAmount("");
     setReason("");
@@ -113,128 +116,140 @@ export default function EditAdvanceAmountSheet({
 
   if (!visible) return null;
 
- 
-const handleUpdate = async () => {
-  let valid = true;
- 
-  setError("");
 
-  // 1️⃣ Empty / invalid
-  if (!amount || Number(amount) <= 0) {
-    setAmountError("Please enter new advance amount");
-    valid = false;
-  }
+  const handleUpdate = async () => {
+    let valid = true;
 
-  if (!valid) return;
+    setError("");
 
- 
-  const oldAmount = Number(
-    customerDetails?.advanceInfo?.advanceAmount || 0
-  );
-  const newAmount = Number(amount);
+    // 1️⃣ Empty / invalid
+    if (!amount || Number(amount) <= 0) {
+      setAmountError("Please enter new advance amount");
+      valid = false;
+    }
 
-  if (oldAmount === newAmount) {
-    setError("No changes detected in Advance Amount");
-    return;
-  }
+    if (!valid) return;
 
-  // 3️⃣ API payload
-  const payload = {
-    advanceAmount: newAmount,
-    reason,
+
+    const oldAmount = Number(
+      customerDetails?.advanceInfo?.advanceAmount || 0
+    );
+    const newAmount = Number(amount);
+
+    if (oldAmount === newAmount) {
+      setError("No changes detected in Advance Amount");
+      return;
+    }
+
+    // 3️⃣ API payload
+    const payload = {
+      advanceAmount: newAmount,
+      reason,
+    };
+
+    const res = await editAdvanceAmount(
+      customerDetails.hostelId,
+      customerDetails.bookingId,
+      payload
+    );
+
+    if (res?.success) {
+      onSuccess?.();
+      resetState();
+    } else {
+      setError(res?.message || "Update failed");
+    }
   };
-
-  const res = await editAdvanceAmount(
-    customerDetails.hostelId,
-    customerDetails.bookingId,
-    payload
-  );
-
-  if (res?.success) {
-    onSuccess?.();      
-    resetState();         
-  } else {
-    setError(res?.message || "Update failed");
-  }
-};
   return (
     <>
       <SuccessModal visible={false} />
 
-     <View style={styles.wrapper} pointerEvents="box-none">
-      {/* BACKDROP */}
-      <TouchableOpacity
-        style={styles.backdrop}
-        activeOpacity={1}
-        onPress={resetState}
-      />
+      <View style={styles.wrapper} pointerEvents="box-none">
+        {/* BACKDROP */}
+        <TouchableOpacity
+          style={styles.backdrop}
+          activeOpacity={1}
+          onPress={resetState}
+        />
 
-      {/* SHEET */}
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          styles.sheet,
-          {
-            transform: [
-              { translateY },
-              { translateY: Animated.multiply(keyboardOffset, -1) },
-            ],
-          },
-        ]}
-      >
-        <View style={styles.handle} />
-
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 30 }}
+        {/* SHEET */}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.sheet,
+            {
+              marginBottom: insets.bottom,
+              transform: [
+                { translateY },
+                { translateY: Animated.multiply(keyboardOffset, -1) },
+              ],
+            },
+          ]}
         >
-          <Text style={styles.title}>Edit Advance Amount</Text>
+          <View style={styles.handle} />
 
-          {/* AMOUNT */}
-          <Text style={styles.label}>
-            New Advance Amount <Text style={{ color: "red" }}>*</Text>
-          </Text>
-          <TextInput
-            style={styles.input}
-            keyboardType="numeric"
-            placeholder="Enter New Advance Amount"
-            value={amount}
-            onChangeText={(t) => {
-               const onlyNum = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
-              setAmount(onlyNum);
-              setAmountError("");
-            }}
-          />
-          {amountError && <ErrorMessage message={amountError} />}
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 30 }}
+          >
+            <Text style={styles.title}>Edit Advance Amount</Text>
 
-          {/* REASON */}
-          <Text style={[styles.label,{marginTop:15}]}>Reason</Text>
-          <TextInput
-            style={[styles.input, { height: 90,marginBottom:10}]}
-            multiline
-            placeholder="Enter your reason"
-            value={reason}
-            onChangeText={setReason}
-          />
+            {/* AMOUNT */}
+            <Text style={styles.label}>
+              New Advance Amount <Text style={{ color: "red" }}>*</Text>
+            </Text>
+            <TextInput
+              style={styles.input}
+              keyboardType="numeric"
+              placeholder="Enter New Advance Amount"
+              value={amount}
+              onChangeText={(t) => {
+                const onlyNum = t.replace(/[^0-9]/g, "").replace(/^0+/, "");
+                setAmount(onlyNum);
+                setAmountError("");
+              }}
+            />
+            {amountError && <ErrorMessage message={amountError} />}
 
-          {error && <ErrorMessage message={error} />}
+            {/* REASON */}
+            <Text style={[styles.label, { marginTop: 15 }]}>Reason</Text>
+            <TextInput
+              style={[styles.input, { height: 90, marginBottom: 10 }]}
+              multiline
+              placeholder="Enter your reason"
+              value={reason}
+              onChangeText={setReason}
+            />
 
-          {/* ACTIONS */}
-          <View style={styles.footer}>
-            <TouchableOpacity onPress={resetState} style={{borderWidth:1,marginRight:10,borderColor:"#1D4ED8",paddingHorizontal: 36,
-                              paddingVertical: 12,borderRadius: 22,}}>
-              <Text style={styles.cancel}>Cancel</Text>
-            </TouchableOpacity>
+            {error && <ErrorMessage message={error} />}
 
-            <TouchableOpacity
-              style={styles.updateBtn}
-              onPress={handleUpdate}
+            {/* ACTIONS */}
+            <View
+              // style={styles.footer}
+              style={[
+                styles.footer,
+                {
+                  marginBottom: Math.max(insets.bottom, 10),
+
+                },
+              ]}
             >
-              <Text style={styles.updateText}>Update</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </Animated.View>
+              <TouchableOpacity onPress={resetState} style={{
+                borderWidth: 1, marginRight: 10, borderColor: "#1D4ED8", paddingHorizontal: 36,
+                paddingVertical: 12, borderRadius: 22,
+              }}>
+                <Text style={styles.cancel}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.updateBtn}
+                onPress={handleUpdate}
+              >
+                <Text style={styles.updateText}>Update</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </Animated.View>
       </View>
     </>
   );

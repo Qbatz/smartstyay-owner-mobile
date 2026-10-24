@@ -177,10 +177,17 @@ export default function ExpensesList({ navigation }) {
     const [selectedCreatedBy, setSelectedCreatedBy] = useState([])
     const [minAmount, setMinAmount] = useState(null)
     const [maxAmount, setMaxAmount] = useState(null)
-    const [selectedSubCategory,setSelectedSubCategory]=useState([])
-    const [selectedMonth,setSelectedMonth]=useState("")
+    const [selectedSubCategory, setSelectedSubCategory] = useState([])
+    const [selectedMonth, setSelectedMonth] = useState("")
 
     const [errorMsg, setErrorMsg] = useState("")
+
+    const [expensesPage, setExpensesPage] = useState(1)
+    const [hasMoreExpense, setHasMoreExpense] = useState(true)
+    const [refreshing, setRefreshing] = useState(false)
+    const onEndReachedCalledDuringMomentum = useRef(true);
+    const isFetchingList = useRef(false);
+
 
     const staticExpenses = [
         {
@@ -532,7 +539,7 @@ export default function ExpensesList({ navigation }) {
     }))
 
     const paymentModeOptions = expensesList?.filterOptions?.paymentMode?.map(item => ({
-        label:  item?.accountName + " " + "-" + " " + item?.paymentMode,
+        label: item?.accountName + " " + "-" + " " + item?.paymentMode,
         value: item?.paymentMethod,
     }))
 
@@ -602,17 +609,17 @@ export default function ExpensesList({ navigation }) {
         </TouchableOpacity>
     );
 
-    console.log("silaana",formatDate(fromDate))
+    console.log("silaana", formatDate(fromDate))
     console.log(toDate)
     const applyToFilter = async ({
         newCategory = selectedCategory ?? tempCatgory,
         newPaymentStatus = paymentStatus,
-        newVendor=selectedVendor,
+        newVendor = selectedVendor,
         newPaymentMode = paymentMode,
-        newCreatedBy= selectedCreatedBy,
+        newCreatedBy = selectedCreatedBy,
     } = {}) => {
 
-        const finalCategory= newCategory.length ? newCategory : tempCatgory
+        const finalCategory = newCategory.length ? newCategory : tempCatgory
 
         const filters = {
             categoryId: finalCategory?.length ? finalCategory : undefined,
@@ -628,18 +635,80 @@ export default function ExpensesList({ navigation }) {
             maxAmount: maxAmount || undefined,
         }
 
-     
+
 
         const res = await GetExpenseList(activeHostelId, filters)
-       
+
     }
 
-    const handleResetFilter=()=>{
-       
-         if (activeHostelId) {
-                GetExpenseList(activeHostelId);
-            }
+    const handleResetFilter = () => {
+
+        if (activeHostelId) {
+            GetExpenseList(activeHostelId);
+        }
     }
+
+    const onEndReachedExpenseList = async (page = 1, isRefresh = false) => {
+        if (!activeHostelId || isFetchingList.current) {
+          return;
+        }
+    
+        if (refreshing && !isRefresh) {
+          return;
+        }
+    
+        if (!isRefresh && !hasMoreBills) {
+          return;
+        }
+
+        const finalCategory = newCategory.length ? newCategory : tempCatgory
+
+        const filters = {
+            categoryId: finalCategory?.length ? finalCategory : undefined,
+            paymentStatus: paymentStatus?.length ? paymentStatus : undefined,
+            vendorId: selectedVendor?.length ? selectedVendor : undefined,
+            paymentMode: paymentMode?.length ? paymentMode : undefined,
+            createdBy: selectedCreatedBy?.length ? selectedCreatedBy : undefined,
+            subCategoryId: selectedSubCategory?.length ? selectedSubCategory : undefined,
+            startDate: fromDate ? formatDate(fromDate) : undefined,
+            endDate: toDate ? formatDate(toDate) : undefined,
+            period: selectedMonth ? selectedMonth : undefined,
+            minAmount: minAmount || undefined,
+            maxAmount: maxAmount || undefined,
+        }
+    
+    
+        isFetchingBills.current = true;
+    
+        const requestPage = isRefresh ? 1 : page;
+    
+        
+    
+        try {
+          setRefreshing(true)
+           const res = await GetExpenseList(activeHostelId, filters);
+    
+          if (res?.success) {
+            const pagination = res?.data?.paginationSummary;
+            const currentPage = pagination?.currentPage ?? requestPage;
+            const totalPages = pagination?.totalPages;
+            const newBillsList = res?.data?.listInvoices ?? [];
+    
+            setBillsPage(currentPage);
+    
+            setHasMoreExpense(
+              totalPages != null
+                ? currentPage < totalPages
+                : newBillsList.length === 30
+            );
+          }
+        } catch (error) {
+          console.log("Bill pagination error:", error);
+        } finally {
+          isFetchingBills.current = false;
+          setRefreshing(false)
+        }
+      };
 
     if (!canReadExpense && !loading) {
         return (
@@ -822,6 +891,25 @@ export default function ExpensesList({ navigation }) {
                         <FlatList
                             data={Expensesdata || []}
                             keyExtractor={(item) => item?.expenseId}
+                            onMomentumScrollBegin={() => {
+                                onEndReachedCalledDuringMomentum.current = false;
+                            }}
+
+                            onEndReached={() => {
+                                if (
+                                    !onEndReachedCalledDuringMomentum.current &&
+                                    !isFetchingList.current &&
+                                    hasMoreExpense &&
+                                    !refreshing
+                                ) {
+                                    // Correct assignment: lock further callbacks during momentum.
+                                    onEndReachedCalledDuringMomentum.current = true;
+
+                                    onEndReachedExpenseList(expensesPage + 1);
+                                }
+                            }}
+
+                            onEndReachedThreshold={0.4}
                             renderItem={renderExpensesItem}
                             ListHeaderComponent={() => (
                                 <>
@@ -830,7 +918,7 @@ export default function ExpensesList({ navigation }) {
                                         showsHorizontalScrollIndicator={false}
                                         contentContainerStyle={styles.cardRow}
                                     >
-                                         <SummaryCard
+                                        <SummaryCard
                                             title="Total Expenses"
                                             value={expensesList?.totalExpenses}
                                             icon={ExpenseListIcon}
@@ -866,7 +954,7 @@ export default function ExpensesList({ navigation }) {
                                     <View style={styles.filterRow}>
                                         <View style={{ display: 'flex', flexDirection: 'row' }}>
                                             <TouchableOpacity style={styles.filterChipActive}
-                                            onPress={() => setShowFilter(true)}>
+                                                onPress={() => setShowFilter(true)}>
                                                 <Text style={styles.filterChipTextActive}>All</Text>
                                             </TouchableOpacity>
 
@@ -993,27 +1081,27 @@ export default function ExpensesList({ navigation }) {
                             </View>
 
                             <View style={styles.quickRow}>
-                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "THIS_MONTH" &&{backgroundColor:'#e1f1ff'}]}
-                                 onPress={() => {
-                                    //  setFromDate(dayjs()); setToDate(dayjs());
-                                    setSelectedMonth("THIS_MONTH")
-                                      }}>
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "THIS_MONTH" && { backgroundColor: '#e1f1ff' }]}
+                                    onPress={() => {
+                                        //  setFromDate(dayjs()); setToDate(dayjs());
+                                        setSelectedMonth("THIS_MONTH")
+                                    }}>
                                     <Text style={styles.quickText}>This Month</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_3_MONTHS" &&{backgroundColor:'#e1f1ff'}]}
-                                onPress={() => {
-                                    //  setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week"));
-                                    setSelectedMonth("LAST_3_MONTHS")
-                                      }}>
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_3_MONTHS" && { backgroundColor: '#e1f1ff' }]}
+                                    onPress={() => {
+                                        //  setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week"));
+                                        setSelectedMonth("LAST_3_MONTHS")
+                                    }}>
                                     <Text style={styles.quickText}>Last 3 month</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_6_MONTHS" &&{backgroundColor:'#e1f1ff'}]}
-                                onPress={() => { 
-                                    // setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month"));
-                                    setSelectedMonth("LAST_6_MONTHS")
-                                     }}>
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_6_MONTHS" && { backgroundColor: '#e1f1ff' }]}
+                                    onPress={() => {
+                                        // setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month"));
+                                        setSelectedMonth("LAST_6_MONTHS")
+                                    }}>
                                     <Text style={styles.quickText}>Last 6 Month</Text>
                                 </TouchableOpacity>
                             </View>
@@ -1033,7 +1121,7 @@ export default function ExpensesList({ navigation }) {
                                 }}
                             />
 
-                               <MultiSelectDropdown
+                            <MultiSelectDropdown
                                 label="Sub Category"
                                 dropdownKey="subCategory"
                                 placeholder="Select Category"
@@ -1147,7 +1235,7 @@ export default function ExpensesList({ navigation }) {
                                         </View>
                                     </View>
 
-                                       {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
+                                    {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
 
                                     {/* <View
                                         style={styles.selectWrapper}
@@ -1202,7 +1290,7 @@ export default function ExpensesList({ navigation }) {
                                     setMaxAmount("")
                                     // applyToFilter([],[],[],[],[])
                                     handleResetFilter()
-                                     setShowFilter(false)
+                                    setShowFilter(false)
                                 }}
                             >
                                 <Text style={styles.resetBtnText}>Reset All</Text>
@@ -1232,7 +1320,7 @@ export default function ExpensesList({ navigation }) {
                             mode="single"
                             date={fromDate}
                             onChange={(p) => {
-                                setFromDate(p.date || dayjs() );
+                                setFromDate(p.date || dayjs());
                                 setOpenFrom(false);
                             }}
                         />
@@ -1252,7 +1340,7 @@ export default function ExpensesList({ navigation }) {
                             mode="single"
                             date={toDate}
                             onChange={(p) => {
-                                setToDate(p.date || dayjs() );
+                                setToDate(p.date || dayjs());
                                 setOpenTo(false);
                             }}
                         />
@@ -1657,8 +1745,10 @@ const styles = StyleSheet.create({
     optionText: { fontSize: 15, color: "#000" },
 
     quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
-    quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, 
-        backgroundColor: "#F5F6FA", alignItems: "center" },
+    quickBtn: {
+        width: "32%", paddingVertical: 12, borderRadius: 12,
+        backgroundColor: "#F5F6FA", alignItems: "center"
+    },
     quickText: { color: "#111", fontFamily: "Gilroy-Semibold" },
     bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 30, marginBottom: 20 },
     resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },

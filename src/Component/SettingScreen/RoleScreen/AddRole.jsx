@@ -334,7 +334,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
       <View style={styles.overlay}>
         {/* Sheet */}
         <Animated.View
-          style={[styles.sheet, {marginBottom: insets.bottom, transform: [{ translateY }] }]}
+          style={[styles.sheet, {paddingBottom:10+ insets.bottom, transform: [{ translateY }] }]}
           {...panResponder.panHandlers}
         >
           <View style={styles.handle} />
@@ -369,7 +369,7 @@ export default function AddCategorySheet({ onClose, editData, onSuccess }) {
               <ErrorMessage message={roleError} type="error" />
             )}
 
-            <Text style={styles.label}>Description *</Text>
+            <Text style={styles.label}>Description <Text style={{ color: "red" }}>*</Text></Text>
             <TextInput
               style={styles.textArea}
               placeholder="Manage all except Banking & Finance"
@@ -483,7 +483,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 22,
     borderTopRightRadius: 22,
     padding: 20,
-    height: "92%",
+    height: "85%",
   },
 
   handle: {

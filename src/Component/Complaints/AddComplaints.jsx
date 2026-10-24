@@ -621,11 +621,7 @@ export default function AddComplaint() {
         type={modalType}
       />
 
-      {/* <KeyboardAvoidingView
-     style={{ flex: 1 }}
-  behavior={Platform.OS === "ios" ? "padding" : "height"}
-  keyboardVerticalOffset={0}
-     > */}
+     
       <View style={{ flex: 1 }}>
 
         {/* HEADER - FIXED */}
@@ -647,45 +643,6 @@ export default function AddComplaint() {
           contentContainerStyle={{ paddingBottom: 180, paddingRight: 15, padding: 20 }}
         >
 
-
-
-          {/* {customerOpen && (
-  <View style={styles.dropdownMenu}>
-    <ScrollView nestedScrollEnabled>
-     {CustomerOptions.map((item) => {
-  const isSelected =
-    selectedCustomer?.customerId === item.customerId;
-
-  return (
-    <TouchableOpacity
-      key={item.customerId}
-      style={[
-        styles.dropdownOption,
-        isSelected && styles.dropdownOptionSelected,
-      ]}
-      onPress={() => {
-        setSelectedCustomer(item);
-        setCustomerOpen(false);
-        setUserErrmsg("");
-      }}
-    >
-      <Text
-        style={[
-          styles.optionText,
-          isSelected && styles.optionTextSelected,
-        ]}
-      >
-        {item.fullName}
-      </Text>
-    </TouchableOpacity>
-  );
-})}
-
-    </ScrollView>
-  </View>
-)} */}
-
-
           <Text style={styles.label}>
             Tenant <Text style={{ color: "red" }}>*</Text>
           </Text>
@@ -701,7 +658,9 @@ export default function AddComplaint() {
             <Text style={styles.selectedText}>
               {selectedCustomer?.fullName || "Select Tenant"}
             </Text>
-            <Text style={styles.arrow}>⌄</Text>
+            {/* <Text style={styles.arrow}>⌄</Text> */}
+             <Image source={DownArrow} style={styles.downArrowIcon} />
+            
           </TouchableOpacity>
 
           {customerOpen && (
@@ -772,7 +731,7 @@ export default function AddComplaint() {
               {selectedComplaintType?.raw?.complaintTypeName ||
                 "Select Complaint Type"}
             </Text>
-            <Text style={styles.arrow}>⌄</Text>
+            <Image source={DownArrow} style={styles.downArrowIcon} />
           </TouchableOpacity>
 
           {ctypeOpen && (
@@ -853,7 +812,7 @@ export default function AddComplaint() {
           />
 
 
-          <Text style={styles.sheetLabel}>
+          <Text style={styles.label}>
             Complaint Date  <Text style={{ color: "red" }}>*</Text>
           </Text>
 
@@ -1047,11 +1006,12 @@ const styles = StyleSheet.create({
 
   header: { flexDirection: "row", alignItems: "center", marginBottom: 5, marginTop: Platform.OS === "ios" ? 60 : 40, marginLeft: 20 },
   backIcon: { width: 22, height: 22, marginRight: 10 },
-  headerTitle: { fontSize: 18, fontWeight: "700" },
+  headerTitle: { fontSize: 18, fontFamily: "Gilroy-Bold" },
   label: {
     fontSize: 14,
-    fontWeight: "500",
+    fontFamily: "Gilroy-Semibold" ,
     marginBottom: 6,
+    marginTop:10
   },
 
   selectWrapper: { position: "relative", width: "100%", marginBottom: 18 },
@@ -1068,9 +1028,9 @@ const styles = StyleSheet.create({
     // marginBottom: 5
   },
 
-  selectedText: { color: "#000", fontSize: 15 },
+  selectedText: { color: "#000", fontSize: 15 , fontFamily: "Gilroy-Semibold" },
 
-  downArrow: { width: 18, height: 18, tintColor: "#5E5E5E" },
+  downArrowIcon: { width: 22, height: 22, tintColor: "#5E5E5E" },
 
   // dropdownMenu: {
   //   position: "absolute",
@@ -1085,7 +1045,7 @@ const styles = StyleSheet.create({
   // },
 
   option: { padding: 14 },
-  optionText: { fontSize: 15, color: "#000" },
+  optionText: { fontSize: 15, color: "#000" , fontFamily: "Gilroy-Semibold" },
 
 
 
@@ -1115,11 +1075,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#1D5BEE",
   },
 
-  optionText: { fontSize: 15, color: "#111" },
+  // optionText: { fontSize: 15, color: "#111" },
 
   optionTextSelected: {
     color: "#fff",
-    fontWeight: "700",
+   fontFamily: "Gilroy-Semibold" 
   },
 
 
@@ -1132,6 +1092,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 15,
     justifyContent: "center",
+    fontFamily: "Gilroy-Semibold" 
     // marginBottom:10
   },
 
@@ -1144,6 +1105,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
+    fontFamily: "Gilroy-Semibold" 
     // marginBottom:10
   },
 
@@ -1155,6 +1117,7 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: "top",
     marginTop: 5,
+    fontFamily: "Gilroy-Semibold" 
   },
 
   footer: {
@@ -1249,6 +1212,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: "#111827",
+        fontFamily: "Gilroy-Semibold" 
   },
 
   calendarIconWrapper: {
@@ -1270,6 +1234,7 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#9CA3AF",
     fontSize: 14,
+    fontFamily: "Gilroy-Semibold" 
   },
 
   dropdownMenu: {
@@ -1303,6 +1268,7 @@ const styles = StyleSheet.create({
   newOption: {
     paddingVertical: 12,
     paddingHorizontal: 14,
+
   },
 
   newOptionSelected: {
@@ -1312,11 +1278,12 @@ const styles = StyleSheet.create({
   newOptionText: {
     fontSize: 15,
     color: "#111",
+    fontFamily: "Gilroy-Semibold" 
   },
 
   newOptionTextSelected: {
     color: "#fff",
-    fontWeight: "600",
+   fontFamily: "Gilroy-Semibold" 
   },
 
 

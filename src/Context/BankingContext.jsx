@@ -7,16 +7,19 @@ export const BankingContext = createContext();
 export default function BankingProvider({ children }) {
   const [bankList, setBankList] = useState([]);
   const [transactionList, setTransactionList] = useState([]);
-    const [newtransactionList, setNewTransactionList] = useState([]);
+  const [newtransactionList, setNewTransactionList] = useState([]);
   const [responsiblePersonList, setResponsiblePersonList] = useState([]);
   const [bankOverview, setBankOverview] = useState(null);
   const [bankTransactionHistory, setBankTransactionHistory] = useState([]);
   const [upiAppList, setUpiAppList] = useState([]);
   const [bankMethod, setBankMethod] = useState(null);
   const [transferInitialize, setTransferInitialize] = useState(null)
+  const [transferoldbankInitialize, setTransferOldBankInitialize] = useState(null)
   const [creditCardInitialize, setCreditCardInitialize] = useState(null)
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [newOnlyTransactionList, setNewOnlyTransactionList] = useState([])
+
 
   const getErrorMessage = (error) =>
     error?.response?.data?.message ||
@@ -146,8 +149,13 @@ export default function BankingProvider({ children }) {
 
       if (res.status === 200) {
         console.log("res", res.data);
-
-        const banks = res?.data?.banks || res.data?.data || res.data?.banks || [];
+        const banks = Array.isArray(res?.data?.banks)
+          ? res?.data?.banks
+          : Array.isArray(res?.data?.listBanks)
+            ? res.data.listBanks
+            : Array.isArray(res?.data?.data)
+              ? res?.data?.data
+              : [];
 
         setBankList(banks);
 
@@ -255,11 +263,11 @@ export default function BankingProvider({ children }) {
   const getAllTransactions = async (
     hostelId,
     page = 1,
-    size = 20,
+    size = 30,
     filters = {}
   ) => {
     try {
-      setLoading(true);
+      // setLoading(true);
       setErrorMsg("");
 
       const axios = getAxios();
@@ -278,20 +286,35 @@ export default function BankingProvider({ children }) {
         { params }
       );
 
+
       if (res.status === 200) {
-        console.log("All Transactions =>", res.data);
+        const responseData = res?.data ?? {};
 
-        const transactions = res?.data || []
+        const bankV2Lists = Array.isArray(responseData?.bankV2Lists)
+          ? responseData.bankV2Lists
+          : Array.isArray(responseData?.listBanks)
+            ? responseData?.listBanks
+            : [];
 
-        setBankList(res?.data?.bankList)
-        setNewTransactionList(transactions);
+        const transactions = Array.isArray(responseData?.transactions)
+          ? responseData?.transactions
+          : [];
+
+        setBankList(bankV2Lists);
+        setNewTransactionList(responseData);
+
+        setNewOnlyTransactionList((prev) => [
+          ...(Array.isArray(prev) ? prev : []),
+          ...transactions,
+        ]);
 
         return {
           success: true,
-          data: transactions,
-          response: res.data,
+          data: responseData,
+          response: responseData,
         };
       }
+
 
       return {
         success: false,
@@ -548,6 +571,122 @@ export default function BankingProvider({ children }) {
     }
   };
 
+  const getoldbankingTransferInitialize = async (hostelId, bankId) => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/bank/transfer/initialize/${hostelId}/${bankId}`
+      );
+
+      if (res.status === 200) {
+        const data = res.data || {};
+
+        console.log("TRANSFER INITIALIZE =>", data);
+
+        setTransferOldBankInitialize(data);
+
+        return {
+          success: true,
+          data,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to fetch transfer initialize",
+      };
+    } catch (error) {
+      console.log(
+        "TRANSFER INITIALIZE ERROR =>",
+        error?.response?.status
+      );
+
+      console.log(
+        "TRANSFER INITIALIZE DATA =>",
+        error?.response?.data
+      );
+
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const oldBankSelfTransfer = async (hostelId, payload) => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.put(
+        `/v2/bank/transfer/${hostelId}`,
+        {
+          fromBankId: payload.fromBankId,
+          toBankId: payload.toBankId,
+          balance: Number(payload.balance),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("OLD BANK SELF TRANSFER RESPONSE =>", res?.data);
+
+      if (res.status === 200 || res.status === 201) {
+        await getBankListByHostel(hostelId);
+
+        return {
+          success: true,
+          data: res.data,
+        };
+      }
+
+      return {
+        success: false,
+        message:
+          res?.data?.message ||
+          "Failed to transfer amount",
+      };
+    } catch (error) {
+      console.log(
+        "OLD BANK SELF TRANSFER STATUS =>",
+        error?.response?.status
+      );
+
+      console.log(
+        "OLD BANK SELF TRANSFER DATA =>",
+        error?.response?.data
+      );
+
+      const msg =
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Failed to transfer amount";
+
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const getTransferInitialize = async (
     hostelId,
@@ -713,54 +852,109 @@ export default function BankingProvider({ children }) {
   }
 
   const creditCardPayment = async (hostelId, payload) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    const axios = getAxios();
+      const axios = getAxios();
 
-    const res = await axios.put(
-      `/v3/bank/creditCard/payment/${hostelId}`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const res = await axios.put(
+        `/v3/bank/creditCard/payment/${hostelId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (res.status === 200 || res.status === 201) {
+        return {
+          success: true,
+          data: res.data,
+        };
       }
-    );
 
-    if (res.status === 200 || res.status === 201) {
       return {
-        success: true,
-        data: res.data,
+        success: false,
+        message: "Failed to update credit card payment",
       };
+    } catch (error) {
+      console.log(
+        "CREDIT CARD PAYMENT STATUS =>",
+        error?.response?.status
+      );
+      console.log(
+        "CREDIT CARD PAYMENT DATA =>",
+        error?.response?.data
+      );
+
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      success: false,
-      message: "Failed to update credit card payment",
-    };
-  } catch (error) {
-    console.log(
-      "CREDIT CARD PAYMENT STATUS =>",
-      error?.response?.status
-    );
-    console.log(
-      "CREDIT CARD PAYMENT DATA =>",
-      error?.response?.data
-    );
-
-    const msg = getErrorMessage(error);
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
   }
-}
+
+
+  const createCreditCardAccount = async (hostelId, payload) => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
+
+      const axios = getAxios();
+
+      const res = await axios.post(
+        `/v3/bank/${hostelId}`,
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (res?.status === 200 || res?.status === 201) {
+        return {
+          success: true,
+          data: res.data,
+          message:
+            res?.data?.message ||
+            "Credit Card Added Successfully",
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to create credit card",
+      };
+    } catch (error) {
+      console.log(
+        "CREATE CREDIT CARD STATUS =>",
+        error?.response?.status
+      );
+      console.log(
+        "CREATE CREDIT CARD ERROR =>",
+        error?.response?.data
+      );
+
+      const msg = getErrorMessage(error);
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <BankingContext.Provider
@@ -774,6 +968,7 @@ export default function BankingProvider({ children }) {
         upiAppList,
         bankMethod,
         transferInitialize,
+        transferoldbankInitialize,
         creditCardInitialize,
         loading,
         errorMsg,
@@ -783,7 +978,8 @@ export default function BankingProvider({ children }) {
         AddBankAmount,
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
-        getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer , getCreditCardInitialize , creditCardPayment
+        getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer, getCreditCardInitialize, creditCardPayment,
+        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount
       }}
 
     >

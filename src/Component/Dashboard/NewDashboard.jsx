@@ -1930,14 +1930,14 @@ export default function DashboardNewDesign({ initialParams, route }) {
                           </View>
 
 
-                          {/* <View style={styles.billingRow}>
+                          <View style={styles.billingRow}>
                             <Text style={styles.billingLabel}>Refunded</Text>
                             <Text style={{
                               fontSize: 16,
                               fontFamily: "Gilroy-Bold",
                               color: "red"
                             }}> ₹ {dashboardList?.refundedAmount}</Text>
-                          </View> */}
+                          </View>
 
 
                           <View style={styles.billingRow}>

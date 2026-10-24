@@ -5,6 +5,7 @@ export const AssetContext = createContext();
 
 export const AssetProvider = ({ children }) => {
   const [assetList, setAssetList] = useState([]);
+   const [intializeassetvalues, setIntializeAssetValues] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -13,7 +14,7 @@ export const AssetProvider = ({ children }) => {
     err?.response?.data ||
     "Something went wrong";
 
- 
+
   const getAllAssets = async (hostelId) => {
     setLoading(true);
     setErrorMsg("");
@@ -38,124 +39,124 @@ export const AssetProvider = ({ children }) => {
   };
 
   const addAsset = async (payload) => {
-  setLoading(true);
-  setErrorMsg("");
+    setLoading(true);
+    setErrorMsg("");
 
-  try {
-    const axios = getAxios()
-    const res = await axios.post(
-      `/v2/assets/${payload.hostelId}`,
-      payload
-    );
+    try {
+      const axios = getAxios()
+      const res = await axios.post(
+        `/v2/assets/${payload.hostelId}`,
+        payload
+      );
 
-    if (res.status === 200) {
-      await getAllAssets(payload.hostelId);
+      if (res.status === 200) {
+        await getAllAssets(payload.hostelId);
 
-      return {
-        success: true,
-        data: res.data,
-        message: "Asset created successfully",
-      };
-    }
+        return {
+          success: true,
+          data: res.data,
+          message: "Asset created successfully",
+        };
+      }
 
-    return { success: false };
-  } catch (err) {
-    const msg =
-      err?.response?.data === "Serial number already exists"
-        ? "Serial number already exists"
-        : err?.response?.data || "Failed to add asset";
+      return { success: false };
+    } catch (err) {
+      const msg =
+        err?.response?.data === "Serial number already exists"
+          ? "Serial number already exists"
+          : err?.response?.data || "Failed to add asset";
 
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-}
-
-const handleUpdateAsset = async (payload) => {
-  setLoading(true);
-  setErrorMsg("");
-
-  try {
-    const axios = getAxios()
-    const res = await axios.put(
-      `/v2/assets/${payload.hostelId}/${payload.assetId}`,
-      payload
-    );
-
-    if (res.status === 200) {
-      await getAllAssets(payload.hostelId);
+      setErrorMsg(msg);
 
       return {
-        success: true,
-        data: res.data,
-        message: "Asset updated successfully",
+        success: false,
+        message: msg,
       };
+    } finally {
+      setLoading(false);
     }
-
-    return { success: false };
-  } catch (err) {
-    console.log("UPDATE ASSET ERROR", err?.response);
-
-    const msg =
-      err?.response?.status === 403
-        ? "You don’t have permission to update this asset"
-        : err?.response?.data || "Failed to update asset";
-
-    setErrorMsg(msg);
-
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
   }
-};
 
+  const handleUpdateAsset = async (payload) => {
+    setLoading(true);
+    setErrorMsg("");
 
-const assignAsset = async (payload) => {
-  setLoading(true);
-  setErrorMsg("");
+    try {
+      const axios = getAxios()
+      const res = await axios.put(
+        `/v2/assets/${payload.hostelId}/${payload.assetId}`,
+        payload
+      );
 
-  try {
-    const axios = getAxios()
-    const res = await axios.put(
-      `/v2/assets/assign/${payload.assetId}`,
-      payload
-    );
+      if (res.status === 200) {
+        await getAllAssets(payload.hostelId);
 
-    if (res.status === 200) {
-      // refresh asset list after assign
-      await getAllAssets(payload.hostelId);
+        return {
+          success: true,
+          data: res.data,
+          message: "Asset updated successfully",
+        };
+      }
+
+      return { success: false };
+    } catch (err) {
+      console.log("UPDATE ASSET ERROR", err?.response);
+
+      const msg =
+        err?.response?.status === 403
+          ? "You don’t have permission to update this asset"
+          : err?.response?.data || "Failed to update asset";
+
+      setErrorMsg(msg);
 
       return {
-        success: true,
-        message: res.data || "Asset assigned successfully",
+        success: false,
+        message: msg,
       };
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return { success: false };
-  } catch (err) {
-    const msg =
-      err?.response?.data?.message ||
-      err?.response?.data ||
-      "Failed to assign asset";
 
-    setErrorMsg(msg);
+  const assignAsset = async (payload) => {
+    setLoading(true);
+    setErrorMsg("");
 
-    return {
-      success: false,
-      message: msg,
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      const axios = getAxios()
+      const res = await axios.put(
+        `/v2/assets/assign/${payload.assetId}`,
+        payload
+      );
+
+      if (res.status === 200) {
+        // refresh asset list after assign
+        await getAllAssets(payload.hostelId);
+
+        return {
+          success: true,
+          message: res.data || "Asset assigned successfully",
+        };
+      }
+
+      return { success: false };
+    } catch (err) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.response?.data ||
+        "Failed to assign asset";
+
+      setErrorMsg(msg);
+
+      return {
+        success: false,
+        message: msg,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
 
 
 
@@ -187,18 +188,58 @@ const assignAsset = async (payload) => {
     }
   };
 
- 
+
+  const InitializeAssets = async (hostelId) => {
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const axios = getAxios();
+
+      const res = await axios.get(
+        `/v2/assets/initialize/${hostelId}`
+      );
+
+      if (res?.status === 200) {
+        setIntializeAssetValues(res?.data)
+        return {
+          success: true,
+          data: res?.data,
+        };
+      }
+
+      return { success: false };
+    } catch (err) {
+      console.log(
+        "INITIALIZE ASSETS ERROR 👉",
+        err?.response?.data
+      );
+
+      const message = getErrorMessage(err);
+      setErrorMsg(message);
+
+      return {
+        success: false,
+        message,
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
   return (
     <AssetContext.Provider
       value={{
-        assetList,
+        assetList,intializeassetvalues,
         loading,
         errorMsg,
         getAllAssets,
         addAsset,
         handleUpdateAsset,
         deleteAsset,
-        assignAsset,
+        assignAsset, InitializeAssets , 
       }}
     >
       {children}
