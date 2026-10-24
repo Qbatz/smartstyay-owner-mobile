@@ -8,7 +8,6 @@ export default function BankingProvider({ children }) {
   const [bankList, setBankList] = useState([]);
   const [transactionList, setTransactionList] = useState([]);
   const [newtransactionList, setNewTransactionList] = useState([]);
-  const [newtransactionList, setNewTransactionList] = useState([]);
   const [responsiblePersonList, setResponsiblePersonList] = useState([]);
   const [bankOverview, setBankOverview] = useState(null);
   const [bankTransactionHistory, setBankTransactionHistory] = useState([]);
@@ -20,7 +19,7 @@ export default function BankingProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [newOnlyTransactionList, setNewOnlyTransactionList] = useState([])
-  const [newOnlyTransactionList, setNewOnlyTransactionList] = useState([])
+
 
   const getErrorMessage = (error) =>
     error?.response?.data?.message ||

@@ -13,7 +13,8 @@ import {
   PanResponder,
   BackHandler, Keyboard, Platform,
   KeyboardAvoidingView,
-  FlatList
+  FlatList,
+  ActivityIndicator
 
 } from "react-native";
 import { useFocusEffect, useNavigationState } from "@react-navigation/native";
@@ -136,8 +137,8 @@ export default function BillsDesign({ route }) {
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
     GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter,
-    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills, GetRecurringInvoicesForReview, 
-    availablerecurringInvoices } = useContext(BillContext)
+    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills, GetRecurringInvoicesForReview,
+    availablerecurringInvoices, onlyBillList } = useContext(BillContext)
 
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
@@ -174,7 +175,7 @@ export default function BillsDesign({ route }) {
 
 
   console.log("BillDetails", BillDetails?.listInvoices);
-   console.log("BillDetails", BillDetails);
+  console.log("BillDetails", BillDetails);
 
   const filterOptions = BillDetails?.filterOptions;
 
@@ -355,6 +356,11 @@ export default function BillsDesign({ route }) {
     dayjs().format("DD-MM-YYYY")
   );
   const [isRefundClicked, setIsRefundClicked] = useState(false);
+  const [billsPage, setBillsPage] = useState(1)
+  const [hasMoreBills, setHasMoreBills] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const onEndReachedCalledDuringMomentum = useRef(true);
+  const isFetchingBills = useRef(false);
 
 
   const isSettlementBill =
@@ -437,7 +443,11 @@ export default function BillsDesign({ route }) {
       activeHostelId &&
       canReadInvoice
     ) {
-      GetAllBillDetails(activeHostelId);
+      const filters = {
+        page: 1,
+        size: 30
+      }
+      GetAllBillDetails(activeHostelId, filters);
     } else if (!activeHostelId || !canReadInvoice) {
       setBillDetails([]);
     }
@@ -3033,6 +3043,116 @@ export default function BillsDesign({ route }) {
     }
   };
 
+  //  const filters = {
+  //     startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+  //     endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+  //     paymentStatus: billStatus,
+  //     type: type,
+  //     modes: mode,
+  //     createdBy: createdBy,
+  //   };
+
+  //   console.log("filterdate", filters);
+
+  //   const hasAnyFilter =
+  //     filters.startDate ||
+  //     filters.endDate ||
+  //     (filters.paymentStatus && filters.paymentStatus.length > 0) ||
+  //     (filters.type && filters.type.length > 0) ||
+  //     (filters.modes && filters.modes.length > 0) ||
+  //     (filters.createdBy && filters.createdBy.length > 0);
+
+  //   if (!hasAnyFilter) {
+  //     setFilterError("Please select at least one filter");
+  //     return;
+  //   }
+
+  //   await GetAllBillDetails(activeHostelId, filters);
+
+  //   setAppliedFilters(filters);
+
+  //   setShowFilter(false);
+  // };
+
+  // const applyTopFilters = async ({
+  //   paymentStatus = billStatus,
+  //   selectedType = type,
+  //   selectedMode = mode,
+  //   selectedCreatedBy = createdBy,
+  // } = {}) => {
+  //   if (!canReadInvoice) return;
+
+  //   const filters = {
+  //     startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+  //     endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+  //     paymentStatus,
+  //     type: selectedType,
+  //     modes: selectedMode,
+  //     createdBy: selectedCreatedBy,
+  //   };
+
+  //   await GetAllBillDetails(activeHostelId, filters);
+
+  //   setAppliedFilters(filters);
+
+  const onEndReachedBillList = async (page = 1, isRefresh = false) => {
+    if (!activeHostelId || isFetchingBills.current) {
+      return;
+    }
+
+    if (refreshing && !isRefresh) {
+      return;
+    }
+
+    if (!isRefresh && !hasMoreBills) {
+      return;
+    }
+
+
+    isFetchingBills.current = true;
+
+    const requestPage = isRefresh ? 1 : page;
+
+    const filters = {
+      startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+      endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+      paymentStatus: billStatus,
+      type,
+      modes: mode,
+      createdBy,
+      page: requestPage,
+      size: 30,
+    };
+
+    try {
+      setRefreshing(true)
+      const res = await GetAllBillDetails(activeHostelId, filters);
+
+      if (res?.success) {
+        const pagination = res?.data?.paginationSummary;
+        const currentPage = pagination?.currentPage ?? requestPage;
+        const totalPages = pagination?.totalPages;
+        const newBillsList = res?.data?.listInvoices ?? [];
+
+        setBillsPage(currentPage);
+
+        setHasMoreBills(
+          totalPages != null
+            ? currentPage < totalPages
+            : newBillsList.length === 30
+        );
+      }
+    } catch (error) {
+      console.log("Bill pagination error:", error);
+    } finally {
+      isFetchingBills.current = false;
+      setRefreshing(false)
+    }
+  };
+
+  console.log("onlyBillsDetails", onlyBillList)
+  console.log("paginationDetail", billsPage, hasMoreBills)
+
   //  
 
   //          if(loading){
@@ -3143,6 +3263,8 @@ export default function BillsDesign({ route }) {
                     else {
                       if (filtered.trim() === "") {
                         GetAllBillDetails(activeHostelId);
+                        setBillsPage(1)
+                        setHasMoreBills(true)
                         // GetAllBillDetails(activeHostelId)
                       } else {
                         handleSearch(filtered)
@@ -3405,10 +3527,33 @@ export default function BillsDesign({ route }) {
 
                   {!loading && BillDetails?.listInvoices?.length > 0 && (
                     <FlatList
-                      data={BillDetails.listInvoices}
+                      data={onlyBillList}
                       showsVerticalScrollIndicator={false}
                       onScroll={handleScroll}
                       keyExtractor={(item) => item.invoiceId?.toString()}
+                      onMomentumScrollBegin={() => {
+                        onEndReachedCalledDuringMomentum.current = false;
+                      }}
+
+                      onEndReached={() => {
+                        if (
+                          !onEndReachedCalledDuringMomentum.current &&
+                          !isFetchingBills.current &&
+                          hasMoreBills &&
+                          !refreshing
+                        ) {
+                          // Correct assignment: lock further callbacks during momentum.
+                          onEndReachedCalledDuringMomentum.current = true;
+
+                          onEndReachedBillList(billsPage + 1);
+                        }
+                      }}
+
+                      onEndReachedThreshold={0.4}
+
+                      ListFooterComponent={
+                        refreshing ? <ActivityIndicator size="small" color="blue" /> : null
+                      }
 
                       ListHeaderComponent={
                         <>
@@ -3467,7 +3612,11 @@ export default function BillsDesign({ route }) {
 
                               {(appliedFilters?.createdBy.length > 0 || appliedFilters?.modes.length > 0 || appliedFilters?.paymentStatus?.length > 0 ||
                                 appliedFilters?.type.length > 0 || appliedFilters?.endDate != null || appliedFilters?.startDate != null) &&
-                                <TouchableOpacity onPress={handleResetFilters}>
+                                <TouchableOpacity onPress={() => {
+                                  setBillsPage(1)
+                                  setHasMoreBills(true)
+                                  handleResetFilters
+                                }}>
                                   <Text style={styles.resetTextSmall}>
                                     Reset
                                   </Text>
@@ -3974,7 +4123,11 @@ export default function BillsDesign({ route }) {
                       {appliedFilters ? (
                         <TouchableOpacity
                           style={{ width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center", marginTop: 10 }}
-                          onPress={handleResetFilters}
+                          onPress={() => {
+                            setBillsPage(1)
+                            setHasMoreBills(true)
+                            handleResetFilters()
+                          }}
                         >
                           <Text style={styles.resetText}>
                             Reset Filters
@@ -7675,6 +7828,8 @@ export default function BillsDesign({ route }) {
                       setMode([]);
                       setFilterError("")
                       setShowFilter(false)
+                      setBillsPage(1)
+                      setHasMoreBills(true)
 
                       handleResetFilters()
                     }}
@@ -8104,6 +8259,8 @@ export default function BillsDesign({ route }) {
 
               setAppliedFilters(null);
               setFilterError("")
+              setBillsPage(1)
+              setHasMoreBills(true)
 
               await applyTopFilters({
                 paymentStatus: [],
@@ -8150,6 +8307,8 @@ export default function BillsDesign({ route }) {
 
               setAppliedFilters(null);
               setFilterError("")
+              setBillsPage(1)
+              setHasMoreBills(true)
 
               await applyTopFilters({
                 paymentStatus: billStatus,
@@ -8198,7 +8357,9 @@ export default function BillsDesign({ route }) {
               setCreatedBy([]);
 
               setAppliedFilters(null);
-              setFilterError("")
+              setFilterError("");
+              setBillsPage(1)
+              setHasMoreBills(true)
 
               await applyTopFilters({
                 paymentStatus: billStatus,
