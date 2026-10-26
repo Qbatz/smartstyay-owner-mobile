@@ -409,7 +409,7 @@ export default function OverviewTab({ customerDetails,
                   />
 
                   <Text style={styles.pendingText}>
-                    <Text style={styles.pendingCount}>2</Text> Pending action(s)
+                    <Text style={styles.pendingCount}></Text> Pending Actions
                   </Text>
                 </View>
 

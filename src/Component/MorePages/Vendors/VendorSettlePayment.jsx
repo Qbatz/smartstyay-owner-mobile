@@ -39,7 +39,7 @@ export default function VendorSettlePayment({
 
   const isApplyTriggeredRef = useRef(false);
 
-    const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
 
   const { settleExpense, settleVendorPayment } = useContext(CustomerContext);;
@@ -54,14 +54,19 @@ export default function VendorSettlePayment({
   console.log("vendor", vendor);
   console.log("vendorSettlementInitialize", vendorSettlementInitialize);
 
-  // 1️⃣ State add பண்ணுங்க (top-ல் மற்ற states-உடன்)
   const [vendorAppliedAmounts, setVendorAppliedAmounts] = useState({});
 
-  // 2️⃣ vendorExpensesPayload - handleSubmit-க்கு முன்னால் build பண்ணுங்க
-  const vendorExpensesPayload = vendorSettlementInitialize?.expenses?.map((exp) => ({
-    expenseId: String(exp.expenseId),
-    paidAmount: Number(vendorAppliedAmounts[exp.expenseId] || 0),
-  })) || [];
+  // const vendorExpensesPayload = vendorSettlementInitialize?.expenses?.map((exp) => ({
+  //   expenseId: String(exp.expenseId),
+  //   paidAmount: Number(vendorAppliedAmounts[exp.expenseId] || 0),
+  // })) || [];
+
+  const vendorExpensesPayload = (vendorSettlementInitialize?.expenses || [])
+    .map((exp) => ({
+      expenseId: exp?.expenseId,
+      paidAmount: Number(vendorAppliedAmounts[exp?.expenseId] || 0),
+    }))
+    .filter((item) => item.paidAmount > 0);
 
 
   // const dueAmount = vendorDetails?.summary?.outstanding
@@ -123,25 +128,45 @@ export default function VendorSettlePayment({
 
   console.log("initializeData", initializeData);
 
-  const paymentOptions = (initializeData?.banks || []).map(
-    (item, index) => {
-      const isCash =
-        item?.bankName?.toUpperCase() === "CASH";
+  // const paymentOptions = (initializeData?.banks || []).map(
+  //   (item, index) => {
+  //     const isCash =
+  //       item?.bankName?.toUpperCase() === "CASH";
 
-      return {
-        id: item?.bankId || `account-${index}`,
-        bankId: item?.bankId,
-        label: item?.bankName || item?.holderName || "Account",
-        name: item?.holderName || "Account",
-        displayName: item?.holderName || "Account",
-        accountHolderName: item?.holderName || "Account",
-        bankName: item?.bankName || "",
-        isCash,
-        accountType: isCash ? "CASH" : "BANK",
-        subLabel: item?.bankName || "Bank Account",
-      };
-    }
-  );
+  //     return {
+  //       id: item?.bankId || `account-${index}`,
+  //       bankId: item?.bankId,
+  //       label: item?.bankName || item?.holderName || "Account",
+  //       name: item?.holderName || "Account",
+  //       displayName: item?.holderName || "Account",
+  //       accountHolderName: item?.holderName || "Account",
+  //       bankName: item?.bankName || "",
+  //       isCash,
+  //       accountType: isCash ? "CASH" : "BANK",
+  //       subLabel: item?.bankName || "Bank Account",
+  //     };
+  //   }
+  // );
+
+  const paymentOptions = (initializeData?.banks || []).map((item, index) => {
+    const rawType = item?.type || item?.bankName || "";
+    const accountType = String(rawType || "BANK").toUpperCase();
+    const isCash = accountType === "CASH";
+
+    return {
+      id: item?.bankId || `account-${index}`,
+      bankId: item?.bankId,
+      label: item?.bankName || item?.holderName || "Account",
+      name: item?.holderName || "Account",
+      displayName: item?.holderName || "Account",
+      accountHolderName: item?.holderName || "Account",
+      bankName: item?.bankName || "",
+      isCash,
+      accountType,
+      type: rawType,
+      subLabel: item?.bankName || "Bank Account",
+    };
+  });
 
   const dueAmount = Number(
     isVendorSettlement
@@ -335,29 +360,30 @@ export default function VendorSettlePayment({
 
       if (isVendorSettlement) {
         const payload = {
-          // images: attachments?.map(item => item?.uri) || [],
           payLoads: {
             paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-            bankId: String(selectedMode?.bankId),
-            paymentMethod: selectedMode?.label,
-            transactionId,
+            bankId: selectedMode?.bankId ?? "",
+            paymentMethod: selectedMode?.type || selectedMode?.name || "",
+            transactionId: transactionId,
             notes: description,
             expenses: vendorExpensesPayload,
           },
-        };
-        
+        }
+
+
+        response = await settleVendorPayment
+          (activeHostelId,
+            vendor?.id,
+            payload,
+            attachments);
+
 
         // response = await settleVendorPayment(
+        //   activeHostelId,
         //   vendor?.id,
         //   payload,
+        //   attachments
         // );
-
-        response = await settleVendorPayment(
-          activeHostelId,
-          vendor?.id,
-          payload,
-          attachments
-        );
 
         if (response?.success) {
           setModalType("success");
@@ -1137,14 +1163,15 @@ export default function VendorSettlePayment({
           <View
             // style={styles.footer}
             style={[
-                styles.footer,
-                {
-                  marginBottom: Math.max(insets.bottom, 20),
-                },
-              ]}
+              styles.footer,
+              {
+                marginBottom: Math.max(insets.bottom, 20),
+              },
+            ]}
           >
             <TouchableOpacity
               style={styles.cancelBtn}
+              onPress={() => navigation.goBack()}
             >
               <Text style={{ fontFamily: "Gilroy-Semibold" }}>
                 Cancel

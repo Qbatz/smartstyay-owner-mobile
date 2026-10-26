@@ -352,6 +352,10 @@ export default function AddTenantNewform({ navigation, route }) {
         setIsCustomRentSaved(false);
     };
 
+    const sanitizeAmount = (text) => {
+        return text.replace(/[^0-9]/g, "").replace(/^0+/, "");
+    };
+
 
 
     const [openStartTime, setOpenStartTime] = useState(false);
@@ -1040,14 +1044,14 @@ export default function AddTenantNewform({ navigation, route }) {
                 : null
         );
 
-        setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, 0)));
+        setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, "")));
 
         setReferenceNumber(getValue(draftDetails?.referenceNumber));
 
         setAdvanceAmount(String(getValue(draftDetails?.advanceAmount, 0)));
 
         setCheckinRentalAmount(
-            String(getValue(draftDetails?.rentalAmount, 0))
+            String(getValue(draftDetails?.rentalAmount, ""))
         );
 
 
@@ -1727,7 +1731,9 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
     const updateAmount = (id, amount) => {
-        const onlyNum = amount.replace(/[^0-9]/g, "");
+
+         const onlyNum = sanitizeAmount(amount);
+        // const onlyNum = amount.replace(/[^0-9]/g, "");
 
         setExtraCharges((prev) =>
             prev.map((i) =>
@@ -4517,7 +4523,8 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 // onChangeText={setBookingAmount}
                                                 onChangeText={(text) => {
                                                     const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setBookingAmount(onlyNum);
+                                                     setBookingAmount(sanitizeAmount(text));
+                                                    // setBookingAmount(onlyNum);
                                                     setBookingAmountError("");
                                                 }}
                                                 onFocus={(e) => scrollInputIntoView(e)}
@@ -5515,7 +5522,8 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 value={checkinrentalAmount}
                                                 onChangeText={(text) => {
                                                     const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setCheckinRentalAmount(onlyNum);
+                                                        setCheckinRentalAmount(sanitizeAmount(text));
+                                                    // setCheckinRentalAmount(onlyNum);
                                                     setRentalError("");
                                                 }}
                                                 onFocus={(e) => scrollInputIntoView(e)}
@@ -5660,9 +5668,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                                     keyboardType="numeric"
                                                                                     value={customRentAmount}
                                                                                     onChangeText={(text) => {
-                                                                                        setCustomRentAmount(
-                                                                                            text.replace(/[^0-9]/g, "")
-                                                                                        );
+                                                                                        // setCustomRentAmount(
+                                                                                        //     text.replace(/[^0-9]/g, "")
+                                                                                        // );
+                                                                                         setCustomRentAmount(sanitizeAmount(text));
                                                                                         setCustomRentError("");
                                                                                     }}
                                                                                 />
