@@ -20,6 +20,7 @@ export default function BankingProvider({ children }) {
   const [errorMsg, setErrorMsg] = useState("");
   const [newOnlyTransactionList, setNewOnlyTransactionList] = useState([])
 
+
   const getErrorMessage = (error) =>
     error?.response?.data?.message ||
     error?.response?.data ||
