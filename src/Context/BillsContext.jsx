@@ -93,17 +93,17 @@ export default function BillsProvider({ children }) {
         const currentPage = res?.data?.paginationSummary?.currentPage ?? filters?.page;
         const newInvoiceList = res?.data?.listInvoices
         setBillDetails(res.data || []);
-        // if (currentPage === 1) {
-        //   setOnlyBillsList(newInvoiceList)
-        // } else {
-        //   setOnlyBillsList((prev) => {
-        //     const seen = new Set(prev.map((c) => c.invoiceId));
-        //     const deduped = newInvoiceList.filter((c) => !seen.has(c.invoiceId));
-        //     return [...prev, ...deduped];
-        //   });
-        // }
+        if (currentPage === 1) {
+          setOnlyBillsList(newInvoiceList)
+        } else {
+          setOnlyBillsList((prev) => {
+            const seen = new Set(prev.map((c) => c.invoiceId));
+            const deduped = newInvoiceList.filter((c) => !seen.has(c.invoiceId));
+            return [...prev, ...deduped];
+          });
+        }
 
-        setOnlyBillsList(prev => currentPage === 1 ? newInvoiceList : [...prev, ...newInvoiceList])
+        // setOnlyBillsList(prev => currentPage === 1 ? newInvoiceList : [...prev, ...newInvoiceList])
         // setLoading(false);
         return { success: true, data: res.data };
       }
