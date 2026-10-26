@@ -12,6 +12,7 @@ import {
     KeyboardAvoidingView,
     ActivityIndicator
 } from "react-native";
+
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
@@ -74,6 +75,8 @@ export default function ExpensesList({ navigation }) {
 
     const { activeHostelId } = useContext(CommonContexts)
 
+
+
     const {
         canReadModule: canReadVendor,
         canWriteModule: canWriteVendor,
@@ -92,7 +95,9 @@ export default function ExpensesList({ navigation }) {
     useFocusEffect(
         useCallback(() => {
             if (activeHostelId) {
-                GetExpenseList(activeHostelId);
+                const res = GetExpenseList(activeHostelId);
+                console.log("res", res);
+
             }
         }, [activeHostelId])
     );
@@ -159,6 +164,8 @@ export default function ExpensesList({ navigation }) {
         setAmountDropdownVisible((v) => !v);
     };
 
+    const [hasActiveFilter, setHasActiveFilter] = useState(false);
+
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -181,14 +188,9 @@ export default function ExpensesList({ navigation }) {
     const [selectedSubCategory, setSelectedSubCategory] = useState([])
     const [selectedMonth, setSelectedMonth] = useState("")
 
+
+
     const [errorMsg, setErrorMsg] = useState("")
-
-    const [expensesPage, setExpensesPage] = useState(1)
-    const [hasMoreExpense, setHasMoreExpense] = useState(true)
-    const [refreshing, setRefreshing] = useState(false)
-    const onEndReachedCalledDuringMomentum = useRef(true);
-    const isFetchingList = useRef(false);
-
 
     const staticExpenses = [
         {
@@ -612,6 +614,7 @@ export default function ExpensesList({ navigation }) {
 
     console.log("silaana", formatDate(fromDate))
     console.log(toDate)
+
     const applyToFilter = async ({
         newCategory = selectedCategory ?? tempCatgory,
         newPaymentStatus = paymentStatus,
@@ -636,16 +639,56 @@ export default function ExpensesList({ navigation }) {
             maxAmount: maxAmount || undefined,
         }
 
+        const hasFilter =
+            !!searchText.trim() ||
+            !!finalCategory?.length ||
+            !!newPaymentStatus?.length ||
+            !!newVendor?.length ||
+            !!newPaymentMode?.length ||
+            !!newCreatedBy?.length ||
+            !!selectedSubCategory?.length ||
+            !!fromDate ||
+            !!toDate ||
+            !!selectedMonth ||
+            !!minAmount ||
+            !!maxAmount;
 
+        setHasActiveFilter(hasFilter);
 
         const res = await GetExpenseList(activeHostelId, filters)
 
     }
 
+
     const handleResetFilter = () => {
+           setSearchText("");
+        setSearchOpen(false);
+
+        setSelectedCategoryId([]);
+        setSelectedCategory([]);
+        setTempCategory("");
+        setSelectedVendor([]);
+        setPaymentMode([]);
+        setSelectedCreatedBy([]);
+        setPaymentStatus([]);
+        setSelectedSubCategory([]);
+        setSelectedMonth("");
+
+        setFromDate(undefined);
+        setToDate(undefined);
+        setMinAmount(null);
+        setMaxAmount(null);
+
+        setShowFilter(false);
+        setShowCatergoryFilter(false);
+        setErrorMsg("");
+        setHasActiveFilter(false);
 
         if (activeHostelId) {
-            GetExpenseList(activeHostelId);
+            GetExpenseList(activeHostelId, {
+                page: 1,
+                size: 10,
+            });
         }
     }
 
@@ -714,6 +757,15 @@ export default function ExpensesList({ navigation }) {
             setRefreshing(false)
         }
     };
+     
+    // };
+
+    // const handleResetFilter=()=>{
+
+    //      if (activeHostelId) {
+    //             GetExpenseList(activeHostelId);
+    //         }
+    // }
 
     if (!canReadExpense && !loading) {
         return (
@@ -814,6 +866,16 @@ export default function ExpensesList({ navigation }) {
                         <Text style={styles.emptyText}>
                             No Expenses are there!
                         </Text>
+
+                        {hasActiveFilter && (
+                            <TouchableOpacity
+                                style={styles.emptyResetButton}
+                                onPress={handleResetFilter}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={styles.emptyResetText}>Reset</Text>
+                            </TouchableOpacity>
+                        )}
 
                         <TouchableOpacity style={[
                             styles.addVendorBtn,
@@ -980,6 +1042,16 @@ export default function ExpensesList({ navigation }) {
                                             <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
                                         </TouchableOpacity>
                                     </View>
+                                    {hasActiveFilter && Expensesdata?.length > 0 && (
+                                        <View style={styles.resetFilterRow}>
+                                            <TouchableOpacity
+                                                onPress={handleResetFilter}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Text style={styles.resetFilterText}>Reset</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                 </>
                             )}
                             contentContainerStyle={{
@@ -2242,7 +2314,35 @@ const styles = StyleSheet.create({
     },
     moreFilterText: {
         fontSize: 16, fontFamily: 'Gilroy-Bold'
-    }
+    },
+    resetFilterRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 8,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+},
+
+resetFilterText: {
+    color: "#1677FF",
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+},
+
+emptyResetButton: {
+    marginTop: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 38,
+    borderWidth: 1,
+    borderColor: "#1677FF",
+    borderRadius: 14,
+},
+
+emptyResetText: {
+    color: "#1677FF",
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+},
 })
 
 
