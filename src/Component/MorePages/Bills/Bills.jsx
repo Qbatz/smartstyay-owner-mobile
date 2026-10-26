@@ -5158,89 +5158,81 @@ export default function BillsDesign({ route }) {
                         </View>
 
 
+
                         {showSettlementRedeem && (
                           <View style={styles.accordionCard}>
+                            {/* Refundable Advance Header */}
                             <TouchableOpacity
                               style={styles.accordionHeader}
-                              onPress={() => setShowRefundableAdvance(!showRefundableAdvance)}
+                              onPress={() =>
+                                setShowRefundableAdvance(!showRefundableAdvance)
+                              }
                               activeOpacity={0.8}
                             >
                               <Animated.Image
                                 source={DownArrow}
-                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                                style={[
+                                  styles.arrowImg,
+                                  { transform: [{ rotate: unpaidArrow }] },
+                                ]}
                               />
-                              <Text style={styles.cardTitle}>Refundable Advance</Text>
-                              <Text style={styles.amountText}>
 
-                                ₹ {BillPdfdetails?.advanceItems?.availableAdvanceBalance}
-                                {/* {
-                                      settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
-                                        (sum, inv) => sum + Number(inv.payableAmount || 0),
-                                        0
-                                      ) || 0
-                                    } */}
+                              <Text style={styles.cardTitle}>
+                                {BillPdfdetails?.advanceItems?.label ||
+                                  "Refundable Advance"}
                               </Text>
+
+                              <View style={styles.advanceBalanceContainer}>
+                                {/* <View style={styles.advanceGreenDot} /> */}
+                                <Text style={styles.amountText}>
+                                  ₹ {Number(
+                                    BillPdfdetails?.advanceItems?.availableAdvanceBalance || 0
+                                  ).toLocaleString("en-IN")}
+                                </Text>
+                              </View>
                             </TouchableOpacity>
 
                             {showRefundableAdvance && (
-
                               <View style={styles.accordionBody}>
+                                {/* Total Paid */}
+                                <Text style={styles.advanceTotalPaid}>
+                                  Total Paid ₹{" "}
+                                  {Number(
+                                    BillPdfdetails?.advanceItems?.paidAmount || 0
+                                  ).toLocaleString("en-IN")}
+                                </Text>
 
-                                <View style={styles.tableHeader}>
-                                  <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
-                                  <Text style={[styles.th, { flex: 1 }]}>Type</Text>
-                                  <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
-                                    Invoice Amount
-                                  </Text>
-                                </View>
-
-                                {BillPdfdetails?.advanceItems ? (
-                                  <View style={styles.invoiceRow}>
-                                    <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
-                                      {BillPdfdetails?.advanceItems?.invoiceNo}
-                                    </Text>
-
-                                    <Text style={[styles.invText, { flex: 1 }]}>
-                                      {BillPdfdetails?.advanceItems?.label}
-                                    </Text>
-
-                                    <Text
-                                      style={[
-                                        styles.invText,
-                                        { flex: 1, textAlign: "right" }
-                                      ]}
-                                    >
-                                      ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
-                                    </Text>
-                                  </View>
+                                {/* Redeemed Invoice Details */}
+                                {Array.isArray(
+                                  BillPdfdetails?.advanceItems?.redeemedList
+                                ) &&
+                                  BillPdfdetails.advanceItems.redeemedList.length > 0 ? (
+                                  BillPdfdetails.advanceItems.redeemedList.map(
+                                    (item, index) => (
+                                      <View
+                                        key={item?.invoiceId || `${item?.invoiceNumber}-${index}`}
+                                        style={styles.advanceInvoiceRow}
+                                      >
+                                        <Text style={styles.advanceInvoiceText}>
+                                          {item?.invoiceNumber || item?.invoiceNo || "N/A"}
+                                          {" - ₹ "}
+                                          {Number(
+                                            item?.redeemedAmount || 0
+                                          ).toLocaleString("en-IN")}
+                                        </Text>
+                                      </View>
+                                    )
+                                  )
                                 ) : (
-                                  <View style={styles.emptyWallet}>
-                                    <View style={styles.emptyState}>
-                                      <Text style={styles.emptyWalletText}>No pending invoices</Text>
-                                    </View>
-                                  </View>
-                                )}
-
-                                {/* )} */}
-
-                                <View style={styles.totalInvoiceRow}>
-                                  <Text style={styles.totalText}>Total</Text>
-                                  <Text style={styles.totalAmount}>
-                                    ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
-                                    {/* ₹{" "}
-                                          {Array.isArray(settlementDetails?.unpaidInvoices)
-                                            ? settlementDetails.unpaidInvoices.reduce(
-                                              (sum, i) => sum + Number(i.payableAmount || 0),
-                                              0
-                                            )
-                                            : 0} */}
+                                  <Text style={styles.advanceInvoiceText}>
+                                    No redeemed invoices
                                   </Text>
-                                </View>
+                                )}
                               </View>
-
                             )}
                           </View>
                         )}
+
 
 
                         {showSettlementRedeem && (
@@ -11139,5 +11131,41 @@ const styles = StyleSheet.create({
   bankText: {
     color: "#2457E6",
   },
+
+advanceBalanceContainer: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "flex-end",
+  marginLeft: "auto",
+  flexShrink: 0,
+},
+
+advanceGreenDot: {
+  width: 9,
+  height: 9,
+  borderRadius: 5,
+  backgroundColor: "#16A34A",
+  marginRight: 10,
+},
+
+advanceTotalPaid: {
+  fontSize: 14,
+  color: "#8A9099",
+  fontFamily: "Gilroy-Medium",
+  marginTop: 10,
+  marginBottom: 8,
+},
+
+advanceInvoiceRow: {
+  paddingVertical: 8,
+},
+
+advanceInvoiceText: {
+  fontSize: 14,
+  color: "#8A9099",
+  fontFamily: "Gilroy-Medium",
+  flexShrink: 1,
+},
+
 
 });

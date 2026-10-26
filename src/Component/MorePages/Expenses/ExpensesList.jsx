@@ -11,6 +11,7 @@ import {
     Modal, PanResponder, Animated, TouchableWithoutFeedback, Dimensions, ScrollView, BackHandler,
     KeyboardAvoidingView
 } from "react-native";
+
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
@@ -73,6 +74,8 @@ export default function ExpensesList({ navigation }) {
 
     const { activeHostelId } = useContext(CommonContexts)
 
+
+
     const {
         canReadModule: canReadVendor,
         canWriteModule: canWriteVendor,
@@ -91,7 +94,9 @@ export default function ExpensesList({ navigation }) {
     useFocusEffect(
         useCallback(() => {
             if (activeHostelId) {
-                GetExpenseList(activeHostelId);
+                const res = GetExpenseList(activeHostelId);
+                console.log("res", res);
+
             }
         }, [activeHostelId])
     );
@@ -158,6 +163,8 @@ export default function ExpensesList({ navigation }) {
         setAmountDropdownVisible((v) => !v);
     };
 
+    const [hasActiveFilter, setHasActiveFilter] = useState(false);
+
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -180,14 +187,9 @@ export default function ExpensesList({ navigation }) {
     const [selectedSubCategory, setSelectedSubCategory] = useState([])
     const [selectedMonth, setSelectedMonth] = useState("")
 
+
+
     const [errorMsg, setErrorMsg] = useState("")
-
-    const [expensesPage, setExpensesPage] = useState(1)
-    const [hasMoreExpense, setHasMoreExpense] = useState(true)
-    const [refreshing, setRefreshing] = useState(false)
-    const onEndReachedCalledDuringMomentum = useRef(true);
-    const isFetchingList = useRef(false);
-
 
     const staticExpenses = [
         {
@@ -611,6 +613,7 @@ export default function ExpensesList({ navigation }) {
 
     console.log("silaana", formatDate(fromDate))
     console.log(toDate)
+
     const applyToFilter = async ({
         newCategory = selectedCategory ?? tempCatgory,
         newPaymentStatus = paymentStatus,
@@ -635,80 +638,65 @@ export default function ExpensesList({ navigation }) {
             maxAmount: maxAmount || undefined,
         }
 
+        const hasFilter =
+            !!searchText.trim() ||
+            !!finalCategory?.length ||
+            !!newPaymentStatus?.length ||
+            !!newVendor?.length ||
+            !!newPaymentMode?.length ||
+            !!newCreatedBy?.length ||
+            !!selectedSubCategory?.length ||
+            !!fromDate ||
+            !!toDate ||
+            !!selectedMonth ||
+            !!minAmount ||
+            !!maxAmount;
 
+        setHasActiveFilter(hasFilter);
 
         const res = await GetExpenseList(activeHostelId, filters)
 
     }
 
+
     const handleResetFilter = () => {
+        setSearchText("");
+        setSearchOpen(false);
+
+        setSelectedCategoryId([]);
+        setSelectedCategory([]);
+        setTempCategory("");
+        setSelectedVendor([]);
+        setPaymentMode([]);
+        setSelectedCreatedBy([]);
+        setPaymentStatus([]);
+        setSelectedSubCategory([]);
+        setSelectedMonth("");
+
+        setFromDate(undefined);
+        setToDate(undefined);
+        setMinAmount(null);
+        setMaxAmount(null);
+
+        setShowFilter(false);
+        setShowCatergoryFilter(false);
+        setErrorMsg("");
+        setHasActiveFilter(false);
 
         if (activeHostelId) {
-            GetExpenseList(activeHostelId);
+            GetExpenseList(activeHostelId, {
+                page: 1,
+                size: 10,
+            });
         }
-    }
+    };
 
-    const onEndReachedExpenseList = async (page = 1, isRefresh = false) => {
-        if (!activeHostelId || isFetchingList.current) {
-          return;
-        }
-    
-        if (refreshing && !isRefresh) {
-          return;
-        }
-    
-        if (!isRefresh && !hasMoreBills) {
-          return;
-        }
+    // const handleResetFilter=()=>{
 
-        const finalCategory = newCategory.length ? newCategory : tempCatgory
-
-        const filters = {
-            categoryId: finalCategory?.length ? finalCategory : undefined,
-            paymentStatus: paymentStatus?.length ? paymentStatus : undefined,
-            vendorId: selectedVendor?.length ? selectedVendor : undefined,
-            paymentMode: paymentMode?.length ? paymentMode : undefined,
-            createdBy: selectedCreatedBy?.length ? selectedCreatedBy : undefined,
-            subCategoryId: selectedSubCategory?.length ? selectedSubCategory : undefined,
-            startDate: fromDate ? formatDate(fromDate) : undefined,
-            endDate: toDate ? formatDate(toDate) : undefined,
-            period: selectedMonth ? selectedMonth : undefined,
-            minAmount: minAmount || undefined,
-            maxAmount: maxAmount || undefined,
-        }
-    
-    
-        isFetchingBills.current = true;
-    
-        const requestPage = isRefresh ? 1 : page;
-    
-        
-    
-        try {
-          setRefreshing(true)
-           const res = await GetExpenseList(activeHostelId, filters);
-    
-          if (res?.success) {
-            const pagination = res?.data?.paginationSummary;
-            const currentPage = pagination?.currentPage ?? requestPage;
-            const totalPages = pagination?.totalPages;
-            const newBillsList = res?.data?.listInvoices ?? [];
-    
-            setBillsPage(currentPage);
-    
-            setHasMoreExpense(
-              totalPages != null
-                ? currentPage < totalPages
-                : newBillsList.length === 30
-            );
-          }
-        } catch (error) {
-          console.log("Bill pagination error:", error);
-        } finally {
-          isFetchingBills.current = false;
-          setRefreshing(false)
-        }
-      };
+    //      if (activeHostelId) {
+    //             GetExpenseList(activeHostelId);
+    //         }
+    // }
 
     if (!canReadExpense && !loading) {
         return (
@@ -808,6 +796,16 @@ export default function ExpensesList({ navigation }) {
                             No Expenses are there!
                         </Text>
 
+                        {hasActiveFilter && (
+                            <TouchableOpacity
+                                style={styles.emptyResetButton}
+                                onPress={handleResetFilter}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={styles.emptyResetText}>Reset</Text>
+                            </TouchableOpacity>
+                        )}
+
                         <TouchableOpacity style={[
                             styles.addVendorBtn,
                             !canWriteExpense && { opacity: 0.7 }
@@ -891,25 +889,6 @@ export default function ExpensesList({ navigation }) {
                         <FlatList
                             data={Expensesdata || []}
                             keyExtractor={(item) => item?.expenseId}
-                            onMomentumScrollBegin={() => {
-                                onEndReachedCalledDuringMomentum.current = false;
-                            }}
-
-                            onEndReached={() => {
-                                if (
-                                    !onEndReachedCalledDuringMomentum.current &&
-                                    !isFetchingList.current &&
-                                    hasMoreExpense &&
-                                    !refreshing
-                                ) {
-                                    // Correct assignment: lock further callbacks during momentum.
-                                    onEndReachedCalledDuringMomentum.current = true;
-
-                                    onEndReachedExpenseList(expensesPage + 1);
-                                }
-                            }}
-
-                            onEndReachedThreshold={0.4}
                             renderItem={renderExpensesItem}
                             ListHeaderComponent={() => (
                                 <>
@@ -971,6 +950,16 @@ export default function ExpensesList({ navigation }) {
                                             <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
                                         </TouchableOpacity>
                                     </View>
+                                    {hasActiveFilter && Expensesdata?.length > 0 && (
+                                        <View style={styles.resetFilterRow}>
+                                            <TouchableOpacity
+                                                onPress={handleResetFilter}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Text style={styles.resetFilterText}>Reset</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                 </>
                             )}
                             contentContainerStyle={{
@@ -2233,7 +2222,35 @@ const styles = StyleSheet.create({
     },
     moreFilterText: {
         fontSize: 16, fontFamily: 'Gilroy-Bold'
-    }
+    },
+    resetFilterRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 8,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+},
+
+resetFilterText: {
+    color: "#1677FF",
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+},
+
+emptyResetButton: {
+    marginTop: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 38,
+    borderWidth: 1,
+    borderColor: "#1677FF",
+    borderRadius: 14,
+},
+
+emptyResetText: {
+    color: "#1677FF",
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+},
 })
 
 
