@@ -34,26 +34,26 @@ export default function AddRoomSheet({
   const { addRoom, updateRoom } = useFloor();
   const { activeHostelId } = useContext(CommonContexts);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-const safeKeyboardHeight =
-  keyboardHeight > 0 ? 150 : 0;
+  const safeKeyboardHeight =
+    keyboardHeight > 0 ? 150 : 0;
 
 
 
 
-useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
-  });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
 
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -75,7 +75,7 @@ useEffect(() => {
       });
     }
   }, [visible]);
-  
+
 
 
   const panResponder = useRef(
@@ -86,16 +86,16 @@ useEffect(() => {
         g.dy > 120
           ? onClose()
           : Animated.spring(translateY, {
-              toValue: 0,
-              useNativeDriver: true,
-            }).start();
+            toValue: 0,
+            useNativeDriver: true,
+          }).start();
       },
     })
   ).current;
   const finalTranslateY = Animated.add(
-  translateY,
-  new Animated.Value(-safeKeyboardHeight)
-);
+    translateY,
+    new Animated.Value(-safeKeyboardHeight)
+  );
 
   if (!visible) return null;
 
@@ -158,7 +158,7 @@ useEffect(() => {
         <TouchableWithoutFeedback onPress={onClose}>
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
-<Animated.View
+        {/* <Animated.View
   {...panResponder.panHandlers}
   style={[
     styles.sheet,
@@ -167,53 +167,66 @@ useEffect(() => {
       marginBottom: safeKeyboardHeight, // ✅ ONLY THIS
     },
   ]}
->
+> */}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.sheet,
+            {
+              transform: [{ translateY }],
+              marginBottom: safeKeyboardHeight,
+              maxHeight: keyboardHeight > 0 ? "65%" : "85%",
+            },
+          ]}
+        >
 
 
- 
-<ScrollView
-  keyboardShouldPersistTaps="handled"
-  showsVerticalScrollIndicator={false}
-  contentContainerStyle={{
-    paddingBottom: safeKeyboardHeight + 0,
-  }}
->
-    <View style={styles.handle} />
 
-    <Text style={styles.title}>{isEdit ? "Edit Room" : "Add Room"}</Text>
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: safeKeyboardHeight + 0,
+            }}
+          >
+            <View style={styles.handle} />
 
-    <Text style={styles.label}>
-      Room Name or No <Text style={{ color: "red" }}>*</Text>
-    </Text>
+            <Text style={styles.title}>{isEdit ? "Edit Room" : "Add Room"}</Text>
 
-  <TextInput
-  style={styles.input}
-  placeholder="Enter Room Name"
-  value={roomName}
-  returnKeyType="done"
-  onSubmitEditing={handleAddRoom}
-  onChangeText={(t) => {
-    const cleaned = t
-      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") // ✅ emoji remove
-      .replace(/\s{2,}/g, " "); // extra space remove
+            <Text style={styles.label}>
+              Room Name or No <Text style={{ color: "red" }}>*</Text>
+            </Text>
 
-    setRoomName(cleaned);
-    setRoomError("");
-  }}
-/>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter Room Name"
+              value={roomName}
+              returnKeyType="done"
+              onSubmitEditing={handleAddRoom}
+              onChangeText={(t) => {
+                const cleaned = t
+                  .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") // ✅ emoji remove
+                  .replace(/\s{2,}/g, " "); // extra space remove
+
+                setRoomName(cleaned);
+                setRoomError("");
+              }}
+            />
 
 
-    {roomError && <ErrorMessage message={roomError} type="error" />}
-  </ScrollView>
+            {roomError && <ErrorMessage message={roomError} type="error" />}
 
-  {/* 🔥 STICKY BUTTON */}
-  <View style={styles.footer}>
-    <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
-      <Text style={styles.addBtnText}>{isEdit ? "Edit Room" : "Add Room"}</Text>
-    </TouchableOpacity>
-  </View>
+                <View style={styles.footer}>
+            <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
+              <Text style={styles.addBtnText}>{isEdit ? "Edit Room" : "Add Room"}</Text>
+            </TouchableOpacity>
+          </View>
+          </ScrollView>
 
-</Animated.View>
+          {/* 🔥 STICKY BUTTON */}
+      
+
+        </Animated.View>
 
       </View>
     </>
@@ -236,7 +249,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    paddingBottom:30
+    paddingBottom: 30
   },
   handle: {
     width: 45,
@@ -262,26 +275,26 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 12,
     marginBottom: 8,
-     fontFamily: "Gilroy-Regular"
+    fontFamily: "Gilroy-Regular"
   },
-footer: {
-  // borderTopWidth: 1,
-  // borderColor: "#eee",
-  paddingTop: 10,
-  paddingBottom: 20,
-  backgroundColor: "#fff",
-},
+  footer: {
+    // borderTopWidth: 1,
+    // borderColor: "#eee",
+    paddingTop: 10,
+    paddingBottom: 20,
+    backgroundColor: "#fff",
+  },
 
-addBtn: {
-  backgroundColor: "#1E45E1",
-  paddingVertical: 14,
-  borderRadius: 12,
-},
+  addBtn: {
+    backgroundColor: "#1E45E1",
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
 
-addBtnText: {
-  color: "#fff",
-  textAlign: "center",
-   fontFamily: "Gilroy-Semibold",
-},
+  addBtnText: {
+    color: "#fff",
+    textAlign: "center",
+    fontFamily: "Gilroy-Semibold",
+  },
 
 });

@@ -304,6 +304,11 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
     // };
 
+
+    const sanitizeAmount = (text) => {
+        return text.replace(/[^0-9]/g, "").replace(/^0+/, "");
+    };
+
     const selectType = (id, type) => {
 
 
@@ -362,10 +367,12 @@ export default function NewTenantCheckIn({ navigation, route }) {
         // setExtraCharges(prev =>
         //   prev.map(i => (i.id === id ? { ...i, amount } : i))
         // );
+        const onlyNum = sanitizeAmount(amount);
+
         setExtraCharges(prev =>
             prev.map(i =>
                 i.id === id
-                    ? { ...i, amount, amountError: "" }
+                    ? { ...i, amount: onlyNum, amountError: "" }
                     : i
             )
         );
@@ -1849,7 +1856,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     value={checkinrentalAmount}
                                     onChangeText={(text) => {
                                         const onlyNum = text.replace(/[^0-9]/g, "");
-                                        setCheckinRentalAmount(onlyNum);
+                                        setCheckinRentalAmount(sanitizeAmount(text));
+                                        // setCheckinRentalAmount(onlyNum);
                                         setRentalError("");
                                     }}
 
@@ -1989,14 +1997,16 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                                             <TextInput
                                                                 style={styles.customRentInput}
-                                                                placeholder="₹ 0.00"
+                                                                placeholder="Enter Rent Amount"
                                                                 placeholderTextColor="#9CA3AF"
                                                                 keyboardType="numeric"
                                                                 value={customRentAmount}
                                                                 onChangeText={(text) => {
-                                                                    setCustomRentAmount(
-                                                                        text.replace(/[^0-9]/g, "")
-                                                                    );
+                                                                    // setCustomRentAmount(
+                                                                    //     text.replace(/[^0-9]/g, "")
+                                                                     // );
+
+                                                                    setCustomRentAmount(sanitizeAmount(text));
                                                                     setCustomRentError("");
                                                                 }}
                                                             />
