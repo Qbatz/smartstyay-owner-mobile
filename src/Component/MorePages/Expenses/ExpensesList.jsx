@@ -187,6 +187,11 @@ export default function ExpensesList({ navigation }) {
     const [maxAmount, setMaxAmount] = useState(null)
     const [selectedSubCategory, setSelectedSubCategory] = useState([])
     const [selectedMonth, setSelectedMonth] = useState("")
+    const [refreshing, setRefreshing] = useState(false)
+    const [hasMoreExpense, setHasMoreExpense] = useState(true)
+    const onEndReachedCalledDuringMomentum = useRef(true);
+    const isFetchingList = useRef(false);
+    const[expensesPage,setExpensesPage]=useState(1)
 
 
 
@@ -661,7 +666,7 @@ export default function ExpensesList({ navigation }) {
 
 
     const handleResetFilter = () => {
-           setSearchText("");
+        setSearchText("");
         setSearchOpen(false);
 
         setSelectedCategoryId([]);
@@ -692,7 +697,7 @@ export default function ExpensesList({ navigation }) {
         }
     }
 
-    console.log("paginationdetail",expensesPage,hasMoreExpense)
+    console.log("paginationdetail", expensesPage, hasMoreExpense)
 
     const onEndReachedExpenseList = async (page = 1, isRefresh = false) => {
         if (!activeHostelId || isFetchingList.current) {
@@ -729,12 +734,12 @@ export default function ExpensesList({ navigation }) {
 
         }
 
-        console.log("reachFilterExpense",filters)
+        console.log("reachFilterExpense", filters)
 
         try {
             setRefreshing(true)
             const res = await GetExpenseList(activeHostelId, filters);
-            console.log("finalExpenseList",res)
+            console.log("finalExpenseList", res)
 
             if (res?.success) {
                 // const pagination = res?.data?.paginationSummary;
@@ -757,7 +762,7 @@ export default function ExpensesList({ navigation }) {
             setRefreshing(false)
         }
     };
-     
+
     // };
 
     // const handleResetFilter=()=>{
@@ -2316,33 +2321,33 @@ const styles = StyleSheet.create({
         fontSize: 16, fontFamily: 'Gilroy-Bold'
     },
     resetFilterRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    marginTop: 8,
-    marginBottom: 12,
-    paddingHorizontal: 4,
-},
+        flexDirection: "row",
+        justifyContent: "flex-end",
+        marginTop: 8,
+        marginBottom: 12,
+        paddingHorizontal: 4,
+    },
 
-resetFilterText: {
-    color: "#1677FF",
-    fontSize: 16,
-    fontFamily: "Gilroy-Semibold",
-},
+    resetFilterText: {
+        color: "#1677FF",
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+    },
 
-emptyResetButton: {
-    marginTop: 24,
-    paddingVertical: 14,
-    paddingHorizontal: 38,
-    borderWidth: 1,
-    borderColor: "#1677FF",
-    borderRadius: 14,
-},
+    emptyResetButton: {
+        marginTop: 24,
+        paddingVertical: 14,
+        paddingHorizontal: 38,
+        borderWidth: 1,
+        borderColor: "#1677FF",
+        borderRadius: 14,
+    },
 
-emptyResetText: {
-    color: "#1677FF",
-    fontSize: 16,
-    fontFamily: "Gilroy-Semibold",
-},
+    emptyResetText: {
+        color: "#1677FF",
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+    },
 })
 
 
