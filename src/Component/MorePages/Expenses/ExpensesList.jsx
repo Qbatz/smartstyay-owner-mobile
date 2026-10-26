@@ -9,7 +9,8 @@ import {
     FlatList,
     Platform,
     Modal, PanResponder, Animated, TouchableWithoutFeedback, Dimensions, ScrollView, BackHandler,
-    KeyboardAvoidingView
+    KeyboardAvoidingView,
+    ActivityIndicator
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -68,7 +69,7 @@ export default function ExpensesList({ navigation }) {
 
     const { vendorList, getVendorList, deleteVendor } = useContext(CustomerContext);;
     const { expensesList, GetExpenseList, loading, IntializeexpensesList, GetInitializeExpense,
-        DeleteExpense
+        DeleteExpense, onlyExpensesList
     } = useContext(ExpensesContext);
 
     const { activeHostelId } = useContext(CommonContexts)
@@ -648,20 +649,25 @@ export default function ExpensesList({ navigation }) {
         }
     }
 
+    console.log("paginationdetail",expensesPage,hasMoreExpense)
+
     const onEndReachedExpenseList = async (page = 1, isRefresh = false) => {
         if (!activeHostelId || isFetchingList.current) {
-          return;
-        }
-    
-        if (refreshing && !isRefresh) {
-          return;
-        }
-    
-        if (!isRefresh && !hasMoreBills) {
-          return;
+            return;
         }
 
-        const finalCategory = newCategory.length ? newCategory : tempCatgory
+        if (refreshing && !isRefresh) {
+            return;
+        }
+
+        if (!isRefresh && !hasMoreExpense) {
+            return;
+        }
+        isFetchingList.current = true;
+
+        const requestPage = isRefresh ? 1 : page;
+
+        const finalCategory = selectedCategory.length ? selectedCategory : tempCatgory
 
         const filters = {
             categoryId: finalCategory?.length ? finalCategory : undefined,
@@ -675,40 +681,39 @@ export default function ExpensesList({ navigation }) {
             period: selectedMonth ? selectedMonth : undefined,
             minAmount: minAmount || undefined,
             maxAmount: maxAmount || undefined,
+            page: requestPage,
+            size: 10,
+
         }
-    
-    
-        isFetchingBills.current = true;
-    
-        const requestPage = isRefresh ? 1 : page;
-    
-        
-    
+
+        console.log("reachFilterExpense",filters)
+
         try {
-          setRefreshing(true)
-           const res = await GetExpenseList(activeHostelId, filters);
-    
-          if (res?.success) {
-            const pagination = res?.data?.paginationSummary;
-            const currentPage = pagination?.currentPage ?? requestPage;
-            const totalPages = pagination?.totalPages;
-            const newBillsList = res?.data?.listInvoices ?? [];
-    
-            setBillsPage(currentPage);
-    
-            setHasMoreExpense(
-              totalPages != null
-                ? currentPage < totalPages
-                : newBillsList.length === 30
-            );
-          }
+            setRefreshing(true)
+            const res = await GetExpenseList(activeHostelId, filters);
+            console.log("finalExpenseList",res)
+
+            if (res?.success) {
+                // const pagination = res?.data?.paginationSummary;
+                const currentPage = res?.data?.currentPage ?? requestPage;
+                const totalPages = res?.data?.totalPages;
+                const newExpenseList = res?.data?.expenses ?? [];
+
+                setExpensesPage(currentPage);
+
+                setHasMoreExpense(
+                    totalPages != null
+                        ? currentPage < totalPages
+                        : newExpenseList.length === 30
+                );
+            }
         } catch (error) {
-          console.log("Bill pagination error:", error);
+            console.log("Bill pagination error:", error);
         } finally {
-          isFetchingBills.current = false;
-          setRefreshing(false)
+            isFetchingList.current = false;
+            setRefreshing(false)
         }
-      };
+    };
 
     if (!canReadExpense && !loading) {
         return (
@@ -729,6 +734,8 @@ export default function ExpensesList({ navigation }) {
             </View>
         );
     }
+
+    console.log("onlyExpensesList", onlyExpensesList)
 
 
     return (
@@ -819,7 +826,7 @@ export default function ExpensesList({ navigation }) {
                 ) : (
 
                     <>
-                        {!loading && Expensesdata?.length > 0 &&
+                        {!loading && onlyExpensesList?.length > 0 &&
                             (
                                 <>
                                     {/* <View style={styles.searchWrapper}>
@@ -889,7 +896,7 @@ export default function ExpensesList({ navigation }) {
 
 
                         <FlatList
-                            data={Expensesdata || []}
+                            data={onlyExpensesList || []}
                             keyExtractor={(item) => item?.expenseId}
                             onMomentumScrollBegin={() => {
                                 onEndReachedCalledDuringMomentum.current = false;
@@ -902,14 +909,16 @@ export default function ExpensesList({ navigation }) {
                                     hasMoreExpense &&
                                     !refreshing
                                 ) {
-                                    // Correct assignment: lock further callbacks during momentum.
+
                                     onEndReachedCalledDuringMomentum.current = true;
 
                                     onEndReachedExpenseList(expensesPage + 1);
                                 }
                             }}
-
-                            onEndReachedThreshold={0.4}
+                            ListFooterComponent={
+                                refreshing ? <ActivityIndicator size="small" color="blue" /> : null
+                            }
+                            onEndReachedThreshold={0.2}
                             renderItem={renderExpensesItem}
                             ListHeaderComponent={() => (
                                 <>
@@ -975,7 +984,7 @@ export default function ExpensesList({ navigation }) {
                             )}
                             contentContainerStyle={{
                                 paddingHorizontal: 20,
-                                paddingBottom: 120
+                                paddingBottom: 10
                             }}
                         />
 

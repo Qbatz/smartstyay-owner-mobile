@@ -1680,8 +1680,10 @@ export default function NewBankingList() {
 
               scrollEventThrottle={16}
               keyExtractor={(item, index) =>
-                `${item?.transactionId ?? item?.id}-${index}`
+                `${item?.transactionId ?? item?.id}`
+               
               }
+                //  -${index}`
               onEndReached={() => {
                 if (
                   !transactionLoading &&
