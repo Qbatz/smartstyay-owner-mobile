@@ -205,10 +205,12 @@ if (filters.categoryId && filters.categoryId !== 0) {
       }
     );
 
-    if (res.status === 200) {
-      console.log("responseFilt", res);
+    console.log("response", res);
+
+    if (res?.status === 200) {
       
-      setExpensesList(res.data);
+      
+      setExpensesList(res?.data);
       return {
         success: true,
         data: res.data,

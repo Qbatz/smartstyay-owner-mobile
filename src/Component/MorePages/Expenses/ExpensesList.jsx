@@ -11,6 +11,7 @@ import {
     Modal, PanResponder, Animated, TouchableWithoutFeedback, Dimensions, ScrollView, BackHandler,
     KeyboardAvoidingView
 } from "react-native";
+
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
@@ -73,6 +74,8 @@ export default function ExpensesList({ navigation }) {
 
     const { activeHostelId } = useContext(CommonContexts)
 
+
+
     const {
         canReadModule: canReadVendor,
         canWriteModule: canWriteVendor,
@@ -91,7 +94,9 @@ export default function ExpensesList({ navigation }) {
     useFocusEffect(
         useCallback(() => {
             if (activeHostelId) {
-                GetExpenseList(activeHostelId);
+                const res = GetExpenseList(activeHostelId);
+                console.log("res", res);
+
             }
         }, [activeHostelId])
     );
@@ -158,6 +163,8 @@ export default function ExpensesList({ navigation }) {
         setAmountDropdownVisible((v) => !v);
     };
 
+    const [hasActiveFilter, setHasActiveFilter] = useState(false);
+
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [modalMessage, setModalMessage] = useState("");
@@ -177,8 +184,10 @@ export default function ExpensesList({ navigation }) {
     const [selectedCreatedBy, setSelectedCreatedBy] = useState([])
     const [minAmount, setMinAmount] = useState(null)
     const [maxAmount, setMaxAmount] = useState(null)
-    const [selectedSubCategory,setSelectedSubCategory]=useState([])
-    const [selectedMonth,setSelectedMonth]=useState("")
+    const [selectedSubCategory, setSelectedSubCategory] = useState([])
+    const [selectedMonth, setSelectedMonth] = useState("")
+
+
 
     const [errorMsg, setErrorMsg] = useState("")
 
@@ -532,7 +541,7 @@ export default function ExpensesList({ navigation }) {
     }))
 
     const paymentModeOptions = expensesList?.filterOptions?.paymentMode?.map(item => ({
-        label:  item?.accountName + " " + "-" + " " + item?.paymentMode,
+        label: item?.accountName + " " + "-" + " " + item?.paymentMode,
         value: item?.paymentMethod,
     }))
 
@@ -602,17 +611,18 @@ export default function ExpensesList({ navigation }) {
         </TouchableOpacity>
     );
 
-    console.log("silaana",formatDate(fromDate))
+    console.log("silaana", formatDate(fromDate))
     console.log(toDate)
+
     const applyToFilter = async ({
         newCategory = selectedCategory ?? tempCatgory,
         newPaymentStatus = paymentStatus,
-        newVendor=selectedVendor,
+        newVendor = selectedVendor,
         newPaymentMode = paymentMode,
-        newCreatedBy= selectedCreatedBy,
+        newCreatedBy = selectedCreatedBy,
     } = {}) => {
 
-        const finalCategory= newCategory.length ? newCategory : tempCatgory
+        const finalCategory = newCategory.length ? newCategory : tempCatgory
 
         const filters = {
             categoryId: finalCategory?.length ? finalCategory : undefined,
@@ -628,18 +638,65 @@ export default function ExpensesList({ navigation }) {
             maxAmount: maxAmount || undefined,
         }
 
-     
+        const hasFilter =
+            !!searchText.trim() ||
+            !!finalCategory?.length ||
+            !!newPaymentStatus?.length ||
+            !!newVendor?.length ||
+            !!newPaymentMode?.length ||
+            !!newCreatedBy?.length ||
+            !!selectedSubCategory?.length ||
+            !!fromDate ||
+            !!toDate ||
+            !!selectedMonth ||
+            !!minAmount ||
+            !!maxAmount;
+
+        setHasActiveFilter(hasFilter);
 
         const res = await GetExpenseList(activeHostelId, filters)
-       
+
     }
 
-    const handleResetFilter=()=>{
-       
-         if (activeHostelId) {
-                GetExpenseList(activeHostelId);
-            }
-    }
+
+    const handleResetFilter = () => {
+        setSearchText("");
+        setSearchOpen(false);
+
+        setSelectedCategoryId([]);
+        setSelectedCategory([]);
+        setTempCategory("");
+        setSelectedVendor([]);
+        setPaymentMode([]);
+        setSelectedCreatedBy([]);
+        setPaymentStatus([]);
+        setSelectedSubCategory([]);
+        setSelectedMonth("");
+
+        setFromDate(undefined);
+        setToDate(undefined);
+        setMinAmount(null);
+        setMaxAmount(null);
+
+        setShowFilter(false);
+        setShowCatergoryFilter(false);
+        setErrorMsg("");
+        setHasActiveFilter(false);
+
+        if (activeHostelId) {
+            GetExpenseList(activeHostelId, {
+                page: 1,
+                size: 10,
+            });
+        }
+    };
+
+    // const handleResetFilter=()=>{
+
+    //      if (activeHostelId) {
+    //             GetExpenseList(activeHostelId);
+    //         }
+    // }
 
     if (!canReadExpense && !loading) {
         return (
@@ -739,6 +796,16 @@ export default function ExpensesList({ navigation }) {
                             No Expenses are there!
                         </Text>
 
+                        {hasActiveFilter && (
+                            <TouchableOpacity
+                                style={styles.emptyResetButton}
+                                onPress={handleResetFilter}
+                                activeOpacity={0.8}
+                            >
+                                <Text style={styles.emptyResetText}>Reset</Text>
+                            </TouchableOpacity>
+                        )}
+
                         <TouchableOpacity style={[
                             styles.addVendorBtn,
                             !canWriteExpense && { opacity: 0.7 }
@@ -830,7 +897,7 @@ export default function ExpensesList({ navigation }) {
                                         showsHorizontalScrollIndicator={false}
                                         contentContainerStyle={styles.cardRow}
                                     >
-                                         <SummaryCard
+                                        <SummaryCard
                                             title="Total Expenses"
                                             value={expensesList?.totalExpenses}
                                             icon={ExpenseListIcon}
@@ -866,7 +933,7 @@ export default function ExpensesList({ navigation }) {
                                     <View style={styles.filterRow}>
                                         <View style={{ display: 'flex', flexDirection: 'row' }}>
                                             <TouchableOpacity style={styles.filterChipActive}
-                                            onPress={() => setShowFilter(true)}>
+                                                onPress={() => setShowFilter(true)}>
                                                 <Text style={styles.filterChipTextActive}>All</Text>
                                             </TouchableOpacity>
 
@@ -883,6 +950,16 @@ export default function ExpensesList({ navigation }) {
                                             <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
                                         </TouchableOpacity>
                                     </View>
+                                    {hasActiveFilter && Expensesdata?.length > 0 && (
+                                        <View style={styles.resetFilterRow}>
+                                            <TouchableOpacity
+                                                onPress={handleResetFilter}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Text style={styles.resetFilterText}>Reset</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
                                 </>
                             )}
                             contentContainerStyle={{
@@ -993,27 +1070,27 @@ export default function ExpensesList({ navigation }) {
                             </View>
 
                             <View style={styles.quickRow}>
-                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "THIS_MONTH" &&{backgroundColor:'#e1f1ff'}]}
-                                 onPress={() => {
-                                    //  setFromDate(dayjs()); setToDate(dayjs());
-                                    setSelectedMonth("THIS_MONTH")
-                                      }}>
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "THIS_MONTH" && { backgroundColor: '#e1f1ff' }]}
+                                    onPress={() => {
+                                        //  setFromDate(dayjs()); setToDate(dayjs());
+                                        setSelectedMonth("THIS_MONTH")
+                                    }}>
                                     <Text style={styles.quickText}>This Month</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_3_MONTHS" &&{backgroundColor:'#e1f1ff'}]}
-                                onPress={() => {
-                                    //  setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week"));
-                                    setSelectedMonth("LAST_3_MONTHS")
-                                      }}>
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_3_MONTHS" && { backgroundColor: '#e1f1ff' }]}
+                                    onPress={() => {
+                                        //  setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week"));
+                                        setSelectedMonth("LAST_3_MONTHS")
+                                    }}>
                                     <Text style={styles.quickText}>Last 3 month</Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_6_MONTHS" &&{backgroundColor:'#e1f1ff'}]}
-                                onPress={() => { 
-                                    // setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month"));
-                                    setSelectedMonth("LAST_6_MONTHS")
-                                     }}>
+                                <TouchableOpacity style={[styles.quickBtn, selectedMonth === "LAST_6_MONTHS" && { backgroundColor: '#e1f1ff' }]}
+                                    onPress={() => {
+                                        // setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month"));
+                                        setSelectedMonth("LAST_6_MONTHS")
+                                    }}>
                                     <Text style={styles.quickText}>Last 6 Month</Text>
                                 </TouchableOpacity>
                             </View>
@@ -1033,7 +1110,7 @@ export default function ExpensesList({ navigation }) {
                                 }}
                             />
 
-                               <MultiSelectDropdown
+                            <MultiSelectDropdown
                                 label="Sub Category"
                                 dropdownKey="subCategory"
                                 placeholder="Select Category"
@@ -1147,7 +1224,7 @@ export default function ExpensesList({ navigation }) {
                                         </View>
                                     </View>
 
-                                       {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
+                                    {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
 
                                     {/* <View
                                         style={styles.selectWrapper}
@@ -1202,7 +1279,7 @@ export default function ExpensesList({ navigation }) {
                                     setMaxAmount("")
                                     // applyToFilter([],[],[],[],[])
                                     handleResetFilter()
-                                     setShowFilter(false)
+                                    setShowFilter(false)
                                 }}
                             >
                                 <Text style={styles.resetBtnText}>Reset All</Text>
@@ -1232,7 +1309,7 @@ export default function ExpensesList({ navigation }) {
                             mode="single"
                             date={fromDate}
                             onChange={(p) => {
-                                setFromDate(p.date || dayjs() );
+                                setFromDate(p.date || dayjs());
                                 setOpenFrom(false);
                             }}
                         />
@@ -1252,7 +1329,7 @@ export default function ExpensesList({ navigation }) {
                             mode="single"
                             date={toDate}
                             onChange={(p) => {
-                                setToDate(p.date || dayjs() );
+                                setToDate(p.date || dayjs());
                                 setOpenTo(false);
                             }}
                         />
@@ -1657,8 +1734,10 @@ const styles = StyleSheet.create({
     optionText: { fontSize: 15, color: "#000" },
 
     quickRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
-    quickBtn: { width: "32%", paddingVertical: 12, borderRadius: 12, 
-        backgroundColor: "#F5F6FA", alignItems: "center" },
+    quickBtn: {
+        width: "32%", paddingVertical: 12, borderRadius: 12,
+        backgroundColor: "#F5F6FA", alignItems: "center"
+    },
     quickText: { color: "#111", fontFamily: "Gilroy-Semibold" },
     bottomButtons: { flexDirection: "row", justifyContent: "space-between", marginTop: 30, marginBottom: 20 },
     resetBtn: { width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center" },
@@ -2143,7 +2222,35 @@ const styles = StyleSheet.create({
     },
     moreFilterText: {
         fontSize: 16, fontFamily: 'Gilroy-Bold'
-    }
+    },
+    resetFilterRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    marginTop: 8,
+    marginBottom: 12,
+    paddingHorizontal: 4,
+},
+
+resetFilterText: {
+    color: "#1677FF",
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+},
+
+emptyResetButton: {
+    marginTop: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 38,
+    borderWidth: 1,
+    borderColor: "#1677FF",
+    borderRadius: 14,
+},
+
+emptyResetText: {
+    color: "#1677FF",
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+},
 })
 
 
