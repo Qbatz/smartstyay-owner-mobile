@@ -530,32 +530,78 @@ export default function NewBankingList() {
     },
   ];
 
+  // const applyTransactionFilters = async ({
+  //   dateFilter = selectedDateFilter,
+  //   source = selectedSource,
+  //   fromDate,
+  //   toDate,
+  // } = {}) => {
+  //   if (!activeHostelId) return;
+
+  //   console.log("Applying Banking Filters:", {
+  //     dateFilter,
+  //     source,
+  //     fromDate,
+  //     toDate,
+  //   });
+
+  //   await getAllTransactions(
+  //     activeHostelId,
+  //     1,
+  //     20,
+  //     {
+  //       dateFilter,
+  //       source,
+  //       ...(fromDate && { fromDate }),
+  //       ...(toDate && { toDate }),
+  //     }
+  //   );
+  // };
+
   const applyTransactionFilters = async ({
     dateFilter = selectedDateFilter,
     source = selectedSource,
     fromDate,
     toDate,
   } = {}) => {
-    if (!activeHostelId) return;
+    if (!activeHostelId || !canReadBanking) return;
 
-    console.log("Applying Banking Filters:", {
+    const filters = {
       dateFilter,
       source,
-      fromDate,
-      toDate,
-    });
+      ...(fromDate ? { fromDate } : {}),
+      ...(toDate ? { toDate } : {}),
+    };
 
-    await getAllTransactions(
-      activeHostelId,
-      1,
-      20,
-      {
-        dateFilter,
-        source,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
+    try {
+      setTransactionLoading(true);
+
+      const res = await getAllTransactions(
+        activeHostelId,
+        1,
+        20,
+        filters
+      );
+
+      if (res?.success) {
+        setSelectedDateFilter(
+          Array.isArray(dateFilter) ? dateFilter : dateFilter ? [dateFilter] : []
+        );
+
+        setSelectedSource(
+          Array.isArray(source) ? source : source ? [source] : []
+        );
+
+        setTransactionPage(1);
+        setHasMoreTransactions(
+          (res?.data?.length || 0) >= 20
+        );
       }
-    );
+    } catch (error) {
+      console.log("Apply banking filter error:", error);
+    } finally {
+      setTransactionLoading(false);
+    }
   };
 
   const handleApplyFilter = async () => {
@@ -568,13 +614,45 @@ export default function NewBankingList() {
 
     console.log("FULL BANKING FILTER:", filters);
 
-    setSelectedDateFilter(tempDateFilter);
-    setSelectedSource(tempSource);
+    try {
+      setTransactionLoading(true);
 
-    await getAllTransactions(activeHostelId, filters);
+      await getAllTransactions(
+        activeHostelId,
+        1,
+        20,
+        filters
+      );
 
-    setShowFilter(false);
+      setSelectedDateFilter(tempDateFilter);
+      setSelectedSource(tempSource);
+      setTransactionPage(1);
+      setHasMoreTransactions(true);
+      setShowFilter(false);
+    } catch (error) {
+      console.log("Banking filter error:", error);
+    } finally {
+      setTransactionLoading(false);
+    }
   };
+
+  // const handleApplyFilter = async () => {
+  //   if (!canReadBanking || !activeHostelId) return;
+
+  //   const filters = {
+  //     dateFilter: tempDateFilter,
+  //     source: tempSource,
+  //   };
+
+  //   console.log("FULL BANKING FILTER:", filters);
+
+  //   setSelectedDateFilter(tempDateFilter);
+  //   setSelectedSource(tempSource);
+
+  //   await getAllTransactions(activeHostelId, filters);
+
+  //   setShowFilter(false);
+  // };
 
 
   // const mappedBankList = (bankList || []).map((item) => {
@@ -1084,7 +1162,7 @@ export default function NewBankingList() {
 
   const bankListHeight = scrollY.interpolate({
     inputRange: [0, 200],
-    outputRange: [295, 0], // அல்லது 290
+    outputRange: [235, 0], // அல்லது 290
     extrapolate: "clamp",
   });
 
@@ -1679,11 +1757,15 @@ export default function NewBankingList() {
               )}
 
               scrollEventThrottle={16}
+              // keyExtractor={(item, index) =>
+              //   `${item?.transactionId ?? item?.id}`
+
+              // }
+
               keyExtractor={(item, index) =>
-                `${item?.transactionId ?? item?.id}`
-               
+                `${item?.transactionId ?? item?.id ?? "transaction"}-${index}`
               }
-                //  -${index}`
+              //  -${index}`
               onEndReached={() => {
                 if (
                   !transactionLoading &&
@@ -2087,6 +2169,8 @@ export default function NewBankingList() {
           });
         }}
 
+        
+
         onApply={async () => {
           setSelectedDateFilter(tempDateFilter);
           setDateSheetOpen(false);
@@ -2098,6 +2182,7 @@ export default function NewBankingList() {
         }}
 
         onClose={() => setDateSheetOpen(false)}
+        isSingleSelect={true}
       />
 
       <FilterBottomSheet
@@ -2129,6 +2214,7 @@ export default function NewBankingList() {
         }}
 
         onClose={() => setSourceSheetOpen(false)}
+        isSingleSelect={true}
       />
 
 
@@ -2520,10 +2606,10 @@ const styles = StyleSheet.create({
   },
   bankCard: {
     width: 350,
-    height: 265,
+    height: 215,
     backgroundColor: "#FFF",
     borderRadius: 24,
-    marginHorizontal: 13,
+    marginHorizontal: 10,
     padding: 12,
     overflow: "visible",
     shadowColor: "#000",
@@ -2551,9 +2637,9 @@ const styles = StyleSheet.create({
   },
 
   iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: "#EEF2FF",
     justifyContent: "center",
     alignItems: "center",
@@ -2748,7 +2834,7 @@ const styles = StyleSheet.create({
 
 
   balanceText: { color: "#777" },
-  balanceAmount: { fontFamily: "Gilroy-Bold", fontSize: 16 },
+  balanceAmount: { fontFamily: "Gilroy-Bold", fontSize: 16, marginTop: 10 },
   addAmountText: {
     color: "#1D5DFF",
     fontFamily: "Gilroy-Semibold",
@@ -3316,7 +3402,7 @@ const styles = StyleSheet.create({
   },
   addNewCard: {
     width: 120,
-    height: 265,
+    height: 215,
     borderWidth: 2,
     borderStyle: "dashed",
     borderColor: "#3D6DFF",
@@ -3362,7 +3448,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 5,
     marginBottom: 14,
     paddingHorizontal: 14,
   },
@@ -3448,22 +3534,22 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 28,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
   },
 
   transactionIcon: {
-    width: 23,
-    height: 23,
+    width: 15,
+    height: 15,
     resizeMode: "contain",
     tintColor: "#FFFFFF", // white icon
   },
 
   transactionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#222",
     fontFamily: "Gilroy-SemiBold",
   },
@@ -3492,8 +3578,8 @@ const styles = StyleSheet.create({
   },
 
   smallIcon: {
-    width: 23,
-    height: 23,
+    width: 20,
+    height: 20,
     resizeMode: "contain",
   },
 
