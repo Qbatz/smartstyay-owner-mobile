@@ -7,7 +7,9 @@
     "android:qa": "react-native run-android --mode=qaDebug --appIdSuffix=qa",
     "local": "react-native run-android --mode=localDebug --appIdSuffix=dev",
     "android:prod": "react-native run-android --mode=prodDebug",
-    "ios": "react-native run-ios",
+    "ios": "react-native run-ios --scheme Dev",
+    "ios:dev": "react-native run-ios --scheme Dev",
+    "ios:prod": "react-native run-ios --scheme Prod",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"

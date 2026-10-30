@@ -13,6 +13,12 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, 15.6
 prepare_react_native_project!
 
+project 'smartstayOwnerApp',
+  'DevDebug' => :debug,
+  'DevRelease' => :release,
+  'ProdDebug' => :debug,
+  'ProdRelease' => :release
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green

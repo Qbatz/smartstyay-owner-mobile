@@ -1,0 +1,3 @@
+BUNDLE_ID_SUFFIX =
+
+BASE_URL = https:/$()/webapi.qbatz.com

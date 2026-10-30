@@ -1,0 +1,3 @@
+BUNDLE_ID_SUFFIX = .dev
+
+BASE_URL = https:/$()/webdevapi.qbatz.com
