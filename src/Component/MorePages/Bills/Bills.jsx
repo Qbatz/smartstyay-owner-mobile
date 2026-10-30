@@ -2363,29 +2363,44 @@ export default function BillsDesign({ route }) {
 
   const refundPaymentOptions = (
     refundInitDetails?.listBanks || []
-  ).map((item, index) => {
-    const isCash = item?.bankName
-      ?.toLowerCase()
-      ?.includes("cash");
+  ).map((bank, index) => {
+    const accountType = String(
+      bank?.type || bank?.accountType || bank?.bankName || ""
+    ).trim().toUpperCase();
+
+    const isBank =
+      bank?.isBank ||
+      accountType === "BANK" ||
+      String(bank?.bankName || "").toUpperCase() === "BANK";
+
+    const isCash =
+      String(bank?.bankName || "").toUpperCase() === "CASH" ||
+      accountType === "CASH";
+
+    const iconType = isBank
+      ? "BANK"
+      : isCash
+        ? "CASH"
+        : "CARD";
 
     return {
-      id: item?.bankId || `account-${index}`,
+      id: bank?.bankId || `account-${index}`,
+      bankId: bank?.bankId,
+      value: bank?.bankId,
 
-      bankId: item?.bankId,
+      displayName: bank?.displayName || "",
+      bankName: bank?.bankName || "",
+      holderName: bank?.accountHolderName || bank?.holderName || "",
 
       accountHolderName:
-        item?.accountHolderName || "Account",
+        bank?.accountHolderName || bank?.holderName || "Account",
 
-      bankName:
-        item?.bankName || "Bank Account",
-
+      accountType,
+      iconType,
       isCash,
-
-      subLabel:
-        item?.bankName || "Bank Account",
+      data: bank,
     };
   });
-
 
   const handleReceiptMenu = (item, id) => {
 
@@ -7426,7 +7441,9 @@ export default function BillsDesign({ route }) {
                               item => item.id === refundFrom
                             );
 
-                            const isCash = selectedPayment?.isCash;
+                            // const isCash = selectedPayment?.isCash;
+                            const isCash = selectedPayment?.iconType === "CASH";
+                            const isBank = selectedPayment?.iconType === "BANK";
 
                             return (
                               <>
@@ -7453,7 +7470,7 @@ export default function BillsDesign({ route }) {
                                 </View>
 
                                 {/* NAME + PAYMENT METHOD */}
-                                <View style={styles.refundPaymentDetails}>
+                                {/* <View style={styles.refundPaymentDetails}>
 
                                   <Text
                                     style={styles.refundPaymentName}
@@ -7472,6 +7489,26 @@ export default function BillsDesign({ route }) {
                                       "BANK"}
                                   </Text>
 
+                                </View> */}
+
+                                <View style={styles.refundPaymentDetails}>
+                                  <Text
+                                    style={styles.refundPaymentName}
+                                    numberOfLines={1}
+                                  >
+                                    {selectedPayment?.displayName}
+                                  </Text>
+
+                                  <Text
+                                    style={styles.refundPaymentSubText}
+                                    numberOfLines={2}
+                                  >
+                                    {selectedPayment?.holderName}
+                                    {" - "}
+                                    {selectedPayment?.bankName}
+
+
+                                  </Text>
                                 </View>
                               </>
                             );
@@ -7546,23 +7583,26 @@ export default function BillsDesign({ route }) {
                                   </View>
 
                                   {/* ACCOUNT DETAILS */}
-                                  <View
-                                    style={styles.paymentMethodDetails}
-                                  >
+                                  <View style={styles.paymentMethodDetails}>
                                     <Text
                                       style={styles.paymentMethodName}
                                       numberOfLines={1}
                                     >
-                                      {opt.accountHolderName}
+                                      {opt?.displayName}
                                     </Text>
 
                                     <Text
                                       style={styles.paymentMethodSubText}
-                                      numberOfLines={1}
+                                      numberOfLines={2}
                                     >
-                                      {opt.bankName}
+                                      {opt?.holderName}
+                                      {" - "}
+                                      {opt?.bankName}
+
+
                                     </Text>
                                   </View>
+
 
                                   {/* CASH / BANK */}
                                   <View
@@ -11132,40 +11172,40 @@ const styles = StyleSheet.create({
     color: "#2457E6",
   },
 
-advanceBalanceContainer: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "flex-end",
-  marginLeft: "auto",
-  flexShrink: 0,
-},
+  advanceBalanceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginLeft: "auto",
+    flexShrink: 0,
+  },
 
-advanceGreenDot: {
-  width: 9,
-  height: 9,
-  borderRadius: 5,
-  backgroundColor: "#16A34A",
-  marginRight: 10,
-},
+  advanceGreenDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: "#16A34A",
+    marginRight: 10,
+  },
 
-advanceTotalPaid: {
-  fontSize: 14,
-  color: "#8A9099",
-  fontFamily: "Gilroy-Medium",
-  marginTop: 10,
-  marginBottom: 8,
-},
+  advanceTotalPaid: {
+    fontSize: 14,
+    color: "#8A9099",
+    fontFamily: "Gilroy-Medium",
+    marginTop: 10,
+    marginBottom: 8,
+  },
 
-advanceInvoiceRow: {
-  paddingVertical: 8,
-},
+  advanceInvoiceRow: {
+    paddingVertical: 8,
+  },
 
-advanceInvoiceText: {
-  fontSize: 14,
-  color: "#8A9099",
-  fontFamily: "Gilroy-Medium",
-  flexShrink: 1,
-},
+  advanceInvoiceText: {
+    fontSize: 14,
+    color: "#8A9099",
+    fontFamily: "Gilroy-Medium",
+    flexShrink: 1,
+  },
 
 
 });

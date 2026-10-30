@@ -260,6 +260,7 @@ export default function BankingProvider({ children }) {
   };
 
 
+
   const getAllTransactions = async (
     hostelId,
     page = 1,
@@ -267,7 +268,6 @@ export default function BankingProvider({ children }) {
     filters = {}
   ) => {
     try {
-      // setLoading(true);
       setErrorMsg("");
 
       const axios = getAxios();
@@ -275,17 +275,43 @@ export default function BankingProvider({ children }) {
       const params = {
         page,
         size,
-        ...(filters.dateFilter && { dateFilter: filters.dateFilter }),
-        ...(filters.source && { source: filters.source }),
-        ...(filters.fromDate && { fromDate: filters.fromDate }),
-        ...(filters.toDate && { toDate: filters.toDate }),
       };
+
+      const dateFilter = Array.isArray(filters?.dateFilter)
+        ? filters.dateFilter.filter(Boolean)
+        : filters?.dateFilter
+          ? [filters.dateFilter]
+          : [];
+
+      const source = Array.isArray(filters?.source)
+        ? filters.source.filter(Boolean)
+        : filters?.source
+          ? [filters.source]
+          : [];
+
+      if (dateFilter.length > 0 && !dateFilter.includes("ALL")) {
+        params.dateFilter = dateFilter[0];
+      }
+
+      if (source.length > 0) {
+        params.source = source.join(",");
+      }
+
+      if (filters?.fromDate) {
+        params.fromDate = filters.fromDate;
+      }
+
+      if (filters?.toDate) {
+        params.toDate = filters.toDate;
+      }
+
+      console.log("BANKING FILTERS:", filters);
+      console.log("BANKING API PARAMS:", params);
 
       const res = await axios.get(
         `/v3/bank/allTransactions/${hostelId}`,
         { params }
       );
-
 
       if (res.status === 200) {
         const responseData = res?.data ?? {};
@@ -294,11 +320,11 @@ export default function BankingProvider({ children }) {
         const bankV2Lists = Array.isArray(responseData?.bankV2Lists)
           ? responseData.bankV2Lists
           : Array.isArray(responseData?.listBanks)
-            ? responseData?.listBanks
+            ? responseData.listBanks
             : [];
 
         const transactions = Array.isArray(responseData?.transactions)
-          ? responseData?.transactions
+          ? responseData.transactions
           : [];
 
         setBankList(bankV2Lists);
@@ -317,17 +343,21 @@ export default function BankingProvider({ children }) {
 
         return {
           success: true,
-          data: responseData,
+          data: transactions,
           response: responseData,
         };
       }
-
 
       return {
         success: false,
         message: "Failed to fetch transactions",
       };
     } catch (error) {
+      console.log(
+        "getAllTransactions error:",
+        error?.response?.data || error.message
+      );
+
       const msg = getErrorMessage(error);
       setErrorMsg(msg);
 
@@ -339,6 +369,7 @@ export default function BankingProvider({ children }) {
       setLoading(false);
     }
   };
+
 
   const getBankOverview = async (
     hostelId,
@@ -362,8 +393,8 @@ export default function BankingProvider({ children }) {
         { params }
       );
 
-      if (res.status === 200) {
-        const overview = res.data || {};
+      if (res?.status === 200) {
+        const overview = res?.data || {};
 
         setBankOverview(overview);
 

@@ -352,6 +352,10 @@ export default function AddTenantNewform({ navigation, route }) {
         setIsCustomRentSaved(false);
     };
 
+    const sanitizeAmount = (text) => {
+        return text.replace(/[^0-9]/g, "").replace(/^0+/, "");
+    };
+
 
 
     const [openStartTime, setOpenStartTime] = useState(false);
@@ -1040,14 +1044,14 @@ export default function AddTenantNewform({ navigation, route }) {
                 : null
         );
 
-        setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, 0)));
+        setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, "")));
 
         setReferenceNumber(getValue(draftDetails?.referenceNumber));
 
         setAdvanceAmount(String(getValue(draftDetails?.advanceAmount, 0)));
 
         setCheckinRentalAmount(
-            String(getValue(draftDetails?.rentalAmount, 0))
+            String(getValue(draftDetails?.rentalAmount, ""))
         );
 
 
@@ -1587,31 +1591,30 @@ export default function AddTenantNewform({ navigation, route }) {
 
         if (res.success) {
             setAccountList(
-                (res?.data?.bankDetails || []).map((item, index) => ({
-                    id: item?.bankId || `account-${index}`,
-                    bankId: item?.bankId,
+                (res?.data?.bankDetails || []).map((item, index) => {
+                    const isCash = item?.type === "CASH";
 
-                    displayName: item?.holderName || "Account",
-                    accountHolderName: item?.holderName || "Account",
+                    const holderName = item?.holderName || "";
+                    const displayName = item?.displayName || "";
+                    const bankName = item?.bankName || "";
 
-                    bankName: item?.bankName || "",
-                    upiId: item?.upiId || "",
-                    type: item?.type || "BANK",
-                    accountType: item?.type || "BANK",
-                    isUpi: item?.isUpi || false,
+                    return {
+                        ...item,
+                        id: item?.bankId || `account-${index}`,
+                        bankId: item?.bankId,
 
-                    cashAccountType:
-                        item?.type === "CASH"
-                            ? item?.bankName || "Cash"
-                            : "",
+                        holderName,
+                        displayName,
+                        accountHolderName: holderName,
 
-                    bankAccountType:
-                        item?.type !== "CASH"
-                            ? item?.bankName || "Bank Account"
-                            : "",
+                        accountType: item?.type || "BANK",
+                        paymentMethod: item?.type || "BANK",
 
-                    paymentMethod: item?.type || "BANK",
-                }))
+                        isCash,
+                        cashAccountType: isCash ? bankName || "Cash" : "",
+                        bankAccountType: !isCash ? bankName || "Bank Account" : "",
+                    };
+                })
             );
             setBeds(res?.data?.listBeds);
         } else {
@@ -1680,16 +1683,15 @@ export default function AddTenantNewform({ navigation, route }) {
         setOpenDropdownId(null);
     };
 
-    const fetchBankingList = async () => {
-        const data = await getBankListByHostel(activeHostelId);
-        // setAccountList(data.data);
-    };
+    // const fetchBankingList = async () => {
+    //     const data = await getBankListByHostel(activeHostelId);
+    // };
 
-    useEffect(() => {
-        if (activeHostelId) {
-            fetchBankingList(activeHostelId);
-        }
-    }, [activeHostelId]);
+    // useEffect(() => {
+    //     if (activeHostelId) {
+    //         fetchBankingList(activeHostelId);
+    //     }
+    // }, [activeHostelId]);
 
 
 
@@ -1727,7 +1729,9 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
     const updateAmount = (id, amount) => {
-        const onlyNum = amount.replace(/[^0-9]/g, "");
+
+        const onlyNum = sanitizeAmount(amount);
+        // const onlyNum = amount.replace(/[^0-9]/g, "");
 
         setExtraCharges((prev) =>
             prev.map((i) =>
@@ -4517,7 +4521,8 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 // onChangeText={setBookingAmount}
                                                 onChangeText={(text) => {
                                                     const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setBookingAmount(onlyNum);
+                                                    setBookingAmount(sanitizeAmount(text));
+                                                    // setBookingAmount(onlyNum);
                                                     setBookingAmountError("");
                                                 }}
                                                 onFocus={(e) => scrollInputIntoView(e)}
@@ -4854,9 +4859,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                     numberOfLines={1}
                                                                     ellipsizeMode="tail"
                                                                 >
-                                                                    {accountSelected?.accountHolderName ||
-                                                                        accountSelected?.displayName ||
-                                                                        "Account"}
+                                                                    {accountSelected?.displayName}
                                                                 </Text>
 
                                                                 <Text
@@ -4864,13 +4867,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                     numberOfLines={1}
                                                                     ellipsizeMode="tail"
                                                                 >
-                                                                    {accountSelected?.accountType === "CASH"
-                                                                        ? accountSelected?.cashAccountType ||
-                                                                        "Petty Cash"
-                                                                        : accountSelected?.paymentMethod ||
-                                                                        accountSelected?.bankAccountType ||
-                                                                        accountSelected?.bankName ||
-                                                                        "Bank Account"}
+                                                                    {accountSelected?.holderName} - {accountSelected?.bankName}
                                                                 </Text>
                                                             </View>
 
@@ -5515,7 +5512,8 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 value={checkinrentalAmount}
                                                 onChangeText={(text) => {
                                                     const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setCheckinRentalAmount(onlyNum);
+                                                    setCheckinRentalAmount(sanitizeAmount(text));
+                                                    // setCheckinRentalAmount(onlyNum);
                                                     setRentalError("");
                                                 }}
                                                 onFocus={(e) => scrollInputIntoView(e)}
@@ -5660,9 +5658,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                                     keyboardType="numeric"
                                                                                     value={customRentAmount}
                                                                                     onChangeText={(text) => {
-                                                                                        setCustomRentAmount(
-                                                                                            text.replace(/[^0-9]/g, "")
-                                                                                        );
+                                                                                        // setCustomRentAmount(
+                                                                                        //     text.replace(/[^0-9]/g, "")
+                                                                                        // );
+                                                                                        setCustomRentAmount(sanitizeAmount(text));
                                                                                         setCustomRentError("");
                                                                                     }}
                                                                                 />
@@ -7282,7 +7281,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         numberOfLines={1}
                                                         ellipsizeMode="tail"
                                                     >
-                                                        {payment?.displayName || payment?.accountHolderName || "Account"}
+                                                        {payment?.displayName}
                                                     </Text>
 
                                                     <Text
@@ -7290,13 +7289,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         numberOfLines={1}
                                                         ellipsizeMode="tail"
                                                     >
-                                                        {isCash
-                                                            ? payment?.cashAccountType || "Petty Cash"
-                                                            : payment?.paymentMethod ||
-                                                            payment?.bankAccountType ||
-                                                            payment?.bankName ||
-                                                            payment?.accountType ||
-                                                            "Bank"}
+                                                        {payment?.holderName} - {payment?.bankName}
                                                     </Text>
                                                 </View>
 

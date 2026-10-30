@@ -40,9 +40,9 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   const [refundFromError, setRefundFromError] = useState("");
   const [refundFrom, setRefundFrom] = useState("");
   const [showRefundFrom, setShowRefundFrom] = useState(false);
-  const [transactionId,setTransactionID]=useState("");
+  const [transactionId, setTransactionID] = useState("");
 
-  console.log("tanId",transactionId)
+  console.log("tanId", transactionId)
 
 
   console.log("bookingDetails", bookingDetails)
@@ -188,10 +188,28 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   });
 
 
-  const refundBankOptions = (bankdetails?.listBanks || []).map((b) => ({
-    label: `${b?.holderName || ""} - ${b?.bankName || ""}`,
-    value: b?.bankId,
-  }));
+  const refundBankOptions = (bankdetails?.listBanks || []).map(
+    (bank, index) => {
+      const iconType =
+        bank?.type === "BANK" || bank?.bankName === "BANK"
+          ? "BANK"
+          : bank?.bankName === "CASH" || bank?.accountType === "CASH"
+            ? "CASH"
+            : "CARD";
+
+      return {
+        id: bank?.bankId || `account-${index}`,
+        value: bank?.bankId,
+        displayName: bank?.displayName || "",
+        holderName:
+          bank?.holderName || bank?.accountHolderName || "",
+        bankName: bank?.bankName || "",
+        iconType,
+        type: bank?.accountType || bank?.bankName,
+        data: bank,
+      };
+    }
+  );
 
 
 
@@ -377,11 +395,24 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
                   setShowRefundFrom(v => !v);
                 }}
               >
-                <Text style={{ fontSize: 15 }}>
-                  {refundFrom
-                    ? refundBankOptions.find(o => o.value === refundFrom)?.label
-                    : "Select bank"}
-                </Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 15 }} numberOfLines={1}>
+                    {refundFrom
+                      ? refundBankOptions.find(o => o.value === refundFrom)?.displayName
+                      : "Select bank"}
+                  </Text>
+
+                  {refundFrom ? (
+                    <Text
+                      style={{ fontSize: 12, color: "#777", marginTop: 3 }}
+                      numberOfLines={1}
+                    >
+                      {refundBankOptions.find(o => o.value === refundFrom)?.holderName}
+                      {" - "}
+                      {refundBankOptions.find(o => o.value === refundFrom)?.bankName}
+                    </Text>
+                  ) : null}
+                </View>
 
                 <Image
                   source={DownArrow}
@@ -413,15 +444,29 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
                             setRefundFromError("");
                           }}
                         >
-                          <Text
-                            style={
-                              isSelected
-                                ? styles.dropdownTextSelected
-                                : styles.dropdownText
-                            }
-                          >
-                            {opt.label}
-                          </Text>
+                          <View>
+                            <Text
+                              style={
+                                isSelected
+                                  ? styles.dropdownTextSelected
+                                  : styles.dropdownText
+                              }
+                              numberOfLines={1}
+                            >
+                              {opt?.displayName}
+                            </Text>
+
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                color: isSelected ? "#fff" : "#777",
+                                marginTop: 3,
+                              }}
+                              numberOfLines={1}
+                            >
+                              {opt?.holderName} - {opt?.bankName}
+                            </Text>
+                          </View>
                         </TouchableOpacity>
                       );
                     })}
@@ -437,12 +482,12 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             <Text style={styles.label}>Transaction ID</Text>
 
             <TextInput
-            placeholder="Enter Transaction ID"
-            style={{borderWidth:1,borderColor: "#ccc",borderRadius:10,marginTop:10,paddingHorizontal:12, fontFamily: "Gilroy-Regular",paddingVertical:15}}
-            value={transactionId}
-            onChangeText={(text)=>{
-              setTransactionID(text)
-            }}/>
+              placeholder="Enter Transaction ID"
+              style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 10, marginTop: 10, paddingHorizontal: 12, fontFamily: "Gilroy-Regular", paddingVertical: 15 }}
+              value={transactionId}
+              onChangeText={(text) => {
+                setTransactionID(text)
+              }} />
 
             {/* Reason */}
             <Text style={[styles.label, { marginTop: 12 }]}>
