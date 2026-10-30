@@ -13,7 +13,8 @@ import {
   PanResponder,
   BackHandler, Keyboard, Platform,
   KeyboardAvoidingView,
-  FlatList
+  FlatList,
+  ActivityIndicator
 
 } from "react-native";
 import { useFocusEffect, useNavigationState } from "@react-navigation/native";
@@ -136,7 +137,8 @@ export default function BillsDesign({ route }) {
     , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
     GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter,
-    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills, GetRecurringInvoicesForReview, availablerecurringInvoices } = useContext(BillContext)
+    GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills, GetRecurringInvoicesForReview,
+    availablerecurringInvoices, onlyBillList } = useContext(BillContext)
 
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
@@ -173,6 +175,7 @@ export default function BillsDesign({ route }) {
 
 
   console.log("BillDetails", BillDetails?.listInvoices);
+  console.log("BillDetails", BillDetails);
 
   const filterOptions = BillDetails?.filterOptions;
 
@@ -353,6 +356,11 @@ export default function BillsDesign({ route }) {
     dayjs().format("DD-MM-YYYY")
   );
   const [isRefundClicked, setIsRefundClicked] = useState(false);
+  const [billsPage, setBillsPage] = useState(1)
+  const [hasMoreBills, setHasMoreBills] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const onEndReachedCalledDuringMomentum = useRef(true);
+  const isFetchingBills = useRef(false);
 
 
   const isSettlementBill =
@@ -435,7 +443,11 @@ export default function BillsDesign({ route }) {
       activeHostelId &&
       canReadInvoice
     ) {
-      GetAllBillDetails(activeHostelId);
+      const filters = {
+        page: 1,
+        size: 30
+      }
+      GetAllBillDetails(activeHostelId, filters);
     } else if (!activeHostelId || !canReadInvoice) {
       setBillDetails([]);
     }
@@ -2049,17 +2061,40 @@ export default function BillsDesign({ route }) {
   };
 
 
+  // const handleResetFilters = async () => {
+  //   if (!canReadInvoice) return;
+  //   setFromDate(null);
+  //   setToDate(null);
+  //   setBillStatus([]);
+  //   setType([]);
+  //   setMode([]);
+  //   setCreatedBy([]);
+
+  //   setAppliedFilters(null);
+  //   setFilterError("")
+
+  //   await GetAllBillDetails(activeHostelId);
+  // }
+
   const handleResetFilters = async () => {
     if (!canReadInvoice) return;
+
     setFromDate(null);
     setToDate(null);
+
     setBillStatus([]);
     setType([]);
     setMode([]);
+
+    setTempmode([]);
+
     setCreatedBy([]);
 
+    setTempStatus([]);
+    setTempType([]);
+
     setAppliedFilters(null);
-    setFilterError("")
+    setFilterError("");
 
     await GetAllBillDetails(activeHostelId);
   };
@@ -2328,29 +2363,44 @@ export default function BillsDesign({ route }) {
 
   const refundPaymentOptions = (
     refundInitDetails?.listBanks || []
-  ).map((item, index) => {
-    const isCash = item?.bankName
-      ?.toLowerCase()
-      ?.includes("cash");
+  ).map((bank, index) => {
+    const accountType = String(
+      bank?.type || bank?.accountType || bank?.bankName || ""
+    ).trim().toUpperCase();
+
+    const isBank =
+      bank?.isBank ||
+      accountType === "BANK" ||
+      String(bank?.bankName || "").toUpperCase() === "BANK";
+
+    const isCash =
+      String(bank?.bankName || "").toUpperCase() === "CASH" ||
+      accountType === "CASH";
+
+    const iconType = isBank
+      ? "BANK"
+      : isCash
+        ? "CASH"
+        : "CARD";
 
     return {
-      id: item?.bankId || `account-${index}`,
+      id: bank?.bankId || `account-${index}`,
+      bankId: bank?.bankId,
+      value: bank?.bankId,
 
-      bankId: item?.bankId,
+      displayName: bank?.displayName || "",
+      bankName: bank?.bankName || "",
+      holderName: bank?.accountHolderName || bank?.holderName || "",
 
       accountHolderName:
-        item?.accountHolderName || "Account",
+        bank?.accountHolderName || bank?.holderName || "Account",
 
-      bankName:
-        item?.bankName || "Bank Account",
-
+      accountType,
+      iconType,
       isCash,
-
-      subLabel:
-        item?.bankName || "Bank Account",
+      data: bank,
     };
   });
-
 
   const handleReceiptMenu = (item, id) => {
 
@@ -3008,6 +3058,116 @@ export default function BillsDesign({ route }) {
     }
   };
 
+  //  const filters = {
+  //     startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+  //     endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+  //     paymentStatus: billStatus,
+  //     type: type,
+  //     modes: mode,
+  //     createdBy: createdBy,
+  //   };
+
+  //   console.log("filterdate", filters);
+
+  //   const hasAnyFilter =
+  //     filters.startDate ||
+  //     filters.endDate ||
+  //     (filters.paymentStatus && filters.paymentStatus.length > 0) ||
+  //     (filters.type && filters.type.length > 0) ||
+  //     (filters.modes && filters.modes.length > 0) ||
+  //     (filters.createdBy && filters.createdBy.length > 0);
+
+  //   if (!hasAnyFilter) {
+  //     setFilterError("Please select at least one filter");
+  //     return;
+  //   }
+
+  //   await GetAllBillDetails(activeHostelId, filters);
+
+  //   setAppliedFilters(filters);
+
+  //   setShowFilter(false);
+  // };
+
+  // const applyTopFilters = async ({
+  //   paymentStatus = billStatus,
+  //   selectedType = type,
+  //   selectedMode = mode,
+  //   selectedCreatedBy = createdBy,
+  // } = {}) => {
+  //   if (!canReadInvoice) return;
+
+  //   const filters = {
+  //     startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+  //     endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+  //     paymentStatus,
+  //     type: selectedType,
+  //     modes: selectedMode,
+  //     createdBy: selectedCreatedBy,
+  //   };
+
+  //   await GetAllBillDetails(activeHostelId, filters);
+
+  //   setAppliedFilters(filters);
+
+  const onEndReachedBillList = async (page = 1, isRefresh = false) => {
+    if (!activeHostelId || isFetchingBills.current) {
+      return;
+    }
+
+    if (refreshing && !isRefresh) {
+      return;
+    }
+
+    if (!isRefresh && !hasMoreBills) {
+      return;
+    }
+
+
+    isFetchingBills.current = true;
+
+    const requestPage = isRefresh ? 1 : page;
+
+    const filters = {
+      startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+      endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+      paymentStatus: billStatus,
+      type,
+      modes: mode,
+      createdBy,
+      page: requestPage,
+      size: 30,
+    };
+
+    try {
+      setRefreshing(true)
+      const res = await GetAllBillDetails(activeHostelId, filters);
+
+      if (res?.success) {
+        const pagination = res?.data?.paginationSummary;
+        const currentPage = pagination?.currentPage ?? requestPage;
+        const totalPages = pagination?.totalPages;
+        const newBillsList = res?.data?.listInvoices ?? [];
+
+        setBillsPage(currentPage);
+
+        setHasMoreBills(
+          totalPages != null
+            ? currentPage < totalPages
+            : newBillsList.length === 30
+        );
+      }
+    } catch (error) {
+      console.log("Bill pagination error:", error);
+    } finally {
+      isFetchingBills.current = false;
+      setRefreshing(false)
+    }
+  };
+
+  console.log("onlyBillsDetails", onlyBillList)
+  console.log("paginationDetail", billsPage, hasMoreBills)
+
   //  
 
   //          if(loading){
@@ -3118,6 +3278,8 @@ export default function BillsDesign({ route }) {
                     else {
                       if (filtered.trim() === "") {
                         GetAllBillDetails(activeHostelId);
+                        setBillsPage(1)
+                        setHasMoreBills(true)
                         // GetAllBillDetails(activeHostelId)
                       } else {
                         handleSearch(filtered)
@@ -3229,8 +3391,38 @@ export default function BillsDesign({ route }) {
                             <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
                           </TouchableOpacity>
 
-
                           <TouchableOpacity
+                            style={[
+                              styles.filterBox,
+                              tempmode.length > 0 && styles.filterBoxActive,
+                            ]}
+                            onPress={() => {
+                              setTempmode(mode);
+                              setModeSheetOpen(true);
+                            }}
+                          >
+                            <Text
+                              style={[
+                                styles.filterText,
+                                tempmode.length > 0 && styles.filterTextActive,
+                              ]}
+                            >
+                              {tempmode.length === 0
+                                ? "Mode"
+                                : `${tempmode[0]}${tempmode.length > 1
+                                  ? ` +${tempmode.length - 1} more`
+                                  : ""
+                                }`}
+                            </Text>
+
+                            <Image
+                              source={DownArrow}
+                              style={{ width: 16, height: 16, marginLeft: 6 }}
+                            />
+                          </TouchableOpacity>
+
+
+                          {/* <TouchableOpacity
                             style={[
                               styles.filterBox,
                               tempmode.length > 0 && styles.filterBoxActive,
@@ -3252,7 +3444,7 @@ export default function BillsDesign({ route }) {
                                 }`}
                             </Text>
                             <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
-                          </TouchableOpacity>
+                          </TouchableOpacity> */}
 
 
 
@@ -3350,10 +3542,33 @@ export default function BillsDesign({ route }) {
 
                   {!loading && BillDetails?.listInvoices?.length > 0 && (
                     <FlatList
-                      data={BillDetails.listInvoices}
+                      data={onlyBillList}
                       showsVerticalScrollIndicator={false}
                       onScroll={handleScroll}
                       keyExtractor={(item) => item.invoiceId?.toString()}
+                      onMomentumScrollBegin={() => {
+                        onEndReachedCalledDuringMomentum.current = false;
+                      }}
+
+                      onEndReached={() => {
+                        if (
+                          !onEndReachedCalledDuringMomentum.current &&
+                          !isFetchingBills.current &&
+                          hasMoreBills &&
+                          !refreshing
+                        ) {
+                          // Correct assignment: lock further callbacks during momentum.
+                          onEndReachedCalledDuringMomentum.current = true;
+
+                          onEndReachedBillList(billsPage + 1);
+                        }
+                      }}
+
+                      onEndReachedThreshold={0.4}
+
+                      ListFooterComponent={
+                        refreshing ? <ActivityIndicator size="small" color="blue" /> : null
+                      }
 
                       ListHeaderComponent={
                         <>
@@ -3412,7 +3627,11 @@ export default function BillsDesign({ route }) {
 
                               {(appliedFilters?.createdBy.length > 0 || appliedFilters?.modes.length > 0 || appliedFilters?.paymentStatus?.length > 0 ||
                                 appliedFilters?.type.length > 0 || appliedFilters?.endDate != null || appliedFilters?.startDate != null) &&
-                                <TouchableOpacity onPress={handleResetFilters}>
+                                <TouchableOpacity onPress={() => {
+                                  setBillsPage(1)
+                                  setHasMoreBills(true)
+                                  handleResetFilters
+                                }}>
                                   <Text style={styles.resetTextSmall}>
                                     Reset
                                   </Text>
@@ -3919,7 +4138,11 @@ export default function BillsDesign({ route }) {
                       {appliedFilters ? (
                         <TouchableOpacity
                           style={{ width: "48%", paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: "#1E45E1", alignItems: "center", marginTop: 10 }}
-                          onPress={handleResetFilters}
+                          onPress={() => {
+                            setBillsPage(1)
+                            setHasMoreBills(true)
+                            handleResetFilters()
+                          }}
                         >
                           <Text style={styles.resetText}>
                             Reset Filters
@@ -4950,89 +5173,81 @@ export default function BillsDesign({ route }) {
                         </View>
 
 
+
                         {showSettlementRedeem && (
                           <View style={styles.accordionCard}>
+                            {/* Refundable Advance Header */}
                             <TouchableOpacity
                               style={styles.accordionHeader}
-                              onPress={() => setShowRefundableAdvance(!showRefundableAdvance)}
+                              onPress={() =>
+                                setShowRefundableAdvance(!showRefundableAdvance)
+                              }
                               activeOpacity={0.8}
                             >
                               <Animated.Image
                                 source={DownArrow}
-                                style={[styles.arrowImg, { transform: [{ rotate: unpaidArrow }] }]}
+                                style={[
+                                  styles.arrowImg,
+                                  { transform: [{ rotate: unpaidArrow }] },
+                                ]}
                               />
-                              <Text style={styles.cardTitle}>Refundable Advance</Text>
-                              <Text style={styles.amountText}>
 
-                                ₹ {BillPdfdetails?.advanceItems?.availableAdvanceBalance}
-                                {/* {
-                                      settlementDetails?.unpaidInvoiceInfo?.listUnpaidInvoices?.reduce(
-                                        (sum, inv) => sum + Number(inv.payableAmount || 0),
-                                        0
-                                      ) || 0
-                                    } */}
+                              <Text style={styles.cardTitle}>
+                                {BillPdfdetails?.advanceItems?.label ||
+                                  "Refundable Advance"}
                               </Text>
+
+                              <View style={styles.advanceBalanceContainer}>
+                                {/* <View style={styles.advanceGreenDot} /> */}
+                                <Text style={styles.amountText}>
+                                  ₹ {Number(
+                                    BillPdfdetails?.advanceItems?.availableAdvanceBalance || 0
+                                  ).toLocaleString("en-IN")}
+                                </Text>
+                              </View>
                             </TouchableOpacity>
 
                             {showRefundableAdvance && (
-
                               <View style={styles.accordionBody}>
+                                {/* Total Paid */}
+                                <Text style={styles.advanceTotalPaid}>
+                                  Total Paid ₹{" "}
+                                  {Number(
+                                    BillPdfdetails?.advanceItems?.paidAmount || 0
+                                  ).toLocaleString("en-IN")}
+                                </Text>
 
-                                <View style={styles.tableHeader}>
-                                  <Text style={[styles.th, { flex: 1 }]}>Invoice No</Text>
-                                  <Text style={[styles.th, { flex: 1 }]}>Type</Text>
-                                  <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
-                                    Invoice Amount
-                                  </Text>
-                                </View>
-
-                                {BillPdfdetails?.advanceItems ? (
-                                  <View style={styles.invoiceRow}>
-                                    <Text style={[styles.invText, { flex: 1, color: "#2563EB" }]}>
-                                      {BillPdfdetails?.advanceItems?.invoiceNo}
-                                    </Text>
-
-                                    <Text style={[styles.invText, { flex: 1 }]}>
-                                      {BillPdfdetails?.advanceItems?.label}
-                                    </Text>
-
-                                    <Text
-                                      style={[
-                                        styles.invText,
-                                        { flex: 1, textAlign: "right" }
-                                      ]}
-                                    >
-                                      ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
-                                    </Text>
-                                  </View>
+                                {/* Redeemed Invoice Details */}
+                                {Array.isArray(
+                                  BillPdfdetails?.advanceItems?.redeemedList
+                                ) &&
+                                  BillPdfdetails.advanceItems.redeemedList.length > 0 ? (
+                                  BillPdfdetails.advanceItems.redeemedList.map(
+                                    (item, index) => (
+                                      <View
+                                        key={item?.invoiceId || `${item?.invoiceNumber}-${index}`}
+                                        style={styles.advanceInvoiceRow}
+                                      >
+                                        <Text style={styles.advanceInvoiceText}>
+                                          {item?.invoiceNumber || item?.invoiceNo || "N/A"}
+                                          {" - ₹ "}
+                                          {Number(
+                                            item?.redeemedAmount || 0
+                                          ).toLocaleString("en-IN")}
+                                        </Text>
+                                      </View>
+                                    )
+                                  )
                                 ) : (
-                                  <View style={styles.emptyWallet}>
-                                    <View style={styles.emptyState}>
-                                      <Text style={styles.emptyWalletText}>No pending invoices</Text>
-                                    </View>
-                                  </View>
-                                )}
-
-                                {/* )} */}
-
-                                <View style={styles.totalInvoiceRow}>
-                                  <Text style={styles.totalText}>Total</Text>
-                                  <Text style={styles.totalAmount}>
-                                    ₹ {BillPdfdetails?.advanceItems?.paidAmount || 0}
-                                    {/* ₹{" "}
-                                          {Array.isArray(settlementDetails?.unpaidInvoices)
-                                            ? settlementDetails.unpaidInvoices.reduce(
-                                              (sum, i) => sum + Number(i.payableAmount || 0),
-                                              0
-                                            )
-                                            : 0} */}
+                                  <Text style={styles.advanceInvoiceText}>
+                                    No redeemed invoices
                                   </Text>
-                                </View>
+                                )}
                               </View>
-
                             )}
                           </View>
                         )}
+
 
 
                         {showSettlementRedeem && (
@@ -7226,7 +7441,9 @@ export default function BillsDesign({ route }) {
                               item => item.id === refundFrom
                             );
 
-                            const isCash = selectedPayment?.isCash;
+                            // const isCash = selectedPayment?.isCash;
+                            const isCash = selectedPayment?.iconType === "CASH";
+                            const isBank = selectedPayment?.iconType === "BANK";
 
                             return (
                               <>
@@ -7253,7 +7470,7 @@ export default function BillsDesign({ route }) {
                                 </View>
 
                                 {/* NAME + PAYMENT METHOD */}
-                                <View style={styles.refundPaymentDetails}>
+                                {/* <View style={styles.refundPaymentDetails}>
 
                                   <Text
                                     style={styles.refundPaymentName}
@@ -7272,6 +7489,26 @@ export default function BillsDesign({ route }) {
                                       "BANK"}
                                   </Text>
 
+                                </View> */}
+
+                                <View style={styles.refundPaymentDetails}>
+                                  <Text
+                                    style={styles.refundPaymentName}
+                                    numberOfLines={1}
+                                  >
+                                    {selectedPayment?.displayName}
+                                  </Text>
+
+                                  <Text
+                                    style={styles.refundPaymentSubText}
+                                    numberOfLines={2}
+                                  >
+                                    {selectedPayment?.holderName}
+                                    {" - "}
+                                    {selectedPayment?.bankName}
+
+
+                                  </Text>
                                 </View>
                               </>
                             );
@@ -7346,23 +7583,26 @@ export default function BillsDesign({ route }) {
                                   </View>
 
                                   {/* ACCOUNT DETAILS */}
-                                  <View
-                                    style={styles.paymentMethodDetails}
-                                  >
+                                  <View style={styles.paymentMethodDetails}>
                                     <Text
                                       style={styles.paymentMethodName}
                                       numberOfLines={1}
                                     >
-                                      {opt.accountHolderName}
+                                      {opt?.displayName}
                                     </Text>
 
                                     <Text
                                       style={styles.paymentMethodSubText}
-                                      numberOfLines={1}
+                                      numberOfLines={2}
                                     >
-                                      {opt.bankName}
+                                      {opt?.holderName}
+                                      {" - "}
+                                      {opt?.bankName}
+
+
                                     </Text>
                                   </View>
+
 
                                   {/* CASH / BANK */}
                                   <View
@@ -7620,6 +7860,8 @@ export default function BillsDesign({ route }) {
                       setMode([]);
                       setFilterError("")
                       setShowFilter(false)
+                      setBillsPage(1)
+                      setHasMoreBills(true)
 
                       handleResetFilters()
                     }}
@@ -8049,6 +8291,8 @@ export default function BillsDesign({ route }) {
 
               setAppliedFilters(null);
               setFilterError("")
+              setBillsPage(1)
+              setHasMoreBills(true)
 
               await applyTopFilters({
                 paymentStatus: [],
@@ -8095,6 +8339,8 @@ export default function BillsDesign({ route }) {
 
               setAppliedFilters(null);
               setFilterError("")
+              setBillsPage(1)
+              setHasMoreBills(true)
 
               await applyTopFilters({
                 paymentStatus: billStatus,
@@ -8143,7 +8389,9 @@ export default function BillsDesign({ route }) {
               setCreatedBy([]);
 
               setAppliedFilters(null);
-              setFilterError("")
+              setFilterError("");
+              setBillsPage(1)
+              setHasMoreBills(true)
 
               await applyTopFilters({
                 paymentStatus: billStatus,
@@ -10923,5 +11171,41 @@ const styles = StyleSheet.create({
   bankText: {
     color: "#2457E6",
   },
+
+  advanceBalanceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    marginLeft: "auto",
+    flexShrink: 0,
+  },
+
+  advanceGreenDot: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    backgroundColor: "#16A34A",
+    marginRight: 10,
+  },
+
+  advanceTotalPaid: {
+    fontSize: 14,
+    color: "#8A9099",
+    fontFamily: "Gilroy-Medium",
+    marginTop: 10,
+    marginBottom: 8,
+  },
+
+  advanceInvoiceRow: {
+    paddingVertical: 8,
+  },
+
+  advanceInvoiceText: {
+    fontSize: 14,
+    color: "#8A9099",
+    fontFamily: "Gilroy-Medium",
+    flexShrink: 1,
+  },
+
 
 });

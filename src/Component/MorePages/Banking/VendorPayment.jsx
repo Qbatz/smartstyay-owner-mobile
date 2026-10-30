@@ -24,6 +24,8 @@ import { CustomerContext } from "../../../Context/CustomerContext"
 import { CommonContexts } from "../../../Context/CommonContext";
 import { VendorContext } from "../../../Context/VendorContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
+import BankIcon from "../../../Assets/Images/bankBlue.png";
+import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 
 export default function VendorPayment({
   navigation,
@@ -52,17 +54,16 @@ export default function VendorPayment({
   console.log("vendor", vendor);
   console.log("vendorSettlementInitialize", vendorSettlementInitialize);
 
-  // 1️⃣ State add பண்ணுங்க (top-ல் மற்ற states-உடன்)
   const [vendorAppliedAmounts, setVendorAppliedAmounts] = useState({});
 
-  // 2️⃣ vendorExpensesPayload - handleSubmit-க்கு முன்னால் build பண்ணுங்க
-  const vendorExpensesPayload = vendorSettlementInitialize?.expenses?.map((exp) => ({
-    expenseId: String(exp.expenseId),
-    paidAmount: Number(vendorAppliedAmounts[exp.expenseId] || 0),
-  })) || [];
+  const vendorExpensesPayload = (vendorSettlementInitialize?.expenses || [])
+    .map((exp) => ({
+      expenseId: exp?.expenseId,
+      paidAmount: Number(vendorAppliedAmounts[exp?.expenseId] || 0),
+    }))
+    .filter((item) => item.paidAmount > 0);
 
 
-  // const dueAmount = vendorDetails?.summary?.outstanding
 
   const [vendorOpen, setVendorOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
@@ -113,19 +114,66 @@ export default function VendorPayment({
   //     name: `${b?.holderName} - ${b?.bankName}`,
   //   })) || [];
 
+  // useEffect(() => {
+  //   if (vendorId) {
+  //     getVendorSettlementInitialize(activeHostelId, vendorId);
+  //   }
+  // }, [vendorId, activeHostelId])
+
   useEffect(() => {
-    if (vendorId) {
+    if (vendorId && activeHostelId) {
       getVendorSettlementInitialize(activeHostelId, vendorId);
+      setVendorAppliedAmounts({});
+      setPaidAmount("");
     }
-  }, [vendorId, activeHostelId])
+  }, [vendorId, activeHostelId]);
 
 
   const initializeData = vendorSettlementInitialize
 
-  const paymentOptions = initializeData?.banks?.map((b) => ({
-    id: b.bankId,
-    name: `${b.holderName} - ${b.bankName}`,
-  })) || [];
+  // const paymentOptions = initializeData?.banks?.map((b) => ({
+  //   id: b.bankId,
+  //   name: `${b.holderName} - ${b.bankName}`,
+  // })) || [];
+
+
+  const paymentOptions = (vendorSettlementInitialize?.banks || []).map((bank, index) => {
+    const holderName =
+      bank?.holderName || bank?.accountHolderName || "";
+
+    const bankName = bank?.bankName || "";
+
+    const displayName = bank?.displayName || "";
+
+    const accountType = String(
+      bank?.accountType || bank?.bankName || "BANK"
+    )
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+
+    return {
+      id: bank?.bankId || `account-${index}`,
+      bankId: bank?.bankId,
+      value: bank?.bankId,
+      displayName,
+      holderName,
+      bankName,
+      label: `${displayName} - ${holderName} - ${bankName}`,
+      name: displayName,
+      subLabel: `${holderName} - ${bankName}`,
+      type: bank?.accountType || bank?.bankName || "",
+      accountType,
+      iconType:
+        accountType === "BANK"
+          ? "BANK"
+          : accountType === "CASH"
+            ? "CASH"
+            : "CARD",
+      data: bank,
+    };
+  });
+
 
 
   const dueAmount = Number(vendor?.summary?.outstanding) || 0;
@@ -300,7 +348,7 @@ export default function VendorPayment({
       0
     ) || 0;
 
-      const balance =
+  const balance =
     totalDueAmount - (Number(paidAmount) || 0)
 
   const autoDistributeAmount = (totalPaid) => {
@@ -332,22 +380,50 @@ export default function VendorPayment({
       let response;
 
       const payload = {
-        images: attachments?.map(item => item?.uri) || [],
         payLoads: {
           paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-          bankId: String(selectedMode?.id),
-          paymentMethod: String(selectedMode?.id),
-          transactionId,
+          bankId: selectedMode?.bankId ?? "",
+          paymentMethod: selectedMode?.type || selectedMode?.name || "",
+          transactionId: transactionId,
           notes: description,
           expenses: vendorExpensesPayload,
         },
       };
 
+
       response = await settleVendorPayment(
+        activeHostelId,
         vendorId,
         payload,
-        // attachments  
+        attachments
       );
+
+      console.log("vendorId", vendorId);
+
+
+      // const payload = {
+      //   images: attachments?.map(item => item?.uri) || [],
+      //   payLoads: {
+      //     paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+      //     bankId: String(selectedMode?.id),
+      //     paymentMethod: String(selectedMode?.label),
+      //     transactionId,
+      //     notes: description,
+      //     expenses: vendorExpensesPayload,
+      //   },
+      // };
+
+      // response = await settleVendorPayment(
+      //   vendorId,
+      //   payload,
+      // );
+
+      // response = await settleVendorPayment(
+      //   activeHostelId,
+      //   vendorId,
+      //   payload,
+      //   attachments
+      // );
 
       if (response?.success) {
         setModalType("success");
@@ -661,62 +737,174 @@ export default function VendorPayment({
           </Text>
 
           <TouchableOpacity
-
-            style={[
-              styles.expensesDropdownBox,
-              // isEditMode && { opacity: 0.4 }
-            ]}
-            // disabled={isEditMode}
+            style={styles.paymentSelectBox}
             onPress={() => {
               setModePaymentOpen(!modePaymentOpen);
             }}
           >
-            <Text style={{ color: selectedMode ? "#000" : "#9CA3AF" }}>
-              {selectedMode?.name || "Select Mode"}
-            </Text>
-            <Image source={DownArrow} style={styles.expensesArrowIcon} />
+            {selectedMode ? (
+              <View style={styles.selectedPaymentContainer}>
+
+                <View
+                  style={[
+                    styles.paymentMethodIcon,
+                    selectedMode?.accountType === "CASH"
+                      ? styles.cashIconBg
+                      : styles.bankIconBg,
+                  ]}
+                >
+                  <Image
+                    source={
+                      selectedMode?.accountType === "CASH"
+                        ? CashIcon
+                        : BankIcon
+                    }
+                    style={styles.paymentMethodIconImage}
+                  />
+                </View>
+
+                <View style={styles.selectedPaymentDetails}>
+                  <Text
+                    style={styles.paymentMethodName}
+                    numberOfLines={1}
+                  >
+                    {selectedMode?.displayName}
+                  </Text>
+
+                  <Text
+                    style={styles.paymentMethodSubText}
+                    numberOfLines={1}
+                  >
+                    {selectedMode?.holderName} - {selectedMode?.bankName}
+                  </Text>
+                </View>
+
+                <View
+                  style={[
+                    styles.paymentTypeBadge,
+                    selectedMode?.accountType === "CASH"
+                      ? styles.cashBadge
+                      : styles.bankBadge,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.paymentTypeText,
+                      selectedMode?.accountType === "CASH"
+                        ? styles.cashText
+                        : styles.bankText,
+                    ]}
+                  >
+                    {selectedMode?.accountType || "BANK"}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <Text style={styles.paymentPlaceholder}>
+                Select payment mode
+              </Text>
+            )}
+
+            <Image
+              source={DownArrow}
+              style={styles.paymentArrow}
+            />
           </TouchableOpacity>
 
+
           {modePaymentOpen && (
-            <View style={styles.expensesDropdownMenu}>
-              <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                {paymentOptions?.length === 0 ? (
+            <View style={styles.paymentDropdownMenu}>
+              <ScrollView
+                style={styles.paymentDropdownScroll}
+                nestedScrollEnabled
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled"
+              >
+                {paymentOptions.length === 0 ? (
                   <Text style={styles.expensesNoDataText}>
-                    No mode found
+                    No accounts found
                   </Text>
                 ) : (
-                  paymentOptions?.map((item) => {
+                  paymentOptions.map((item, index) => {
+
+                    const accountType = String(
+                      item?.accountType || item?.type || item?.data?.bankName || "BANK"
+                    )
+                      .trim()
+                      .toUpperCase()
+                      .replace(/[\s-]+/g, "_");
+
+                    const isCash = accountType === "CASH";
+                    const isBank = accountType === "BANK";
+
+                    // const isCash = accountType === "CASH";
                     const isSelected =
-                      selectedMode?.id === item?.id;
+                      selectedMode?.bankId === item?.bankId;
 
                     return (
                       <TouchableOpacity
-                        key={item.id}
+                        key={String(item?.bankId || index)}
+                        activeOpacity={0.7}
                         style={[
-                          styles.expensesOption,
-                          isSelected && styles.expensesOptionSelected,
+                          styles.paymentMethodRow,
+                          isSelected && styles.paymentMethodRowSelected,
                         ]}
                         onPress={() => {
-                          setSelectedMode(item)
-                          setModeErr("")
-                          setNochangeErr("");
-                          setModePaymentOpen(false)
-
+                          setSelectedMode(item);
+                          setModePaymentOpen(false);
                           setErrors((prev) => ({
                             ...prev,
                             paymentMethod: "",
                           }));
                         }}
                       >
-                        <Text
+                        {/* Left: icon */}
+                        <View
                           style={[
-                            styles.expensesOptionText,
-                            isSelected &&
-                            styles.expensesOptionTextSelected,
+                            styles.paymentMethodIcon,
+                            isCash ? styles.cashIconBg : styles.bankIconBg,
                           ]}
                         >
-                          {item?.name}
-                        </Text>
+                          <Image
+                            source={isCash ? CashIcon : BankIcon}
+                            style={styles.paymentMethodIconImage}
+                          />
+                        </View>
+
+                        {/* Middle: account details */}
+                        <View style={styles.paymentMethodDetails}>
+                          <Text
+                            style={styles.paymentMethodName}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
+                          >
+                            {item?.displayName}
+                          </Text>
+
+                          <Text
+                            style={styles.paymentMethodSubText}
+                            numberOfLines={1}
+                          >
+                            {item?.holderName} - {item?.bankName}
+                          </Text>
+                        </View>
+
+                        {/* Right: CARD / CASH / BANK badge */}
+                        <View
+                          style={[
+                            styles.paymentTypeBadge,
+                            isCash ? styles.cashBadge : styles.bankBadge,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.paymentTypeText,
+                              isCash ? styles.cashText : styles.bankText,
+                            ]}
+                          >
+                            {accountType}
+                          </Text>
+                        </View>
                       </TouchableOpacity>
                     );
                   })
@@ -724,6 +912,7 @@ export default function VendorPayment({
               </ScrollView>
             </View>
           )}
+
 
           <View style={styles.errorWrapper}>
             {errors.paymentMethod && (
@@ -1592,6 +1781,217 @@ const styles = StyleSheet.create({
     marginTop: 6,
     alignItems: "flex-start",
   },
+
+  paymentSelectBox: {
+    minHeight: 64,
+    borderWidth: 1,
+    borderColor: "#D9DDE5",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#FFFFFF",
+  },
+
+  selectedPaymentContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  selectedPaymentDetails: {
+    flex: 1,
+    marginLeft: 10,
+    marginRight: 8,
+  },
+
+  paymentPlaceholder: {
+    color: "#4B4B4B",
+    fontSize: 14,
+    fontFamily: "Gilroy-Regular",
+  },
+
+  paymentArrow: {
+    width: 18,
+    height: 18,
+    resizeMode: "contain",
+    tintColor: "#555555",
+  },
+
+  paymentMethodIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  paymentMethodIconImage: {
+    width: 20,
+    height: 20,
+    resizeMode: "contain",
+  },
+
+  cashIconBg: {
+    backgroundColor: "#D9F8E9",
+  },
+
+  bankIconBg: {
+    backgroundColor: "#DCE9FF",
+  },
+
+  paymentMethodName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#202637",
+  },
+
+  paymentMethodSubText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#74809A",
+    marginTop: 3,
+  },
+
+  paymentMethodRow: {
+    minHeight: 78,
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEF0F4",
+  },
+
+  paymentMethodRowSelected: {
+    backgroundColor: "#F7F9FC",
+  },
+
+  paymentMethodDetails: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 10,
+  },
+
+  paymentTypeBadge: {
+    minWidth: 74,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 22,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  cashBadge: {
+    backgroundColor: "#D5F7E7",
+  },
+
+  bankBadge: {
+    backgroundColor: "#D8E7FF",
+  },
+
+  paymentTypeText: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  cashText: {
+    color: "#009B42",
+  },
+
+  bankText: {
+    color: "#2457E6",
+  },
+
+  paymentDropdownMenu: {
+    marginHorizontal: 16,
+    marginTop: 6,
+    borderWidth: 1,
+    borderColor: "#E1E5EC",
+    borderRadius: 14,
+    backgroundColor: "#FFFFFF",
+    overflow: "hidden",
+    elevation: 5,
+    zIndex: 999,
+  },
+
+  paymentDropdownScroll: {
+    maxHeight: 220,
+  },
+
+  paymentMethodRow: {
+    width: "100%",
+    minHeight: 76,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEF0F4",
+  },
+
+  paymentMethodRowSelected: {
+    backgroundColor: "#F3F6FB",
+  },
+
+  paymentMethodDetails: {
+    flex: 1,
+    minWidth: 0,
+    marginLeft: 12,
+    marginRight: 10,
+  },
+
+  paymentMethodName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#202637",
+  },
+
+  paymentMethodSubText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#74809A",
+    marginTop: 3,
+  },
+
+  paymentTypeBadge: {
+    minWidth: 88,
+    maxWidth: 108,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+
+  cashBadge: {
+    backgroundColor: "#D5F7E7",
+  },
+
+  bankBadge: {
+    backgroundColor: "#D8E7FF",
+  },
+
+  paymentTypeText: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+    textAlign: "center",
+  },
+
+  cashText: {
+    color: "#009B42",
+  },
+
+  bankText: {
+    color: "#2457E6",
+  },
+
   // input: {
   //     borderWidth: 1,
   //     borderColor: "#4F46E5",

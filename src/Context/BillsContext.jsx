@@ -21,6 +21,7 @@ export default function BillsProvider({ children }) {
   const [retainerInvoiceDetail, setRetainerInvoiceDetail] = useState(null)
   const [availablerecurringInvoices, setAvailableRecurringInvoices] = useState([]);
   const [onlyReceiptList, setOnlyReceiptList] = useState([])
+  const [onlyBillList, setOnlyBillsList] = useState([])
 
 
   const getErrorMessage = (error) =>
@@ -52,7 +53,7 @@ export default function BillsProvider({ children }) {
 
   const GetAllBillDetails = async (hostelId, filters = {}) => {
     try {
-      setLoading(true);
+      // setLoading(true);
       setErrorMsg("");
       const axios = getAxios();
       console.log("filters", filters);
@@ -65,28 +66,45 @@ export default function BillsProvider({ children }) {
           modes: filters.modes,
           paymentStatus: filters.paymentStatus,
           search: filters.search,
+          page: filters?.page,
+          size: filters?.size,
         },
 
 
-        paramsSerializer: (params) =>
-          Object.keys(params)
-            .map((key) => {
-              const value = params[key];
-              if (Array.isArray(value)) {
-                return value.map((v) => `${key}=${v}`).join("&");
-              }
-              if (value !== undefined && value !== null && value !== "") {
-                return `${key}=${value}`;
-              }
-              return null;
-            })
-            .filter(Boolean)
-            .join("&"),
+        // paramsSerializer: (params) =>
+        //   Object.keys(params)
+        //     .map((key) => {
+        //       const value = params[key];
+        //       if (Array.isArray(value)) {
+        //         return value.map((v) => `${key}=${v}`).join("&");
+        //       }
+        //       if (value !== undefined && value !== null && value !== "") {
+        //         return `${key}=${value}`;
+        //       }
+        //       return null;
+        //     })
+        //     .filter(Boolean)
+        //     .join("&"),
       });
 
+      console.log("checkBillsList", res)
+
       if (res.status === 200) {
+        const currentPage = res?.data?.paginationSummary?.currentPage ?? filters?.page;
+        const newInvoiceList = res?.data?.listInvoices
         setBillDetails(res.data || []);
-        setLoading(false);
+        if (currentPage === 1) {
+          setOnlyBillsList(newInvoiceList)
+        } else {
+          setOnlyBillsList((prev) => {
+            const seen = new Set(prev.map((c) => c.invoiceId));
+            const deduped = newInvoiceList.filter((c) => !seen.has(c.invoiceId));
+            return [...prev, ...deduped];
+          });
+        }
+
+        // setOnlyBillsList(prev => currentPage === 1 ? newInvoiceList : [...prev, ...newInvoiceList])
+        // setLoading(false);
         return { success: true, data: res.data };
       }
 
@@ -446,7 +464,7 @@ export default function BillsProvider({ children }) {
     hostelId,
     keyword = "",
     page = 1,
-    size = 10,
+    size = 20,
     period,
     bankIds = [],
     invoiceType,
@@ -459,7 +477,7 @@ export default function BillsProvider({ children }) {
     }
 
     try {
-      setLoading(true);
+      // setLoading(true);
       setErrorMsg("");
 
       const axios = getAxios();
@@ -501,6 +519,7 @@ export default function BillsProvider({ children }) {
             .filter(Boolean)
             .join("&"),
       });
+      console.log("checkreceiptpag",res)
 
       if (res?.status === 200) {
 
@@ -2134,7 +2153,8 @@ export default function BillsProvider({ children }) {
         getRetainerInvoiceDetail, retainerInvoiceDetail, ApplyRetainerToInvoices, setBillDetails, setRecurringBills,
         CreateManualInvoice, GetRecurringInvoicesForReview,
         UpdateRecurringBillItem, DeleteRecurringBillItem,
-        GenerateAllRecurringInvoices, AddRecurringBillItem, onlyReceiptList, setOnlyReceiptList
+        GenerateAllRecurringInvoices, AddRecurringBillItem, onlyReceiptList, setOnlyReceiptList,
+        onlyBillList,
       }}
     >
       {children}

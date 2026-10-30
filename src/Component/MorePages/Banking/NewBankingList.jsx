@@ -143,6 +143,8 @@ export default function NewBankingList() {
   const isSubscriptionAllow = isValidSubscription
 
   const [pageLoading, setPageLoading] = useState(false)
+  const onEndReachedCalledDuringMomentum = useRef(true);
+  const isFetchingList = useRef(false);
 
 
 
@@ -260,7 +262,25 @@ export default function NewBankingList() {
   const [transactionLoading, setTransactionLoading] = useState(false);
   const [hasMoreTransactions, setHasMoreTransactions] = useState(true);
 
-  const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+  // const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
+
+  const formatDate = (date) => {
+    if (!date) return "-";
+
+    // API format: DD/MM/YYYY
+    const parsedDate = dayjs(date, "DD/MM/YYYY", true);
+
+    if (parsedDate.isValid()) {
+      return parsedDate.format("DD MMM YYYY");
+    }
+
+    // Fallback for ISO date strings
+    const fallbackDate = dayjs(date);
+
+    return fallbackDate.isValid()
+      ? fallbackDate.format("DD MMM YYYY")
+      : "-";
+  };
 
 
   const dummyData = [
@@ -291,7 +311,7 @@ export default function NewBankingList() {
     page = 1,
     isRefresh = false
   ) => {
-    if (!activeHostelId) {
+    if (!activeHostelId || isFetchingList.current) {
       return;
     }
 
@@ -304,6 +324,11 @@ export default function NewBankingList() {
     if (!isRefresh && !hasMoreTransactions) {
       return;
     }
+    isFetchingList.current = true;
+      const filters = {
+      dateFilter: tempDateFilter,
+      source: tempSource,
+    };
 
     try {
       setTransactionLoading(true);
@@ -311,13 +336,14 @@ export default function NewBankingList() {
       const res = await getAllTransactions(
         activeHostelId,
         page,
-        50
+        20,
+        filters
       );
 
       if (res?.success) {
         const newTransactions = res?.data || [];
 
-        if (newTransactions.length < 50) {
+        if (newTransactions.length < 20) {
           setHasMoreTransactions(false);
         }
 
@@ -327,6 +353,7 @@ export default function NewBankingList() {
     } catch (error) {
       console.log("Transaction error:", error);
     } finally {
+       isFetchingList.current = false;
       setTransactionLoading(false);
     }
   };
@@ -512,32 +539,78 @@ export default function NewBankingList() {
     },
   ];
 
+  // const applyTransactionFilters = async ({
+  //   dateFilter = selectedDateFilter,
+  //   source = selectedSource,
+  //   fromDate,
+  //   toDate,
+  // } = {}) => {
+  //   if (!activeHostelId) return;
+
+  //   console.log("Applying Banking Filters:", {
+  //     dateFilter,
+  //     source,
+  //     fromDate,
+  //     toDate,
+  //   });
+
+  //   await getAllTransactions(
+  //     activeHostelId,
+  //     1,
+  //     20,
+  //     {
+  //       dateFilter,
+  //       source,
+  //       ...(fromDate && { fromDate }),
+  //       ...(toDate && { toDate }),
+  //     }
+  //   );
+  // };
+
   const applyTransactionFilters = async ({
     dateFilter = selectedDateFilter,
     source = selectedSource,
     fromDate,
     toDate,
   } = {}) => {
-    if (!activeHostelId) return;
+    if (!activeHostelId || !canReadBanking) return;
 
-    console.log("Applying Banking Filters:", {
+    const filters = {
       dateFilter,
       source,
-      fromDate,
-      toDate,
-    });
+      ...(fromDate ? { fromDate } : {}),
+      ...(toDate ? { toDate } : {}),
+    };
 
-    await getAllTransactions(
-      activeHostelId,
-      1,
-      20,
-      {
-        dateFilter,
-        source,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
+    try {
+      setTransactionLoading(true);
+
+      const res = await getAllTransactions(
+        activeHostelId,
+        1,
+        20,
+        filters
+      );
+
+      if (res?.success) {
+        setSelectedDateFilter(
+          Array.isArray(dateFilter) ? dateFilter : dateFilter ? [dateFilter] : []
+        );
+
+        setSelectedSource(
+          Array.isArray(source) ? source : source ? [source] : []
+        );
+
+        setTransactionPage(1);
+        setHasMoreTransactions(
+          (res?.data?.length || 0) >= 20
+        );
       }
-    );
+    } catch (error) {
+      console.log("Apply banking filter error:", error);
+    } finally {
+      setTransactionLoading(false);
+    }
   };
 
   const handleApplyFilter = async () => {
@@ -550,13 +623,45 @@ export default function NewBankingList() {
 
     console.log("FULL BANKING FILTER:", filters);
 
-    setSelectedDateFilter(tempDateFilter);
-    setSelectedSource(tempSource);
+    try {
+      setTransactionLoading(true);
 
-    await getAllTransactions(activeHostelId, filters);
+      await getAllTransactions(
+        activeHostelId,
+        1,
+        20,
+        filters
+      );
 
-    setShowFilter(false);
+      setSelectedDateFilter(tempDateFilter);
+      setSelectedSource(tempSource);
+      setTransactionPage(1);
+      setHasMoreTransactions(true);
+      setShowFilter(false);
+    } catch (error) {
+      console.log("Banking filter error:", error);
+    } finally {
+      setTransactionLoading(false);
+    }
   };
+
+  // const handleApplyFilter = async () => {
+  //   if (!canReadBanking || !activeHostelId) return;
+
+  //   const filters = {
+  //     dateFilter: tempDateFilter,
+  //     source: tempSource,
+  //   };
+
+  //   console.log("FULL BANKING FILTER:", filters);
+
+  //   setSelectedDateFilter(tempDateFilter);
+  //   setSelectedSource(tempSource);
+
+  //   await getAllTransactions(activeHostelId, filters);
+
+  //   setShowFilter(false);
+  // };
 
 
   // const mappedBankList = (bankList || []).map((item) => {
@@ -688,87 +793,85 @@ export default function NewBankingList() {
 
 
 
-  const mappedBankList = (newtransactionList?.bankV2Lists || []).map((item) => {
-    const accountType = String(item?.accountType || "").toUpperCase();
-    const cardType = String(item?.cardType || "").toUpperCase();
+  const mappedBankList = (
+    Array.isArray(newtransactionList?.bankV2Lists) ? newtransactionList?.bankV2Lists : []).map((item) => {
+      const accountType = String(item?.accountType || "").toUpperCase();
+      const cardType = String(item?.cardType || "").toUpperCase();
 
-    const isBank = accountType === "BANK";
-    const isCard = accountType === "CARD";
-    const isCreditCard = isCard && cardType === "CREDIT_CARD";
-    const isDebitCard = isCard && cardType === "DEBIT_CARD";
-    const isCash = accountType === "CASH";
-    const isUpi = accountType === "UPI";
+      const isBank = accountType === "BANK";
+      const isCard = accountType === "CARD";
+      const isCreditCard = isCard && cardType === "CREDIT_CARD";
+      const isDebitCard = isCard && cardType === "DEBIT_CARD";
+      const isCash = accountType === "CASH";
+      const isUpi = accountType === "UPI";
 
-    return {
-      // Use the ID returned by the new banking API
-      id: item?.bankId,
+      return {
+        // Use the ID returned by the new banking API
+        id: item?.bankId,
 
-      type: isCard ? "CARD" : accountType,
+        type: isCard ? "CARD" : accountType,
 
-      title: isBank
-        ? item?.bankName || item?.displayName || "Bank Account"
-        : isCard
-          ? item?.displayName || "Card"
-          : isCash
-            ? item?.displayName || item?.cashAccountType || "Cash"
-            : isUpi
-              ? item?.displayName || item?.upiId || "UPI"
-              : item?.displayName || "Account",
-
-      subtitle: isBank
-        ? item?.displayName || "Bank Account"
-        : isCreditCard
-          ? "Credit Card"
-          : isDebitCard
-            ? "Debit Card"
-            : isCard
-              ? item?.cardType || "Card"
-              : isCash
-                ? item?.cashAccountType || "Cash Account"
-                : isUpi
-                  ? "UPI"
-                  : accountType,
-
-      // New API field names
-      name: item?.accountHolder || "",
-      acc: isBank
-        ? item?.accountNumber || ""
-        : isCard
-          ? item?.cardNumber || ""
-          : isUpi
-            ? item?.upiId || ""
-            : "",
-
-      balance: Number(item?.balance ?? 0),
-
-      branch: item?.branchName || "",
-      bankName: item?.bankName || "",
-      displayName: item?.displayName || "",
-      ResponsiblePerson: item?.responsiblePerson || "",
-
-      isDefaultAccount: item?.isDefaultAccount,
-      lastTransactionDate: item?.lastTransactionDate ?? null,
-      dueDate: item?.dueDate ?? null,
-
-      // Preserve the actual card type from the response
-      cardType: item?.cardType || null,
-      paymentMethod: item?.paymentMethod || null,
-      isDebitcardtrue: isDebitCard,
-      isCreditCard,
-
-      Icon: isBank
-        ? BankIcon
-        : isCash
-          ? CashIcon
+        title: isBank
+          ? `${item?.bankName || "Bank"} - ${item?.displayName || ""}`.trim()
           : isCard
-            ? CardIcon
-            : isUpi
-              ? UpiIcon
-              : BankIcon,
+            ? `${item?.displayName || "Card"} - ${isCreditCard ? "Credit Card" : "Debit Card"
+            }`
+            : isCash
+              ? item?.cashAccountType || item?.displayName || "Cash"
+              : isUpi
+                ? item?.displayName || item?.upiId || "UPI"
+                : item?.displayName || "Account",
 
-      raw: item,
-    };
-  });
+        subtitle: isBank
+          ? "Bank Account"
+          : isCard
+            ? "Card Account"
+            : isCash
+              ? "Cash Account"
+              : isUpi
+                ? "UPI"
+                : accountType,
+
+        // New API field names
+        name: item?.accountHolder || "",
+        acc: isBank
+          ? item?.accountNumber || ""
+          : isCard
+            ? item?.cardNumber || ""
+            : isUpi
+              ? item?.upiId || ""
+              : "",
+
+        balance: Number(item?.balance ?? 0),
+
+        branch: item?.branchName || "",
+        bankName: item?.bankName || "",
+        displayName: item?.displayName || "",
+        ResponsiblePerson: item?.responsiblePerson || "",
+
+        isDefaultAccount: item?.isDefaultAccount,
+        lastTransactionDate: item?.lastTransactionDate ?? null,
+        dueDate: item?.dueDate ?? null,
+
+        // Preserve the actual card type from the response
+        cardType: item?.cardType || null,
+        paymentMethod: item?.paymentMethod || null,
+        isDebitcardtrue: isDebitCard,
+        isCreditCard,
+
+        Icon: isBank
+          ? BankIcon
+          : isCash
+            ? CashIcon
+            : isCard
+              ? CardIcon
+              : isUpi
+                ? UpiIcon
+                : BankIcon,
+
+        raw: item,
+      };
+    });
 
 
 
@@ -799,7 +902,7 @@ export default function NewBankingList() {
         maximumFractionDigits: 2,
       })}`,
 
-      date: dayjs(t.createdAt).format("DD MMM YYYY, hh:mm A"),
+      date: formatDate(t?.createdAt),
 
       icon: isSelfTransfer
         ? SelfTransIcon
@@ -1068,7 +1171,7 @@ export default function NewBankingList() {
 
   const bankListHeight = scrollY.interpolate({
     inputRange: [0, 200],
-    outputRange: [295, 0], // அல்லது 290
+    outputRange: [235, 0], // அல்லது 290
     extrapolate: "clamp",
   });
 
@@ -1374,7 +1477,7 @@ export default function NewBankingList() {
                             {/* CHIPS */}
                             <View style={styles.tagRow}>
 
-                              {/* {type === "BANK" && item?.branch ? (
+                              {type === "BANK" && item?.branch ? (
                                 <View style={styles.locationChip}>
                                   <Image
                                     source={Location}
@@ -1382,18 +1485,18 @@ export default function NewBankingList() {
                                   />
 
                                   <Text numberOfLines={1}>
-                                    {item.branch}
+                                    {item?.branch}
                                   </Text>
                                 </View>
-                              ) : null} */}
+                              ) : null}
 
-                              {(type === "BANK" || type === "CARD") && item?.raw?.bankName ? (
+                              {/* {(type === "BANK" || type === "CARD") && item?.raw?.bankName ? (
                                 <View style={styles.defaultChip}>
                                   <Text style={styles.defaultChipText}>
                                     {item?.raw?.bankName}
                                   </Text>
                                 </View>
-                              ) : null}
+                              ) : null} */}
 
                               {/* UPI */}
                               {type === "BANK" && item?.upiId ? (
@@ -1405,32 +1508,32 @@ export default function NewBankingList() {
                               ) : null}
 
                               {/* CARD */}
-                              {item?.isDebitcardtrue ? (
+                              {type === "CARD" && (
                                 <View style={styles.upiChip}>
                                   <Text numberOfLines={1}>
-                                    **** **** {item?.acc?.slice(-4)}
+                                    **** **** **** {item?.acc?.slice(-4) || "----"}
                                   </Text>
                                 </View>
-                              ) : null}
+                              )}
 
                               {/* CASH */}
-                              {type === "CASH" ? (
+                              {type === "CASH" && (
                                 <View style={styles.defaultChip}>
                                   <Text style={styles.defaultChipText}>
-                                    {item?.ResponsiblePerson}
+                                    {item?.name || item?.raw?.accountHolderName || "Cash"}
                                   </Text>
                                 </View>
-                              ) : null}
+                              )}
 
                             </View>
 
                             {/* LAST TRANSACTION */}
 
-                            <Text style={styles.lastTxn}>
+                            {/* <Text style={styles.lastTxn}>
                               {type === "CARD" || item?.paymentMethod
                                 ? `Due Date : ${item?.dueDate || "-"}`
                                 : `Last Txn : ${item?.lastTransactionDate || "-"}`}
-                            </Text>
+                            </Text> */}
                             {/* <Text style={styles.lastTxn}>
                               {type === "CARD"
                                 ? "Due Date : 10 Jun 2026"
@@ -1663,14 +1766,26 @@ export default function NewBankingList() {
               )}
 
               scrollEventThrottle={16}
+              // keyExtractor={(item, index) =>
+              //   `${item?.transactionId ?? item?.id}`
+
+              // }
+
               keyExtractor={(item, index) =>
-                `${item?.transactionId ?? item?.id}-${index}`
+                `${item?.transactionId ?? item?.id ?? "transaction"}-${index}`
               }
+              //  -${index}`
+              onMomentumScrollBegin={() => {
+                onEndReachedCalledDuringMomentum.current = false;
+              }}
               onEndReached={() => {
                 if (
+                  !onEndReachedCalledDuringMomentum.current &&
+                  !isFetchingList.current &&
                   !transactionLoading &&
                   hasMoreTransactions
                 ) {
+                    onEndReachedCalledDuringMomentum.current = true;
                   fetchTransactions(transactionPage + 1);
                 }
               }}
@@ -1857,7 +1972,7 @@ export default function NewBankingList() {
                 <Text style={styles.infoLabel}>Beneficiary</Text>
                 <Text style={styles.infoColon}>:</Text>
                 <Text style={styles.infoValue}>
-                  {selectedBank?.accountHolderName || "-"}
+                  {selectedBank?.accountHolder || "-"}
                 </Text>
               </View>
 
@@ -2062,12 +2177,16 @@ export default function NewBankingList() {
           setTempDateFilter([]);
           setSelectedDateFilter([]);
           setDateSheetOpen(false);
+          setTransactionPage(1)
+          setHasMoreTransactions(true)
 
           await applyTransactionFilters({
             dateFilter: [],
             source: selectedSource,
           });
         }}
+
+        
 
         onApply={async () => {
           setSelectedDateFilter(tempDateFilter);
@@ -2080,6 +2199,7 @@ export default function NewBankingList() {
         }}
 
         onClose={() => setDateSheetOpen(false)}
+        isSingleSelect={true}
       />
 
       <FilterBottomSheet
@@ -2093,6 +2213,8 @@ export default function NewBankingList() {
           setTempSource([]);
           setSelectedSource([]);
           setSourceSheetOpen(false);
+          setTransactionPage(1)
+          setHasMoreTransactions(true)
 
           await applyTransactionFilters({
             dateFilter: selectedDateFilter,
@@ -2111,6 +2233,7 @@ export default function NewBankingList() {
         }}
 
         onClose={() => setSourceSheetOpen(false)}
+        isSingleSelect={true}
       />
 
 
@@ -2502,10 +2625,10 @@ const styles = StyleSheet.create({
   },
   bankCard: {
     width: 350,
-    height: 265,
+    height: 215,
     backgroundColor: "#FFF",
     borderRadius: 24,
-    marginHorizontal: 13,
+    marginHorizontal: 10,
     padding: 12,
     overflow: "visible",
     shadowColor: "#000",
@@ -2533,9 +2656,9 @@ const styles = StyleSheet.create({
   },
 
   iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: "#EEF2FF",
     justifyContent: "center",
     alignItems: "center",
@@ -2730,7 +2853,7 @@ const styles = StyleSheet.create({
 
 
   balanceText: { color: "#777" },
-  balanceAmount: { fontFamily: "Gilroy-Bold", fontSize: 16 },
+  balanceAmount: { fontFamily: "Gilroy-Bold", fontSize: 16, marginTop: 10 },
   addAmountText: {
     color: "#1D5DFF",
     fontFamily: "Gilroy-Semibold",
@@ -3298,7 +3421,7 @@ const styles = StyleSheet.create({
   },
   addNewCard: {
     width: 120,
-    height: 265,
+    height: 215,
     borderWidth: 2,
     borderStyle: "dashed",
     borderColor: "#3D6DFF",
@@ -3344,7 +3467,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 5,
     marginBottom: 14,
     paddingHorizontal: 14,
   },
@@ -3430,22 +3553,22 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 28,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
   },
 
   transactionIcon: {
-    width: 23,
-    height: 23,
+    width: 15,
+    height: 15,
     resizeMode: "contain",
     tintColor: "#FFFFFF", // white icon
   },
 
   transactionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#222",
     fontFamily: "Gilroy-SemiBold",
   },
@@ -3474,8 +3597,8 @@ const styles = StyleSheet.create({
   },
 
   smallIcon: {
-    width: 23,
-    height: 23,
+    width: 20,
+    height: 20,
     resizeMode: "contain",
   },
 

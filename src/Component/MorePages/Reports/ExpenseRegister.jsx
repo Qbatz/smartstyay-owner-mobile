@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef, Suspense } from "react";
+import React, { useState, useEffect, useContext, useRef, } from "react";
 import {
   View,
   Text,
@@ -30,6 +30,84 @@ import dayjs from "dayjs";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.44
+
+const AnimatedNumber = ({ value, duration = 800 }) => {
+  const targetValue = Number(value) || 0;
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    animatedValue.stopAnimation();
+    animatedValue.setValue(0);
+    setDisplayValue(0);
+
+    const listenerId = animatedValue.addListener(({ value }) => {
+      setDisplayValue(Math.floor(value));
+    });
+
+    const animation = Animated.timing(animatedValue, {
+      toValue: targetValue,
+      duration,
+      useNativeDriver: false,
+    });
+
+    animation.start(({ finished }) => {
+      if (finished) {
+        setDisplayValue(targetValue);
+      }
+    });
+
+    return () => {
+      animation.stop();
+      animatedValue.removeListener(listenerId);
+    };
+  }, [targetValue, duration, animatedValue]);
+
+  return <Text>{displayValue}</Text>;
+};
+
+const SummaryCard = ({
+  icon,
+  title,
+  value,
+  showRupee = true,
+  prefix,
+  suffix,
+  valueColor = "#111827",
+  linearcolor = "#FFFFFF",
+  tintColor,
+}) => (
+  <LinearGradient
+    colors={["#FFFFFF", linearcolor]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.summaryCard}
+  >
+    <View style={styles.cardTopRow}>
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{title}</Text>
+
+        <Text style={[styles.cardValue, { color: valueColor }]}>
+          {showRupee ? "₹ " : ""}
+          {prefix ? <Text>{prefix}</Text> : null}
+          <AnimatedNumber value={value ?? 0} />
+          {suffix ? <Text>{suffix}</Text> : null}
+        </Text>
+      </View>
+
+      <View style={styles.iconBox}>
+        <Image
+          source={icon}
+          style={[styles.cardIcon, { tintColor }]}
+        />
+      </View>
+    </View>
+  </LinearGradient>
+);
+
+
+
+
 const ExpenseRegister = ({ navigation }) => {
 
   const { CommonModule } = NativeModules;
@@ -64,8 +142,17 @@ const ExpenseRegister = ({ navigation }) => {
   const [allSelectedMonth, setAllSelectedMonth] = useState("")
   const [paymentModeValue, setPaymentModeValue] = useState([])
   const [createdValue, setCreatedByValue] = useState([])
-  const [selectedStartDate,setSelectedStartDate]=useState("")
-  const [selectedEndDate, setSelectedEndDate]=useState("")
+  const [selectedStartDate, setSelectedStartDate] = useState("")
+  const [selectedEndDate, setSelectedEndDate] = useState("")
+
+  const appliedExpenseFiltersRef = useRef({
+    period: undefined,
+    category: undefined,
+    subCategory: undefined,
+    paymentMode: undefined,
+    createdBy: undefined,
+    paidTo: undefined,
+  });
 
   useEffect(() => {
     if (!activeHostelId) return;
@@ -182,15 +269,24 @@ const ExpenseRegister = ({ navigation }) => {
       size: 10,
     };
 
+    appliedExpenseFiltersRef.current = {
+      period: filters.period,
+      category: filters.category,
+      subCategory: filters.subCategory,
+      paymentMode: filters.paymentMode,
+      createdBy: filters.createdBy,
+      paidTo: filters.paidTo,
+    };
+
     GetExpenseRegisterReport(activeHostelId, filters).then(res => {
-      console.log("filteredExpense",res)
+      console.log("filteredExpense", res)
 
       if (res.success) {
         setExpenseData(res?.data);
         setSelectedStartDate(res?.data?.summary?.startDate)
         setSelectedEndDate(res?.data?.summary?.endDate)
-      }else{
-         setSelectedStartDate("")
+      } else {
+        setSelectedStartDate("")
         setSelectedEndDate("")
       }
     });
@@ -247,133 +343,148 @@ const ExpenseRegister = ({ navigation }) => {
 
   console.log("selectedPeriod", selectedMonth)
   console.log("allselec", allSelectedMonth)
-  const handleDownloadExpenseReport = async () => {
-    console.log("allselecsinga", allSelectedMonth)
 
-    const finalMonth =
-      allSelectedMonth || selectedMonth;
 
-    const finalCategory = categoryValue !== undefined ? categoryValue : selectedCategory;
+  // const handleDownloadExpenseReport = async () => {
+  //   console.log("allselecsinga", allSelectedMonth)
 
-    const finalSubCategory = subCategoryValue != undefined ? subCategoryValue : selectedSubCategory;
+  //   const finalMonth =
+  //     allSelectedMonth || selectedMonth;
 
-    const finalPaymentMode = paymentModeValue != undefined ? paymentModeValue : selectedPayment;
+  //   const finalCategory = categoryValue !== undefined ? categoryValue : selectedCategory;
+
+  //   const finalSubCategory = subCategoryValue != undefined ? subCategoryValue : selectedSubCategory;
+
+  //   const finalPaymentMode = paymentModeValue != undefined ? paymentModeValue : selectedPayment;
+
+  //   const filters = {
+  //     period: selectedMonth,
+  //     startDate: selectedStartDate,
+  //     endDate: selectedEndDate,
+  //     category: finalCategory.length ? finalCategory : undefined,
+  //     subCategory: finalSubCategory.length ? finalSubCategory : undefined,
+  //     paymentMode: finalPaymentMode.length ? finalPaymentMode : undefined,
+  //     createdBy: createdValue.length ? createdValue : undefined,
+  //     paidTo: vendorValue || undefined,
+  //     page: 1,
+  //     size: 10,
+  //   };
+  
+
+  //   console.log("karunas", filters)
+
+  //   const res = await downloadExpenseReport(activeHostelId, filters)
+
+  //   console.log("exportEXPENSE", res.url)
+
+
+  //   if (res?.success && res?.url) {
+  //     await CommonModule.downloadAndViewDocument(res.url)
+  //   }
+  // }
+
+
+const handleDownloadExpenseReport = async () => {
+  try {
+    const appliedFilters = appliedExpenseFiltersRef.current;
 
     const filters = {
-      period: selectedMonth,
-      startDate: selectedStartDate,
-      endDate: selectedEndDate,
-      category: finalCategory.length ? finalCategory : undefined,
-      subCategory: finalSubCategory.length ? finalSubCategory : undefined,
-      paymentMode: finalPaymentMode.length ? finalPaymentMode : undefined,
-      createdBy: createdValue.length ? createdValue : undefined,
-      paidTo: vendorValue || undefined,
+      ...appliedFilters,
+      startDate: selectedStartDate || undefined,
+      endDate: selectedEndDate || undefined,
       page: 1,
       size: 10,
     };
-    // if (finalMonth === "THIS_MONTH") {
-    //   filters.startDate = dayjs().startOf("month").format("DD-MM-YYYY");
-    //   filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
-    // }
 
-    // if (finalMonth === "LAST_MONTH") {
-    //   filters.startDate = dayjs().subtract(1, "month").startOf("month").format("DD-MM-YYYY");
-    //   filters.endDate = dayjs().subtract(1, "month").endOf("month").format("DD-MM-YYYY");
-    // }
+    console.log("EXPENSE EXPORT FILTERS:", filters);
 
-    // if (finalMonth === "LAST_3_MONTHS") {
-    //   filters.startDate = dayjs().subtract(2, "month").startOf("month").format("DD-MM-YYYY");
-    //   filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
-    // }
+    const res = await downloadExpenseReport(
+      activeHostelId,
+      filters
+    );
 
-    // if (finalMonth === "LAST_6_MONTHS") {
-    //   filters.startDate = dayjs().subtract(5, "month").startOf("month").format("DD-MM-YYYY");
-    //   filters.endDate = dayjs().endOf("month").format("DD-MM-YYYY");
-    // }
-
-    console.log("karunas",filters)
-
-    const res = await downloadExpenseReport(activeHostelId, filters)
-
-    console.log("exportEXPENSE", res.url)
-
+    console.log("EXPENSE EXPORT RESPONSE:", res);
 
     if (res?.success && res?.url) {
-      // await CommonModule.downloadAndViewDocument(res.url)
+      await CommonModule.downloadAndViewDocument(res.url);
     }
+  } catch (error) {
+    console.log("Expense PDF download error:", error);
   }
+};
+
 
   const isValidSubscription = PGDetails?.isSubscriptionActive;
   const isExportAllow = isValidSubscription && canReadReports;
 
-  const AnimatedNumber = ({ value, duration = 800 }) => {
-    const animatedValue = useRef(new Animated.Value(0)).current;
-    const [displayValue, setDisplayValue] = useState(0);
+  // const AnimatedNumber = ({ value, duration = 800 }) => {
+  //   const animatedValue = useRef(new Animated.Value(0)).current;
+  //   const [displayValue, setDisplayValue] = useState(0);
 
-    useEffect(() => {
-      animatedValue.setValue(0);
+  //   useEffect(() => {
+  //     animatedValue.setValue(0);
 
-      Animated.timing(animatedValue, {
-        toValue: Number(value) || 0,
-        duration,
-        useNativeDriver: false,
-      }).start();
+  //     Animated.timing(animatedValue, {
+  //       toValue: Number(value) || 0,
+  //       duration,
+  //       useNativeDriver: false,
+  //     }).start();
 
-      const listener = animatedValue.addListener(({ value }) => {
-        setDisplayValue(Math.floor(value));
-      });
+  //     const listener = animatedValue.addListener(({ value }) => {
+  //       setDisplayValue(Math.floor(value));
+  //     });
 
-      return () => {
-        animatedValue.removeListener(listener);
-      };
-    }, [value]);
+  //     return () => {
+  //       animatedValue.removeListener(listener);
+  //     };
+  //   }, [value]);
 
-    return <Text>{displayValue}</Text>;
-  };
+  //   return <Text>{displayValue}</Text>;
+  // };
 
 
-  const SummaryCard = ({
-    icon,
-    title,
-    value,
-    showRupee = true,
-    prefix,
-    suffix,
-    valueColor = "#111827",
-    linearcolor,
-    tintColor
-  }) => (
-    <LinearGradient
-      colors={["#FFFFFF", linearcolor]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.summaryCard}
-    >
-      <View style={styles.cardTopRow}>
-        <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>
-            {title}
-          </Text>
+  // const SummaryCard = ({
+  //   icon,
+  //   title,
+  //   value,
+  //   showRupee = true,
+  //   prefix,
+  //   suffix,
+  //   valueColor = "#111827",
+  //   linearcolor,
+  //   tintColor
+  // }) => (
+  //   <LinearGradient
+  //     colors={["#FFFFFF", linearcolor]}
+  //     start={{ x: 0, y: 0 }}
+  //     end={{ x: 1, y: 1 }}
+  //     style={styles.summaryCard}
+  //   >
+  //     <View style={styles.cardTopRow}>
+  //       <View style={styles.cardContent}>
+  //         <Text style={styles.cardTitle}>
+  //           {title}
+  //         </Text>
 
-          <Text style={[styles.cardValue, { color: valueColor }]}>
-            {showRupee && "₹ "}
-            {prefix && <Text>{prefix}</Text>}
+  //         <Text style={[styles.cardValue, { color: valueColor }]}>
+  //           {showRupee && "₹ "}
+  //           {prefix && <Text>{prefix}</Text>}
 
-            <AnimatedNumber value={value} />
+  //           <AnimatedNumber value={value} />
 
-            {suffix && <Text>{suffix}</Text>}
-          </Text>
-        </View>
+  //           {suffix && <Text>{suffix}</Text>}
+  //         </Text>
+  //       </View>
 
-        <View style={styles.iconBox}>
-          <Image
-            source={icon}
-            style={[styles.cardIcon, { tintColor: tintColor }]}
-          />
-        </View>
-      </View>
-    </LinearGradient>
-  );
+  //       <View style={styles.iconBox}>
+  //         <Image
+  //           source={icon}
+  //           style={[styles.cardIcon, { tintColor: tintColor }]}
+  //         />
+  //       </View>
+  //     </View>
+  //   </LinearGradient>
+  // );
 
   const hasActiveFilters =
     (paymentModeValue?.length ?? 0) > 0 ||
@@ -821,7 +932,7 @@ const ExpenseRegister = ({ navigation }) => {
           setPaymentModeValue([]), setCreatedByValue([])
           setVendorValue("")
           setAllFilterSheet(false)
-           setSelectedStartDate("")
+          setSelectedStartDate("")
           setSelectedEndDate("")
           applyExpenseFilters("", [], [], [], [], "")
         }}
@@ -947,7 +1058,7 @@ const styles = StyleSheet.create({
 
   filterRow: {
     flexDirection: "row", alignItems: 'center', justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 10, gap: 10
   },
 
 

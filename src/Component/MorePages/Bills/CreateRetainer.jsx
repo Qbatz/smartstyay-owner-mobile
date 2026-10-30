@@ -19,7 +19,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { useRoute } from "@react-navigation/native";
 import ValidatedInput from "../ValidatedInput"
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
-
+import BankIcon from "../../../Assets/Images/bankBlue.png";
+import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 
 
 const NewRetainerInvoiceSheet = ({ }) => {
@@ -208,6 +209,42 @@ const NewRetainerInvoiceSheet = ({ }) => {
     }, [])
 
 
+    const paymentOptionsV1 = (retainerBankList || []).map((bank, index) => {
+        const accountType = String(
+            bank?.accountType || bank?.type || bank?.bankName || ""
+        ).trim().toUpperCase();
+
+        const isBank =
+            bank?.isBank ||
+            accountType === "BANK" ||
+            bank?.bankName?.toUpperCase() === "BANK";
+
+        const isCash =
+            bank?.bankName?.toUpperCase() === "CASH" ||
+            accountType === "CASH";
+
+        const iconType = isBank
+            ? "BANK"
+            : isCash
+                ? "CASH"
+                : "CARD";
+
+        return {
+            id: bank?.bankId || `account-${index}`,
+            value: bank?.bankId,
+            bankId: bank?.bankId,
+            displayName: bank?.displayName || "",
+            holderName: bank?.accountHolderName || bank?.holderName || "",
+            bankName: bank?.bankName || "",
+            accountType,
+            iconType,
+            isCash,
+            data: bank,
+        };
+    });
+
+
+
     const totalRetainerAmount = items.reduce((sum, item) => {
         console.log(sum)
         console.log(item)
@@ -372,9 +409,9 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
     const handleLeaveScreen = () => {
 
-        console.log( totalRetainerAmount)
+        console.log(totalRetainerAmount)
 
-        if (selectedTenant || selectedGuardian?.guardianName|| receivedFrom || items[0]?.retainerType ||
+        if (selectedTenant || selectedGuardian?.guardianName || receivedFrom || items[0]?.retainerType ||
             transactionId || totalRetainerAmount || transactionId || selectedBankId) {
             setShowLeavePageScreen(true)
         } else {
@@ -475,27 +512,27 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 <View style={styles.dropdownMenu}>
                                     <ScrollView keyboardShouldPersistTaps="always"
                                         nestedScrollEnabled={true}
-                                        showsVerticalScrollIndicator={true}>                                       
+                                        showsVerticalScrollIndicator={true}>
                                         {filterList.length > 0 ?
-                                        filterList.map((i, index) => (
-                                            <TouchableOpacity key={index}
-                                                style={{ paddingVertical: 8, paddingHorizontal: 14 }}
-                                                onPress={() => {
-                                                    setSelectedName(i.fullName)
-                                                    setSelectedTenant(i)
-                                                    setStateQuery("");
-                                                    setShowTenantName(false)
-                                                    setReceivedFrom("")
-                                                    setSelectedGuardian("")
-                                                }}>
-                                                <Text>{i.fullName}</Text>
-                                            </TouchableOpacity>
+                                            filterList.map((i, index) => (
+                                                <TouchableOpacity key={index}
+                                                    style={{ paddingVertical: 8, paddingHorizontal: 14 }}
+                                                    onPress={() => {
+                                                        setSelectedName(i.fullName)
+                                                        setSelectedTenant(i)
+                                                        setStateQuery("");
+                                                        setShowTenantName(false)
+                                                        setReceivedFrom("")
+                                                        setSelectedGuardian("")
+                                                    }}>
+                                                    <Text>{i.fullName}</Text>
+                                                </TouchableOpacity>
 
-                                        )) : 
-                                        <View>
-                                            <Text style={{paddingVertical: 8, paddingHorizontal: 14,fontSize:12,fontFamily:'Gilroy-Medium'}}>
-                                                No Options available</Text>
-                                        </View>
+                                            )) :
+                                            <View>
+                                                <Text style={{ paddingVertical: 8, paddingHorizontal: 14, fontSize: 12, fontFamily: 'Gilroy-Medium' }}>
+                                                    No Options available</Text>
+                                            </View>
                                         }
                                     </ScrollView>
                                 </View>
@@ -739,44 +776,121 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 18 }}>
                             Payment Method <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                        <TouchableOpacity onPress={() => {
-                            setShowPaymentMode(!showPaymentMode)
-                            setErrors(prev => ({ ...prev, payMode: "" }))
-                        }}
-                            style={[styles.inputBox, { marginTop: 10 }]}>
-                            <Text style={styles.pymentMthdTxt}>
-                                {selectedMode ? selectedMode : "Select Payment Method"}
-                            </Text>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setShowPaymentMode(!showPaymentMode);
+                                setErrors(prev => ({ ...prev, payMode: "" }));
+                            }}
+                            style={[styles.inputBox, { marginTop: 10 }]}
+                        >
+                            <View style={{ flex: 1 }}>
+                                {selectedMode ? (
+                                    (() => {
+                                        const selected = paymentOptionsV1.find(
+                                            item => item.id === selectedMode
+                                        );
 
-                            <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} />
+                                        return (
+                                            <>
+                                            
+                                                <Text style={styles.paymentMethodName}>
+                                                    {selected?.displayName}
+                                                </Text>
+
+                                                <Text style={styles.paymentMethodSubText}>
+                                                    {selected?.holderName} - {selected?.bankName}
+                                                </Text>
+                                            </>
+                                        );
+                                    })()
+                                ) : (
+                                    <Text style={styles.pymentMthdTxt}>
+                                        Select Payment Method
+                                    </Text>
+                                )}
+                            </View>
+
+                            <Image
+                                source={DownArrow}
+                                style={{ width: 18, height: 18, tintColor: "#555" }}
+                            />
                         </TouchableOpacity>
 
 
                         {showPaymentMode && (
-                            <>
-                                <TouchableWithoutFeedback onPress={() => setShowPaymentMode(false)}>
-                                    <View style={styles.dropdownOverlay} />
-                                </TouchableWithoutFeedback>
-                                <View style={styles.dropdownMenu}>
-                                    <ScrollView keyboardShouldPersistTaps="always"
-                                        nestedScrollEnabled={true}
-                                        showsVerticalScrollIndicator={true}>
-                                        {retainerBankList.map((i, index) => (
-                                            <TouchableOpacity key={index}
-                                                style={{ paddingVertical: 12, paddingHorizontal: 14 }}
-                                                onPress={() => {
-                                                    setSelectedMode(i?.bankName)
-                                                    setSelectedBankId(i?.bankId)
-                                                    setShowPaymentMode(false)
-                                                }}>
-                                                <Text>{i.bankName}</Text>
-                                            </TouchableOpacity>
+                            <View style={styles.dropdownMenu}>
+                                <ScrollView
+                                    keyboardShouldPersistTaps="always"
+                                    nestedScrollEnabled
+                                    showsVerticalScrollIndicator
+                                >
+                                    {paymentOptionsV1.length > 0 ? (
+                                        paymentOptionsV1.map((opt) => {
+                                            const isCash = opt.iconType === "CASH";
 
-                                        ))}
-                                    </ScrollView>
-                                </View>
-                            </>
+                                            return (
+                                                <TouchableOpacity
+                                                    key={opt.id}
+                                                    style={styles.paymentMethodRow}
+                                                    onPress={() => {
+                                                        setSelectedMode(opt.id);
+                                                        setSelectedBankId(opt.bankId);
+                                                        setShowPaymentMode(false);
+                                                    }}
+                                                >
+                                                    <View
+                                                        style={[
+                                                            styles.paymentMethodIcon,
+                                                            isCash
+                                                                ? styles.cashIconBg
+                                                                : styles.bankIconBg,
+                                                        ]}
+                                                    >
+                                                        <Image
+                                                            source={isCash ? CashIcon : BankIcon}
+                                                            style={{ width: 20, height: 20 }}
+                                                        />
+                                                    </View>
 
+                                                    <View style={styles.paymentMethodDetails}>
+                                                        <Text style={styles.paymentMethodName}>
+                                                            {opt.displayName}
+                                                        </Text>
+
+                                                        <Text style={styles.paymentMethodSubText}>
+                                                            {opt.holderName} - {opt.bankName}
+                                                        </Text>
+                                                    </View>
+
+                                                    <View
+                                                        style={[
+                                                            styles.paymentTypeBadge,
+                                                            isCash
+                                                                ? styles.cashBadge
+                                                                : styles.bankBadge,
+                                                        ]}
+                                                    >
+                                                        <Text
+                                                            style={[
+                                                                styles.paymentTypeText,
+                                                                isCash
+                                                                    ? styles.cashText
+                                                                    : styles.bankText,
+                                                            ]}
+                                                        >
+                                                            {opt.iconType}
+                                                        </Text>
+                                                    </View>
+                                                </TouchableOpacity>
+                                            );
+                                        })
+                                    ) : (
+                                        <Text style={{ padding: 15, color: "#777" }}>
+                                            No payment methods available
+                                        </Text>
+                                    )}
+                                </ScrollView>
+                            </View>
                         )}
                         {errors.payMode && <ErrorMessage message={errors.payMode} type="error" />}
 
@@ -1073,6 +1187,64 @@ const styles = StyleSheet.create({
         width: "85%",
         elevation: 10,
     },
+    paymentMethodRow: {
+    minHeight: 72,
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F1F2F4",
+},
+paymentMethodIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+},
+cashIconBg: {
+    backgroundColor: "#DDF8E8",
+},
+bankIconBg: {
+    backgroundColor: "#DCE9FF",
+},
+paymentMethodDetails: {
+    flex: 1,
+},
+paymentMethodName: {
+    fontSize: 15,
+    color: "#222",
+    fontFamily: "Gilroy-Semibold",
+},
+paymentMethodSubText: {
+    fontSize: 13,
+    color: "#687083",
+    marginTop: 3,
+    fontFamily: "Gilroy-Medium",
+},
+paymentTypeBadge: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
+},
+cashBadge: {
+    backgroundColor: "#DDF8E8",
+},
+bankBadge: {
+    backgroundColor: "#DCE9FF",
+},
+paymentTypeText: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+},
+cashText: {
+    color: "#15803D",
+},
+bankText: {
+    color: "#2563EB",
+},
 
 })
 

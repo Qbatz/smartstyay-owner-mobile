@@ -226,7 +226,7 @@ export default function BankDetails({ }) {
 
                             <View style={{ flex: 1, marginLeft: 18 }}>
                                 <Text style={styles.bankName}>
-                                    {bankDetails?.bankName || bankDetails?.cashAccountType}
+                                    {bankDetails?.bankName || bankDetails?.cashAccountType || bankDetails?.displayName}
                                     {/* Canara Bank */}
                                 </Text>
 
