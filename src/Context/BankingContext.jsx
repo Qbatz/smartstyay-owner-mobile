@@ -264,7 +264,7 @@ export default function BankingProvider({ children }) {
   const getAllTransactions = async (
     hostelId,
     page = 1,
-    size = 30,
+    size = 20,
     filters = {}
   ) => {
     try {
@@ -315,6 +315,7 @@ export default function BankingProvider({ children }) {
 
       if (res.status === 200) {
         const responseData = res?.data ?? {};
+        const currentPage = responseData?.currentPage;
 
         const bankV2Lists = Array.isArray(responseData?.bankV2Lists)
           ? responseData.bankV2Lists
@@ -329,14 +330,16 @@ export default function BankingProvider({ children }) {
         setBankList(bankV2Lists);
         setNewTransactionList(responseData);
 
-        setNewOnlyTransactionList((prev) =>
-          Number(page) === 1
-            ? transactions
-            : [
-              ...(Array.isArray(prev) ? prev : []),
-              ...transactions,
-            ]
-        );
+        if (currentPage === 1) {
+          setNewOnlyTransactionList(transactions)
+        } else {
+          setNewOnlyTransactionList((prev) => [
+            ...(Array.isArray(prev) ? prev : []),
+            ...transactions,
+          ]);
+
+        }
+
 
         return {
           success: true,
