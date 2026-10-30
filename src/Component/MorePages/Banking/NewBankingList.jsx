@@ -143,6 +143,8 @@ export default function NewBankingList() {
   const isSubscriptionAllow = isValidSubscription
 
   const [pageLoading, setPageLoading] = useState(false)
+  const onEndReachedCalledDuringMomentum = useRef(true);
+  const isFetchingList = useRef(false);
 
 
 
@@ -309,7 +311,7 @@ export default function NewBankingList() {
     page = 1,
     isRefresh = false
   ) => {
-    if (!activeHostelId) {
+    if (!activeHostelId || isFetchingList.current) {
       return;
     }
 
@@ -322,6 +324,11 @@ export default function NewBankingList() {
     if (!isRefresh && !hasMoreTransactions) {
       return;
     }
+    isFetchingList.current = true;
+      const filters = {
+      dateFilter: tempDateFilter,
+      source: tempSource,
+    };
 
     try {
       setTransactionLoading(true);
@@ -329,13 +336,14 @@ export default function NewBankingList() {
       const res = await getAllTransactions(
         activeHostelId,
         page,
-        50
+        20,
+        filters
       );
 
       if (res?.success) {
         const newTransactions = res?.data || [];
 
-        if (newTransactions.length < 50) {
+        if (newTransactions.length < 20) {
           setHasMoreTransactions(false);
         }
 
@@ -345,6 +353,7 @@ export default function NewBankingList() {
     } catch (error) {
       console.log("Transaction error:", error);
     } finally {
+       isFetchingList.current = false;
       setTransactionLoading(false);
     }
   };
@@ -1681,14 +1690,20 @@ export default function NewBankingList() {
               scrollEventThrottle={16}
               keyExtractor={(item, index) =>
                 `${item?.transactionId ?? item?.id}`
-               
+
               }
-                //  -${index}`
+              //  -${index}`
+              onMomentumScrollBegin={() => {
+                onEndReachedCalledDuringMomentum.current = false;
+              }}
               onEndReached={() => {
                 if (
+                  !onEndReachedCalledDuringMomentum.current &&
+                  !isFetchingList.current &&
                   !transactionLoading &&
                   hasMoreTransactions
                 ) {
+                    onEndReachedCalledDuringMomentum.current = true;
                   fetchTransactions(transactionPage + 1);
                 }
               }}
@@ -2080,6 +2095,8 @@ export default function NewBankingList() {
           setTempDateFilter([]);
           setSelectedDateFilter([]);
           setDateSheetOpen(false);
+          setTransactionPage(1)
+          setHasMoreTransactions(true)
 
           await applyTransactionFilters({
             dateFilter: [],
@@ -2111,6 +2128,8 @@ export default function NewBankingList() {
           setTempSource([]);
           setSelectedSource([]);
           setSourceSheetOpen(false);
+          setTransactionPage(1)
+          setHasMoreTransactions(true)
 
           await applyTransactionFilters({
             dateFilter: selectedDateFilter,

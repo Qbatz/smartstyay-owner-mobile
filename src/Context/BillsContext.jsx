@@ -464,7 +464,7 @@ export default function BillsProvider({ children }) {
     hostelId,
     keyword = "",
     page = 1,
-    size = 10,
+    size = 20,
     period,
     bankIds = [],
     invoiceType,
@@ -477,7 +477,7 @@ export default function BillsProvider({ children }) {
     }
 
     try {
-      setLoading(true);
+      // setLoading(true);
       setErrorMsg("");
 
       const axios = getAxios();
@@ -519,6 +519,7 @@ export default function BillsProvider({ children }) {
             .filter(Boolean)
             .join("&"),
       });
+      console.log("checkreceiptpag",res)
 
       if (res?.status === 200) {
 
