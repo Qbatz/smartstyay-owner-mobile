@@ -57,11 +57,11 @@ export default function VendorPayment({
   const [vendorAppliedAmounts, setVendorAppliedAmounts] = useState({});
 
   const vendorExpensesPayload = (vendorSettlementInitialize?.expenses || [])
-  .map((exp) => ({
-    expenseId: exp?.expenseId,
-    paidAmount: Number(vendorAppliedAmounts[exp?.expenseId] || 0),
-  }))
-  .filter((item) => item.paidAmount > 0);
+    .map((exp) => ({
+      expenseId: exp?.expenseId,
+      paidAmount: Number(vendorAppliedAmounts[exp?.expenseId] || 0),
+    }))
+    .filter((item) => item.paidAmount > 0);
 
 
 
@@ -137,16 +137,40 @@ export default function VendorPayment({
   // })) || [];
 
 
-  const paymentOptions = (vendorSettlementInitialize?.banks || []).map((bank) => {
-    const accountType = String(bank?.type || bank?.bankName || "BANK").toUpperCase();
+  const paymentOptions = (vendorSettlementInitialize?.banks || []).map((bank, index) => {
+    const holderName =
+      bank?.holderName || bank?.accountHolderName || "";
+
+    const bankName = bank?.bankName || "";
+
+    const displayName = bank?.displayName || "";
+
+    const accountType = String(
+      bank?.accountType || bank?.bankName || "BANK"
+    )
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
 
     return {
-      id: bank?.bankId,
+      id: bank?.bankId || `account-${index}`,
       bankId: bank?.bankId,
-      name: bank?.holderName || "Account",
-      subLabel: bank?.bankName || accountType,
+      value: bank?.bankId,
+      displayName,
+      holderName,
+      bankName,
+      label: `${displayName} - ${holderName} - ${bankName}`,
+      name: displayName,
+      subLabel: `${holderName} - ${bankName}`,
+      type: bank?.accountType || bank?.bankName || "",
       accountType,
-      type: bank?.type || bank?.bankName || "",   
+      iconType:
+        accountType === "BANK"
+          ? "BANK"
+          : accountType === "CASH"
+            ? "CASH"
+            : "CARD",
+      data: bank,
     };
   });
 
@@ -355,27 +379,27 @@ export default function VendorPayment({
 
       let response;
 
-        const payload = {
-      payLoads: {
-        paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-        bankId: selectedMode?.bankId ?? "",
-        paymentMethod: selectedMode?.type || selectedMode?.name || "",
-        transactionId: transactionId,
-        notes: description,
-        expenses: vendorExpensesPayload,
-      },
-    };
+      const payload = {
+        payLoads: {
+          paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
+          bankId: selectedMode?.bankId ?? "",
+          paymentMethod: selectedMode?.type || selectedMode?.name || "",
+          transactionId: transactionId,
+          notes: description,
+          expenses: vendorExpensesPayload,
+        },
+      };
 
 
-       response = await settleVendorPayment(
-      activeHostelId,
-      vendorId,
-      payload,
-      attachments
-    );
+      response = await settleVendorPayment(
+        activeHostelId,
+        vendorId,
+        payload,
+        attachments
+      );
 
-    console.log("vendorId", vendorId);
-    
+      console.log("vendorId", vendorId);
+
 
       // const payload = {
       //   images: attachments?.map(item => item?.uri) || [],
@@ -744,14 +768,14 @@ export default function VendorPayment({
                     style={styles.paymentMethodName}
                     numberOfLines={1}
                   >
-                    {selectedMode?.name}
+                    {selectedMode?.displayName}
                   </Text>
 
                   <Text
                     style={styles.paymentMethodSubText}
                     numberOfLines={1}
                   >
-                    {selectedMode?.subLabel}
+                    {selectedMode?.holderName} - {selectedMode?.bankName}
                   </Text>
                 </View>
 
@@ -802,11 +826,18 @@ export default function VendorPayment({
                   </Text>
                 ) : (
                   paymentOptions.map((item, index) => {
+
                     const accountType = String(
-                      item?.accountType || "BANK"
-                    ).toUpperCase();
+                      item?.accountType || item?.type || item?.data?.bankName || "BANK"
+                    )
+                      .trim()
+                      .toUpperCase()
+                      .replace(/[\s-]+/g, "_");
 
                     const isCash = accountType === "CASH";
+                    const isBank = accountType === "BANK";
+
+                    // const isCash = accountType === "CASH";
                     const isSelected =
                       selectedMode?.bankId === item?.bankId;
 
@@ -847,14 +878,14 @@ export default function VendorPayment({
                             numberOfLines={1}
                             ellipsizeMode="tail"
                           >
-                            {item?.name || "Account"}
+                            {item?.displayName}
                           </Text>
 
                           <Text
                             style={styles.paymentMethodSubText}
                             numberOfLines={1}
                           >
-                            {accountType}
+                            {item?.holderName} - {item?.bankName}
                           </Text>
                         </View>
 
