@@ -219,6 +219,17 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
   //   };
   // }, []);
 
+  const paymentOptions = Array.isArray(AccountsList)
+    ? AccountsList.map((item) => ({
+      ...item,
+      value: String(item.bankingId),
+      displayName: item?.displayName || "",
+      holderName:
+        item?.holderName || item?.accountHolderName || "",
+      bankName: item?.bankName || "",
+    }))
+    : [];
+
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
@@ -487,14 +498,33 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
               <View style={{ position: "relative" }}>
                 <TouchableOpacity
-                  onPress={() => setAccountopen(!accountOpen)}
+                  onPress={() => {
+                    setBookingTenantsopen(false);
+                    setAccountopen(!accountOpen);
+
+                    setTimeout(() => {
+                      scrollRef.current?.scrollTo({
+                        y: 350,
+                        animated: true,
+                      });
+                    }, 100);
+                  }}
                   style={styles.inputBox}
                 >
-                  <Text style={styles.selectText}>
-                    {accountSelected
-                      ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
-                      : "Select Bank"}
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.selectText} numberOfLines={1}>
+                      {accountSelected?.displayName || "Select Bank"}
+                    </Text>
+
+                    {accountSelected && (
+                      <Text
+                        style={{ fontSize: 12, color: "#777", marginTop: 3 }}
+                        numberOfLines={1}
+                      >
+                        {accountSelected?.holderName} - {accountSelected?.bankName}
+                      </Text>
+                    )}
+                  </View>
                   <Image source={DownArrow} style={styles.arrow} />
                 </TouchableOpacity>
 
@@ -502,8 +532,14 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
                 {accountOpen && (
                   <View style={styles.dropdownMenu}>
-                    <ScrollView style={{ maxHeight: 150 }}>
-                      {AccountsList.map((v, i) => (
+                    <ScrollView
+                      style={{ maxHeight: 180 }}
+                      nestedScrollEnabled={true}
+                      keyboardShouldPersistTaps="always"
+                      showsVerticalScrollIndicator={true}
+                      scrollEnabled={true}
+                    >
+                      {paymentOptions?.map((v, i) => (
                         <TouchableOpacity
                           key={i}
                           style={styles.option}
@@ -513,9 +549,22 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                             setBankIdError("");
                           }}
                         >
-                          <Text style={styles.optionText}>
-                            {v.accountHolderName}-{v.accountType}
-                          </Text>
+                          <View>
+                            <Text style={styles.optionText} numberOfLines={1}>
+                              {v.displayName}
+                            </Text>
+
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                color: "#777",
+                                marginTop: 3,
+                              }}
+                              numberOfLines={1}
+                            >
+                              {v.holderName} - {v.bankName}
+                            </Text>
+                          </View>
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
@@ -727,19 +776,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
 
-  dropdownMenu: {
-    position: "absolute",
-    top: 52,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 12,
-    zIndex: 1000,
-    elevation: 10,
-  },
-
+dropdownMenu: {
+  position: "absolute",
+  top: 52,
+  left: 0,
+  right: 0,
+  backgroundColor: "#fff",
+  borderWidth: 1,
+  borderColor: "#ddd",
+  borderRadius: 12,
+  zIndex: 9999,
+  elevation: 15,
+  maxHeight: 180,
+},
   option: {
     padding: 12,
   },

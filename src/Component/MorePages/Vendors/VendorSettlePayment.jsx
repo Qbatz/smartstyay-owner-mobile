@@ -148,25 +148,45 @@ export default function VendorSettlePayment({
   //   }
   // );
 
-  const paymentOptions = (initializeData?.banks || []).map((item, index) => {
-    const rawType = item?.type || item?.bankName || "";
-    const accountType = String(rawType || "BANK").toUpperCase();
-    const isCash = accountType === "CASH";
+
+  const paymentOptions = (initializeData?.banks || []).map((bank, index) => {
+    const holderName =
+        bank?.holderName || bank?.accountHolderName || "";
+
+    const bankName = bank?.bankName || "";
+
+    const accountType =
+        bank?.accountType || bank?.type || bankName || "BANK";
+
+    const normalizedBankName = String(bankName).toUpperCase();
+    const normalizedAccountType = String(accountType).toUpperCase();
+
+    const isCash =
+        normalizedBankName === "CASH" ||
+        normalizedAccountType === "CASH";
+
+    const isBankAccount =
+        normalizedBankName === "BANK" ||
+        normalizedAccountType === "BANK";
 
     return {
-      id: item?.bankId || `account-${index}`,
-      bankId: item?.bankId,
-      label: item?.bankName || item?.holderName || "Account",
-      name: item?.holderName || "Account",
-      displayName: item?.holderName || "Account",
-      accountHolderName: item?.holderName || "Account",
-      bankName: item?.bankName || "",
-      isCash,
-      accountType,
-      type: rawType,
-      subLabel: item?.bankName || "Bank Account",
+        id: bank?.bankId || `account-${index}`,
+        value: bank?.bankId,
+        bankId: bank?.bankId,
+        displayName: bank?.displayName || "",
+        holderName,
+        accountHolderName: holderName,
+        bankName,
+        accountType,
+        type: bank?.accountType || bank?.bankName || bank?.type || "",
+        isCash,
+        isBank: bank?.isBank || isBankAccount,
+        iconType: isCash ? "CASH" : isBankAccount ? "BANK" : "CARD",
+        subLabel: `${holderName} - ${bankName}`,
+        data: bank,
     };
-  });
+});
+
 
   const dueAmount = Number(
     isVendorSettlement
@@ -668,14 +688,14 @@ export default function VendorSettlePayment({
                 <View
                   style={[
                     styles.paymentMethodIcon,
-                    selectedMode?.accountType === "CASH"
+                    selectedMode?.iconType === "CASH"
                       ? styles.cashIconBg
                       : styles.bankIconBg,
                   ]}
                 >
                   <Image
                     source={
-                      selectedMode?.accountType === "CASH"
+                      selectedMode?.iconType === "CASH"
                         ? CashIcon
                         : BankIcon
                     }
@@ -688,21 +708,21 @@ export default function VendorSettlePayment({
                     style={styles.paymentMethodName}
                     numberOfLines={1}
                   >
-                    {selectedMode?.name}
+                  {selectedMode?.displayName}
                   </Text>
 
                   <Text
                     style={styles.paymentMethodSubText}
                     numberOfLines={1}
                   >
-                    {selectedMode?.subLabel}
+                  {selectedMode?.holderName} - {selectedMode?.bankName}
                   </Text>
                 </View>
 
                 <View
                   style={[
                     styles.paymentTypeBadge,
-                    selectedMode?.accountType === "CASH"
+                    selectedMode?.iconType === "CASH"
                       ? styles.cashBadge
                       : styles.bankBadge,
                   ]}
@@ -710,7 +730,7 @@ export default function VendorSettlePayment({
                   <Text
                     style={[
                       styles.paymentTypeText,
-                      selectedMode?.accountType === "CASH"
+                      selectedMode?.iconType === "CASH"
                         ? styles.cashText
                         : styles.bankText,
                     ]}
@@ -768,14 +788,14 @@ export default function VendorSettlePayment({
                         <View
                           style={[
                             styles.paymentMethodIcon,
-                            item?.accountType === "CASH"
+                           item?.iconType === "CASH"
                               ? styles.cashIconBg
                               : styles.bankIconBg,
                           ]}
                         >
                           <Image
                             source={
-                              item?.accountType === "CASH"
+                              item?.iconType === "CASH"
                                 ? CashIcon
                                 : BankIcon
                             }
@@ -788,21 +808,21 @@ export default function VendorSettlePayment({
                             style={styles.paymentMethodName}
                             numberOfLines={1}
                           >
-                            {item?.name}
+                           {item?.displayName}
                           </Text>
 
                           <Text
                             style={styles.paymentMethodSubText}
                             numberOfLines={1}
                           >
-                            {item?.subLabel}
+                          {item?.holderName} - {item?.bankName}
                           </Text>
                         </View>
 
                         <View
                           style={[
                             styles.paymentTypeBadge,
-                            item?.accountType === "CASH"
+                          item?.iconType === "CASH"
                               ? styles.cashBadge
                               : styles.bankBadge,
                           ]}
@@ -810,12 +830,12 @@ export default function VendorSettlePayment({
                           <Text
                             style={[
                               styles.paymentTypeText,
-                              item?.accountType === "CASH"
+                              item?.iconType === "CASH"
                                 ? styles.cashText
                                 : styles.bankText,
                             ]}
                           >
-                            {item?.accountType || "BANK"}
+                           {item?.accountType || "BANK"}
                           </Text>
                         </View>
                       </TouchableOpacity>
