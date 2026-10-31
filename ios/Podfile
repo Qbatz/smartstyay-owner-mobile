@@ -34,6 +34,15 @@ target 'smartstayOwnerApp' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+
+  pod 'FirebaseMessaging', '~> 12.0', :modular_headers => true
+  pod 'FirebaseCrashlytics', '~> 12.0'
+  pod 'FirebaseAnalytics', '~> 12.0'
+
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'GoogleDataTransport', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
+
   post_install do |installer|
     react_native_post_install(
       installer,
