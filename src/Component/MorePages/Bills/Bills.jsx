@@ -10886,10 +10886,10 @@ const styles = StyleSheet.create({
     width: "100%",
     backgroundColor: "#25218F",
     borderRadius: 14,
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 18,
-    marginBottom: 12,
+    paddingHorizontal: 15,
+    paddingTop: 12,
+    paddingBottom: 14,
+    marginBottom: 5,
     overflow: "hidden",
   },
 
@@ -10911,13 +10911,13 @@ const styles = StyleSheet.create({
 
   reviewBillsTitle: {
     flex: 1,
-    fontSize: 22,
+    fontSize: 20,
     color: "#FFFFFF",
     fontFamily: "Gilroy-Medium",
   },
 
   reviewBillsDescription: {
-    fontSize: 16,
+    fontSize: 14,
     lineHeight: 22,
     color: "#D8D8F2",
     fontFamily: "Gilroy-Regular",
@@ -10940,7 +10940,7 @@ const styles = StyleSheet.create({
   reviewBillsDateRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 12,
+    marginTop: 5,
   },
 
   reviewBillsLabel: {
@@ -10967,12 +10967,12 @@ const styles = StyleSheet.create({
 
   reviewRequiredText: {
     color: "#FFFFFF",
-    fontSize: 12,
-    fontFamily: "Gilroy-Bold",
+    fontSize: 11,
+     fontFamily: "Gilroy-Medium",
   },
 
   reviewBillsButton: {
-    height: 50,
+    height: 40,
     backgroundColor: "#FFFFFF",
     borderRadius: 10,
     marginTop: 28,
