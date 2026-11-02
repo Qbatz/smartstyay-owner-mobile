@@ -15,10 +15,11 @@ import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
 import Loader from "../Loader/Loader";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
+import InputComponent from "../MorePages/InputComponent"
 
 
 export default function AddTenant() {
-    const { addCustomer,loading } = useCustomer();
+    const { addCustomer, loading } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
     const navigation = useNavigation();
     const [step, setStep] = useState(1);
@@ -39,7 +40,7 @@ export default function AddTenant() {
     const [walkinDate, setWalkinDate] = useState(null)
     const [showCalendar, setShowCalendar] = useState(false)
 
-        const [basicDetails, setBasicDetails] = useState({
+    const [basicDetails, setBasicDetails] = useState({
         firstName: "",
         lastName: "",
         mobile: "",
@@ -55,7 +56,7 @@ export default function AddTenant() {
         state: "",
     });
 
-      const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const countryList = [
         { label: "India", code: "+91" },
@@ -125,17 +126,17 @@ export default function AddTenant() {
     };
 
     const handleLeaveScreen = () => {
-    const hasMandatoryValue =
-       basicDetails.firstName.trim() !== "" ||
-        basicDetails.mobile.trim() !== "";
+        const hasMandatoryValue =
+            basicDetails.firstName.trim() !== "" ||
+            basicDetails.mobile.trim() !== "";
 
-    if (hasMandatoryValue) {
-        setShowLeavePageScreen(true);
-        return;
-    }
+        if (hasMandatoryValue) {
+            setShowLeavePageScreen(true);
+            return;
+        }
 
-    navigation.goBack();
-};
+        navigation.goBack();
+    };
 
 
     // useFocusEffect(
@@ -161,30 +162,30 @@ export default function AddTenant() {
     // );
 
     useFocusEffect(
-    useCallback(() => {
-        const onBackPress = () => {
-            if (step === 2) {
-                setStep(1);
+        useCallback(() => {
+            const onBackPress = () => {
+                if (step === 2) {
+                    setStep(1);
+                    return true;
+                }
+
+                handleLeaveScreen();
                 return true;
-            }
+            };
 
-            handleLeaveScreen();
-            return true;
-        };
+            const subscription = BackHandler.addEventListener(
+                "hardwareBackPress",
+                onBackPress
+            );
 
-        const subscription = BackHandler.addEventListener(
-            "hardwareBackPress",
-            onBackPress
-        );
-
-        return () => subscription.remove();
-    }, [
-        navigation,
-        step,
-        basicDetails.firstName,
-        basicDetails.mobile,
-    ])
-);
+            return () => subscription.remove();
+        }, [
+            navigation,
+            step,
+            basicDetails.firstName,
+            basicDetails.mobile,
+        ])
+    );
 
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -452,7 +453,7 @@ export default function AddTenant() {
 
     return (
         <>
-        {loading && <Loader/>}
+            {loading && <Loader />}
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
@@ -571,9 +572,9 @@ export default function AddTenant() {
 
 
 
-                        <View style={[styles.form,{marginTop:20}]}>
+                        <View style={[styles.form, { marginTop: 20 }]}>
                             <Text style={styles.label}>First Name <Text style={{ color: "red" }}>*</Text></Text>
-                            <TextInput
+                            {/* <TextInput
                                 style={{
                                     borderWidth: 1, borderColor: "#D9D9D9", borderRadius: 8, paddingHorizontal: 12,
                                     height: 50, fontSize: 14, backgroundColor: "#fff", marginBottom: 1,
@@ -586,6 +587,20 @@ export default function AddTenant() {
                                     setBasicDetails({ ...basicDetails, firstName: onlyLetters });
                                     setNameError("")
                                 }}
+                            /> */}
+
+                            <InputComponent
+                                type="name"
+                                value={basicDetails.firstName}
+                                // onChangeText={setFirstName}
+                                 onChangeText={(t) => {
+                                    const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                    setBasicDetails({ ...basicDetails, firstName: onlyLetters });
+                                    setNameError("")
+                                }}
+                                placeholder="Enter First Name"
+                                error={nameError && !basicDetails.firstName.trim()}
+                                
                             />
                             {nameError && <ErrorMessage message={nameError} type="error" />}
                             <Text style={[styles.label, { marginTop: 12 }]}>Last Name</Text>
@@ -713,13 +728,13 @@ export default function AddTenant() {
                                 <Text style={styles.placeholder}>
                                     {walkinDate ? dayjs(walkinDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
                                 </Text>
-                                <Image source={require("../../Assets/Images/calendar.png")} style={{width:18,height:18}} />
+                                <Image source={require("../../Assets/Images/calendar.png")} style={{ width: 18, height: 18 }} />
                             </TouchableOpacity>
                         </View>
 
 
                         <View style={styles.btnRow}>
-                           
+
 
                             <TouchableOpacity
                                 style={[
@@ -737,7 +752,7 @@ export default function AddTenant() {
                                     ]}
                                 >
                                     Cancel
-                                </Text>                       
+                                </Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -1056,17 +1071,17 @@ export default function AddTenant() {
             </SafeAreaView>
 
 
-              <LeavePageScreen
-        visible={showLeavePageScreen}
-        onClose={() => setShowLeavePageScreen(false)}
-        discardClose={() => {
-          setShowLeavePageScreen(false);
+            <LeavePageScreen
+                visible={showLeavePageScreen}
+                onClose={() => setShowLeavePageScreen(false)}
+                discardClose={() => {
+                    setShowLeavePageScreen(false);
 
-          setTimeout(() => {
-            navigation.goBack();
-          }, 300);
-        }}
-      />
+                    setTimeout(() => {
+                        navigation.goBack();
+                    }, 300);
+                }}
+            />
         </>
     );
 }
@@ -1331,7 +1346,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 28,
         borderRadius: 8,
         backgroundColor: "#fff",
-        marginRight:10
+        marginRight: 10
     },
 
     primaryText: {
