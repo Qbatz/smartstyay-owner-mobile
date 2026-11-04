@@ -143,7 +143,7 @@ const InputComponent = ({
     };
 
     const getBorderWidth = () => {
-        if (isFocused || error) return 2;
+        if (isFocused || error) return 1.5;
         return 1;
     };
 

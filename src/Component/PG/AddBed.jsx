@@ -7,6 +7,7 @@ import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
+import InputComponent from "../MorePages/InputComponent"
 
 export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, onBedAdded, editBedData }) {
   const translateY = useRef(new Animated.Value(300)).current;
@@ -144,7 +145,7 @@ export default function AddBedBottomSheet({ visible, onClose, selectedRoomId, on
 
     if (isSubmitting) return;
 
-setIsSubmitting(true);
+    setIsSubmitting(true);
 
 
     if (isApplyTriggeredRef.current) return
@@ -251,14 +252,29 @@ setIsSubmitting(true);
             <Text style={styles.title}> {isEdit ? "Edit Bed" : "Add Bed"}</Text>
 
             <Text style={styles.label}>Bed Name or No <Text style={{ color: "red" }}>*</Text></Text>
-            <TextInput
+            {/* <TextInput
               style={styles.input}
               placeholder="Enter Bed Name or No"
               value={bedName}
               returnKeyType="next"
               onSubmitEditing={() => amountRef.current?.focus()}
               onChangeText={(t) => {
-                // ✅ Emoji remove + normal text மட்டும் allow
+                const cleaned = t
+                  .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+                  .replace(/\s{2,}/g, " "); 
+
+                setBedName(cleaned);
+                setBedNameError("");
+              }}
+            /> */}
+
+            <InputComponent
+              type="text"
+              placeholder="Enter Bed Name or No"
+              value={bedName}
+              returnKeyType="next"
+              onSubmitEditing={() => amountRef.current?.focus()}
+              onChangeText={(t) => {
                 const cleaned = t
                   .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "") // emoji remove
                   .replace(/\s{2,}/g, " "); // extra spaces remove
@@ -266,13 +282,15 @@ setIsSubmitting(true);
                 setBedName(cleaned);
                 setBedNameError("");
               }}
+              error={!!bedNameError}
+
             />
 
             {bedNameError && <ErrorMessage message={bedNameError} type="error" />}
 
             <Text style={styles.label}>Amount <Text style={{ color: "red" }}>*</Text></Text>
 
-            <TextInput
+            {/* <TextInput
               ref={amountRef}
               style={styles.input}
               placeholder="Enter Amount"
@@ -290,6 +308,27 @@ setIsSubmitting(true);
                 setAmount(onlyNumbers);
                 setAmountError("");
               }}
+            /> */}
+
+             <InputComponent
+              ref={amountRef}
+              placeholder="Enter Amount"
+              value={amount}
+              keyboardType="numeric"
+              returnKeyType="done"
+              blurOnSubmit={false}
+              onSubmitEditing={() => {
+                if (!isDisabled) {
+                  handleSaveBed();
+                }
+              }}
+              onChangeText={(text) => {
+                const onlyNumbers = text.replace(/[^0-9]/g, "");
+                setAmount(onlyNumbers);
+                setAmountError("");
+              }}
+                 error={!!amountError}
+
             />
 
             {amountError && <ErrorMessage message={amountError} type="error" />}
@@ -303,7 +342,7 @@ setIsSubmitting(true);
             </TouchableOpacity>
           </ScrollView>
         </Animated.View>
-        
+
 
       </View>
     </>

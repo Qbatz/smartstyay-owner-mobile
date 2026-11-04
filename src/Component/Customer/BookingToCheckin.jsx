@@ -33,7 +33,7 @@ import BedDetailsSheet from "./BedDetailsBottomsheet"
 import { UseSetting } from "../../Context/SettingContext";
 import CloseIcon from "../../Assets/Images/remove.png";
 import AddRentIcon from "../../Assets/Images/directionbottom.png";
-
+import InputComponent from "../MorePages/InputComponent"
 
 
 export default function BookingCheckIn({ navigation, route }) {
@@ -263,7 +263,7 @@ export default function BookingCheckIn({ navigation, route }) {
         )
         : false;
 
-          const sanitizeAmount = (text) => {
+    const sanitizeAmount = (text) => {
         return text.replace(/[^0-9]/g, "").replace(/^0+/, "");
     };
 
@@ -611,7 +611,7 @@ export default function BookingCheckIn({ navigation, route }) {
     };
 
     const updateAmount = (id, amount) => {
-          const onlyNum = sanitizeAmount(amount);
+        const onlyNum = sanitizeAmount(amount);
         // const onlyNum = amount.replace(/[^0-9]/g, "");
 
         setExtraCharges((prev) =>
@@ -1027,7 +1027,14 @@ export default function BookingCheckIn({ navigation, route }) {
                                 <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
                                 <TouchableOpacity
-                                    style={styles.dateBox}
+                                    // style={styles.dateBox}
+                                      style={[
+                                    styles.dateBox,
+                                    {
+                                        borderColor: openDatePicker ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDatePicker ? 1.5 : 1,
+                                    },
+                                ]}
                                     onPress={() => setOpenDatePicker(true)}
                                 >
                                     <Text style={styles.placeholder}>
@@ -1298,7 +1305,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                             {/* <Text style={styles.label}>Refundable Amount </Text> */}
 
-                                            <TextInput
+                                            {/* <TextInput
                                                 style={[
                                                     styles.input,
                                                     refuseAdvanceAmount && styles.disabledInput,
@@ -1314,7 +1321,26 @@ export default function BookingCheckIn({ navigation, route }) {
                                                     setAdvanceError("");
                                                 }}
 
+                                            /> */}
+
+                                            <InputComponent
+                                                type="number"
+                                                placeholder="Enter AdvanceAmount"
+                                                keyboardType="numeric"
+                                                value={advanceAmount}
+                                                editable={!refuseAdvanceAmount}
+                                                onChangeText={(text) => {
+                                                    const onlyNumbers = text.replace(/[^0-9]/g, "");
+                                                    setAdvanceAmount(onlyNumbers);
+                                                    setAdvanceError("");
+                                                }}
+                                                disabled={refuseAdvanceAmount}
+                                            // style={[
+                                            //     styles.input,
+                                            //     refuseAdvanceAmount && styles.disabledInput,
+                                            // ]}
                                             />
+
                                             {advanceError && (
                                                 <ErrorMessage message={advanceError} type="error" />
                                             )}
@@ -1484,7 +1510,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                 <View style={styles.field}>
                                     <Text style={styles.label}>Total Rent <Text style={{ color: "red" }}>*</Text></Text>
-                                    <TextInput
+                                    {/* <TextInput
                                         style={styles.input}
                                         keyboardType="numeric"
                                         value={rentalAmount}
@@ -1494,15 +1520,28 @@ export default function BookingCheckIn({ navigation, route }) {
                                                 : "Enter Rental Amount"
                                         }
                                         placeholderTextColor="#9CA3AF"
-                                        // onChangeText={setRentalAmount}
                                         onChangeText={(text) => {
                                             const onlyNumbers = text.replace(/[^0-9]/g, "");
-
-                                             setRentalAmount(sanitizeAmount(text));
-                                            // setRentalAmount(onlyNumbers);
+                                            setRentalAmount(sanitizeAmount(text));
                                             setRentError("");
                                         }}
 
+                                    /> */}
+
+                                    <InputComponent
+                                        type="number"
+                                        placeholder={
+                                            defaultRent
+                                                ? `Selected Bed Rent is ${defaultRent}`
+                                                : "Enter Rental Amount"
+                                        }
+                                        keyboardType="numeric"
+                                        value={rentalAmount}
+                                        onChangeText={(text) => {
+                                            setRentalAmount(sanitizeAmount(text));
+                                            setRentError("");
+                                        }}
+                                        // style={styles.input}
                                     />
 
                                 </View>
@@ -1598,7 +1637,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                                                         keyboardType="numeric"
                                                                         value={customRentAmount}
                                                                         onChangeText={(text) => {
-                                                                             setCustomRentAmount(sanitizeAmount(text));
+                                                                            setCustomRentAmount(sanitizeAmount(text));
                                                                             // setCustomRentAmount(
                                                                             //     text.replace(/[^0-9]/g, "")
                                                                             // );

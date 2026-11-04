@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect,useContext} from "react";
+import React, { useRef, useState, useEffect, useContext } from "react";
 import {
   View,
   Text,
@@ -8,37 +8,38 @@ import {
   Animated,
   PanResponder,
   Keyboard,
-  TouchableWithoutFeedback, KeyboardAvoidingView, Platform,ScrollView
+  TouchableWithoutFeedback, KeyboardAvoidingView, Platform, ScrollView
 } from "react-native";
 import { CommonContexts } from "../../Context/CommonContext";
 import { useFloor } from "../../Context/PayingGuestContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
+import InputComponent from "../MorePages/InputComponent"
 
-export default function AddFloorSheet({ visible, onClose,onSuccess,editFloorData }) {
+export default function AddFloorSheet({ visible, onClose, onSuccess, editFloorData }) {
   const translateY = useRef(new Animated.Value(300)).current;
   const isEdit = !!editFloorData;
-  console.log("editFloorData",editFloorData)
-const [keyboardHeight, setKeyboardHeight] = useState(0);
+  console.log("editFloorData", editFloorData)
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-useEffect(() => {
-  const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-    setKeyboardHeight(e.endCoordinates.height);
-  });
+  useEffect(() => {
+    const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+      setKeyboardHeight(e.endCoordinates.height);
+    });
 
-  const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-    setKeyboardHeight(0);
-  });
+    const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+      setKeyboardHeight(0);
+    });
 
-  return () => {
-    showSub.remove();
-    hideSub.remove();
-  };
-}, []);
-const safeKeyboardHeight =
-  keyboardHeight > 0
-    ? Math.min(keyboardHeight * 0.85, 300)
-    : 0;
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+  const safeKeyboardHeight =
+    keyboardHeight > 0
+      ? Math.min(keyboardHeight * 0.85, 300)
+      : 0;
 
 
 
@@ -48,25 +49,25 @@ const safeKeyboardHeight =
   const inputRef = useRef(null);
   const scrollRef = useRef(null)
   const { activeHostelId } = useContext(CommonContexts);
-  const {addFloor,updateFloor } = useFloor();
-    const [modalType, setModalType] = useState("success");
-    const [showSuccess, setShowSuccess] = useState(false);
-    const [message, setMessage] = useState("");
+  const { addFloor, updateFloor } = useFloor();
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
 
-useEffect(() => {
-  if (visible && editFloorData) {
-    setFloorName(
-      editFloorData.floorName || editFloorData.name || ""
-    );
-  }
-}, [visible, editFloorData]);
+  useEffect(() => {
+    if (visible && editFloorData) {
+      setFloorName(
+        editFloorData.floorName || editFloorData.name || ""
+      );
+    }
+  }, [visible, editFloorData]);
 
-useEffect(() => {
-  if (!visible) {
-    setFloorName("");
-    setFloorNameError("");
-  }
-}, [visible]);
+  useEffect(() => {
+    if (!visible) {
+      setFloorName("");
+      setFloorNameError("");
+    }
+  }, [visible]);
 
   const openSheet = () => {
     Animated.timing(translateY, {
@@ -76,32 +77,32 @@ useEffect(() => {
     }).start();
   };
 
-  
+
   const closeSheet = () => {
     Animated.timing(translateY, {
       toValue: 300,
       duration: 200,
       useNativeDriver: false,
     }).start(() => {
-   
+
       setFloorName("");
       onClose();
     });
   };
 
- useEffect(() => {
-  if (!visible) {
-    setFloorName("");
-    setFloorNameError("");
-   
-  }
-}, [visible]);
+  useEffect(() => {
+    if (!visible) {
+      setFloorName("");
+      setFloorNameError("");
+
+    }
+  }, [visible]);
 
   useEffect(() => {
     if (visible) openSheet();
   }, [visible]);
 
- 
+
   // useEffect(() => {
   //   if (!visible) return;
 
@@ -112,9 +113,9 @@ useEffect(() => {
   //   return () => clearTimeout(timer);
   // }, [visible]);
 
- 
- 
- 
+
+
+
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => g.dy > 4,
@@ -130,172 +131,194 @@ useEffect(() => {
 
   if (!visible) return null;
   const handleAddFloor = async () => {
-const trimmedName = floorName.trim();
+    const trimmedName = floorName.trim();
 
-  if (!trimmedName) {
-    setFloorNameError("Please Enter Floor Name");
-    return;
-  }
+    if (!trimmedName) {
+      setFloorNameError("Please Enter Floor Name");
+      return;
+    }
 
 
-  if (
-    isEdit &&
-    trimmedName ===
+    if (
+      isEdit &&
+      trimmedName ===
       (editFloorData.floorName || editFloorData.name || "")
-  ) {
+    ) {
 
-     setModalType("warning");
-    setMessage("No changes detected");
-    setShowSuccess(true);
+      setModalType("warning");
+      setMessage("No changes detected");
+      setShowSuccess(true);
 
-    setTimeout(() => {
-      setShowSuccess(false);
-    
-    }, 800);
-    return;
-  }
+      setTimeout(() => {
+        setShowSuccess(false);
 
-  let res;
+      }, 800);
+      return;
+    }
 
- if (isEdit) {
-  res = await updateFloor(editFloorData.id, {
-    floorName: trimmedName,
-    isActive: true,
-  });
-}else {
-    // ➕ ADD FLOOR
-    res = await addFloor({
-      hostelId: activeHostelId,
-      floorName:trimmedName,
-    });
-  }
+    let res;
 
-  if (res?.success) {
-    setModalType("success");
-    setMessage(res.data || "Floor updated successfully");
-    setShowSuccess(true);
+    if (isEdit) {
+      res = await updateFloor(editFloorData.id, {
+        floorName: trimmedName,
+        isActive: true,
+      });
+    } else {
+      // ➕ ADD FLOOR
+      res = await addFloor({
+        hostelId: activeHostelId,
+        floorName: trimmedName,
+      });
+    }
 
-    setTimeout(() => {
-      setShowSuccess(false);
-      onSuccess && onSuccess();
-      onClose();
-    }, 800);
-  } else {
-    setFloorNameError(res?.message || "Operation failed");
-  }
-};
-//  const handleAddFloor = async () => {
+    if (res?.success) {
+      setModalType("success");
+      setMessage(res.data || "Floor updated successfully");
+      setShowSuccess(true);
 
-//     let valid = true;
-//   if (!floorName.trim()) {
-//       setFloorNameError("Please Enter FloorName");
-//       valid = false;
-//     }
-//      if (!valid) return;
-//   const res = await addFloor({
-//     hostelId: activeHostelId,
-//     floorName: floorName.trim(),
-//   });
+      setTimeout(() => {
+        setShowSuccess(false);
+        onSuccess && onSuccess();
+        onClose();
+      }, 800);
+    } else {
+      setFloorNameError(res?.message || "Operation failed");
+    }
+  };
+  //  const handleAddFloor = async () => {
 
-//   if (res.success) {
-//      setModalType("success");
-//   setMessage(res.data);
-//   setShowSuccess(true);
+  //     let valid = true;
+  //   if (!floorName.trim()) {
+  //       setFloorNameError("Please Enter FloorName");
+  //       valid = false;
+  //     }
+  //      if (!valid) return;
+  //   const res = await addFloor({
+  //     hostelId: activeHostelId,
+  //     floorName: floorName.trim(),
+  //   });
 
-//   setTimeout(() => {
-//     setShowSuccess(false);
-//     onSuccess && onSuccess();
-//     onClose();  
-//   }, 800);
-//   } else {
-//     setFloorNameError(res.message)
-    
-//   }
-// };
+  //   if (res.success) {
+  //      setModalType("success");
+  //   setMessage(res.data);
+  //   setShowSuccess(true);
 
-const sheetContent = (
-<Animated.View
-  {...panResponder.panHandlers}
-  style={[
-    styles.sheet,
-    {
-      transform: [{ translateY }],
-      marginBottom: safeKeyboardHeight, // 🔥 FIX
-    },
-  ]}
->
-    <View style={styles.handle} />
-     <ScrollView
-    ref={scrollRef}
-    keyboardShouldPersistTaps="handled"
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={{ paddingBottom: 30 }}
-  >
+  //   setTimeout(() => {
+  //     setShowSuccess(false);
+  //     onSuccess && onSuccess();
+  //     onClose();  
+  //   }, 800);
+  //   } else {
+  //     setFloorNameError(res.message)
 
-    <Text style={styles.title}>
-      {isEdit ? "Edit Floor" : "Add Floor"}
-    </Text>
+  //   }
+  // };
 
-    <Text style={styles.label}>
-      Floor Name or No <Text style={{ color: "red" }}>*</Text>
-    </Text>
+  const sheetContent = (
+    <Animated.View
+      {...panResponder.panHandlers}
+      style={[
+        styles.sheet,
+        {
+          transform: [{ translateY }],
+          marginBottom: safeKeyboardHeight, // 🔥 FIX
+        },
+      ]}
+    >
+      <View style={styles.handle} />
+      <ScrollView
+        ref={scrollRef}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 30 }}
+      >
 
-  <TextInput
-  ref={inputRef}
-  placeholder="Enter floor Name or No"
-  style={styles.input}
-  value={floorName}
-  returnKeyType="done"
-  blurOnSubmit={true}
-  onSubmitEditing={handleAddFloor}
-  onFocus={() => {
-    setTimeout(() => {
-      scrollRef.current?.scrollTo({ y: 100, animated: true });
-    }, 200);
-  }}
-  onChangeText={(text) => {
-    const cleaned = text
-      .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
-      .replace(/[^a-zA-Z0-9 _-]/g, "");
+        <Text style={styles.title}>
+          {isEdit ? "Edit Floor" : "Add Floor"}
+        </Text>
 
-    setFloorName(cleaned);
-    setFloorNameError("");
-  }}
-/>
+        <Text style={styles.label}>
+          Floor Name or No <Text style={{ color: "red" }}>*</Text>
+        </Text>
+
+        {/* <TextInput
+          ref={inputRef}
+          placeholder="Enter floor Name or No"
+          style={styles.input}
+          value={floorName}
+          returnKeyType="done"
+          blurOnSubmit={true}
+          onSubmitEditing={handleAddFloor}
+          onFocus={() => {
+            setTimeout(() => {
+              scrollRef.current?.scrollTo({ y: 100, animated: true });
+            }, 200);
+          }}
+          onChangeText={(text) => {
+            const cleaned = text
+              .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+              .replace(/[^a-zA-Z0-9 _-]/g, "");
+
+            setFloorName(cleaned);
+            setFloorNameError("");
+          }}
+        /> */}
+
+        <InputComponent
+          ref={inputRef}
+          value={floorName}
+          returnKeyType="done"
+          blurOnSubmit={true}
+          onSubmitEditing={handleAddFloor}
+          onFocus={() => {
+            setTimeout(() => {
+              scrollRef.current?.scrollTo({ y: 100, animated: true });
+            }, 200);
+          }}
+          onChangeText={(text) => {
+            const cleaned = text
+              .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+              .replace(/[^a-zA-Z0-9 _-]/g, "");
+
+            setFloorName(cleaned);
+            setFloorNameError("");
+          }}
+
+        />
 
 
-  <View style={{paddingBottom:24}}>
-      {floorNameError && (
-      <ErrorMessage message={floorNameError} type="error" />
-    )}
-  </View>
+        <View style={{ paddingBottom: 24 }}>
+          {floorNameError && (
+            <ErrorMessage message={floorNameError} type="error" />
+          )}
+        </View>
 
-    {/* 🔥 BUTTON ALWAYS JUST BELOW INPUT */}
-    <TouchableOpacity style={styles.addBtn} onPress={handleAddFloor}>
-      <Text style={styles.addBtnText}>
-        {isEdit ? "Update Floor" : "Add Floor"}
-      </Text>
-    </TouchableOpacity>
-    </ScrollView>
-  </Animated.View>
-);
+        {/* 🔥 BUTTON ALWAYS JUST BELOW INPUT */}
+        <TouchableOpacity style={styles.addBtn} onPress={handleAddFloor}>
+          <Text style={styles.addBtnText}>
+            {isEdit ? "Update Floor" : "Add Floor"}
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </Animated.View>
+  );
 
 
- return (
-  <>
-    <SuccessModal visible={showSuccess} message={message} type={modalType} />
+  return (
+    <>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
 
-    <View style={styles.overlay}>
-      <TouchableWithoutFeedback onPress={closeSheet}>
-        <View style={{ flex: 1 }} />
-      </TouchableWithoutFeedback>
+      <View style={styles.overlay}>
+        <TouchableWithoutFeedback onPress={closeSheet}>
+          <View style={{ flex: 1 }} />
+        </TouchableWithoutFeedback>
 
-      
-          {sheetContent}
-    
-    </View>
-  </>
-);
+
+        {sheetContent}
+
+      </View>
+    </>
+  );
 
 }
 
@@ -311,14 +334,14 @@ const styles = StyleSheet.create({
     // paddingBottom:20
   },
 
-sheet: {
-  backgroundColor: "#fff",
-  padding: 20,
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
-  maxHeight: "85%",
-  paddingBottom:40   
-},
+  sheet: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    maxHeight: "85%",
+    paddingBottom: 40
+  },
 
   handle: {
     width: 45,
@@ -348,22 +371,22 @@ sheet: {
     borderRadius: 10,
     padding: 12,
     marginBottom: 20,
-  fontFamily: "Gilroy-Regular"
+    fontFamily: "Gilroy-Regular"
   },
 
-addBtn: {
-  backgroundColor: "#1E45E1",
-  paddingVertical: 14,
-  borderRadius: 12,
-  marginBottom: 10,    // 🔥 reduced
-},
+  addBtn: {
+    backgroundColor: "#1E45E1",
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 10,    // 🔥 reduced
+  },
 
   addBtnText: {
     textAlign: "center",
     color: "#fff",
-   fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
-  ErrorFloor:{
-    paddingBottom:30
+  ErrorFloor: {
+    paddingBottom: 30
   }
 });
