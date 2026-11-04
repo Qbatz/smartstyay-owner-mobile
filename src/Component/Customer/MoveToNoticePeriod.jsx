@@ -53,6 +53,7 @@ export default function MoveNoticeSheet({
   console.log("customer", customer)
   console.log("selectedBed", selectedBed)
   const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [reasonFocused, setReasonFocused] = useState(false);
 
   useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", () =>
@@ -446,7 +447,15 @@ export default function MoveNoticeSheet({
 
             <Text style={styles.label}>Request Date <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
-              style={styles.inputBox}
+              // style={styles.inputBox}
+                style={[
+                                    styles.inputBox,
+                                    {
+                                        borderColor: openRequestPicker  ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openRequestPicker ? 1.5 : 1,
+                                    },
+                                 
+                                ]}
               onPress={() => setOpenRequestPicker(true)}
             >
               <Text style={styles.textInput}>
@@ -461,7 +470,15 @@ export default function MoveNoticeSheet({
 
             <Text style={styles.label}>Check-Out Date  <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
-              style={styles.inputBox}
+              // style={styles.inputBox}
+                style={[
+                                    styles.inputBox,
+                                    {
+                                        borderColor: openCheckoutPicker  ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openCheckoutPicker ? 1.5 : 1,
+                                    },
+                                 
+                                ]}
               onPress={() => setOpenCheckoutPicker(true)}
             >
               <Text style={styles.textInput}>
@@ -474,7 +491,8 @@ export default function MoveNoticeSheet({
             )}
 
             <Text style={styles.label}>Reason (Comments)</Text>
-            <TextInput
+            
+            {/* <TextInput
               ref={reasonRef}
               style={styles.textArea}
               value={reason}
@@ -496,7 +514,38 @@ export default function MoveNoticeSheet({
                 }, 200);
               }}
 
-            />
+            /> */}
+            <TextInput
+  ref={reasonRef}
+  style={[
+    styles.textArea,
+    {
+      borderColor: reasonFocused ? "#0085FF" : "#ccc",
+      borderWidth: reasonFocused ? 1.5 : 1,
+    },
+  ]}
+  value={reason}
+  onChangeText={setReason}
+  placeholder="Enter Reason"
+  multiline
+  onFocus={() => {
+    setReasonFocused(true);
+
+    setTimeout(() => {
+      reasonRef.current?.measureLayout(
+        scrollRef.current,
+        (x, y) => {
+          scrollRef.current?.scrollTo({
+            y: y - 20,
+            animated: true,
+          });
+        },
+        () => {}
+      );
+    }, 200);
+  }}
+  onBlur={() => setReasonFocused(false)}
+/>
 
           </ScrollView>
 
