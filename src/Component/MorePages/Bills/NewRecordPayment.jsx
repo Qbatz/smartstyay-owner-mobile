@@ -18,6 +18,7 @@ import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
 import BankIcon from "../../../Assets/Images/bankBlue.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen"
+import InputComponent from "../InputComponent"
 
 
 
@@ -476,16 +477,22 @@ const NewRecordPayment = ({ route }) => {
 
                     <Text style={styles.txtinputhead}>Paid Amount(INR) <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                    <TextInput
+                    {/* <TextInput
                         style={styles.txtInputBox}
                         placeholder="Enter Paid Amount"
                         value={paidAmount}
                         keyboardType="number-pad"
-                        // onChangeText={(text) => {
-                        //     if (text > totalAmount) return;
-                        //     setPaidAmount(text)
-                        // }} 
                         onChangeText={handlePaidAmountChange}
+                    /> */}
+
+                    <InputComponent
+                        type="number"
+                        value={paidAmount}
+                        placeholder="Enter Paid Amount"
+                        // keyboardType="numeric"
+                        keyboardType="number-pad"
+                        onChangeText={handlePaidAmountChange}
+                        error={!!amountError}
                     />
 
                     {amountError && <ErrorMessage message={amountError} type="error" />}
@@ -583,11 +590,11 @@ const NewRecordPayment = ({ route }) => {
                                                         style={styles.selectedPaymentSubText}
                                                         numberOfLines={2}
                                                     >
-                                                          {selectedPaymentMethod?.holderName}
-                                                           {" - "}
+                                                        {selectedPaymentMethod?.holderName}
+                                                        {" - "}
                                                         {selectedPaymentMethod?.bankName}
-                                                       
-                                                      
+
+
                                                     </Text>
                                                 </View>
                                             </>
@@ -736,10 +743,10 @@ const NewRecordPayment = ({ route }) => {
                                                             numberOfLines={2}
                                                         >
                                                             {opt?.holderName}
-                                                             {" - "}
+                                                            {" - "}
                                                             {opt?.bankName}
-                                                           
-                                                            
+
+
                                                         </Text>
                                                     </View>
                                                     {/* CASH / BANK BADGE */}
@@ -817,7 +824,7 @@ const NewRecordPayment = ({ route }) => {
 
                     <Text style={styles.txtinputhead}>Transaction ID</Text>
 
-                    <TextInput
+                    {/* <TextInput
                         style={styles.txtInputBox}
                         value={transactionId}
                         placeholder="Enter Transaction ID"
@@ -828,7 +835,20 @@ const NewRecordPayment = ({ route }) => {
                             );
 
                             setTransactionId(filteredText);
-                        }} />
+                        }} /> */}
+
+                    <InputComponent
+                        value={transactionId}
+                        placeholder="Enter Transaction Id"
+                        onChangeText={(text) => {
+                            const filteredText = text.replace(
+                                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+                                , ""
+                            );
+
+                            setTransactionId(filteredText);
+                        }}
+                    />
 
                     <Text style={styles.txtinputhead}>Notes/Description</Text>
 
