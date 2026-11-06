@@ -21,7 +21,7 @@ import ValidatedInput from "../ValidatedInput"
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 import BankIcon from "../../../Assets/Images/bankBlue.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
-
+import InputComponent from "../InputComponent"
 
 const NewRetainerInvoiceSheet = ({ }) => {
 
@@ -673,16 +673,26 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
                                     <Text style={styles.itemdetailTxt}>Item Detail</Text>
 
-                                    <TextInput
+                                    {/* <TextInput
                                         style={styles.itemTxtInpt}
                                         value={item.itemDetail}
+                                        placeholder="Enter Item"
+                                        onChangeText={(text) => {
+                                            const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
+                                            handleChange(index, "itemDetail", onlyLetters)
+
+                                        }} /> */}
+
+                                    <InputComponent
+                                                                value={item.itemDetail}
                                         placeholder="Enter Item"
                                         onChangeText={(text) => {
                                             // setItems(items.itemDetail(text))
                                             const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
                                             handleChange(index, "itemDetail", onlyLetters)
 
-                                        }} />
+                                        }}
+                                    />
 
 
                                     <Text style={styles.itemdetailTxt}>Retainer Type {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
@@ -734,7 +744,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular', color: '#3C3C4399', marginTop: 12 }}>
                                         Amount {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                                    <ValidatedInput
+                                    {/* <ValidatedInput
                                         keyboardType="numeric"
                                         type="numberOnly"
                                         inputType="numeric"
@@ -744,12 +754,29 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                         onChangeText={(text) => {
                                             const onlyNumbers = text.replace(/[^0-9\s]/g, "")
                                             handleChange(index, "amount", onlyNumbers)
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                [`amount_${index}`]: "",
+                                            }));
+                                        }} /> */}
+
+                                    <InputComponent
+                                        type="number"
+                                        placeholder="Enter  Amount"
+                                        // keyboardType="numeric"
+                                        keyboardType="number-pad"
+                                        value={item.amount}
+                                        onChangeText={(text) => {
+                                            const onlyNumbers = text.replace(/[^0-9\s]/g, "")
+                                            handleChange(index, "amount", onlyNumbers)
                                             // setErrors(prev => ({ ...prev, retainerAmount: "" }))
                                             setErrors(prev => ({
                                                 ...prev,
                                                 [`amount_${index}`]: "",
                                             }));
-                                        }} />
+                                        }}
+                                        error={!!errors[`amount_${index}`]}
+                                    />
 
                                     {errors[`amount_${index}`] && (
                                         <ErrorMessage
@@ -792,7 +819,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
 
                                         return (
                                             <>
-                                            
+
                                                 <Text style={styles.paymentMethodName}>
                                                     {selected?.displayName}
                                                 </Text>
@@ -900,11 +927,10 @@ const NewRetainerInvoiceSheet = ({ }) => {
                             </Text>
 
                             {/* <TouchableOpacity style={[styles.inputBox, { marginTop: 10 }]}> */}
-                            <TextInput
+                            {/* <TextInput
                                 ref={transactionRef}
                                 value={transactionId}
                                 style={[styles.inputBox, { marginTop: 10 }]}
-                                // style={{fontSize:14,fontFamily:'Gilroy-Medium'}}
                                 placeholder="Enter Transaction ID"
                                 onFocus={() => scrollToField(transactionRef)}
                                 onChangeText={(text) => {
@@ -915,7 +941,23 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     setTransactionId(filteredText)
                                 }
 
-                                } />
+                                } /> */}
+
+                            <InputComponent
+                                placeholder="Enter Transaction Id"
+                                ref={transactionRef}
+                                value={transactionId}
+                                onFocus={() => scrollToField(transactionRef)}
+                                onChangeText={(text) => {
+                                    const filteredText = text.replace(
+                                        /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+                                        , ""
+                                    );
+                                    setTransactionId(filteredText)
+                                }
+
+                                }
+                            />
                         </View>
 
                         {/* <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} /> */}
@@ -1188,63 +1230,63 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     paymentMethodRow: {
-    minHeight: 72,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F1F2F4",
-},
-paymentMethodIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 22,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-},
-cashIconBg: {
-    backgroundColor: "#DDF8E8",
-},
-bankIconBg: {
-    backgroundColor: "#DCE9FF",
-},
-paymentMethodDetails: {
-    flex: 1,
-},
-paymentMethodName: {
-    fontSize: 15,
-    color: "#222",
-    fontFamily: "Gilroy-Semibold",
-},
-paymentMethodSubText: {
-    fontSize: 13,
-    color: "#687083",
-    marginTop: 3,
-    fontFamily: "Gilroy-Medium",
-},
-paymentTypeBadge: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 18,
-},
-cashBadge: {
-    backgroundColor: "#DDF8E8",
-},
-bankBadge: {
-    backgroundColor: "#DCE9FF",
-},
-paymentTypeText: {
-    fontSize: 12,
-    fontFamily: "Gilroy-Semibold",
-},
-cashText: {
-    color: "#15803D",
-},
-bankText: {
-    color: "#2563EB",
-},
+        minHeight: 72,
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: "#F1F2F4",
+    },
+    paymentMethodIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 22,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 12,
+    },
+    cashIconBg: {
+        backgroundColor: "#DDF8E8",
+    },
+    bankIconBg: {
+        backgroundColor: "#DCE9FF",
+    },
+    paymentMethodDetails: {
+        flex: 1,
+    },
+    paymentMethodName: {
+        fontSize: 15,
+        color: "#222",
+        fontFamily: "Gilroy-Semibold",
+    },
+    paymentMethodSubText: {
+        fontSize: 13,
+        color: "#687083",
+        marginTop: 3,
+        fontFamily: "Gilroy-Medium",
+    },
+    paymentTypeBadge: {
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 18,
+    },
+    cashBadge: {
+        backgroundColor: "#DDF8E8",
+    },
+    bankBadge: {
+        backgroundColor: "#DCE9FF",
+    },
+    paymentTypeText: {
+        fontSize: 12,
+        fontFamily: "Gilroy-Semibold",
+    },
+    cashText: {
+        color: "#15803D",
+    },
+    bankText: {
+        color: "#2563EB",
+    },
 
 })
 

@@ -94,6 +94,14 @@ const InputComponent = ({
     maxLength,
     multiline = false,
 
+    // NEW PROPS
+    flex,
+    width,
+    autoGrow = false,
+    inputHeight = 48,
+    minInputHeight = 120,
+    maxInputHeight = 220,
+
     leftIcon,
     rightIcon,
     onRightIconPress,
@@ -111,6 +119,8 @@ const InputComponent = ({
     const [showPassword, setShowPassword] = useState(false);
 
     const isPassword = type === "password";
+
+    const [contentHeight, setContentHeight] = useState(minInputHeight);
 
     // ---------------- VALIDATION ----------------
 
@@ -154,7 +164,16 @@ const InputComponent = ({
     };
 
     return (
-        <View style={[styles.wrapper, containerStyle]}>
+        <View
+            style={[
+                styles.wrapper,
+                {
+                    flex: flex,
+                    width: width ?? (flex !== undefined ? undefined : "100%"),
+                },
+                containerStyle,
+            ]}
+        >
 
             {/* LABEL */}
 
@@ -177,6 +196,15 @@ const InputComponent = ({
                         borderColor: getBorderColor(),
                         borderWidth: getBorderWidth(),
                         backgroundColor: getBackgroundColor(),
+
+                        height: multiline
+                            ? autoGrow
+                                ? Math.min(
+                                    maxInputHeight,
+                                    Math.max(minInputHeight, contentHeight + 24)
+                                )
+                                : inputHeight
+                            : inputHeight,
                     },
                 ]}
             >
@@ -198,23 +226,26 @@ const InputComponent = ({
                     placeholder={placeholder}
                     placeholderTextColor="#A0A0A8"
 
-                    keyboardType={
-                        keyboardTypes[type] || "default"
-                    }
-
+                    keyboardType={keyboardTypes[type] || "default"}
                     inputMode={inputType}
 
-                    maxLength={
-                        maxLength ?? maxLengths[type]
-                    }
+                    maxLength={maxLength ?? maxLengths[type]}
 
-                    secureTextEntry={
-                        isPassword && !showPassword
-                    }
-
+                    secureTextEntry={isPassword && !showPassword}
                     editable={!disabled}
-
                     multiline={multiline}
+
+                    scrollEnabled={
+                        multiline && autoGrow && contentHeight >= maxInputHeight
+                    }
+
+                    onContentSizeChange={(event) => {
+                        if (multiline && autoGrow) {
+                            setContentHeight(
+                                event.nativeEvent.contentSize.height
+                            );
+                        }
+                    }}
 
                     onFocus={() => {
                         setIsFocused(true);
@@ -279,7 +310,7 @@ const InputComponent = ({
 // ---------------- STYLES ----------------
 
 const styles = StyleSheet.create({
-    wrapper: {
+wrapper: {
         width: "100%",
     },
 
@@ -302,10 +333,8 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         paddingHorizontal: 16,
-
         backgroundColor: "#FFFFFF",
 
-        // iOS Shadow
         shadowColor: "#000000",
         shadowOffset: {
             width: 0,
@@ -313,8 +342,6 @@ const styles = StyleSheet.create({
         },
         shadowOpacity: 0.06,
         shadowRadius: 2,
-
-        // Android Shadow
         elevation: 1,
     },
 
@@ -331,6 +358,7 @@ const styles = StyleSheet.create({
     multiline: {
         textAlignVertical: "top",
         paddingVertical: 12,
+        height: "100%",
     },
 
     disabledText: {
@@ -357,6 +385,137 @@ const styles = StyleSheet.create({
 });
 
 export default memo(InputComponent)
+
+
+// two input same row 
+// <View style={styles.inputRow}>
+
+//     <InputComponent
+//         label="First Name"
+//         type="name"
+//         value={firstName}
+//         onChangeText={setFirstName}
+//         placeholder="Enter First Name"
+//         flex={1}
+//     />
+
+//     <InputComponent
+//         label="Last Name"
+//         type="name"
+//         value={lastName}
+//         onChangeText={setLastName}
+//         placeholder="Enter Last Name"
+//         flex={1}
+//     />
+
+// </View>
+
+// ==> 
+
+//  inputRow: {
+//         flexDirection: "row",
+//         alignItems: "flex-start",
+//         gap: 12,
+//         width: "100%",
+//     },
+
+
+// set button ==> 
+
+//     <InputComponent
+//     label="Custom Rent Amount"
+//     type="numberOnly"
+//     value={customRent}
+//     onChangeText={setCustomRent}
+//     placeholder="Enter Rent Amount"
+
+//     rightIcon={
+//         <View style={styles.setButton}>
+//             <Text style={styles.setButtonText}>
+//                 ✓ Set
+//             </Text>
+//         </View>
+//     }
+//     onRightIconPress={handleSetRent}
+// />
+
+
+// set button style ==> 
+//     setButton: {
+//     backgroundColor: "#EAF0FF",
+//     paddingHorizontal: 16,
+//     paddingVertical: 10,
+//     borderRadius: 12,
+// },
+
+// setButtonText: {
+//     color: "#165DFF",
+//     fontSize: 14,
+//     fontFamily: "Gilroy-SemiBold",
+// },
+
+
+
+// description input 
+
+{/* <InputComponent
+    label="Description"
+    type="description"
+    value={description}
+    onChangeText={setDescription}
+    placeholder="Enter the description"
+    multiline
+    autoGrow
+    minInputHeight={120}
+    maxInputHeight={220}
+/> */}
+
+// ithu description ku fixed height vaikka style ==>   inputHeight={150}
+
+
+
+// Same row – Input + Dropdown
+
+{/* <View style={styles.inputRow}>
+
+    <InputComponent
+        label="Quantity"
+        type="numberOnly"
+        value={quantity}
+        onChangeText={setQuantity}
+        placeholder="Enter Quantity"
+        flex={1.1}
+    />
+
+    <View style={{ flex: 1 }}>
+        <Text style={styles.label}>Unit</Text>
+
+        <YourDropdown
+            value={unit}
+            onChange={setUnit}
+            placeholder="Select Category"
+        />
+    </View>
+
+</View> */}
+
+// styles ==> 
+
+// inputRow: {
+//     flexDirection: "row",
+//     alignItems: "flex-start",
+//     gap: 12,
+//     width: "100%",
+// },
+
+
+
+// flex={1}    // Equal width
+// flex={1.5}  // More width
+// flex={2}    // Double proportion
+// width={150} // Fixed width
+
+
 
 
 

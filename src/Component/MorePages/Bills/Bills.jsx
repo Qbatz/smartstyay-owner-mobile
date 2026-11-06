@@ -111,7 +111,7 @@ import RetainerFiltersheet from "./RetainerFilterSheet"
 import { useHideTabbarOnScroll }
   from "../../../Utils/useHideTabbarOnScroll";
 import { useCustomer } from "../../../Context/CustomerContext";
-
+import InputComponent from "../InputComponent"
 
 
 
@@ -7184,7 +7184,47 @@ export default function BillsDesign({ route }) {
                       Refund amount <Text style={{ color: "red", fontSize: 16 }}>*</Text>
                     </Text>
 
-                    <TextInput
+                     <InputComponent
+                                  type="number"
+                                  placeholder="Enter Amount"
+                                  // keyboardType="numeric"
+                                  keyboardType="number-pad"
+                            value={refundAmount}
+                      onChangeText={(val) => {
+
+                        let cleaned = val.replace(/[^0-9.]/g, "");
+
+                        const parts = cleaned.split(".");
+                        if (parts.length > 2) {
+                          cleaned = parts[0] + "." + parts[1];
+                        }
+
+                        if (parts[1]?.length > 2) {
+                          cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                        }
+
+                        const num = Number(cleaned);
+                        const max = Math.abs(
+                          Number(refundInitDetails?.pendingRefund || 0)
+                        );
+
+                        if (num > max) {
+                          setRefundAmountError(`Amount cannot exceed ₹${max}`);
+                          return;
+                        }
+
+                        setRefundAmount(cleaned);
+
+                        if (cleaned && (!num || num <= 0)) {
+                          setRefundAmountError("Enter valid amount");
+                        } else {
+                          setRefundAmountError("");
+                        }
+                      }}
+                                  error={!!refundAmountError}
+                                />
+
+                    {/* <TextInput
                       style={styles.input}
                       placeholder="Enter Amount"
                       keyboardType="numeric"
@@ -7221,6 +7261,7 @@ export default function BillsDesign({ route }) {
                         }
                       }}
                     />
+                     */}
                     {/* <TextInput
                     style={styles.input}
                     placeholder="Enter Amount"
@@ -7648,10 +7689,23 @@ export default function BillsDesign({ route }) {
 
                     {/* TRANSACTION ID */}
                     <Text style={[styles.label, { marginTop: 7 }]}>Transaction ID</Text>
-                    <TextInput
+                    {/* <TextInput
                       style={styles.input}
                       placeholder="Enter transaction ID"
-                      // keyboardType="numeric"
+                      value={transactionId}
+                      onChangeText={(text) => {
+                        const noEmoji = text.replace(
+                          /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu,
+                          ""
+                        );
+                        setTransactionId(noEmoji)
+                      }
+                      }
+                    /> */}
+
+
+                    <InputComponent
+                      placeholder="Enter Transaction Id"
                       value={transactionId}
                       onChangeText={(text) => {
                         const noEmoji = text.replace(
@@ -10968,7 +11022,7 @@ const styles = StyleSheet.create({
   reviewRequiredText: {
     color: "#FFFFFF",
     fontSize: 11,
-     fontFamily: "Gilroy-Medium",
+    fontFamily: "Gilroy-Medium",
   },
 
   reviewBillsButton: {
