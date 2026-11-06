@@ -27,7 +27,7 @@ import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png"
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 import BankIcon from "../../../Assets/Images/bankBlue.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
-
+import InputComponent from "../InputComponent"
 
 const RefundPaymentSheet = ({
   visible,
@@ -742,7 +742,8 @@ const RefundPaymentSheet = ({
             <Text style={styles.label}>
               Refund amount <Text style={{ color: "red", fontSize: 16 }}>*</Text>
             </Text>
-            <TextInput
+
+            {/* <TextInput
               style={styles.input}
               placeholder="Enter Amount"
               keyboardType="numeric"
@@ -775,23 +776,44 @@ const RefundPaymentSheet = ({
                   setRefundAmountError("");
                 }
               }}
-            // onChangeText={(val) => {
 
-            //   const numericValue = val.replace(/[^0-9]/g, "");
-            //   const max = Math.abs(
-            //     Number(refundInitDetails?.pendingRefund || 0)
-            //   );
+            /> */}
 
-            //   const num = Number(numericValue || 0);
+            <InputComponent
+              type="number"
+              placeholder="Enter Amount"
+              // keyboardType="numeric"
+              keyboardType="number-pad"
+              value={refundAmount}
+              onChangeText={(val) => {
+                let cleaned = val.replace(/[^0-9.]/g, "");
 
-            //   if (num > max) {
-            //     setRefundAmountError(`Amount cannot exceed ₹${max}`);
-            //     return;
-            //   }
+                const parts = cleaned.split(".");
+                if (parts.length > 2) {
+                  cleaned = parts[0] + "." + parts[1];
+                }
 
-            //   setRefundAmount(numericValue);
-            //   setRefundAmountError("");
-            // }}
+                if (parts[1]?.length > 2) {
+                  cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                }
+
+                const num = Number(cleaned);
+                const max = Math.abs(Number(refundInitDetails?.pendingRefund || 0));
+
+                if (num > max) {
+                  setRefundAmountError(`Amount cannot exceed ₹${max}`);
+                  return;
+                }
+
+                setRefundAmount(cleaned);
+
+                if (cleaned && (!num || num <= 0)) {
+                  setRefundAmountError("Enter valid amount");
+                } else {
+                  setRefundAmountError("");
+                }
+              }}
+              error={!!refundAmountError}
             />
 
 
@@ -907,11 +929,11 @@ const RefundPaymentSheet = ({
                             style={styles.refundPaymentSubText}
                             numberOfLines={2}
                           >
-                             {selectedPayment?.holderName}
-                                {" - "}
+                            {selectedPayment?.holderName}
+                            {" - "}
                             {selectedPayment?.bankName}
-                         
-                           
+
+
                           </Text>
                         </View>
 
@@ -1014,11 +1036,11 @@ const RefundPaymentSheet = ({
                                 style={styles.paymentMethodSubText}
                                 numberOfLines={2}
                               >
-                                  {opt?.holderName}
-                                     {" - "}
+                                {opt?.holderName}
+                                {" - "}
                                 {opt?.bankName}
-                             
-                              
+
+
                               </Text>
                             </View>
 
@@ -1090,10 +1112,22 @@ const RefundPaymentSheet = ({
 
             {/* TRANSACTION ID */}
             <Text style={[styles.label, { marginTop: 13 }]}>Transaction ID</Text>
-            <TextInput
+            {/* <TextInput
               style={styles.input}
               placeholder="Enter transaction ID"
-              // keyboardType="numeric"
+              value={transactionId}
+              onChangeText={(text) => {
+                const noEmoji = text.replace(
+                  /[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu,
+                  ""
+                );
+                setTransactionId(noEmoji)
+              }
+              }
+            /> */}
+
+            <InputComponent
+              placeholder="Enter Transaction Id"
               value={transactionId}
               onChangeText={(text) => {
                 const noEmoji = text.replace(

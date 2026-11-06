@@ -27,7 +27,7 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import minMax from "dayjs/plugin/minMax";
 dayjs.extend(minMax);
-
+import InputComponent from "../../MorePages/InputComponent"
 
 
 export default function ConfirmReassignSheet({
@@ -488,7 +488,14 @@ useEffect(() => {
     setShowDatePicker(true);  
   }, 150);
 }}
-            style={styles.inputBoxDate}
+                                style={[
+                                    styles.inputBoxDate,
+                                    {
+                                        borderColor: showDatePicker  ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: showDatePicker ? 1.5 : 1,
+                                    },
+                                 
+                                ]}
           >
             <Text style={{ color: selectedDate ? "#000" : "#999" ,fontFamily: "Gilroy-Regular" }}>
               {selectedDate
@@ -534,7 +541,7 @@ useEffect(() => {
 
           </View>
          
-            <View style={styles.inputBox} >
+            {/* <View style={styles.inputBox} >
               <TextInput
                 style={styles.inputField}
                 placeholder="Enter Amount"
@@ -549,7 +556,22 @@ useEffect(() => {
                 keyboardType="numeric"
               />
 
-            </View>
+            </View> */}
+
+               <InputComponent
+                          placeholder="Enter Amount"
+                value={rentAmount}
+                onChangeText={(t) => {
+                  const cleaned = t.replace(/[^0-9]/g, "");
+                  setRentAmount(cleaned);
+                  // setRentAmount(text);
+                  setRentError("");
+                }}
+                placeholderTextColor="#999"
+                keyboardType="numeric"
+                             error={!!rentError}
+            
+                        />
             {rentError && (
               <ErrorMessage message={rentError} type="error" />
             )}

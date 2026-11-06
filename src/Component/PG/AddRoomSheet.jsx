@@ -14,6 +14,7 @@ import { useFloor } from "../../Context/PayingGuestContext";
 import { CommonContexts } from "../../Context/CommonContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
+import InputComponent from "../MorePages/InputComponent"
 
 export default function AddRoomSheet({
   visible,
@@ -197,8 +198,23 @@ export default function AddRoomSheet({
               Room Name or No <Text style={{ color: "red" }}>*</Text>
             </Text>
 
-            <TextInput
+            {/* <TextInput
               style={styles.input}
+              placeholder="Enter Room Name"
+              value={roomName}
+              returnKeyType="done"
+              onSubmitEditing={handleAddRoom}
+              onChangeText={(t) => {
+                const cleaned = t
+                  .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "")
+                  .replace(/\s{2,}/g, " ");
+
+                setRoomName(cleaned);
+                setRoomError("");
+              }}
+            /> */}
+
+            <InputComponent
               placeholder="Enter Room Name"
               value={roomName}
               returnKeyType="done"
@@ -211,20 +227,22 @@ export default function AddRoomSheet({
                 setRoomName(cleaned);
                 setRoomError("");
               }}
+                error={!!roomError}
+
             />
 
 
             {roomError && <ErrorMessage message={roomError} type="error" />}
 
-                <View style={styles.footer}>
-            <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
-              <Text style={styles.addBtnText}>{isEdit ? "Edit Room" : "Add Room"}</Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.footer}>
+              <TouchableOpacity style={styles.addBtn} onPress={handleAddRoom}>
+                <Text style={styles.addBtnText}>{isEdit ? "Edit Room" : "Add Room"}</Text>
+              </TouchableOpacity>
+            </View>
           </ScrollView>
 
           {/* 🔥 STICKY BUTTON */}
-      
+
 
         </Animated.View>
 

@@ -21,6 +21,8 @@ import { useFloor } from "../../../Context/PayingGuestContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import InputComponent from "../../MorePages/InputComponent"
+
 
 export default function InactiveTenantSheet({ visible, onClose, selectedBed, selectedItem, onSuccess, bookedItems, onBedAdded }) {
   const translateY = useRef(new Animated.Value(400)).current;
@@ -363,7 +365,14 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             </Text>
 
             <TouchableOpacity
-              style={styles.dateBox}
+              // style={styles.dateBox}
+                                    style={[
+                                    styles.dateBox,
+                                    {
+                                        borderColor: openJoinDatePic ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openJoinDatePic ? 1.5 : 1,
+                                    },
+                                ]}
               onPress={() => {
                 Keyboard.dismiss();      // ✅ close keyboard first
                 setTimeout(() => {
@@ -389,7 +398,14 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
               </Text>
               {/* INPUT */}
               <TouchableOpacity
-                style={styles.inputBox}
+                // style={styles.inputBox}
+                    style={[
+                                    styles.inputBox,
+                                    {
+                                        borderColor: showRefundFrom ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: showRefundFrom ? 1.5 : 1,
+                                    },
+                                ]}
                 onPress={() => {
                   setRefundFromError("");
                   setShowRefundFrom(v => !v);
@@ -481,13 +497,25 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
             <Text style={styles.label}>Transaction ID</Text>
 
-            <TextInput
+            {/* <TextInput
               placeholder="Enter Transaction ID"
               style={{ borderWidth: 1, borderColor: "#ccc", borderRadius: 10, marginTop: 10, paddingHorizontal: 12, fontFamily: "Gilroy-Regular", paddingVertical: 15 }}
               value={transactionId}
               onChangeText={(text) => {
                 setTransactionID(text)
-              }} />
+              }} /> */}
+
+            <InputComponent
+              // multiline={true}
+              type="text"
+              placeholder="Enter Transaction ID"
+              // keyboardType="numeric"
+              value={transactionId}
+              onChangeText={(text) => {
+                setTransactionID(text)
+              }}
+
+            />
 
             {/* Reason */}
             <Text style={[styles.label, { marginTop: 12 }]}>

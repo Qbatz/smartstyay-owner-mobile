@@ -27,6 +27,7 @@ import ArrowLeft from "../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import InputComponent from "../MorePages/InputComponent";
 
 const ITEM_HEIGHT = 14;
 const MIN_ITEMS = 3;

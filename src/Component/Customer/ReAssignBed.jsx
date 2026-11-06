@@ -24,6 +24,7 @@ import SuccessModal from "../../ToastFile/ToastPage";
 import { Calendar } from "react-native-calendars";
 import RoomIcon from "../../Assets/Images/Room_Icon.png"
 import BedIcon from "../../Assets/Images/Bed_Icon.png"
+import InputComponent from "../MorePages/InputComponent"
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -371,8 +372,8 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   };
 
 
-console.log(beds)
-console.log(roomSelected)
+  console.log(beds)
+  console.log(roomSelected)
 
   const filteredBeds = beds.filter(bed => {
     if (!floorSelected || !roomSelected) return false;
@@ -380,7 +381,7 @@ console.log(roomSelected)
     return (
       bed.floorId === floorSelected.id &&
       bed.roomId === roomSelected.id &&
-     ( bed.currentStatus === "VACANT" )|| (bed.currentStatus == "NOTICE")
+      (bed.currentStatus === "VACANT") || (bed.currentStatus == "NOTICE")
     );
 
   });
@@ -462,10 +463,10 @@ console.log(roomSelected)
       }
       else {
         console.log(res.message || "Change bed failed")
-         setModalType("error");
-          setMessage(res.data || res?.message);
-         setShowSuccess(true);
-          setTimeout(() => {
+        setModalType("error");
+        setMessage(res.data || res?.message);
+        setShowSuccess(true);
+        setTimeout(() => {
           setShowSuccess(false);
         }, 800);
       }
@@ -672,7 +673,14 @@ console.log(roomSelected)
 
             <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
-              style={styles.inputBoxdate}
+              // style={styles.inputBoxdate}
+                    style={[
+                                    styles.inputBoxdate,
+                                    {
+                                        borderColor: openDatePicker ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDatePicker ? 1.5 : 1,
+                                    },
+                                ]}
               onPress={() => setOpenDatePicker(true)}
             >
               <Text>
@@ -692,7 +700,15 @@ console.log(roomSelected)
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                style={[styles.select, isFloorDisabled && styles.disabledSelect]}
+                // style={[styles.select, isFloorDisabled && styles.disabledSelect]}
+                   style={[
+                                    styles.select,
+                                    {
+                                        borderColor: openDropdown === "floor" ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDropdown === "floor" ? 1.5 : 1,
+                                    },
+                                    isFloorDisabled && styles.disabledSelect
+                                ]}
                 disabled={isFloorDisabled}
                 onPress={() => toggleDropdown("floor")}
               >
@@ -750,7 +766,15 @@ console.log(roomSelected)
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                style={[styles.select, isRoomDisabled && styles.disabledSelect]}
+                // style={[styles.select, isRoomDisabled && styles.disabledSelect]}
+                                   style={[
+                                    styles.select,
+                                    {
+                                        borderColor: openDropdown === "room" ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDropdown === "room" ? 1.5 : 1,
+                                    },
+                                    isRoomDisabled && styles.disabledSelect
+                                ]}
                 disabled={isRoomDisabled}
                 onPress={() => toggleDropdown("room")}
               >
@@ -811,7 +835,15 @@ console.log(roomSelected)
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                style={[styles.select, isBedDisabled && styles.disabledSelect]}
+                // style={[styles.select, isBedDisabled && styles.disabledSelect]}
+                                                   style={[
+                                    styles.select,
+                                    {
+                                        borderColor: openDropdown === "bed" ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDropdown === "bed" ? 1.5 : 1,
+                                    },
+                                    isBedDisabled && styles.disabledSelect
+                                ]}
                 disabled={isBedDisabled}
                 onPress={() => toggleDropdown("bed")}
               >
@@ -830,7 +862,7 @@ console.log(roomSelected)
                       <View style={styles.dropdownOverlay} />
                     </TouchableWithoutFeedback>
                   )}
-                  {console.log("ballu",filteredBeds)}
+                  {console.log("ballu", filteredBeds)}
 
                   <ScrollView
                     style={{ maxHeight: 160 }}
@@ -844,7 +876,7 @@ console.log(roomSelected)
                         <Text style={styles.emptyText}>No bed available</Text>
                       </View>
                     ) : (
-                      
+
                       filteredBeds.map((b) => (
                         <TouchableOpacity
                           key={b.bedId}
@@ -908,7 +940,25 @@ console.log(roomSelected)
             </View>
 
 
-            <View
+            <InputComponent
+              type="number"
+              placeholder="Enter Amount"
+              keyboardType="numeric"
+              value={amount}
+              onChangeText={(text) => {
+                const onlyNum = text.replace(/[^0-9]/g, "");
+                setAmount(onlyNum);
+                setRentError("");
+              }}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollToEnd({ animated: true });
+                }, 200);
+              }}
+              error={!!rentError}
+            />
+
+            {/* <View
               style={[
                 styles.inputBox,
                 sameAsCurrent && styles.disabledInput,
@@ -932,7 +982,7 @@ console.log(roomSelected)
                 style={{ flex: 1, color: sameAsCurrent ? "#000" : "#000" }}
               />
 
-            </View>
+            </View> */}
 
             {rentError && (
               <ErrorMessage message={rentError} type="error" />
@@ -940,8 +990,8 @@ console.log(roomSelected)
 
 
             <Text style={styles.label}>Reason </Text>
-            <View style={styles.textArea}>
-              <TextInput
+            {/* <View style={styles.textArea}> */}
+              {/* <TextInput
                 multiline
                 value={reason}
                 onChangeText={setReason}
@@ -952,8 +1002,22 @@ console.log(roomSelected)
                     scrollRef.current?.scrollToEnd({ animated: true });
                   }, 200);
                 }}
+              /> */}
+
+              <InputComponent
+                multiline={true}
+                type="text"
+                placeholder="Enter Comments"
+                keyboardType="numeric"
+                value={reason}
+                onChangeText={setReason}
+                 onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollToEnd({ animated: true });
+                  }, 200);
+                }}
               />
-            </View>
+            {/* </View> */}
 
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
@@ -1155,6 +1219,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 14,
+    marginBottom: 10,
   },
 
   sameRow: {
