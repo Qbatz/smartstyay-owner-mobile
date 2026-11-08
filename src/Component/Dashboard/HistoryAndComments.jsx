@@ -1,4 +1,4 @@
-import React, { useState,useContext,useEffect } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,30 +12,44 @@ import {
 import { CommonContexts } from "../../Context/CommonContext";
 import { NotificationContext } from "../../Context/NotificationContext";
 import { ComplaintContext } from "../../Context/ComplaintContext";
+import { ExpensesContext } from "../../Context/ExpensesContext";
 import SuccessModal from "../../ToastFile/ToastPage";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
+import leftArrow from "../../Assets/Images/Arrow_left.png";
 
 
-export default function HistoryAndComments({ navigation,route }) {
-     const { notificationId, item } = route.params || {};
+
+export default function HistoryAndComments({ navigation, route }) {
+  const { notificationId, item } = route.params || {};
   const [comment, setComment] = useState("");
-  const [complaintId,setCompliantId] = useState("")
-  const { getNotificationsByHostel,readNotificationsByHostel,getComplaintUpdates } = useContext(NotificationContext);
-    const { activeHostelId } = useContext(CommonContexts);
-     const { addComplaintComment } = useContext(ComplaintContext);
-     const [modalType, setModalType] = useState("success");
-       const [showSuccess, setShowSuccess] = useState(false);
-       const [message, setMessage] = useState("");
-       const [commentsList,setCommentsList] = useState([])
-    console.log('notificationId',item)
+  const [complaintId, setCompliantId] = useState("")
+  const { getNotificationsByHostel, readNotificationsByHostel, getComplaintUpdates } = useContext(NotificationContext);
+  const { activeHostelId } = useContext(CommonContexts);
+  const { addComplaintComment } = useContext(ComplaintContext);
+  const { expensesList, GetExpenseList, rolePermission,
+    GetRoleBasedPermission, profileDetails, GetProfileDetails, loading } = useContext(ExpensesContext);
+  const [modalType, setModalType] = useState("success");
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [message, setMessage] = useState("");
+  const [commentsList, setCommentsList] = useState([])
+  console.log('notificationId', item)
 
-     const [updates, setUpdates] = useState([]);
+  const [updates, setUpdates] = useState([]);
+
+  const getInitials = (profile) => {
+    if (profile?.initial) return profile.initial;
+
+    const first = profile?.firstName?.[0] || "";
+    const last = profile?.lastName?.[0] || "";
+
+    return (first + last).toUpperCase();
+  };
 
   useEffect(() => {
-    if(notificationId){
- fetchUpdates();
+    if (notificationId) {
+      fetchUpdates();
     }
-   
+
   }, []);
 
   const fetchUpdates = async () => {
@@ -43,11 +57,11 @@ export default function HistoryAndComments({ navigation,route }) {
     if (res.success) {
       setUpdates(res.data.complaintUpdates);
       setCompliantId(res.data.complaintId)
-      console.log("priyarajesh",res.data)
+      console.log("priyarajesh", res.data)
       setCommentsList(res.data)
     }
   };
-  console.log("complaintId",complaintId)
+  console.log("complaintId", complaintId)
 
   const getColor = (status) => {
     switch (status) {
@@ -61,62 +75,62 @@ export default function HistoryAndComments({ navigation,route }) {
         return "#CBD5E1";
     }
   };
-const [commentError,setCommentError] = useState("")
+  const [commentError, setCommentError] = useState("")
   const handleAddComment = async () => {
-   if (!comment.trim()) {
-    setCommentError("Please enter a comment");
-    return;
-  }
+    if (!comment.trim()) {
+      setCommentError("Please enter a comment");
+      return;
+    }
 
 
- 
 
-  const res = await addComplaintComment({
-    complaintId: notificationId, 
-    message: comment,
-  });
 
-  if (res.success) {
-    
- setComment("")
-       setModalType("success");
+    const res = await addComplaintComment({
+      complaintId: notificationId,
+      message: comment,
+    });
+
+    if (res.success) {
+
+      setComment("")
+      setModalType("success");
       setMessage(res.message);
       setShowSuccess(true);
-        fetchUpdates();
+      fetchUpdates();
       setTimeout(() => {
         setShowSuccess(false);
       }, 800);
-   
-  }
-};
+
+    }
+  };
 
 
   return (
     <>
-     <SuccessModal visible={showSuccess} message={message} type={modalType} />
-    <SafeAreaView style={styles.container}>
-      {/* HEADER */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.back}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>History & Comments</Text>
-      </View>
+      <SuccessModal visible={showSuccess} message={message} type={modalType} />
+      <SafeAreaView style={styles.container}>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+             <Image source={leftArrow} style={styles.backArrow} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>History & Comments</Text>
+        </View>
 
-     
 
-     <ScrollView
-  showsVerticalScrollIndicator={false}
-  keyboardShouldPersistTaps="handled"
-  contentContainerStyle={{ paddingBottom: 120 }} // 👈 space for keyboard
->
-        {/* ADD COMMENT */}
-        <View style={styles.addCommentRow}>
-          {/* <Image
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 120 }} // 👈 space for keyboard
+        >
+          {/* ADD COMMENT */}
+          <View style={styles.addCommentRow}>
+            {/* <Image
             source={{ uri: "https://i.pravatar.cc/100" }}
             style={styles.avatar}
           /> */}
-          <View style={styles.avatarWrapper}>
+            {/* <View style={styles.avatarWrapper}>
   {item.profilePic ? (
     <Image
       source={{ uri: item.profilePic }}
@@ -129,68 +143,81 @@ const [commentError,setCommentError] = useState("")
       </Text>
     </View>
   )}
-</View>
+</View> */}
 
-          <View style={{ flex: 1 }}>
-            <TextInput
-              placeholder="Add new Comment"
-              value={comment}
-              onChangeText={(text) => {
-  setComment(text);
-  setCommentError("");
-}}
+            <View style={styles.avatarWrapper}>
+              {profileDetails?.profilePic ? (
+                <Image
+                  source={{ uri: profileDetails?.profilePic }}
+                  style={styles.avatar}
+                />
+              ) : (
+                <Text style={styles.initialText}>
+                  {getInitials(profileDetails)}
+                </Text>
+              )}
+            </View>
 
-              multiline
-              style={styles.input}
-            />
+            <View style={{ flex: 1, marginLeft:5 }}>
+              <TextInput
+                placeholder="Add new Comment"
+                value={comment}
+                onChangeText={(text) => {
+                  setComment(text);
+                  setCommentError("");
+                }}
+
+                multiline
+                style={styles.input}
+              />
               {commentError && <ErrorMessage message={commentError} type="error" />}
-            <TouchableOpacity style={styles.addBtn} onPress={handleAddComment}>
-              <Text style={styles.addBtnText}>Add Comment</Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.addBtn} onPress={handleAddComment}>
+                <Text style={styles.addBtnText}>Add Comment</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
 
-        {/* TIMELINE */}
-      {updates.map((item, index) => (
-  <View key={index} style={styles.timelineRow}>
-    {/* LEFT ICON + LINE */}
-    <View style={styles.leftCol}>
-      <View
-        style={[
-          styles.iconCircle,
-          { backgroundColor: "#2563EB" },
-        ]}
-      >
-        <Text style={styles.check}>✓</Text>
-      </View>
+          {/* TIMELINE */}
+          {updates.map((item, index) => (
+            <View key={index} style={styles.timelineRow}>
+              {/* LEFT ICON + LINE */}
+              <View style={styles.leftCol}>
+                <View
+                  style={[
+                    styles.iconCircle,
+                    { backgroundColor: "#2563EB" },
+                  ]}
+                >
+                  <Text style={styles.check}>✓</Text>
+                </View>
 
-      {index !== updates.length - 1 && (
-        <View style={styles.verticalLine} />
-      )}
-    </View>
+                {index !== updates.length - 1 && (
+                  <View style={styles.verticalLine} />
+                )}
+              </View>
 
-    {/* CONTENT */}
-    <View style={styles.content}>
-      <Text style={styles.title}>
-        {item.update}
-      </Text>
+              {/* CONTENT */}
+              <View style={styles.content}>
+                <Text style={styles.title}>
+                  {item.update}
+                </Text>
 
-      <Text style={styles.desc}>
-        {item.description}
-      </Text>
+                <Text style={styles.desc}>
+                  {item.description}
+                </Text>
 
-      <Text style={styles.time}>
-        Added at {item.updateAt}, {item.updatedTime}
-      </Text>
+                <Text style={styles.time}>
+                  Added at {item?.updatedAt}, {item?.updatedTime}
+                </Text>
 
-    {/* {item.comments?.length > 0 && (
+                {/* {item.comments?.length > 0 && (
   <View style={styles.commentBox}>
     <Text style={styles.commentText}>
       {item.comments[0].comment}
     </Text>
   </View>
 )} */}
-{/* {item.comments?.map((c, i) => (
+                {/* {item.comments?.map((c, i) => (
   <View key={i} style={styles.commentBox}>
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       
@@ -230,62 +257,62 @@ const [commentError,setCommentError] = useState("")
     </Text>
   </View>
 ))} */}
-{item.comments?.map((c, i) => (
-  <View key={i} style={styles.commentWrapper}>
+                {item.comments?.map((c, i) => (
+                  <View key={i} style={styles.commentWrapper}>
 
-    {/* Header row */}
-    <View style={styles.commentHeader}>
-      {/* Avatar */}
-      {c.profilePic ? (
-        <Image
-          source={{ uri: c.profilePic }}
-          style={styles.commentAvatar}
-        />
-      ) : (
-        <View style={styles.commentAvatarFallback}>
-          <Text style={styles.commentAvatarText}>
-            {c.initials}
-          </Text>
-        </View>
-      )}
+                    {/* Header row */}
+                    <View style={styles.commentHeader}>
+                      {/* Avatar */}
+                      {c.profilePic ? (
+                        <Image
+                          source={{ uri: c.profilePic }}
+                          style={styles.commentAvatar}
+                        />
+                      ) : (
+                        <View style={styles.commentAvatarFallback}>
+                          <Text style={styles.commentAvatarText}>
+                            {c.initials}
+                          </Text>
+                        </View>
+                      )}
 
-      {/* Name + action */}
-      <Text style={styles.commentUser}>
-        <Text style={{ fontWeight: "700" }}>{c.commentedBy}</Text>
-        <Text style={{ color: "#6B7280" }}> added a comment</Text>
-      </Text>
-    </View>
+                      {/* Name + action */}
+                      <Text style={styles.commentUser}>
+                        <Text style={{ fontWeight: "700" }}>{c.commentedBy}</Text>
+                        <Text style={{ color: "#6B7280" }}> added a comment</Text>
+                      </Text>
+                    </View>
 
-    {/* Time */}
-    <Text style={styles.commentTime}>
-      Added at {c.date}, {c.time}
-    </Text>
+                    {/* Time */}
+                    <Text style={styles.commentTime}>
+                      Added at {c.date}, {c.time}
+                    </Text>
 
-    {/* Comment bubble */}
-    <View style={styles.commentBubble}>
-      <Text style={styles.commentText}>{c.comment}</Text>
-    </View>
+                    {/* Comment bubble */}
+                    <View style={styles.commentBubble}>
+                      <Text style={styles.commentText}>{c.comment}</Text>
+                    </View>
 
-  </View>
-))}
+                  </View>
+                ))}
 
 
-    </View>
-  </View>
-))}
+              </View>
+            </View>
+          ))}
 
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
     </>
   );
 }
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16, paddingTop:50 },
+  container: { flex: 1, backgroundColor: "#fff", padding: 16, paddingTop: 50 },
 
   header: {
     flexDirection: "row",
     alignItems: "center",
-  
+
   },
   back: { fontSize: 22, marginRight: 8 },
   headerTitle: { fontSize: 18, fontWeight: "700" },
@@ -299,32 +326,39 @@ const styles = StyleSheet.create({
   addCommentRow: {
     flexDirection: "row",
     marginTop: 20,
+    marginBottom:10,
+    // alignItems:'center',
+    justifyContent:'center'
   },
- avatarWrapper: {
-  width: 40,
-  height: 40,
-  marginRight: 10,
-},
+  avatarWrapper: {
+   width: 40,
+    height: 40,
+    borderRadius: 25,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-avatar: {
-  width: 40,
-  height: 40,
-  borderRadius: 20,
-},
+  avatar: {
+    width: 35,
+    height: 35,
+    borderRadius: 17,
+    marginRight:15,
+  },
 
-initialCircle: {
-  width: 40,
-  height: 40,
-  borderRadius: 20,
-  backgroundColor: "#E5E7EB",
-  justifyContent: "center",
-  alignItems: "center",
-},
+  initialCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-initialText: {
-  fontWeight: "700",
-  color: "#111827",
-},
+  initialText: {
+    fontWeight: "700",
+    color: "#111827",
+  },
 
   input: {
     borderWidth: 1,
@@ -366,7 +400,7 @@ initialText: {
   content: { flex: 1 },
   title: { fontWeight: "700", fontSize: 14 },
   desc: { fontSize: 13, color: "#374151", marginTop: 2 },
-  time: { fontSize: 11, color: "#9CA3AF", marginTop: 4 },
+  time: { fontSize: 12, color: "#9CA3AF", marginTop: 4 },
 
   commentBox: {
     backgroundColor: "#F9FAFB",
@@ -378,61 +412,81 @@ initialText: {
   },
   commentText: { fontSize: 13 },
   commentWrapper: {
-  marginTop: 16,
-},
+    marginTop: 16,
+  },
 
-commentHeader: {
-  flexDirection: "row",
-  alignItems: "center",
-  marginBottom: 6,
-},
+  commentHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 6,
+  },
 
-commentAvatar: {
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  marginRight: 10,
-},
+  commentAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    marginRight: 10,
+  },
 
-commentAvatarFallback: {
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  backgroundColor: "#E5E7EB",
-  justifyContent: "center",
-  alignItems: "center",
-  marginRight: 10,
-},
+  commentAvatarFallback: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
 
-commentAvatarText: {
-  fontWeight: "700",
-  fontSize: 13,
-  color: "#374151",
-},
+  commentAvatarText: {
+    fontWeight: "700",
+    fontSize: 13,
+    color: "#374151",
+  },
 
-commentUser: {
-  fontSize: 14,
-},
+  commentUser: {
+    fontSize: 14,
+  },
 
-commentTime: {
-  fontSize: 12,
-  color: "#6B7280",
-  marginLeft: 46, // aligns under name
-  marginBottom: 8,
-},
+  commentTime: {
+    fontSize: 12,
+    color: "#6B7280",
+    marginLeft: 46, // aligns under name
+    marginBottom: 8,
+  },
 
-commentBubble: {
-  marginLeft: 46,
-  borderWidth: 1,
-  borderColor: "#D1D5DB",
-  borderRadius: 12,
-  padding: 12,
-  backgroundColor: "#fff",
-},
+  commentBubble: {
+    marginLeft: 46,
+    borderWidth: 1,
+    borderColor: "#D1D5DB",
+    borderRadius: 12,
+    padding: 12,
+    backgroundColor: "#fff",
+  },
 
-commentText: {
-  fontSize: 14,
-  color: "#111827",
-},
+  commentText: {
+    fontSize: 14,
+    color: "#111827",
+  },
+    avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  avatarText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#374151",
+  },
+ backArrow: {
+    width: 20,
+    height: 20 ,
+    marginRight:10
+
+  },
 
 });

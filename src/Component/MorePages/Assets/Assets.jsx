@@ -764,6 +764,7 @@ const handleAssignAsset = async () => {
                 placeholder="Search Assets"
                 placeholderTextColor="#8a8a8a"
                 style={styles.searchInput}
+                editable={false}
               />
             </View>
           )}
@@ -799,7 +800,7 @@ const handleAssignAsset = async () => {
                   </Text>
                 </View>
 
-                <Image source={MenuDots} style={styles.dotsIcon} />
+                {/* <Image source={MenuDots} style={styles.dotsIcon} /> */}
               </TouchableOpacity>
 
             ))

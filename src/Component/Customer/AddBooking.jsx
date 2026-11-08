@@ -28,7 +28,7 @@ import SuccessModal from "../../ToastFile/ToastPage";
 import { useFocusEffect } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
-
+import InputComponent from "../MorePages/InputComponent"
 
 
 export default function AddBookingScreen({ navigation, route }) {
@@ -73,6 +73,7 @@ export default function AddBookingScreen({ navigation, route }) {
   const [bookingDateError, setBookingDateError] = useState("")
   const [joiningDateError, setJoiningDateError] = useState("")
   const [BookingAmountError, setBookingAmountError] = useState("")
+  const [isMobileFocused, setIsMobileFocused] = useState(false);
 
   const bookingDateRef = useRef(null);
   const joiningDateRef = useRef(null);
@@ -153,33 +154,56 @@ export default function AddBookingScreen({ navigation, route }) {
 
 
     if (res.success) {
+
       setAccountList(
-        (res?.data?.bankDetails || []).map((item, index) => ({
-          id: item?.bankId || `account-${index}`,
-          bankId: item?.bankId,
+        (res?.data?.bankDetails || []).map((bank, index) => {
+          const holderName =
+            bank?.holderName || bank?.accountHolderName || "";
 
-          displayName: item?.holderName || "Account",
-          accountHolderName: item?.holderName || "Account",
+          const bankName = bank?.bankName || "";
 
-          bankName: item?.bankName || "",
-          upiId: item?.upiId || "",
-          type: item?.type || "BANK",
-          accountType: item?.type || "BANK",
-          isUpi: item?.isUpi || false,
+          const displayName = bank?.displayName || "";
 
-          cashAccountType:
-            item?.type === "CASH"
-              ? item?.bankName || "Cash"
-              : "",
+          const accountType = String(
+            bank?.accountType || bank?.type || bank?.bankName || "BANK"
+          )
+            .trim()
+            .toUpperCase()
+            .replace(/[\s-]+/g, "_");
 
-          bankAccountType:
-            item?.type !== "CASH"
-              ? item?.bankName || "Bank Account"
-              : "",
+          const iconType =
+            accountType === "BANK"
+              ? "BANK"
+              : accountType === "CASH"
+                ? "CASH"
+                : "CARD";
 
-          paymentMethod: item?.type || "BANK",
-        }))
+          return {
+            id: bank?.bankId || `account-${index}`,
+            bankId: bank?.bankId,
+            value: bank?.bankId,
+            label: `${displayName} - ${holderName} - ${bankName}`,
+            isBank: bank?.isBank,
+            displayName,
+            holderName,
+            accountHolderName: holderName,
+            bankName,
+            accountType: bank?.accountType || "",
+            type: bank?.type || bank?.accountType || bank?.bankName || "",
+            iconType,
+            isCash: iconType === "CASH",
+            paymentMethod: bank?.accountType || bank?.type || bank?.bankName || "",
+            cashAccountType:
+              iconType === "CASH" ? bank?.accountType || "Cash" : "",
+            bankAccountType:
+              iconType !== "CASH" ? bank?.accountType || bank?.bankName || "" : "",
+            upiId: bank?.upiId || "",
+            isUpi: bank?.isUpi || false,
+            data: bank,
+          };
+        })
       );
+
       setBeds(res?.data?.listBeds);
       console.log("Beds.......?????", beds)
     } else {
@@ -435,7 +459,14 @@ export default function AddBookingScreen({ navigation, route }) {
                 }, 150);
               }}
 
-              style={styles.inputBox}
+              // style={styles.inputBox}
+              style={[
+                styles.inputBox,
+                {
+                  borderColor: showDatePicker ? "#0085FF" : "#D9D9D9",
+                  borderWidth: showDatePicker ? 1.5 : 1,
+                },
+              ]}
             >
 
 
@@ -451,20 +482,32 @@ export default function AddBookingScreen({ navigation, route }) {
 
             <Text style={styles.label}>Booking Amount <Text style={styles.star}>*</Text></Text>
 
-            <TextInput
+            {/* <TextInput
               style={styles.inputBox}
               placeholder="Enter Booking Amount"
               placeholderTextColor="#999"
               keyboardType="numeric"
               value={amount}
-              // onChangeText={setAmount}
               onChangeText={(t) => {
                 const filtered = t.replace(/[^0-9]/g, "");
                 setAmount(filtered);
                 setBookingAmountError("");
 
               }}
+            /> */}
+
+            <InputComponent
+              value={amount}
+              placeholder="Enter Booking Amount"
+              keyboardType="numeric"
+              error={!!BookingAmountError}
+              onChangeText={(t) => {
+                const filtered = t.replace(/[^0-9]/g, "");
+                setAmount(filtered);
+                setBookingAmountError("");
+              }}
             />
+
 
             {BookingAmountError && <ErrorMessage message={BookingAmountError} type="error" />}
 
@@ -485,7 +528,14 @@ export default function AddBookingScreen({ navigation, route }) {
                 }, 150);
               }}
 
-              style={styles.inputBox}
+              // style={styles.inputBox}
+              style={[
+                styles.inputBox,
+                {
+                  borderColor: showJoinDatePicker ? "#0085FF" : "#D9D9D9",
+                  borderWidth: showJoinDatePicker ? 1.5 : 1,
+                },
+              ]}
             >
 
 
@@ -504,7 +554,14 @@ export default function AddBookingScreen({ navigation, route }) {
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                style={styles.select}
+                // style={styles.select}
+                style={[
+                  styles.select,
+                  {
+                    borderColor: floorOpen ? "#0085FF" : "#D9D9D9",
+                    borderWidth: floorOpen ? 1.5 : 1,
+                  },
+                ]}
                 // onPress={() => setFloorOpen(!floorOpen)}
                 onPress={() => {
                   setFloorOpen(!floorOpen);
@@ -560,7 +617,14 @@ export default function AddBookingScreen({ navigation, route }) {
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                style={styles.select}
+                // style={styles.select}
+                style={[
+                  styles.select,
+                  {
+                    borderColor: roomOpen ? "#0085FF" : "#D9D9D9",
+                    borderWidth: roomOpen ? 1.5 : 1,
+                  },
+                ]}
                 // onPress={() => setRoomOpen(!roomOpen)}
                 onPress={() => {
                   setFloorOpen(false);
@@ -644,7 +708,14 @@ export default function AddBookingScreen({ navigation, route }) {
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                style={styles.select}
+                // style={styles.select}
+                style={[
+                  styles.select,
+                  {
+                    borderColor: bedOpen ? "#0085FF" : "#D9D9D9",
+                    borderWidth: bedOpen ? 1.5 : 1,
+                  },
+                ]}
                 // onPress={() => setBedOpen(!bedOpen)}
                 onPress={() => {
                   setFloorOpen(false);
@@ -711,7 +782,14 @@ export default function AddBookingScreen({ navigation, route }) {
 
               <TouchableOpacity
                 ref={accountRef}
-                style={styles.inputBox}
+                // style={styles.inputBox}
+                style={[
+                  styles.inputBox,
+                  {
+                    borderColor: accountOpen ? "#0085FF" : "#D9D9D9",
+                    borderWidth: accountOpen ? 1.5 : 1,
+                  },
+                ]}
                 activeOpacity={0.8}
                 onPress={() => {
                   setFloorOpen(false);
@@ -763,22 +841,14 @@ export default function AddBookingScreen({ navigation, route }) {
                         style={styles.selectedPaymentName}
                         numberOfLines={1}
                       >
-                        {accountSelected?.displayName ||
-                          accountSelected?.accountHolderName ||
-                          "Account"}
+                        {accountSelected?.displayName}
                       </Text>
 
                       <Text
                         style={styles.selectedPaymentSubText}
                         numberOfLines={1}
                       >
-                        {accountSelected?.accountType === "CASH"
-                          ? accountSelected?.cashAccountType || "Petty Cash"
-                          : accountSelected?.paymentMethod ||
-                          accountSelected?.bankAccountType ||
-                          accountSelected?.bankName ||
-                          accountSelected?.accountType ||
-                          "Bank"}
+                        {accountSelected?.holderName} - {accountSelected?.bankName}
                       </Text>
 
                     </View>
@@ -854,9 +924,7 @@ export default function AddBookingScreen({ navigation, route }) {
                                 numberOfLines={1}
                                 ellipsizeMode="tail"
                               >
-                                {payment?.displayName ||
-                                  payment?.accountHolderName ||
-                                  "Account"}
+                                {payment?.displayName}
                               </Text>
 
                               <Text
@@ -864,16 +932,7 @@ export default function AddBookingScreen({ navigation, route }) {
                                 numberOfLines={1}
                                 ellipsizeMode="tail"
                               >
-                                {isCash
-                                  ? payment?.cashAccountType || "Petty Cash"
-                                  : payment?.bankName
-                                    ? `${payment.bankName}${payment?.paymentMethod
-                                      ? ` - ${payment.paymentMethod}`
-                                      : ""
-                                    }`
-                                    : payment?.paymentMethod ||
-                                    payment?.bankAccountType ||
-                                    "Bank Account"}
+                                {payment?.holderName} - {payment?.bankName}
                               </Text>
                             </View>
 
@@ -929,7 +988,7 @@ export default function AddBookingScreen({ navigation, route }) {
 
 
             <Text style={styles.label}>Transaction Id</Text>
-            <TextInput
+            {/* <TextInput
               placeholder="Enter Transaction Id"
               placeholderTextColor="#999"
               onChangeText={(text) => {
@@ -938,7 +997,20 @@ export default function AddBookingScreen({ navigation, route }) {
               }}
               value={referenceNumber}
               style={styles.inputBox}
+            /> */}
+
+            <InputComponent
+              value={referenceNumber}
+              placeholder="Enter Transaction Id"
+              onChangeText={(text) => {
+                const filtered = text.replace(
+                  /[^A-Za-z0-9./#@!^&*() ]/g,
+                  ""
+                );
+                setReferenceNumber(filtered);
+              }}
             />
+
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.cancelBtn} onPress={handleLeavePage}>
                 <Text style={styles.cancelText}>Cancel</Text>
@@ -994,7 +1066,12 @@ export default function AddBookingScreen({ navigation, route }) {
                   const isSelected =
                     accountSelected?.bankId === payment?.bankId;
 
-                  const isCash = payment?.accountType === "CASH";
+                  // const isCash = payment?.accountType === "CASH";
+
+                  const isCash = payment?.iconType === "CASH";
+                  const isBank = payment?.iconType === "BANK";
+
+
 
                   return (
                     <TouchableOpacity
@@ -1023,16 +1100,20 @@ export default function AddBookingScreen({ navigation, route }) {
                       </View>
 
                       <View style={styles.paymentMethodDetails}>
-                        <Text style={styles.paymentMethodName} numberOfLines={1} ellipsizeMode="tail">
-                          {payment?.displayName || payment?.accountHolderName || "Account"}
+                        <Text
+                          style={styles.paymentMethodName}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {payment?.displayName}
                         </Text>
 
-                        <Text style={styles.paymentMethodSubText} numberOfLines={1} ellipsizeMode="tail">
-                          {isCash
-                            ? payment?.cashAccountType || "Petty Cash"
-                            : payment?.bankName
-                              ? `${payment.bankName}${payment?.paymentMethod ? ` - ${payment.paymentMethod}` : ""}`
-                              : payment?.paymentMethod || payment?.bankAccountType || "Bank Account"}
+                        <Text
+                          style={styles.paymentMethodSubText}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {payment?.holderName} - {payment?.bankName}
                         </Text>
                       </View>
 
@@ -1048,7 +1129,8 @@ export default function AddBookingScreen({ navigation, route }) {
                             isCash ? styles.cashText : styles.bankText,
                           ]}
                         >
-                          {isCash ? "CASH" : "BANK"}
+                          {/* {isCash ? "CASH" : "BANK"} */}
+                          {payment?.iconType}
                         </Text>
                       </View>
                     </TouchableOpacity>

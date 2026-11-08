@@ -15,10 +15,11 @@ import dayjs from "dayjs";
 import { Calendar } from "react-native-calendars";
 import Loader from "../Loader/Loader";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
+import InputComponent from "../MorePages/InputComponent"
 
 
 export default function AddTenant() {
-    const { addCustomer,loading } = useCustomer();
+    const { addCustomer, loading } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
     const navigation = useNavigation();
     const [step, setStep] = useState(1);
@@ -38,8 +39,9 @@ export default function AddTenant() {
     const [isSubmitClicked, setIsSubmitClicked] = useState(false)
     const [walkinDate, setWalkinDate] = useState(null)
     const [showCalendar, setShowCalendar] = useState(false)
+    const [isMobileFocused, setIsMobileFocused] = useState(false);
 
-        const [basicDetails, setBasicDetails] = useState({
+    const [basicDetails, setBasicDetails] = useState({
         firstName: "",
         lastName: "",
         mobile: "",
@@ -55,7 +57,7 @@ export default function AddTenant() {
         state: "",
     });
 
-      const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const countryList = [
         { label: "India", code: "+91" },
@@ -125,17 +127,17 @@ export default function AddTenant() {
     };
 
     const handleLeaveScreen = () => {
-    const hasMandatoryValue =
-       basicDetails.firstName.trim() !== "" ||
-        basicDetails.mobile.trim() !== "";
+        const hasMandatoryValue =
+            basicDetails.firstName.trim() !== "" ||
+            basicDetails.mobile.trim() !== "";
 
-    if (hasMandatoryValue) {
-        setShowLeavePageScreen(true);
-        return;
-    }
+        if (hasMandatoryValue) {
+            setShowLeavePageScreen(true);
+            return;
+        }
 
-    navigation.goBack();
-};
+        navigation.goBack();
+    };
 
 
     // useFocusEffect(
@@ -161,30 +163,30 @@ export default function AddTenant() {
     // );
 
     useFocusEffect(
-    useCallback(() => {
-        const onBackPress = () => {
-            if (step === 2) {
-                setStep(1);
+        useCallback(() => {
+            const onBackPress = () => {
+                if (step === 2) {
+                    setStep(1);
+                    return true;
+                }
+
+                handleLeaveScreen();
                 return true;
-            }
+            };
 
-            handleLeaveScreen();
-            return true;
-        };
+            const subscription = BackHandler.addEventListener(
+                "hardwareBackPress",
+                onBackPress
+            );
 
-        const subscription = BackHandler.addEventListener(
-            "hardwareBackPress",
-            onBackPress
-        );
-
-        return () => subscription.remove();
-    }, [
-        navigation,
-        step,
-        basicDetails.firstName,
-        basicDetails.mobile,
-    ])
-);
+            return () => subscription.remove();
+        }, [
+            navigation,
+            step,
+            basicDetails.firstName,
+            basicDetails.mobile,
+        ])
+    );
 
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -452,7 +454,7 @@ export default function AddTenant() {
 
     return (
         <>
-        {loading && <Loader/>}
+            {loading && <Loader />}
             <SuccessModal visible={showSuccess} message={message} type={modalType} />
             <SafeAreaView style={styles.container}>
                 <View style={styles.header}>
@@ -571,9 +573,9 @@ export default function AddTenant() {
 
 
 
-                        <View style={[styles.form,{marginTop:20}]}>
+                        <View style={[styles.form, { marginTop: 20 }]}>
                             <Text style={styles.label}>First Name <Text style={{ color: "red" }}>*</Text></Text>
-                            <TextInput
+                            {/* <TextInput
                                 style={{
                                     borderWidth: 1, borderColor: "#D9D9D9", borderRadius: 8, paddingHorizontal: 12,
                                     height: 50, fontSize: 14, backgroundColor: "#fff", marginBottom: 1,
@@ -586,10 +588,36 @@ export default function AddTenant() {
                                     setBasicDetails({ ...basicDetails, firstName: onlyLetters });
                                     setNameError("")
                                 }}
+                            /> */}
+
+                            <InputComponent
+                                type="name"
+                                value={basicDetails.firstName}
+                                onChangeText={(t) => {
+                                    setBasicDetails(prev => ({
+                                        ...prev,
+                                        firstName: t,
+                                    }));
+                                    setNameError("");
+                                }}
+                                placeholder="Enter First Name"
+                                error={!!nameError}
                             />
+
                             {nameError && <ErrorMessage message={nameError} type="error" />}
                             <Text style={[styles.label, { marginTop: 12 }]}>Last Name</Text>
-                            <TextInput
+                            <InputComponent
+                                type="name"
+                                value={basicDetails.lastName}
+                                onChangeText={(t) => {
+                                    setBasicDetails(prev => ({
+                                        ...prev,
+                                        lastName: t,
+                                    }));
+                                }}
+                                placeholder="Enter Last Name"
+                            />
+                            {/* <TextInput
                                 style={styles.input}
                                 placeholder="Enter Last Name"
                                 placeholderTextColor="#A1A1A1"
@@ -598,9 +626,9 @@ export default function AddTenant() {
                                     const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                     setBasicDetails({ ...basicDetails, lastName: onlyLetters });
                                 }}
-                            />
+                            /> */}
 
-                            <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
+                            {/* <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
                             <View style={styles.mobileWrapper}>
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
@@ -614,32 +642,7 @@ export default function AddTenant() {
                                         <Image source={DownArrow} style={styles.countryArrow} />
                                     </TouchableOpacity>
 
-                                    {/* {countryOpen && (
-    <>
-      <TouchableWithoutFeedback onPress={() => setCountryOpen(false)}>
-        <View style={styles.dropdownOverlay} />
-      </TouchableWithoutFeedback>
-
-      <View style={styles.countryDropdownMenu}>
-        <ScrollView>
-          {countryList.map((item, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.countryOption}
-              onPress={() => {
-                setSelectedCountry(item);
-                setCountryOpen(false);
-              }}
-            >
-              <Text style={styles.countryOptionText}>
-                {item.label} ({item.code})
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    </>
-  )} */}
+        
                                 </View>
 
                                 <TextInput
@@ -660,11 +663,73 @@ export default function AddTenant() {
                                 />
 
                             </View>
-                            {mobileError && <ErrorMessage message={mobileError} type="error" />}
+                            {mobileError && <ErrorMessage message={mobileError} type="error" />} */}
+
+                            <Text style={styles.label}>
+                                Mobile Number <Text style={{ color: "red" }}>*</Text>
+                            </Text>
+
+                            <View
+                                style={[
+                                    styles.mobileWrapper,
+                                    {
+                                        borderColor: mobileError
+                                            ? "#FF3333"
+                                            : isMobileFocused
+                                                ? "#0085FF"
+                                                : "#D9D9D9",
+
+                                        borderWidth: isMobileFocused ? 1.5 : 1,
+                                    },
+                                ]}
+                            >
+                                <View style={{ position: "relative" }}>
+                                    <TouchableOpacity
+                                        style={styles.countryDropdown}
+                                        onPress={() => setCountryOpen(!countryOpen)}
+                                        activeOpacity={0.7}
+                                    >
+                                        <Text style={styles.countryCodeText}>
+                                            {selectedCountry.code}
+                                        </Text>
+
+                                        <Image
+                                            source={DownArrow}
+                                            style={styles.countryArrow}
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+
+                                <TextInput
+                                    style={styles.mobileInput}
+                                    keyboardType="number-pad"
+                                    placeholder="Enter Mobile Number"
+                                    placeholderTextColor="#A1A1A1"
+                                    maxLength={10}
+                                    value={basicDetails.mobile}
+                                    onFocus={() => setIsMobileFocused(true)}
+                                    onBlur={() => setIsMobileFocused(false)}
+                                    onChangeText={(t) => {
+                                        setBasicDetails(prev => ({
+                                            ...prev,
+                                            mobile: t.replace(/[^0-9]/g, ""),
+                                        }));
+                                        setMobileError("");
+                                    }}
+                                />
+                            </View>
+
+                            {/* {mobileError && (
+                                <ErrorMessage message={mobileError} type="error" />
+                            )} */}
+
+                            {mobileError && (
+                                <ErrorMessage message={mobileError} type="error" />
+                            )}
 
 
                             <Text style={[styles.label, { marginTop: 12 }]}>Email ID</Text>
-                            <TextInput
+                            {/* <TextInput
                                 style={styles.input}
                                 placeholder="Enter Email ID"
                                 placeholderTextColor="#A1A1A1"
@@ -686,40 +751,90 @@ export default function AddTenant() {
                                         setEmailError("");
                                     }
                                 }}
+                            /> */}
+
+                            <InputComponent
+                                type="email"
+                                value={basicDetails.email}
+                                placeholder="Enter Email ID"
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                error={!!emailError}
+                                onChangeText={(text) => {
+                                    const sanitized = text
+                                        .toLowerCase()
+                                        .replace(/[^a-z0-9@._+-]/g, "")
+                                        .replace(/\.{2,}/g, ".");
+
+                                    setBasicDetails(prev => ({
+                                        ...prev,
+                                        email: sanitized,
+                                    }));
+
+                                    if (!sanitized) {
+                                        setEmailError("");
+                                    } else if (
+                                        !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(sanitized)
+                                    ) {
+                                        setEmailError("Enter a valid email address");
+                                    } else {
+                                        setEmailError("");
+                                    }
+                                }}
                             />
+
 
                             {emailError && <ErrorMessage message={emailError} type="error" />}
 
-
+                            {/* 
                             <Text style={[styles.label, { marginTop: 10 }]}>Walkin Date</Text>
                             <TouchableOpacity
                                 style={styles.dateBox}
                                 onPress={() => {
-                                    Keyboard.dismiss();   // 🔥 keyboard close
-                                    // setOpenDropdownId(null);
-                                    // setCheckinTenantsopen(false);
+                                    Keyboard.dismiss();  
                                     setShowCalendar(true);
-
-                                    // setTimeout(() => {
-                                    //     bookingDateRef.current.measureInWindow((x, y, w, h) => {
-                                    //         setDatePickerTop(getSafeCalendarTop(y, h));
-                                    //         setActiveDateField("booking");
-
-                                    //     });
-                                    // }, 150); 
                                 }}
 
                             >
                                 <Text style={styles.placeholder}>
                                     {walkinDate ? dayjs(walkinDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
                                 </Text>
-                                <Image source={require("../../Assets/Images/calendar.png")} style={{width:18,height:18}} />
+                                <Image source={require("../../Assets/Images/calendar.png")} style={{ width: 18, height: 18 }} />
+                            </TouchableOpacity> */}
+
+                            <Text style={[styles.label, { marginTop: 12 }]}>
+                                Walkin Date
+                            </Text>
+                            <TouchableOpacity
+                                style={[
+                                    styles.dateBox,
+                                    {
+                                        borderColor: showCalendar ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: showCalendar ? 1.5 : 1,
+                                    },
+                                ]}
+                                onPress={() => {
+                                    Keyboard.dismiss();
+                                    setShowCalendar(true);
+                                }}
+                                activeOpacity={0.7}
+                            >
+                                <Text style={styles.placeholder}>
+                                    {walkinDate
+                                        ? dayjs(walkinDate).format("DD-MM-YYYY")
+                                        : "DD-MM-YYYY"}
+                                </Text>
+
+                                <Image
+                                    source={require("../../Assets/Images/calendar.png")}
+                                    style={{ width: 20, height: 20 }}
+                                />
                             </TouchableOpacity>
                         </View>
 
 
                         <View style={styles.btnRow}>
-                           
+
 
                             <TouchableOpacity
                                 style={[
@@ -737,7 +852,7 @@ export default function AddTenant() {
                                     ]}
                                 >
                                     Cancel
-                                </Text>                       
+                                </Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -1056,17 +1171,17 @@ export default function AddTenant() {
             </SafeAreaView>
 
 
-              <LeavePageScreen
-        visible={showLeavePageScreen}
-        onClose={() => setShowLeavePageScreen(false)}
-        discardClose={() => {
-          setShowLeavePageScreen(false);
+            <LeavePageScreen
+                visible={showLeavePageScreen}
+                onClose={() => setShowLeavePageScreen(false)}
+                discardClose={() => {
+                    setShowLeavePageScreen(false);
 
-          setTimeout(() => {
-            navigation.goBack();
-          }, 300);
-        }}
-      />
+                    setTimeout(() => {
+                        navigation.goBack();
+                    }, 300);
+                }}
+            />
         </>
     );
 }
@@ -1245,6 +1360,15 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Regular"
     },
 
+    // mobileWrapper: {
+    //     flexDirection: "row",
+    //     alignItems: "center",
+    //     borderWidth: 1,
+    //     borderColor: "#D9D9D9",
+    //     borderRadius: 8,
+    //     height: 50,
+    //     marginBottom: 2,
+    // },
     mobileWrapper: {
         flexDirection: "row",
         alignItems: "center",
@@ -1253,6 +1377,25 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         height: 50,
         marginBottom: 2,
+        backgroundColor: "#FFFFFF",
+
+        shadowColor: "#000000",
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.06,
+        shadowRadius: 2,
+        elevation: 1,
+    },
+
+    mobileInput: {
+        flex: 1,
+        height: "100%",
+        fontSize: 15,
+        color: "#24242B",
+        paddingHorizontal: 10,
+        fontFamily: "Gilroy-Medium",
     },
 
     countryDropdown: {
@@ -1309,11 +1452,11 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Medium",
     },
 
-    mobileInput: {
-        flex: 1,
-        fontSize: 14,
-        color: "#111",
-    },
+    // mobileInput: {
+    //     flex: 1,
+    //     fontSize: 14,
+    //     color: "#111",
+    // },
 
     btnRow: {
         flexDirection: "row",
@@ -1331,7 +1474,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 28,
         borderRadius: 8,
         backgroundColor: "#fff",
-        marginRight:10
+        marginRight: 10
     },
 
     primaryText: {
@@ -1370,17 +1513,42 @@ const styles = StyleSheet.create({
     primaryTextDisabled: {
         color: "#A5B4FC",
     },
+    // dateBox: {
+    //     height: 48,
+    //     borderWidth: 1,
+    //     borderColor: "#D9D9D9",
+    //     borderRadius: 8,
+    //     paddingHorizontal: 12,
+    //     flexDirection: "row",
+    //     justifyContent: "space-between",
+    //     alignItems: "center",
+    // },
     dateBox: {
-        height: 48,
+        height: 50,
         borderWidth: 1,
         borderColor: "#D9D9D9",
         borderRadius: 8,
-        paddingHorizontal: 12,
+        paddingHorizontal: 16,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
+        backgroundColor: "#FFFFFF",
+
+        shadowColor: "#000000",
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.06,
+        shadowRadius: 2,
+        elevation: 1,
     },
-    placeholder: { color: "#555" },
+    placeholder: {
+        color: "#555555",
+        fontSize: 15,
+        fontFamily: "Gilroy-Medium",
+    },
+    // placeholder: { color: "#555" },
 
 
 

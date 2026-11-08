@@ -1,5 +1,5 @@
 import React, { createContext, useState } from "react";
-import {getAxios} from "../Config/AxiosConfig";
+import { getAxios } from "../Config/AxiosConfig";
 
 export const ExpensesContext = createContext();
 
@@ -8,19 +8,20 @@ export default function ExpensesProvider({ children }) {
   const [expensesList, setExpensesList] = useState(null)
   const [IntializeexpensesList, setIntializeExpensesList] = useState(null)
   const [rolePermission, setRolePermission] = useState(null);
-   const [profileDetails, setProfileDetails] = useState(null);
-   const [expenseUnits, setExpensesUnits] = useState([]);
-     const [expenseoverviewDetails, setExpenseOverviewDetails] = useState(null);
+  const [profileDetails, setProfileDetails] = useState(null);
+  const [expenseUnits, setExpensesUnits] = useState([]);
+  const [expenseoverviewDetails, setExpenseOverviewDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [onlyExpensesList, setOnlyExpensesList] = useState([])
 
-    const getErrorMessage = (err) =>
+  const getErrorMessage = (err) =>
     err?.response?.data?.message ||
     err?.response?.data ||
     err?.message ||
     "Something went wrong";
 
-   
+
   const fetchExpenses = async (hostelId) => {
     if (!hostelId) {
       setExpenses([]);
@@ -58,10 +59,10 @@ export default function ExpensesProvider({ children }) {
       setExpenses([]);
       return { success: false };
     } finally {
-        setTimeout(() => {
-             setLoading(false);
-        }, 1000);
-     
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
+
     }
   };
 
@@ -122,287 +123,304 @@ export default function ExpensesProvider({ children }) {
     }
   };
 
-// const GetExpenseList = async (hostelId) => {
-//   try {
-//     setLoading(true);
+  // const GetExpenseList = async (hostelId) => {
+  //   try {
+  //     setLoading(true);
 
-//     const axios = getAxios();
-//     const res = await axios.get(`/v2/expense/${hostelId}`);
+  //     const axios = getAxios();
+  //     const res = await axios.get(`/v2/expense/${hostelId}`);
 
-//     console.log("Expense API", res.data);
+  //     console.log("Expense API", res.data);
 
-//     if (res?.status === 200) {
-//       setExpensesList(res.data);
-//       return {
-//         success: true,
-//         data: res.data,
-//       };
-//     }
+  //     if (res?.status === 200) {
+  //       setExpensesList(res.data);
+  //       return {
+  //         success: true,
+  //         data: res.data,
+  //       };
+  //     }
 
-//     return { success: false };
-//   } catch (err) {
-//     console.log(err);
-//     setExpensesList(null);
-//     return { success: false };
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+  //     return { success: false };
+  //   } catch (err) {
+  //     console.log(err);
+  //     setExpensesList(null);
+  //     return { success: false };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-const GetExpenseList = async (
-  hostelId,
-  filters = {}
-) => {
-  try {
-    setLoading(true);
+  const GetExpenseList = async (
+    hostelId,
+    filters = {}
+  ) => {
+    try {
+      // setLoading(true);
 
-    const axios = getAxios();
-    const params = {
-  name: filters.name,
-  page: filters.page,
-  size: filters.size,
-  paymentStatus: filters.paymentStatus,
-  vendorId: filters?.vendorId,
-  paymentMode: filters?.paymentMode,
-  createdBy: filters?.createdBy,
-  subCategoryId: filters?.subCategoryId,
-  startDate:filters?.startDate,
-  endDate:filters?.endDate,
-  period:filters?.period,
-  minAmount:filters?.minAmount,
-  maxAmount: filters?.maxAmount
-};
+      const axios = getAxios();
+      const params = {
+        name: filters.name,
+        page: filters.page,
+        size: filters.size,
+        paymentStatus: filters.paymentStatus,
+        vendorId: filters?.vendorId,
+        paymentMode: filters?.paymentMode,
+        createdBy: filters?.createdBy,
+        subCategoryId: filters?.subCategoryId,
+        startDate: filters?.startDate,
+        endDate: filters?.endDate,
+        period: filters?.period,
+        minAmount: filters?.minAmount,
+        maxAmount: filters?.maxAmount
+      };
 
-if (filters.categoryId && filters.categoryId !== 0) {
-  params.categoryId = filters.categoryId;
-}
-
-    const res = await axios.get(
-      `/v2/expense/${hostelId}`,
-      {
-        // params: {
-        //   name: filters.name,
-        //   categoryId: filters.categoryId,
-        //   page: filters.page,
-        //   size: filters.size,
-        //   paymentStatus:filters?.paymentStatus,
-        // },
-        params,
-         paramsSerializer: (params) =>
-          Object.keys(params)
-            .map((key) => {
-              const value = params[key];
-              if (Array.isArray(value)) {
-                return value.map((v) => `${key}=${v}`).join("&");
-              }
-              if (value !== undefined && value !== null && value !== "") {
-                return `${key}=${value}`;
-              }
-              return null;
-            })
-            .filter(Boolean)
-            .join("&"),
+      if (filters.categoryId && filters.categoryId !== 0) {
+        params.categoryId = filters.categoryId;
       }
-    );
 
-    if (res.status === 200) {
-      console.log("responseFilt", res);
-      
-      setExpensesList(res.data);
+      const res = await axios.get(
+        `/v2/expense/${hostelId}`,
+        {
+          // params: {
+          //   name: filters.name,
+          //   categoryId: filters.categoryId,
+          //   page: filters.page,
+          //   size: filters.size,
+          //   paymentStatus:filters?.paymentStatus,
+          // },
+          params,
+          paramsSerializer: (params) =>
+            Object.keys(params)
+              .map((key) => {
+                const value = params[key];
+                if (Array.isArray(value)) {
+                  return value.map((v) => `${key}=${v}`).join("&");
+                }
+                if (value !== undefined && value !== null && value !== "") {
+                  return `${key}=${value}`;
+                }
+                return null;
+              })
+              .filter(Boolean)
+              .join("&"),
+        }
+      );
+
+      if (res.status === 200) {
+        console.log("responseFilt", res);
+        const newExpensesList = res?.data?.expenses
+
+        setExpensesList(res.data);
+        // setOnlyExpensesList(prev => [...prev, ...res?.data?.expenses])
+        const currentPage = res?.data?.currentPage ?? filters?.page
+
+        if (currentPage === 1) {
+          setOnlyExpensesList(newExpensesList)
+        } else {
+
+          // setOnlyExpensesList(prev => [...prev, ...newExpensesList])
+          setOnlyExpensesList((prev) => {
+            const existingIds = new Set(prev.map((c) => c.expenseId)); 
+
+            const uniqueNewExpenses =newExpensesList.filter((c) => !existingIds.has(c.expenseId));
+
+            return [...prev, ...uniqueNewExpenses];
+          })
+        }
+        return {
+          success: true,
+          data: res.data,
+        };
+      }
+    } catch (error) {
+      console.log("extraError", getErrorMessage(error))
+      return {
+        success: false,
+        message: getErrorMessage(error),
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const AddExpense = async (payload, hostelId) => {
+    try {
+      setLoading(true);
+
+      const axios = getAxios();
+
+      const formData = new FormData();
+
+
+
+      if (payload.images?.length) {
+        payload.images.forEach((img, index) => {
+          formData.append("images", {
+            uri: img.uri,
+            name: img.fileName || `image_${index}.jpg`,
+            type: img.type || "image/jpeg",
+          });
+        });
+      }
+
+      formData.append(
+        "expense",
+        {
+          string: JSON.stringify(payload.expense),
+          type: "application/json",
+          name: "expense.json",
+        }
+      );
+
+      const res = await axios.post(
+        `/v2/expense/${hostelId}`,
+        formData,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
       return {
         success: true,
         data: res.data,
       };
+    } catch (err) {
+      console.log(
+        "STATUS =>",
+        err?.response?.status
+      );
+
+      console.log(
+        "DATA =>",
+        JSON.stringify(
+          err?.response?.data,
+          null,
+          2
+        )
+      );
+
+      console.log(
+        "HEADERS =>",
+        err?.response?.headers
+      );
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.log("extraError",getErrorMessage(error))
-    return {
-      success: false,
-      message: getErrorMessage(error),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-const AddExpense = async (payload, hostelId) => {
-  try {
-    setLoading(true);
-
-    const axios = getAxios();
-
-    const formData = new FormData();
-
-    
-
-    if (payload.images?.length) {
-      payload.images.forEach((img, index) => {
-        formData.append("images", {
-          uri: img.uri,
-          name: img.fileName || `image_${index}.jpg`,
-          type: img.type || "image/jpeg",
-        });
-      });
+  const GetInitializeExpense = async (hostelId) => {
+    if (!hostelId) {
+      setIntializeExpensesList(null);
+      return { success: true, empty: true };
     }
 
-   formData.append(
-  "expense",
-  {
-    string: JSON.stringify(payload.expense),
-    type: "application/json",
-    name: "expense.json",
-  }
-);
+    try {
+      setLoading(true);
+      setError(null);
+      const axios = getAxios();
+      const res = await axios.get(
+        `/v2/expense/initialize/${hostelId}`
+      );
 
-    const res = await axios.post(
-  `/v2/expense/${hostelId}`,
-  formData,
-  {
-    headers: {
-      Accept: "application/json",
-    },
-  }
-);
+      console.log("res", res);
 
-    return {
-      success: true,
-      data: res.data,
-    };
-  } catch (err) {
-  console.log(
-    "STATUS =>",
-    err?.response?.status
-  );
+      if (res?.status === 200) {
 
-  console.log(
-    "DATA =>",
-    JSON.stringify(
-      err?.response?.data,
-      null,
-      2
-    )
-  );
 
-  console.log(
-    "HEADERS =>",
-    err?.response?.headers
-  );
-} finally {
-    setLoading(false);
-  }
-};
+        setIntializeExpensesList(res?.data);
 
-const GetInitializeExpense = async (hostelId) => {
-  if (!hostelId) {
-    setIntializeExpensesList(null);
-    return { success: true, empty: true };
-  }
+        return { success: true };
+      }
 
-  try {
-    setLoading(true);
-    setError(null);
-    const axios = getAxios();
-    const res = await axios.get(
-      `/v2/expense/initialize/${hostelId}`
-    );
+      return { success: false };
+    } catch (err) {
+      setError("Failed to load expenses");
+      setIntializeExpensesList(null);
+      return { success: false };
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    console.log("res", res);
+  const UpdateExpenseCategory = async ({
+    hostelId,
+    categoryId,
+    newCategoryName,
+  }) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-    if (res?.status === 200) {
-      
-      
-      setIntializeExpensesList(res?.data);
+      const axios = getAxios();
+
+      await axios.put(
+        `/v2/expense/category/${hostelId}/${categoryId}`,
+        { newCategoryName }
+      );
+
+      // refresh category list
+      await fetchExpenses(hostelId);
 
       return { success: true };
-    }
+    } catch (err) {
+      if (err?.response?.status === 400) {
+        return {
+          success: false,
+          message:
+            err.response.data?.message || "Category name already exists",
+        };
+      }
 
-    return { success: false };
-  } catch (err) {
-    setError("Failed to load expenses");
-    setIntializeExpensesList(null);
-    return { success: false };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const UpdateExpenseCategory = async ({
-  hostelId,
-  categoryId,
-  newCategoryName,
-}) => {
-  try {
-    setLoading(true);
-    setError(null);
-
-    const axios = getAxios();
-
-    await axios.put(
-      `/v2/expense/category/${hostelId}/${categoryId}`,
-      { newCategoryName }
-    );
-
-    // refresh category list
-    await fetchExpenses(hostelId);
-
-    return { success: true };
-  } catch (err) {
-    if (err?.response?.status === 400) {
       return {
         success: false,
-        message:
-          err.response.data?.message || "Category name already exists",
+        message: "Failed to update category",
       };
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return {
-      success: false,
-      message: "Failed to update category",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  const UpdateExpenseSubCategory = async ({
+    hostelId,
+    subCategoryId,
+    newSubCategoryName,
+  }) => {
+    try {
+      setLoading(true);
+      setError(null);
 
-const UpdateExpenseSubCategory = async ({
-  hostelId,
-  subCategoryId,
-  newSubCategoryName,
-}) => {
-  try {
-    setLoading(true);
-    setError(null);
+      const axios = getAxios();
 
-    const axios = getAxios();
+      await axios.put(
+        `/v2/expense/subCategory/${hostelId}/${subCategoryId}`,
+        { newSubCategoryName }
+      );
 
-    await axios.put(
-      `/v2/expense/subCategory/${hostelId}/${subCategoryId}`,
-      { newSubCategoryName }
-    );
+      // refresh category list
+      await fetchExpenses(hostelId);
 
-    // refresh category list
-    await fetchExpenses(hostelId);
+      return { success: true };
+    } catch (err) {
+      if (err?.response?.status === 400) {
+        return {
+          success: false,
+          message:
+            err.response.data?.message || "Sub category already exists",
+        };
+      }
 
-    return { success: true };
-  } catch (err) {
-    if (err?.response?.status === 400) {
       return {
         success: false,
-        message:
-          err.response.data?.message || "Sub category already exists",
+        message: "Failed to update sub category",
       };
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return {
-      success: false,
-      message: "Failed to update sub category",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
- const GetProfileDetails = async () => {
+  const GetProfileDetails = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -426,174 +444,174 @@ const UpdateExpenseSubCategory = async ({
   };
 
 
-const GetRoleBasedPermission = async (roleId) => {
-  if (!roleId) {
-    setRolePermission(null);
-    return { success: true, empty: true };
-  }
-
-  try {
-    setLoading(true);
-    setError(null);
-
-    const axios = getAxios();
-    const res = await axios.get(`/v2/role/${roleId}`);
-
-    if (res?.status === 200) {
-      setRolePermission(res.data);
-      return { success: true, data: res.data };
+  const GetRoleBasedPermission = async (roleId) => {
+    if (!roleId) {
+      setRolePermission(null);
+      return { success: true, empty: true };
     }
 
-    return { success: false };
-  } catch (err) {
-    setError("Failed to load role permission");
-    setRolePermission(null);
-    return { success: false };
-  } finally {
-    setLoading(false);
-  }
-};
+    try {
+      setLoading(true);
+      setError(null);
 
-const UpdateExpense = async (hostelId, expenseId, payload) => {
-  try {
-    setLoading(true);
+      const axios = getAxios();
+      const res = await axios.get(`/v2/role/${roleId}`);
 
-    const axios = getAxios();
+      if (res?.status === 200) {
+        setRolePermission(res.data);
+        return { success: true, data: res.data };
+      }
 
-    const res = await axios.put(
-      `/v2/expense/${hostelId}/${expenseId}`,
-      payload
-    );
-
-    if (res.status === 200) {
-      await GetExpenseList(hostelId);
-      return { success: true };
+      return { success: false };
+    } catch (err) {
+      setError("Failed to load role permission");
+      setRolePermission(null);
+      return { success: false };
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return { success: false };
+  const UpdateExpense = async (hostelId, expenseId, payload) => {
+    try {
+      setLoading(true);
 
-  } catch (err) {
-    return {
-      success: false,
-      message: err?.response?.data || "Update failed"
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      const axios = getAxios();
 
+      const res = await axios.put(
+        `/v2/expense/${hostelId}/${expenseId}`,
+        payload
+      );
 
-const DeleteExpense = async (hostelId, expenseId) => {
-  try {
-    setLoading(true);
-    setError(null);
+      if (res.status === 200) {
+        await GetExpenseList(hostelId);
+        return { success: true };
+      }
 
-    const axios = getAxios();
+      return { success: false };
 
-    const res = await axios.delete(
-      `/v2/expense/${hostelId}/${expenseId}`
-    )
-
-    console.log("res", res);
-    
-
-    if ( res?.status === 204 || res?.status === 200 ) {
-      // refresh expense list
-      await GetExpenseList(hostelId);
-
+    } catch (err) {
       return {
-  success: true,
-  "message": "Expense deleted successfully"
-}
-    }
-
-    return { success: false, message: "Failed to delete expense" };
-  } catch (err) {
-    console.log("Delete error", err?.response || err);
-
-    return {
-      success: false,
-      message: err?.response?.data || "Something went wrong",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
-const SettleExpense = async (expenseId, payload) => {
-  try {
-    setLoading(true);
-
-    const axios = getAxios();
-
-    const res = await axios.post(
-      `/v2/expense/settle/${expenseId}`,
-      payload
-    );
-
-    if (
-      res?.status === 200 ||
-      res?.status === 201
-    ) {
-
-      return {
-        success: true,
-        data: res?.data,
+        success: false,
+        message: err?.response?.data || "Update failed"
       };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const DeleteExpense = async (hostelId, expenseId) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const axios = getAxios();
+
+      const res = await axios.delete(
+        `/v2/expense/${hostelId}/${expenseId}`
+      )
+
+      console.log("res", res);
+
+
+      if (res?.status === 204 || res?.status === 200) {
+        // refresh expense list
+        await GetExpenseList(hostelId);
+
+        return {
+          success: true,
+          "message": "Expense deleted successfully"
+        }
+      }
+
+      return { success: false, message: "Failed to delete expense" };
+    } catch (err) {
+      console.log("Delete error", err?.response || err);
+
+      return {
+        success: false,
+        message: err?.response?.data || "Something went wrong",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+  const SettleExpense = async (expenseId, payload) => {
+    try {
+      setLoading(true);
+
+      const axios = getAxios();
+
+      const res = await axios.post(
+        `/v2/expense/settle/${expenseId}`,
+        payload
+      );
+
+      if (
+        res?.status === 200 ||
+        res?.status === 201
+      ) {
+
+        return {
+          success: true,
+          data: res?.data,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Failed to settle expense",
+      };
+    } catch (err) {
+      console.log(
+        "SETTLE EXPENSE ERROR:",
+        err?.response?.data || err
+      );
+
+      return {
+        success: false,
+        message: getErrorMessage(err),
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const GetExpenseById = async (hostelId, expenseId) => {
+    if (!hostelId || !expenseId) {
+      return { success: false, message: "hostelId or expenseId missing" };
     }
 
-    return {
-      success: false,
-      message: "Failed to settle expense",
-    };
-  } catch (err) {
-    console.log(
-      "SETTLE EXPENSE ERROR:",
-      err?.response?.data || err
-    );
+    try {
+      setLoading(true);
+      setError(null);
 
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      const axios = getAxios();
+      const res = await axios.get(`/v2/expense/${hostelId}/${expenseId}`);
 
-const GetExpenseById = async (hostelId, expenseId) => {
-  if (!hostelId || !expenseId) {
-    return { success: false, message: "hostelId or expenseId missing" };
-  }
+      if (res?.status === 200) {
+        setExpenseOverviewDetails(res?.data)
+        return { success: true, data: res.data };
+      }
 
-  try {
-    setLoading(true);
-    setError(null);
-
-    const axios = getAxios();
-    const res = await axios.get(`/v2/expense/${hostelId}/${expenseId}`);
-
-    if (res?.status === 200) {
-      setExpenseOverviewDetails(res?.data )
-      return { success: true, data: res.data };
+      return { success: false, message: "Failed to fetch expense details" };
+    } catch (err) {
+      console.log("GET EXPENSE BY ID ERROR =>", err?.response?.data || err);
+      return {
+        success: false,
+        message:
+          err?.response?.data?.message ||
+          err?.response?.data ||
+          "Something went wrong",
+      };
+    } finally {
+      setLoading(false);
     }
-
-    return { success: false, message: "Failed to fetch expense details" };
-  } catch (err) {
-    console.log("GET EXPENSE BY ID ERROR =>", err?.response?.data || err);
-    return {
-      success: false,
-      message:
-        err?.response?.data?.message ||
-        err?.response?.data ||
-        "Something went wrong",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
 
@@ -612,19 +630,20 @@ const GetExpenseById = async (hostelId, expenseId) => {
         fetchExpenses,
         addExpenseCategory,
         addSubCategory,
-        setExpenses, 
+        setExpenses,
         GetExpenseList,
         AddExpense,
-        GetInitializeExpense ,
+        GetInitializeExpense,
         UpdateExpenseCategory,
         UpdateExpenseSubCategory,
         GetRoleBasedPermission,
         GetProfileDetails,
         UpdateExpense,
         DeleteExpense,
-        
+
         SettleExpense,
-        GetExpenseById,setProfileDetails
+        GetExpenseById, setProfileDetails,
+        onlyExpensesList
       }}
     >
       {children}

@@ -40,6 +40,77 @@ import FilterIcon from "../../../Assets/Images/filter.png";
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.44
 
+const AnimatedNumber = ({ value, duration = 800 }) => {
+  const targetValue = Number(value) || 0;
+
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    animatedValue.stopAnimation();
+    animatedValue.setValue(0);
+    setDisplayValue(0);
+
+    const listenerId = animatedValue.addListener(({ value }) => {
+      setDisplayValue(Math.floor(value));
+    });
+
+    const animation = Animated.timing(animatedValue, {
+      toValue: targetValue,
+      duration,
+      useNativeDriver: false,
+    });
+
+    animation.start(({ finished }) => {
+      if (finished) {
+        setDisplayValue(targetValue);
+      }
+    });
+
+    return () => {
+      animation.stop();
+      animatedValue.removeListener(listenerId);
+    };
+  }, [targetValue, duration, animatedValue]);
+
+  return <Text>{displayValue}</Text>;
+};
+
+const SummaryCard = ({
+  icon,
+  title,
+  value,
+  prefix,
+  suffix,
+  showRupee = true,
+  valueColor = "#111827",
+  linearcolor,
+}) => (
+  <LinearGradient
+    colors={["#FFFFFF", linearcolor || "#FFFFFF"]}
+    start={{ x: 0, y: 0 }}
+    end={{ x: 1, y: 1 }}
+    style={styles.summaryCard}
+  >
+    <View style={styles.cardTopRow}>
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{title}</Text>
+
+        <Text style={[styles.cardValue, { color: valueColor }]}>
+          {showRupee && "₹ "}
+          {prefix && <Text>{prefix}</Text>}
+          <AnimatedNumber value={value} />
+          {suffix && <Text>{suffix}</Text>}
+        </Text>
+      </View>
+
+      <View style={styles.iconBox}>
+        <Image source={icon} style={styles.cardIcon} />
+      </View>
+    </View>
+  </LinearGradient>
+);
+
 const InvoiceRegister = ({ navigation }) => {
   const { CommonModule } = NativeModules;
   const { loading, Reportsdetails, GetInvoiceReports, invoiceReports, downloadInvoiceReport } = UseSetting();
@@ -624,72 +695,72 @@ const InvoiceRegister = ({ navigation }) => {
   //  || selectedInvoiceMode.length>0 || startDateValue || endDateValue ||
   // minPaidValue || maxPaidValue
 
-  const AnimatedNumber = ({ value, duration = 800 }) => {
-    const animatedValue = useRef(new Animated.Value(0)).current;
-    const [displayValue, setDisplayValue] = useState(0);
+  // const AnimatedNumber = ({ value, duration = 800 }) => {
+  //   const animatedValue = useRef(new Animated.Value(0)).current;
+  //   const [displayValue, setDisplayValue] = useState(0);
 
-    useEffect(() => {
-      animatedValue.setValue(0);
+  //   useEffect(() => {
+  //     animatedValue.setValue(0);
 
-      Animated.timing(animatedValue, {
-        toValue: Number(value) || 0,
-        duration,
-        useNativeDriver: false,
-      }).start();
+  //     Animated.timing(animatedValue, {
+  //       toValue: Number(value) || 0,
+  //       duration,
+  //       useNativeDriver: false,
+  //     }).start();
 
-      const listener = animatedValue.addListener(({ value }) => {
-        setDisplayValue(Math.floor(value));
-      });
+  //     const listener = animatedValue.addListener(({ value }) => {
+  //       setDisplayValue(Math.floor(value));
+  //     });
 
-      return () => {
-        animatedValue.removeListener(listener);
-      };
-    }, [value]);
+  //     return () => {
+  //       animatedValue.removeListener(listener);
+  //     };
+  //   }, [value]);
 
-    return <Text>{displayValue}</Text>;
-  };
+  //   return <Text>{displayValue}</Text>;
+  // };
 
-  const SummaryCard = ({
-    icon,
-    title,
-    value,
-    prefix,
-    suffix,
-    showRupee = true,
-    valueColor = "#111827",
-    linearcolor
-  }) => (
-    <LinearGradient
-      colors={["#FFFFFF", linearcolor]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.summaryCard}
-    >
-      <View style={styles.cardTopRow}>
-        <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>
-            {title}
-          </Text>
+  // const SummaryCard = ({
+  //   icon,
+  //   title,
+  //   value,
+  //   prefix,
+  //   suffix,
+  //   showRupee = true,
+  //   valueColor = "#111827",
+  //   linearcolor
+  // }) => (
+  //   <LinearGradient
+  //     colors={["#FFFFFF", linearcolor]}
+  //     start={{ x: 0, y: 0 }}
+  //     end={{ x: 1, y: 1 }}
+  //     style={styles.summaryCard}
+  //   >
+  //     <View style={styles.cardTopRow}>
+  //       <View style={styles.cardContent}>
+  //         <Text style={styles.cardTitle}>
+  //           {title}
+  //         </Text>
 
-          <Text style={[styles.cardValue, { color: valueColor }]}>
-            {showRupee && "₹ "}
-            {prefix && <Text>{prefix}</Text>}
+  //         <Text style={[styles.cardValue, { color: valueColor }]}>
+  //           {showRupee && "₹ "}
+  //           {prefix && <Text>{prefix}</Text>}
 
-            <AnimatedNumber value={value} />
+  //           <AnimatedNumber value={value} />
 
-            {suffix && <Text>{suffix}</Text>}
-          </Text>
-        </View>
+  //           {suffix && <Text>{suffix}</Text>}
+  //         </Text>
+  //       </View>
 
-        <View style={styles.iconBox}>
-          <Image
-            source={icon}
-            style={styles.cardIcon}
-          />
-        </View>
-      </View>
-    </LinearGradient>
-  );
+  //       <View style={styles.iconBox}>
+  //         <Image
+  //           source={icon}
+  //           style={styles.cardIcon}
+  //         />
+  //       </View>
+  //     </View>
+  //   </LinearGradient>
+  // );
 
 
   // const SummaryCard = ({

@@ -46,6 +46,69 @@ import GreenRupees from "../../../Assets/Images/GreenRupees.png"
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width * 0.44
 
+const AnimatedNumber = ({ value, duration = 800 }) => {
+    const targetValue = Number(value) || 0;
+
+    const animatedValue = useRef(new Animated.Value(0)).current;
+    const [displayValue, setDisplayValue] = useState(0);
+
+    useEffect(() => {
+        animatedValue.stopAnimation();
+        animatedValue.setValue(0);
+        setDisplayValue(0);
+
+        const listenerId = animatedValue.addListener(({ value }) => {
+            setDisplayValue(Math.floor(value));
+        });
+
+        const animation = Animated.timing(animatedValue, {
+            toValue: targetValue,
+            duration,
+            useNativeDriver: false,
+        });
+
+        animation.start(({ finished }) => {
+            if (finished) {
+                setDisplayValue(targetValue);
+            }
+        });
+
+        return () => {
+            animation.stop();
+            animatedValue.removeListener(listenerId);
+        };
+    }, [targetValue, duration, animatedValue]);
+
+    return <Text>{displayValue}</Text>;
+};
+
+const SummaryCard = ({
+    icon,
+    title,
+    value,
+    prefix,
+    suffix,
+    valueColor = "#111827",
+}) => (
+    <View style={styles.summaryCard}>
+        <View style={styles.cardTopRow}>
+            <View style={{ flex: 1 }}>
+                <Text style={styles.cardTitle}>{title}</Text>
+
+                <Text style={[styles.cardValue, { color: valueColor }]}>
+                    {prefix && <Text>{prefix}</Text>}
+                    <AnimatedNumber value={value} />
+                    {suffix && <Text>{suffix}</Text>}
+                </Text>
+            </View>
+
+            <View style={styles.iconBox}>
+                <Image source={icon} style={styles.cardIcon} />
+            </View>
+        </View>
+    </View>
+);
+
 export default function Vendors({ navigation }) {
 
     const {
@@ -515,57 +578,57 @@ export default function Vendors({ navigation }) {
 
     };
 
-    const SummaryCard = ({
-        icon,
-        title,
-        value,
-        prefix,
-        suffix,
-        valueColor = "#111827",
-    }) => (
-        <View style={styles.summaryCard}>
-            <View style={styles.cardTopRow}>
-                <View style={{ flex: 1 }}>
-                    <Text style={styles.cardTitle}>{title}</Text>
+    // const SummaryCard = ({
+    //     icon,
+    //     title,
+    //     value,
+    //     prefix,
+    //     suffix,
+    //     valueColor = "#111827",
+    // }) => (
+    //     <View style={styles.summaryCard}>
+    //         <View style={styles.cardTopRow}>
+    //             <View style={{ flex: 1 }}>
+    //                 <Text style={styles.cardTitle}>{title}</Text>
 
-                    <Text style={[styles.cardValue, { color: valueColor }]}>
-                        {prefix && <Text>{prefix}</Text>}
-                        <AnimatedNumber value={value} />
-                        {suffix && <Text>{suffix}</Text>}
-                    </Text>
-                </View>
+    //                 <Text style={[styles.cardValue, { color: valueColor }]}>
+    //                     {prefix && <Text>{prefix}</Text>}
+    //                     <AnimatedNumber value={value} />
+    //                     {suffix && <Text>{suffix}</Text>}
+    //                 </Text>
+    //             </View>
 
-                <View style={styles.iconBox}>
-                    <Image source={icon} style={styles.cardIcon} />
-                </View>
-            </View>
-        </View>
-    );
+    //             <View style={styles.iconBox}>
+    //                 <Image source={icon} style={styles.cardIcon} />
+    //             </View>
+    //         </View>
+    //     </View>
+    // );
 
-    const AnimatedNumber = ({ value, duration = 800 }) => {
-        const animatedValue = useRef(new Animated.Value(0)).current;
-        const [displayValue, setDisplayValue] = useState(0);
+    // const AnimatedNumber = ({ value, duration = 800 }) => {
+    //     const animatedValue = useRef(new Animated.Value(0)).current;
+    //     const [displayValue, setDisplayValue] = useState(0);
 
-        useEffect(() => {
-            animatedValue.setValue(0);
+    //     useEffect(() => {
+    //         animatedValue.setValue(0);
 
-            Animated.timing(animatedValue, {
-                toValue: Number(value) || 0,
-                duration,
-                useNativeDriver: false,
-            }).start();
+    //         Animated.timing(animatedValue, {
+    //             toValue: Number(value) || 0,
+    //             duration,
+    //             useNativeDriver: false,
+    //         }).start();
 
-            const listener = animatedValue.addListener(({ value }) => {
-                setDisplayValue(Math.floor(value));
-            });
+    //         const listener = animatedValue.addListener(({ value }) => {
+    //             setDisplayValue(Math.floor(value));
+    //         });
 
-            return () => {
-                animatedValue.removeListener(listener);
-            };
-        }, [value]);
+    //         return () => {
+    //             animatedValue.removeListener(listener);
+    //         };
+    //     }, [value]);
 
-        return <Text>{displayValue}</Text>;
-    };
+    //     return <Text>{displayValue}</Text>;
+    // };
 
     const handlevendorDetails = async (item) => {
         console.log("item", item);

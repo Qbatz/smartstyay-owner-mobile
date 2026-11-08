@@ -45,7 +45,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { UseSetting } from "../../Context/SettingContext";
 import BankIcon from "../../Assets/Images/bankBlue.png";
 import CashIcon from "../../Assets/Images/Cash_Icon.png";
-
+import InputComponent from "../MorePages/InputComponent";
 
 
 export default function AddTenantNewform({ navigation, route }) {
@@ -153,7 +153,7 @@ export default function AddTenantNewform({ navigation, route }) {
     const [proceedcheckin, setProceedCheckin] = useState(false);
     const [countryOpen, setCountryOpen] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState({ code: "+91", label: "India", });
-
+    const [isMobileFocused, setIsMobileFocused] = useState(false);
 
     const [jobErrors, setJobErrors] = useState([]);
 
@@ -350,6 +350,10 @@ export default function AddTenantNewform({ navigation, route }) {
     const handleEditCustomRent = () => {
         setShowCustomRentEditor(true);
         setIsCustomRentSaved(false);
+    };
+
+    const sanitizeAmount = (text) => {
+        return text.replace(/[^0-9]/g, "").replace(/^0+/, "");
     };
 
 
@@ -1040,14 +1044,14 @@ export default function AddTenantNewform({ navigation, route }) {
                 : null
         );
 
-        setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, 0)));
+        setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, "")));
 
         setReferenceNumber(getValue(draftDetails?.referenceNumber));
 
         setAdvanceAmount(String(getValue(draftDetails?.advanceAmount, 0)));
 
         setCheckinRentalAmount(
-            String(getValue(draftDetails?.rentalAmount, 0))
+            String(getValue(draftDetails?.rentalAmount, ""))
         );
 
 
@@ -1587,31 +1591,30 @@ export default function AddTenantNewform({ navigation, route }) {
 
         if (res.success) {
             setAccountList(
-                (res?.data?.bankDetails || []).map((item, index) => ({
-                    id: item?.bankId || `account-${index}`,
-                    bankId: item?.bankId,
+                (res?.data?.bankDetails || []).map((item, index) => {
+                    const isCash = item?.type === "CASH";
 
-                    displayName: item?.holderName || "Account",
-                    accountHolderName: item?.holderName || "Account",
+                    const holderName = item?.holderName || "";
+                    const displayName = item?.displayName || "";
+                    const bankName = item?.bankName || "";
 
-                    bankName: item?.bankName || "",
-                    upiId: item?.upiId || "",
-                    type: item?.type || "BANK",
-                    accountType: item?.type || "BANK",
-                    isUpi: item?.isUpi || false,
+                    return {
+                        ...item,
+                        id: item?.bankId || `account-${index}`,
+                        bankId: item?.bankId,
 
-                    cashAccountType:
-                        item?.type === "CASH"
-                            ? item?.bankName || "Cash"
-                            : "",
+                        holderName,
+                        displayName,
+                        accountHolderName: holderName,
 
-                    bankAccountType:
-                        item?.type !== "CASH"
-                            ? item?.bankName || "Bank Account"
-                            : "",
+                        accountType: item?.type || "BANK",
+                        paymentMethod: item?.type || "BANK",
 
-                    paymentMethod: item?.type || "BANK",
-                }))
+                        isCash,
+                        cashAccountType: isCash ? bankName || "Cash" : "",
+                        bankAccountType: !isCash ? bankName || "Bank Account" : "",
+                    };
+                })
             );
             setBeds(res?.data?.listBeds);
         } else {
@@ -1680,16 +1683,15 @@ export default function AddTenantNewform({ navigation, route }) {
         setOpenDropdownId(null);
     };
 
-    const fetchBankingList = async () => {
-        const data = await getBankListByHostel(activeHostelId);
-        // setAccountList(data.data);
-    };
+    // const fetchBankingList = async () => {
+    //     const data = await getBankListByHostel(activeHostelId);
+    // };
 
-    useEffect(() => {
-        if (activeHostelId) {
-            fetchBankingList(activeHostelId);
-        }
-    }, [activeHostelId]);
+    // useEffect(() => {
+    //     if (activeHostelId) {
+    //         fetchBankingList(activeHostelId);
+    //     }
+    // }, [activeHostelId]);
 
 
 
@@ -1727,7 +1729,9 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
     const updateAmount = (id, amount) => {
-        const onlyNum = amount.replace(/[^0-9]/g, "");
+
+        const onlyNum = sanitizeAmount(amount);
+        // const onlyNum = amount.replace(/[^0-9]/g, "");
 
         setExtraCharges((prev) =>
             prev.map((i) =>
@@ -3933,7 +3937,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                     </View>
 
                                     <Text style={styles.label}>First Name <Text style={{ color: "red" }}>*</Text></Text>
-                                    <TextInput
+                                    {/* <TextInput
                                         style={{
                                             borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 8, paddingHorizontal: 12,
                                             height: 50, fontSize: 14, backgroundColor: "#fff", marginBottom: 1,
@@ -3947,10 +3951,23 @@ export default function AddTenantNewform({ navigation, route }) {
                                             setBasicDetails({ ...basicDetails, firstName: onlyLetters });
                                             setNameError("")
                                         }}
+                                    /> */}
+
+                                    <InputComponent
+                                        type="name"
+                                        value={basicDetails.firstName}
+                                        onFocus={(e) => scrollInputIntoView(e)}
+                                        onChangeText={(t) => {
+                                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                            setBasicDetails({ ...basicDetails, firstName: onlyLetters });
+                                            setNameError("")
+                                        }}
+                                        placeholder="Enter First Name"
+                                        error={!!nameError}
                                     />
                                     {nameError && <ErrorMessage message={nameError} type="error" />}
                                     <Text style={[styles.label, { marginTop: 12 }]}>Last Name</Text>
-                                    <TextInput
+                                    {/* <TextInput
                                         style={styles.input}
                                         placeholder="Enter Last Name"
                                         placeholderTextColor="#A1A1A1"
@@ -3960,10 +3977,21 @@ export default function AddTenantNewform({ navigation, route }) {
                                             setBasicDetails({ ...basicDetails, lastName: onlyLetters });
                                         }}
                                         onFocus={(e) => scrollInputIntoView(e)}
+                                    /> */}
+
+                                    <InputComponent
+                                        type="name"
+                                        value={basicDetails.lastName}
+                                        onChangeText={(t) => {
+                                            const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                            setBasicDetails({ ...basicDetails, lastName: onlyLetters });
+                                        }}
+                                        onFocus={(e) => scrollInputIntoView(e)}
+                                        placeholder="Enter Last Name"
                                     />
 
                                     <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
-                                    <View style={styles.mobileWrapper}>
+                                    {/* <View style={styles.mobileWrapper}>
                                         <View style={{ position: "relative" }}>
                                             <TouchableOpacity
                                                 style={styles.countryDropdown}
@@ -3980,7 +4008,6 @@ export default function AddTenantNewform({ navigation, route }) {
                                         </View>
 
                                         <TextInput
-                                            // style={styles.mobileInput}
                                             style={{
                                                 paddingHorizontal: 12,
                                                 height: 50, fontSize: 14, marginBottom: 1,
@@ -4001,16 +4028,89 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                         />
 
+                                    </View> */}
+
+                                    <View
+                                        style={[
+                                            styles.mobileWrapper,
+                                            {
+                                                borderColor: mobileError
+                                                    ? "#FF3333"
+                                                    : isMobileFocused
+                                                        ? "#0085FF"
+                                                        : "#D9D9D9",
+
+                                                borderWidth: isMobileFocused ? 1.5 : 1,
+                                            },
+                                        ]}
+                                    >
+                                        <View style={{ position: "relative" }}>
+                                            <TouchableOpacity
+                                                style={styles.countryDropdown}
+                                                onPress={() => setCountryOpen(!countryOpen)}
+                                                activeOpacity={0.7}
+                                            >
+                                                <Text style={styles.countryCodeText}>
+                                                    {selectedCountry.code}
+                                                </Text>
+                                                <Image source={DownArrow} style={styles.countryArrow} />
+                                            </TouchableOpacity>
+                                        </View>
+
+                                        <TextInput
+                                            style={styles.mobileInput}
+                                            keyboardType="number-pad"
+                                            placeholder="Enter Mobile Number"
+                                            placeholderTextColor="#A1A1A1"
+                                            maxLength={10}
+                                            onFocus={() => setIsMobileFocused(true)}
+                                            onBlur={() => setIsMobileFocused(false)}
+                                            value={basicDetails.mobile}
+                                            onChangeText={(t) => {
+                                                setBasicDetails({
+                                                    ...basicDetails,
+                                                    mobile: t.replace(/[^0-9]/g, ""),
+                                                });
+                                                setMobileError("");
+                                            }}
+                                        />
                                     </View>
+
+
                                     {mobileError && <ErrorMessage message={mobileError} type="error" />}
                                     <Text style={[styles.label, { marginTop: 12 }]}>Email ID</Text>
-                                    <TextInput
+                                    {/* <TextInput
                                         style={styles.input}
                                         placeholder="Enter Email ID"
                                         placeholderTextColor="#A1A1A1"
                                         value={basicDetails.email}
                                         keyboardType="email-address"
                                         autoCapitalize="none"
+                                        onChangeText={(text) => {
+                                            const sanitized = text
+                                                .toLowerCase()
+                                                .replace(/[^a-z0-9@._+-]/g, "").replace(/\.{2,}/g, ".");
+
+                                            setBasicDetails(prev => ({ ...prev, email: sanitized }));
+
+                                            if (!sanitized) {
+                                                setEmailError("");
+                                            } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(sanitized)) {
+                                                setEmailError("Enter a valid email address");
+                                            } else {
+                                                setEmailError("");
+                                            }
+                                        }}
+                                        onFocus={(e) => scrollInputIntoView(e)}
+                                    /> */}
+
+                                    <InputComponent
+                                        type="email"
+                                        value={basicDetails.email}
+                                        keyboardType="email-address"
+                                        autoCapitalize="none"
+                                        placeholder="Enter Email ID"
+                                        error={!!emailError}
                                         onChangeText={(text) => {
                                             const sanitized = text
                                                 .toLowerCase()
@@ -4102,7 +4202,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                         ID Proof No
                                     </Text>
 
-                                    <TextInput
+                                    {/* <TextInput
                                         style={styles.input}
                                         placeholder="Enter Number"
                                         placeholderTextColor="#9CA3AF"
@@ -4112,6 +4212,17 @@ export default function AddTenantNewform({ navigation, route }) {
                                             setIdProofNumber(sanitized)
                                         }}
                                         onFocus={(e) => scrollInputIntoView(e)}
+                                    /> */}
+
+                                    <InputComponent
+                                        type="name"
+                                        value={IdprooNumber}
+                                        onChangeText={(t) => {
+                                            const sanitized = t.replace(/[^a-zA-Z0-9\s]/g, "");
+                                            setIdProofNumber(sanitized)
+                                        }}
+                                        onFocus={(e) => scrollInputIntoView(e)}
+                                        placeholder="Enter Number"
                                     />
 
 
@@ -4156,7 +4267,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                     <View style={styles.form}>
                                         <Text style={styles.label}>Flat, House no., Building </Text>
-                                        <TextInput
+                                        {/* <TextInput
                                             style={styles.input}
                                             placeholder="Enter Flat, House no., Building..."
                                             placeholderTextColor="#9CA3AF"
@@ -4166,9 +4277,21 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 setAddressDetails({ ...addressDetails, flat: sanitized });
                                             }}
                                             onFocus={(e) => scrollInputIntoView(e)}
+                                        /> */}
+
+                                        <InputComponent
+                                            type="name"
+                                            value={addressDetails.flat}
+                                            onChangeText={(t) => {
+                                                const sanitized = t.replace(/[^a-zA-Z0-9\s\-&/]/g, "");
+                                                setAddressDetails({ ...addressDetails, flat: sanitized });
+                                            }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
+                                            placeholder="Enter Flat, House no., Building..."
                                         />
+
                                         <Text style={styles.label}>Area , Street , Sector , Village</Text>
-                                        <TextInput
+                                        {/* <TextInput
                                             style={styles.input}
                                             placeholder="Enter Area"
                                             placeholderTextColor="#9CA3AF"
@@ -4178,11 +4301,22 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 setAddressDetails({ ...addressDetails, area: sanitized })
                                             }}
                                             onFocus={(e) => scrollInputIntoView(e)}
+                                        /> */}
+
+                                        <InputComponent
+                                            type="name"
+                                            value={addressDetails.area}
+                                            onChangeText={(t) => {
+                                                const sanitized = t.replace(/[^a-zA-Z0-9\s\-/]/g, "");
+                                                setAddressDetails({ ...addressDetails, area: sanitized })
+                                            }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
+                                            placeholder="Enter Area"
                                         />
 
 
                                         <Text style={styles.label}>Landmark</Text>
-                                        <TextInput
+                                        {/* <TextInput
                                             style={styles.input}
                                             placeholder="Ex : Near SBI Bank"
                                             placeholderTextColor="#9CA3AF"
@@ -4192,10 +4326,21 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 setAddressDetails({ ...addressDetails, landmark: sanitized })
                                             }}
                                             onFocus={(e) => scrollInputIntoView(e)}
+                                        /> */}
+
+                                        <InputComponent
+                                            type="name"
+                                            value={addressDetails.landmark}
+                                            onChangeText={(t) => {
+                                                const sanitized = t.replace(/[^a-zA-Z0-9\s]/g, "");
+                                                setAddressDetails({ ...addressDetails, landmark: sanitized })
+                                            }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
+                                            placeholder="Ex : Near SBI Bank"
                                         />
 
                                         <Text style={styles.label}>Pincode</Text>
-                                        <TextInput
+                                        {/* <TextInput
                                             style={styles.input}
                                             placeholder="123456"
                                             placeholderTextColor="#9CA3AF"
@@ -4220,31 +4365,40 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     setPincodeError("");
                                                 }
                                             }}
-                                        // onChangeText={(t) => {
-                                        //     const value = t.replace(/[^0-9]/g, "");
+                                   
 
-                                        //     setAddressDetails({
-                                        //         ...addressDetails,
-                                        //         pincode: value,
-                                        //     });
+                                        /> */}
 
+                                        <InputComponent
+                                            type="number"
+                                            keyboardType="number-pad"
+                                            maxLength={6}
+                                            value={addressDetails.pincode}
+                                            onFocus={(e) => scrollInputIntoView(e)}
+                                            onChangeText={(t) => {
+                                                const value = t.replace(/[^0-9]/g, "");
+                                                setAddressDetails({
+                                                    ...addressDetails,
+                                                    pincode: value,
+                                                });
 
-                                        //     if (!value) {
-                                        //         setPincodeError("");
-                                        //     } else if (value.startsWith("0")) {
-                                        //         setPincodeError("Pincode should not start with 0");
-                                        //     } else if (value.length < 6) {
-                                        //         setPincodeError("Pincode must be 6 digits");
-                                        //     } else {
-                                        //         setPincodeError("");
-                                        //     }
-                                        // }}
-
+                                                if (!value) {
+                                                    setPincodeError("");
+                                                } else if (value.startsWith("0")) {
+                                                    setPincodeError("Pincode should not start with 0");
+                                                } else if (value.length !== 6) {
+                                                    setPincodeError("Pincode must be 6 digits");
+                                                } else {
+                                                    setPincodeError("");
+                                                }
+                                            }}
+                                            placeholder="Enter Pincode"
                                         />
+
                                         {pincodeError && <ErrorMessage message={pincodeError} type="error" />}
 
                                         <Text style={styles.label}>City</Text>
-                                        <TextInput
+                                        {/* <TextInput
                                             style={styles.input}
                                             placeholder="Enter Your City Name"
                                             placeholderTextColor="#9CA3AF"
@@ -4254,6 +4408,17 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 setAddressDetails({ ...addressDetails, city: sanitized })
                                             }}
                                             onFocus={(e) => scrollInputIntoView(e)}
+                                        /> */}
+
+                                        <InputComponent
+                                            type="name"
+                                            value={addressDetails.city}
+                                            onChangeText={(t) => {
+                                                const sanitized = t.replace(/[^a-zA-Z\s]/g, "");
+                                                setAddressDetails({ ...addressDetails, city: sanitized })
+                                            }}
+                                            onFocus={(e) => scrollInputIntoView(e)}
+                                            placeholder="Enter Your City Name"
                                         />
 
 
@@ -4509,18 +4674,30 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 <ErrorMessage message={bookingDateError} type="error" />
                                             )}
                                             <Text style={styles.label}>Booking Amount <Text style={{ color: "red" }}>*</Text></Text>
-                                            <TextInput
+                                            {/* <TextInput
                                                 style={styles.input}
                                                 placeholder="Enter Amount"
                                                 keyboardType="numeric"
                                                 value={bookingAmount}
-                                                // onChangeText={setBookingAmount}
                                                 onChangeText={(text) => {
                                                     const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setBookingAmount(onlyNum);
+                                                    setBookingAmount(sanitizeAmount(text));
                                                     setBookingAmountError("");
                                                 }}
                                                 onFocus={(e) => scrollInputIntoView(e)}
+                                            /> */}
+
+                                            <InputComponent
+                                                type="number"
+                                                value={bookingAmount}
+                                                placeholder="Enter Amount"
+                                                keyboardType="numeric"
+                                                onChangeText={(text) => {
+                                                    setBookingAmount(sanitizeAmount(text));
+                                                    setBookingAmountError("");
+                                                }}
+                                                onFocus={(e) => scrollInputIntoView(e)}
+                                                error={!!bookingAmountError}
                                             />
                                             {bookingAmountError && (
                                                 <ErrorMessage message={bookingAmountError} type="error" />
@@ -4854,9 +5031,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                     numberOfLines={1}
                                                                     ellipsizeMode="tail"
                                                                 >
-                                                                    {accountSelected?.accountHolderName ||
-                                                                        accountSelected?.displayName ||
-                                                                        "Account"}
+                                                                    {accountSelected?.displayName}
                                                                 </Text>
 
                                                                 <Text
@@ -4864,13 +5039,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                     numberOfLines={1}
                                                                     ellipsizeMode="tail"
                                                                 >
-                                                                    {accountSelected?.accountType === "CASH"
-                                                                        ? accountSelected?.cashAccountType ||
-                                                                        "Petty Cash"
-                                                                        : accountSelected?.paymentMethod ||
-                                                                        accountSelected?.bankAccountType ||
-                                                                        accountSelected?.bankName ||
-                                                                        "Bank Account"}
+                                                                    {accountSelected?.holderName} - {accountSelected?.bankName}
                                                                 </Text>
                                                             </View>
 
@@ -4927,16 +5096,30 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                             <Text style={styles.label}>Transaction Id</Text>
 
-                                            <TextInput
+                                            {/* <TextInput
                                                 ref={transactionRef}
                                                 style={styles.inputBox}
                                                 placeholder="Enter Transaction Id"
                                                 value={referenceNumber}
-                                                // onFocus={() => scrollInputIntoView(transactionRef)}
 
                                                 onChangeText={(text) => {
 
                                                     const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
+                                                    setReferenceNumber(noEmojis);
+                                                }}
+                                                onFocus={(e) => scrollInputIntoView(e)}
+                                            /> */}
+
+                                            <InputComponent
+                                                ref={transactionRef}
+                                                type="text"
+                                                value={referenceNumber}
+                                                placeholder="Enter Transaction Id"
+                                                onChangeText={(text) => {
+                                                    const noEmojis = text.replace(
+                                                        /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,
+                                                        ""
+                                                    );
                                                     setReferenceNumber(noEmojis);
                                                 }}
                                                 onFocus={(e) => scrollInputIntoView(e)}
@@ -5280,7 +5463,7 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                                         {/* <Text style={styles.label}>Refundable Amount </Text> */}
 
-                                                        <TextInput
+                                                        {/* <TextInput
                                                             style={[
                                                                 styles.input,
                                                                 refuseAdvanceAmount && styles.disabledInput,
@@ -5297,6 +5480,21 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                 setAdvanceError("");
                                                             }}
 
+                                                        /> */}
+
+                                                        <InputComponent
+                                                            type="number"
+                                                            value={advanceAmount}
+                                                            placeholder="Enter Amount"
+                                                            keyboardType="numeric"
+                                                            editable={!refuseAdvanceAmount}
+                                                            disabled={refuseAdvanceAmount}
+                                                            onChangeText={(text) => {
+                                                                const onlyNum = text.replace(/[^0-9]/g, "");
+                                                                setAdvanceAmount(onlyNum);
+                                                                setAdvanceError("");
+                                                            }}
+                                                            error={!!advanceError}
                                                         />
 
                                                         {advanceError && (
@@ -5503,7 +5701,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                             </Text>
 
                                             <Text style={styles.label}>Total Rent (INR) <Text style={{ color: "red" }}>*</Text></Text>
-                                            <TextInput
+                                            {/* <TextInput
                                                 style={styles.input}
                                                 placeholder={
                                                     selectedBed?.rentAmount
@@ -5515,12 +5713,34 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 value={checkinrentalAmount}
                                                 onChangeText={(text) => {
                                                     const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setCheckinRentalAmount(onlyNum);
+                                                    setCheckinRentalAmount(sanitizeAmount(text));
                                                     setRentalError("");
                                                 }}
                                                 onFocus={(e) => scrollInputIntoView(e)}
 
+                                            /> */}
+
+                                            <InputComponent
+                                                type="number"
+                                                value={checkinrentalAmount}
+                                                placeholder={
+                                                    selectedBed?.rentAmount
+                                                        ? String(selectedBed.rentAmount)
+                                                        : "Enter Amount"
+                                                }
+                                                keyboardType="numeric"
+                                                onChangeText={(text) => {
+                                                    setCheckinRentalAmount(sanitizeAmount(text));
+                                                    setRentalError("");
+                                                }}
+                                                onFocus={(e) => scrollInputIntoView(e)}
+                                                error={!!rentalError}
                                             />
+
+                                            {/* {rentalError && (
+                                                <ErrorMessage message={rentalError} type="error" />
+                                            )} */}
+
                                             {rentalError && (
                                                 <ErrorMessage message={rentalError} type="error" />
                                             )}
@@ -5660,9 +5880,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                                                     keyboardType="numeric"
                                                                                     value={customRentAmount}
                                                                                     onChangeText={(text) => {
-                                                                                        setCustomRentAmount(
-                                                                                            text.replace(/[^0-9]/g, "")
-                                                                                        );
+                                                                                        // setCustomRentAmount(
+                                                                                        //     text.replace(/[^0-9]/g, "")
+                                                                                        // );
+                                                                                        setCustomRentAmount(sanitizeAmount(text));
                                                                                         setCustomRentError("");
                                                                                     }}
                                                                                 />
@@ -7282,7 +7503,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         numberOfLines={1}
                                                         ellipsizeMode="tail"
                                                     >
-                                                        {payment?.displayName || payment?.accountHolderName || "Account"}
+                                                        {payment?.displayName}
                                                     </Text>
 
                                                     <Text
@@ -7290,13 +7511,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         numberOfLines={1}
                                                         ellipsizeMode="tail"
                                                     >
-                                                        {isCash
-                                                            ? payment?.cashAccountType || "Petty Cash"
-                                                            : payment?.paymentMethod ||
-                                                            payment?.bankAccountType ||
-                                                            payment?.bankName ||
-                                                            payment?.accountType ||
-                                                            "Bank"}
+                                                        {payment?.holderName} - {payment?.bankName}
                                                     </Text>
                                                 </View>
 

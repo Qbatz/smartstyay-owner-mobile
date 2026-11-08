@@ -39,7 +39,7 @@ export default function VendorSettlePayment({
 
   const isApplyTriggeredRef = useRef(false);
 
-    const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
 
 
   const { settleExpense, settleVendorPayment } = useContext(CustomerContext);;
@@ -54,14 +54,19 @@ export default function VendorSettlePayment({
   console.log("vendor", vendor);
   console.log("vendorSettlementInitialize", vendorSettlementInitialize);
 
-  // 1️⃣ State add பண்ணுங்க (top-ல் மற்ற states-உடன்)
   const [vendorAppliedAmounts, setVendorAppliedAmounts] = useState({});
 
-  // 2️⃣ vendorExpensesPayload - handleSubmit-க்கு முன்னால் build பண்ணுங்க
-  const vendorExpensesPayload = vendorSettlementInitialize?.expenses?.map((exp) => ({
-    expenseId: String(exp.expenseId),
-    paidAmount: Number(vendorAppliedAmounts[exp.expenseId] || 0),
-  })) || [];
+  // const vendorExpensesPayload = vendorSettlementInitialize?.expenses?.map((exp) => ({
+  //   expenseId: String(exp.expenseId),
+  //   paidAmount: Number(vendorAppliedAmounts[exp.expenseId] || 0),
+  // })) || [];
+
+  const vendorExpensesPayload = (vendorSettlementInitialize?.expenses || [])
+    .map((exp) => ({
+      expenseId: exp?.expenseId,
+      paidAmount: Number(vendorAppliedAmounts[exp?.expenseId] || 0),
+    }))
+    .filter((item) => item.paidAmount > 0);
 
 
   // const dueAmount = vendorDetails?.summary?.outstanding
@@ -123,25 +128,65 @@ export default function VendorSettlePayment({
 
   console.log("initializeData", initializeData);
 
-  const paymentOptions = (initializeData?.banks || []).map(
-    (item, index) => {
-      const isCash =
-        item?.bankName?.toUpperCase() === "CASH";
+  // const paymentOptions = (initializeData?.banks || []).map(
+  //   (item, index) => {
+  //     const isCash =
+  //       item?.bankName?.toUpperCase() === "CASH";
 
-      return {
-        id: item?.bankId || `account-${index}`,
-        bankId: item?.bankId,
-        label: item?.bankName || item?.holderName || "Account",
-        name: item?.holderName || "Account",
-        displayName: item?.holderName || "Account",
-        accountHolderName: item?.holderName || "Account",
-        bankName: item?.bankName || "",
+  //     return {
+  //       id: item?.bankId || `account-${index}`,
+  //       bankId: item?.bankId,
+  //       label: item?.bankName || item?.holderName || "Account",
+  //       name: item?.holderName || "Account",
+  //       displayName: item?.holderName || "Account",
+  //       accountHolderName: item?.holderName || "Account",
+  //       bankName: item?.bankName || "",
+  //       isCash,
+  //       accountType: isCash ? "CASH" : "BANK",
+  //       subLabel: item?.bankName || "Bank Account",
+  //     };
+  //   }
+  // );
+
+
+  const paymentOptions = (initializeData?.banks || []).map((bank, index) => {
+    const holderName =
+        bank?.holderName || bank?.accountHolderName || "";
+
+    const bankName = bank?.bankName || "";
+
+    const accountType =
+        bank?.accountType || bank?.type || bankName || "BANK";
+
+    const normalizedBankName = String(bankName).toUpperCase();
+    const normalizedAccountType = String(accountType).toUpperCase();
+
+    const isCash =
+        normalizedBankName === "CASH" ||
+        normalizedAccountType === "CASH";
+
+    const isBankAccount =
+        normalizedBankName === "BANK" ||
+        normalizedAccountType === "BANK";
+
+    return {
+        id: bank?.bankId || `account-${index}`,
+        value: bank?.bankId,
+        bankId: bank?.bankId,
+        displayName: bank?.displayName || "",
+        holderName,
+        accountHolderName: holderName,
+        bankName,
+        accountType,
+        type: bank?.accountType || bank?.bankName || bank?.type || "",
         isCash,
-        accountType: isCash ? "CASH" : "BANK",
-        subLabel: item?.bankName || "Bank Account",
-      };
-    }
-  );
+        isBank: bank?.isBank || isBankAccount,
+        iconType: isCash ? "CASH" : isBankAccount ? "BANK" : "CARD",
+        subLabel: `${holderName} - ${bankName}`,
+        data: bank,
+    };
+});
+
 
   const dueAmount = Number(
     isVendorSettlement
@@ -335,29 +380,30 @@ export default function VendorSettlePayment({
 
       if (isVendorSettlement) {
         const payload = {
-          // images: attachments?.map(item => item?.uri) || [],
           payLoads: {
             paymentDate: dayjs(purchaseDate).format("DD-MM-YYYY"),
-            bankId: String(selectedMode?.bankId),
-            paymentMethod: selectedMode?.label,
-            transactionId,
+            bankId: selectedMode?.bankId ?? "",
+            paymentMethod: selectedMode?.type || selectedMode?.name || "",
+            transactionId: transactionId,
             notes: description,
             expenses: vendorExpensesPayload,
           },
-        };
-        
+        }
+
+
+        response = await settleVendorPayment
+          (activeHostelId,
+            vendor?.id,
+            payload,
+            attachments);
+
 
         // response = await settleVendorPayment(
+        //   activeHostelId,
         //   vendor?.id,
         //   payload,
+        //   attachments
         // );
-
-        response = await settleVendorPayment(
-          activeHostelId,
-          vendor?.id,
-          payload,
-          attachments
-        );
 
         if (response?.success) {
           setModalType("success");
@@ -642,14 +688,14 @@ export default function VendorSettlePayment({
                 <View
                   style={[
                     styles.paymentMethodIcon,
-                    selectedMode?.accountType === "CASH"
+                    selectedMode?.iconType === "CASH"
                       ? styles.cashIconBg
                       : styles.bankIconBg,
                   ]}
                 >
                   <Image
                     source={
-                      selectedMode?.accountType === "CASH"
+                      selectedMode?.iconType === "CASH"
                         ? CashIcon
                         : BankIcon
                     }
@@ -662,21 +708,21 @@ export default function VendorSettlePayment({
                     style={styles.paymentMethodName}
                     numberOfLines={1}
                   >
-                    {selectedMode?.name}
+                  {selectedMode?.displayName}
                   </Text>
 
                   <Text
                     style={styles.paymentMethodSubText}
                     numberOfLines={1}
                   >
-                    {selectedMode?.subLabel}
+                  {selectedMode?.holderName} - {selectedMode?.bankName}
                   </Text>
                 </View>
 
                 <View
                   style={[
                     styles.paymentTypeBadge,
-                    selectedMode?.accountType === "CASH"
+                    selectedMode?.iconType === "CASH"
                       ? styles.cashBadge
                       : styles.bankBadge,
                   ]}
@@ -684,7 +730,7 @@ export default function VendorSettlePayment({
                   <Text
                     style={[
                       styles.paymentTypeText,
-                      selectedMode?.accountType === "CASH"
+                      selectedMode?.iconType === "CASH"
                         ? styles.cashText
                         : styles.bankText,
                     ]}
@@ -742,14 +788,14 @@ export default function VendorSettlePayment({
                         <View
                           style={[
                             styles.paymentMethodIcon,
-                            item?.accountType === "CASH"
+                           item?.iconType === "CASH"
                               ? styles.cashIconBg
                               : styles.bankIconBg,
                           ]}
                         >
                           <Image
                             source={
-                              item?.accountType === "CASH"
+                              item?.iconType === "CASH"
                                 ? CashIcon
                                 : BankIcon
                             }
@@ -762,21 +808,21 @@ export default function VendorSettlePayment({
                             style={styles.paymentMethodName}
                             numberOfLines={1}
                           >
-                            {item?.name}
+                           {item?.displayName}
                           </Text>
 
                           <Text
                             style={styles.paymentMethodSubText}
                             numberOfLines={1}
                           >
-                            {item?.subLabel}
+                          {item?.holderName} - {item?.bankName}
                           </Text>
                         </View>
 
                         <View
                           style={[
                             styles.paymentTypeBadge,
-                            item?.accountType === "CASH"
+                          item?.iconType === "CASH"
                               ? styles.cashBadge
                               : styles.bankBadge,
                           ]}
@@ -784,12 +830,12 @@ export default function VendorSettlePayment({
                           <Text
                             style={[
                               styles.paymentTypeText,
-                              item?.accountType === "CASH"
+                              item?.iconType === "CASH"
                                 ? styles.cashText
                                 : styles.bankText,
                             ]}
                           >
-                            {item?.accountType || "BANK"}
+                           {item?.accountType || "BANK"}
                           </Text>
                         </View>
                       </TouchableOpacity>
@@ -1137,14 +1183,15 @@ export default function VendorSettlePayment({
           <View
             // style={styles.footer}
             style={[
-                styles.footer,
-                {
-                  marginBottom: Math.max(insets.bottom, 20),
-                },
-              ]}
+              styles.footer,
+              {
+                marginBottom: Math.max(insets.bottom, 20),
+              },
+            ]}
           >
             <TouchableOpacity
               style={styles.cancelBtn}
+              onPress={() => navigation.goBack()}
             >
               <Text style={{ fontFamily: "Gilroy-Semibold" }}>
                 Cancel

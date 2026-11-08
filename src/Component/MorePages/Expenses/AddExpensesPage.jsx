@@ -502,32 +502,66 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
 
     const paymentOptions = (
         IntializeexpensesList?.banks || []
-    ).map((item, index) => {
-        const isCash =
-            item?.bankName?.toUpperCase() === "CASH";
+    ).map((bank, index) => {
+        const accountType = String(
+            bank?.accountType || bank?.type || bank?.bankName || ""
+        ).trim().toUpperCase();
+
+        const iconType =
+            accountType === "BANK" || bank?.bankName?.toUpperCase() === "BANK"
+                ? "BANK"
+                : accountType === "CASH" || bank?.bankName?.toUpperCase() === "CASH"
+                    ? "CASH"
+                    : "CARD";
+
+        const holderName =
+            bank?.accountHolderName || bank?.holderName || "";
 
         return {
-            id: item?.bankId || `account-${index}`,
-            bankId: item?.bankId,
-
-            accountHolderName:
-                item?.holderName || "Account",
-
-            displayName:
-                item?.holderName || "Account",
-
-            bankName:
-                item?.bankName || "",
-
-            accountType:
-                isCash ? "CASH" : "BANK",
-
-            isCash,
-
-            subLabel:
-                item?.bankName || "Bank Account",
+            id: bank?.bankId || `account-${index}`,
+            value: bank?.bankId,
+            bankId: bank?.bankId,
+            displayName: bank?.displayName || "",
+            holderName,
+            accountHolderName: holderName,
+            bankName: bank?.bankName || "",
+            accountType: bank?.accountType || "",
+            iconType,
+            isCash: iconType === "CASH",
+            subLabel: `${holderName} - ${bank?.bankName || ""}`,
+            data: bank,
         };
     });
+
+
+    // const paymentOptions = (
+    //     IntializeexpensesList?.banks || []
+    // ).map((item, index) => {
+    //     const isCash =
+    //         item?.bankName?.toUpperCase() === "CASH";
+
+    //     return {
+    //         id: item?.bankId || `account-${index}`,
+    //         bankId: item?.bankId,
+
+    //         accountHolderName:
+    //             item?.holderName || "Account",
+
+    //         displayName:
+    //             item?.holderName || "Account",
+
+    //         bankName:
+    //             item?.bankName || "",
+
+    //         accountType:
+    //             isCash ? "CASH" : "BANK",
+
+    //         isCash,
+
+    //         subLabel:
+    //             item?.bankName || "Bank Account",
+    //     };
+    // });
 
 
 
@@ -1692,16 +1726,15 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                 </View>
 
                                                 <View style={styles.selectedPaymentDetails}>
-                                                    <Text style={styles.paymentMethodName}>
-                                                        {selectedMode?.displayName ||
-                                                            selectedMode?.accountHolderName ||
-                                                            selectedMode?.name}
+                                                    <Text style={styles.paymentMethodName} numberOfLines={1}>
+                                                        {selectedMode?.displayName}
                                                     </Text>
+
                                                     <Text
                                                         style={styles.paymentMethodSubText}
                                                         numberOfLines={1}
                                                     >
-                                                        {selectedMode?.subLabel || "Bank Account"}
+                                                        {selectedMode?.holderName} - {selectedMode?.bankName}
                                                     </Text>
                                                 </View>
 
@@ -1721,7 +1754,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                                 : styles.bankText,
                                                         ]}
                                                     >
-                                                        {selectedMode?.isCash ? "CASH" : "BANK"}
+                                                        {selectedMode?.iconType || "BANK"}
                                                     </Text>
                                                 </View>
                                             </View>
@@ -2143,7 +2176,7 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                                                         : styles.bankText,
                                                                 ]}
                                                             >
-                                                                {selectedMode?.isCash ? "CASH" : "BANK"}
+                                                                {selectedMode?.iconType || "BANK"}
                                                             </Text>
                                                         </View>
                                                     </View>
@@ -2760,8 +2793,8 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                         onChangeText={(text) => {
                                             const cleaned = removeLeadingZeros(text);
 
-                                            if ( discountType === "percentage" && Number(cleaned) > 100 ) {
-                                                setDiscountError(  "Discount percentage cannot exceed 100%")
+                                            if (discountType === "percentage" && Number(cleaned) > 100) {
+                                                setDiscountError("Discount percentage cannot exceed 100%")
                                                 return
                                             }
 
@@ -2973,17 +3006,15 @@ export default function AddExpensesPage({ route, vendorData, navigation }) {
                                             </View>
 
                                             <View style={styles.paymentMethodDetails}>
-                                                <Text style={styles.paymentMethodName}>
-                                                    {item?.displayName ||
-                                                        item?.accountHolderName ||
-                                                        item?.name}
+                                                <Text style={styles.paymentMethodName} numberOfLines={1}>
+                                                    {item?.displayName}
                                                 </Text>
 
                                                 <Text
                                                     style={styles.paymentMethodSubText}
                                                     numberOfLines={1}
                                                 >
-                                                    {item?.subLabel}
+                                                    {item?.holderName} - {item?.bankName}
                                                 </Text>
                                             </View>
 

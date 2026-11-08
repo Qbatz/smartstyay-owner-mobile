@@ -58,7 +58,7 @@ import BackIcon from "../../../Assets/Images/Arrow_left.png";
 import Location from "../../../Assets/Images/Locations.png";
 
 import FilterBottomSheet from "../Reports/FilterBottomSheet"
-
+import SuccessModal from "../../../ToastFile/ToastPage";
 
 
 export default function NewBankingList() {
@@ -67,7 +67,7 @@ export default function NewBankingList() {
 
   const { activeHostelId } = useContext(CommonContexts);
   const { getBankOverview, NewgetBankList, bankList, getAllTransactions, newtransactionList, loading, errorMsg,
-    getBankListByHostel, AddBankAmount, newOnlyTransactionList, setNewOnlyTransactionList } =
+    getBankListByHostel, AddBankAmount, newOnlyTransactionList, setNewOnlyTransactionList, deleteBankAccount } =
     useContext(BankingContext);
 
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
@@ -99,6 +99,9 @@ export default function NewBankingList() {
   const [selfTransferScreen, setSelfTransferScreen] = useState(false)
   const [searchText, setSearchText] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+  const [isDeletingBank, setIsDeletingBank] = useState(false);
+
+  const isDeletingBankRef = useRef(false);
 
   const filterOptions = newtransactionList?.filterOptions;
 
@@ -143,6 +146,8 @@ export default function NewBankingList() {
   const isSubscriptionAllow = isValidSubscription
 
   const [pageLoading, setPageLoading] = useState(false)
+  const onEndReachedCalledDuringMomentum = useRef(true);
+  const isFetchingList = useRef(false);
 
 
 
@@ -309,7 +314,7 @@ export default function NewBankingList() {
     page = 1,
     isRefresh = false
   ) => {
-    if (!activeHostelId) {
+    if (!activeHostelId || isFetchingList.current) {
       return;
     }
 
@@ -322,6 +327,11 @@ export default function NewBankingList() {
     if (!isRefresh && !hasMoreTransactions) {
       return;
     }
+    isFetchingList.current = true;
+    const filters = {
+      dateFilter: tempDateFilter,
+      source: tempSource,
+    };
 
     try {
       setTransactionLoading(true);
@@ -329,13 +339,14 @@ export default function NewBankingList() {
       const res = await getAllTransactions(
         activeHostelId,
         page,
-        50
+        20,
+        filters
       );
 
       if (res?.success) {
         const newTransactions = res?.data || [];
 
-        if (newTransactions.length < 50) {
+        if (newTransactions.length < 20) {
           setHasMoreTransactions(false);
         }
 
@@ -345,6 +356,7 @@ export default function NewBankingList() {
     } catch (error) {
       console.log("Transaction error:", error);
     } finally {
+      isFetchingList.current = false;
       setTransactionLoading(false);
     }
   };
@@ -530,32 +542,78 @@ export default function NewBankingList() {
     },
   ];
 
+  // const applyTransactionFilters = async ({
+  //   dateFilter = selectedDateFilter,
+  //   source = selectedSource,
+  //   fromDate,
+  //   toDate,
+  // } = {}) => {
+  //   if (!activeHostelId) return;
+
+  //   console.log("Applying Banking Filters:", {
+  //     dateFilter,
+  //     source,
+  //     fromDate,
+  //     toDate,
+  //   });
+
+  //   await getAllTransactions(
+  //     activeHostelId,
+  //     1,
+  //     20,
+  //     {
+  //       dateFilter,
+  //       source,
+  //       ...(fromDate && { fromDate }),
+  //       ...(toDate && { toDate }),
+  //     }
+  //   );
+  // };
+
   const applyTransactionFilters = async ({
     dateFilter = selectedDateFilter,
     source = selectedSource,
     fromDate,
     toDate,
   } = {}) => {
-    if (!activeHostelId) return;
+    if (!activeHostelId || !canReadBanking) return;
 
-    console.log("Applying Banking Filters:", {
+    const filters = {
       dateFilter,
       source,
-      fromDate,
-      toDate,
-    });
+      ...(fromDate ? { fromDate } : {}),
+      ...(toDate ? { toDate } : {}),
+    };
 
-    await getAllTransactions(
-      activeHostelId,
-      1,
-      20,
-      {
-        dateFilter,
-        source,
-        ...(fromDate && { fromDate }),
-        ...(toDate && { toDate }),
+    try {
+      setTransactionLoading(true);
+
+      const res = await getAllTransactions(
+        activeHostelId,
+        1,
+        20,
+        filters
+      );
+
+      if (res?.success) {
+        setSelectedDateFilter(
+          Array.isArray(dateFilter) ? dateFilter : dateFilter ? [dateFilter] : []
+        );
+
+        setSelectedSource(
+          Array.isArray(source) ? source : source ? [source] : []
+        );
+
+        setTransactionPage(1);
+        setHasMoreTransactions(
+          (res?.data?.length || 0) >= 20
+        );
       }
-    );
+    } catch (error) {
+      console.log("Apply banking filter error:", error);
+    } finally {
+      setTransactionLoading(false);
+    }
   };
 
   const handleApplyFilter = async () => {
@@ -568,13 +626,45 @@ export default function NewBankingList() {
 
     console.log("FULL BANKING FILTER:", filters);
 
-    setSelectedDateFilter(tempDateFilter);
-    setSelectedSource(tempSource);
+    try {
+      setTransactionLoading(true);
 
-    await getAllTransactions(activeHostelId, filters);
+      await getAllTransactions(
+        activeHostelId,
+        1,
+        20,
+        filters
+      );
 
-    setShowFilter(false);
+      setSelectedDateFilter(tempDateFilter);
+      setSelectedSource(tempSource);
+      setTransactionPage(1);
+      setHasMoreTransactions(true);
+      setShowFilter(false);
+    } catch (error) {
+      console.log("Banking filter error:", error);
+    } finally {
+      setTransactionLoading(false);
+    }
   };
+
+  // const handleApplyFilter = async () => {
+  //   if (!canReadBanking || !activeHostelId) return;
+
+  //   const filters = {
+  //     dateFilter: tempDateFilter,
+  //     source: tempSource,
+  //   };
+
+  //   console.log("FULL BANKING FILTER:", filters);
+
+  //   setSelectedDateFilter(tempDateFilter);
+  //   setSelectedSource(tempSource);
+
+  //   await getAllTransactions(activeHostelId, filters);
+
+  //   setShowFilter(false);
+  // };
 
 
   // const mappedBankList = (bankList || []).map((item) => {
@@ -1084,7 +1174,7 @@ export default function NewBankingList() {
 
   const bankListHeight = scrollY.interpolate({
     inputRange: [0, 200],
-    outputRange: [295, 0], // அல்லது 290
+    outputRange: [235, 0], // அல்லது 290
     extrapolate: "clamp",
   });
 
@@ -1147,6 +1237,114 @@ export default function NewBankingList() {
     setDeleteShow(false)
   }
 
+  const handleDeleteConfirm = async () => {
+    if (isDeletingBankRef.current) return;
+
+    if (!canDeleteBanking) {
+
+      setModalType("error");
+      setModalMessage("You don't have permission to delete this account.")
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1200);
+      return;
+    }
+
+    if (!activeHostelId) {
+
+      setModalType("error");
+      setModalMessage("Hostel ID is missing.")
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1200);
+      return;
+    }
+
+    const bankId =
+      selectedItem?.id ||
+      selectedItem?.raw?.bankId ||
+      selectedItem?.raw?.bankingId;
+
+    if (!bankId) {
+
+      setModalType("error");
+      setModalMessage("Invalid bank account. Please try again.")
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1200);
+      return;
+    }
+
+    if (selectedItem?.raw?.isDeleted || selectedItem?.isDeleted) {
+
+      setModalType("error");
+      setModalMessage("This account is already deleted.")
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1200);
+      return;
+    }
+
+    try {
+      isDeletingBankRef.current = true;
+      setIsDeletingBank(true);
+
+      const res = await deleteBankAccount(activeHostelId, bankId);
+
+      console.log("bankdeleteres", res);
+      
+
+      if (res?.success) {
+        setDeleteShow(false);
+        setShowMenu(false);
+        setSelectedItem(null);
+
+        setModalType("success");
+        setModalMessage(
+          res?.message || "Bank deleted successfully"
+        );
+        setShowSuccessModal(true);
+        await getAllTransactions(activeHostelId, 1, 20, {})
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1200);
+
+      }
+      else {
+        setModalType("error");
+        setModalMessage(res?.message || "Unable to delete bank account.")
+        setShowSuccessModal(true);
+
+        setTimeout(() => {
+          setShowSuccessModal(false);
+        }, 1200);
+
+      }
+    } catch (error) {
+        console.log("bankdeletereserr", error);
+      setModalType("error");
+      setModalMessage(error?.message || "Something went wrong.")
+      setShowSuccessModal(true);
+
+      setTimeout(() => {
+        setShowSuccessModal(false);
+      }, 1200)
+    }
+    finally {
+      isDeletingBankRef.current = false;
+      setIsDeletingBank(false);
+    }
+  };
+
   const handleEditBanking = (item) => {
     setShowMenu(false);
     setAddBankingShow(true);
@@ -1203,6 +1401,13 @@ export default function NewBankingList() {
   return (
     <>
       {loading || pageLoading && <Loader />}
+      <SuccessModal
+        visible={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        message={modalMessage}
+        type={modalType}
+      />
+
       <View style={styles.container}>
 
         <View style={styles.stickyHeader}>
@@ -1360,8 +1565,26 @@ export default function NewBankingList() {
 
                               </View>
 
-                              {/* INFO BUTTON */}
+
                               <TouchableOpacity
+                                ref={(ref) => {
+                                  dotsRef.current[item.id] = ref;
+                                }}
+                                // style={styles.infoButton}
+                                activeOpacity={0.7}
+                                onPress={(e) => {
+                                  e.stopPropagation?.();
+                                  openMenu(item);
+                                }}
+                              >
+                                <Image
+                                  source={ThreeDotsIcon}
+                                  style={{ width: 24, height: 24 }}
+                                  resizeMode="contain"
+                                />
+                              </TouchableOpacity>
+
+                              {/* <TouchableOpacity
                                 style={styles.infoButton}
                                 activeOpacity={0.7}
                                 onPress={(e) => {
@@ -1374,14 +1597,30 @@ export default function NewBankingList() {
                                 <Text style={styles.infoIconText}>
                                   !
                                 </Text>
-                              </TouchableOpacity>
+                              </TouchableOpacity> */}
+
 
                             </View>
 
+
                             {/* BALANCE */}
-                            <Text style={styles.balanceAmount}>
-                              ₹{item?.balance?.toLocaleString("en-IN")}
-                            </Text>
+                            <View style={styles.balanceRow}>
+                              <Text style={styles.balanceAmount}>
+                                ₹{item?.balance?.toLocaleString("en-IN")}
+                              </Text>
+
+                              <TouchableOpacity
+                                style={styles.infoButton}
+                                activeOpacity={0.7}
+                                onPress={(e) => {
+                                  e.stopPropagation?.();
+                                  setSelectedBank(item?.raw);
+                                  setShowBankInfo(true);
+                                }}
+                              >
+                                <Text style={styles.infoIconText}>!</Text>
+                              </TouchableOpacity>
+                            </View>
 
                             <Text style={styles.balanceLabel}>
                               Balance
@@ -1679,14 +1918,26 @@ export default function NewBankingList() {
               )}
 
               scrollEventThrottle={16}
+              // keyExtractor={(item, index) =>
+              //   `${item?.transactionId ?? item?.id}`
+
+              // }
+
               keyExtractor={(item, index) =>
-                `${item?.transactionId ?? item?.id}-${index}`
+                `${item?.transactionId ?? item?.id ?? "transaction"}-${index}`
               }
+              //  -${index}`
+              onMomentumScrollBegin={() => {
+                onEndReachedCalledDuringMomentum.current = false;
+              }}
               onEndReached={() => {
                 if (
+                  !onEndReachedCalledDuringMomentum.current &&
+                  !isFetchingList.current &&
                   !transactionLoading &&
                   hasMoreTransactions
                 ) {
+                  onEndReachedCalledDuringMomentum.current = true;
                   fetchTransactions(transactionPage + 1);
                 }
               }}
@@ -2078,12 +2329,16 @@ export default function NewBankingList() {
           setTempDateFilter([]);
           setSelectedDateFilter([]);
           setDateSheetOpen(false);
+          setTransactionPage(1)
+          setHasMoreTransactions(true)
 
           await applyTransactionFilters({
             dateFilter: [],
             source: selectedSource,
           });
         }}
+
+
 
         onApply={async () => {
           setSelectedDateFilter(tempDateFilter);
@@ -2096,6 +2351,7 @@ export default function NewBankingList() {
         }}
 
         onClose={() => setDateSheetOpen(false)}
+        isSingleSelect={true}
       />
 
       <FilterBottomSheet
@@ -2109,6 +2365,8 @@ export default function NewBankingList() {
           setTempSource([]);
           setSelectedSource([]);
           setSourceSheetOpen(false);
+          setTransactionPage(1)
+          setHasMoreTransactions(true)
 
           await applyTransactionFilters({
             dateFilter: selectedDateFilter,
@@ -2127,6 +2385,7 @@ export default function NewBankingList() {
         }}
 
         onClose={() => setSourceSheetOpen(false)}
+        isSingleSelect={true}
       />
 
 
@@ -2308,14 +2567,15 @@ export default function NewBankingList() {
 
               style={[
                 styles.popupRow,
-                (!canUpdateBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
+                // (!canUpdateBanking || selectedItem?.isDeleted) 
+                { opacity: 0.4 }
               ]}
 
               disabled={!canUpdateBanking || selectedItem?.isDeleted}
-              onPress={() => {
-                if (!canUpdateBanking || selectedItem?.isDeleted) return;
-                handleEditBanking(selectedItem);
-              }}
+            // onPress={() => {
+            //   if (!canUpdateBanking || selectedItem?.isDeleted) return;
+            //   handleEditBanking(selectedItem);
+            // }}
             >
               <Image
                 source={EditIcon}
@@ -2332,18 +2592,17 @@ export default function NewBankingList() {
 
             <TouchableOpacity
 
-              //             style={[
-              //   styles.popupRow,
-              //   (!canDeleteBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
-              // ]}
               style={[
                 styles.popupRow,
-                , { opacity: 0.4 }
+                (!canDeleteBanking || selectedItem?.isDeleted) && { opacity: 0.4 }
               ]}
+              // style={[
+              //   styles.popupRow,
+              // ]}
 
-              disabled
+              // disabled
 
-              // disabled={!canDeleteBanking || selectedItem?.isDeleted}
+              disabled={!canDeleteBanking || selectedItem?.isDeleted}
               onPress={() => {
                 if (!canDeleteBanking || selectedItem?.isDeleted) return;
                 handleDeleteShow();
@@ -2378,19 +2637,34 @@ export default function NewBankingList() {
                 </Text>
 
                 <View style={styles.deleteBtnRow}>
+
                   <TouchableOpacity
-                    style={styles.cancelBtn}
+                    style={[
+                      styles.cancelBtn,
+                      isDeletingBank && { opacity: 0.5 },
+                    ]}
+                    disabled={isDeletingBank}
                     onPress={handleCloseDeleteShow}
                   >
-                    <Text style={styles.cancelText}>Cancel</Text>
+                    <Text style={styles.cancelText}>
+                      Cancel
+                    </Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.deleteBtn}
-                    onPress={handleCloseDeleteShow}
+                    style={[
+                      styles.deleteBtn,
+                      isDeletingBank && { opacity: 0.6 },
+                    ]}
+                    disabled={isDeletingBank}
+                    activeOpacity={0.8}
+                    onPress={handleDeleteConfirm}
                   >
-                    <Text style={styles.deleteBtnText}>Delete</Text>
+                    <Text style={styles.deleteBtnText}>
+                      {isDeletingBank ? "Deleting..." : "Delete"}
+                    </Text>
                   </TouchableOpacity>
+
                 </View>
 
               </View>
@@ -2518,10 +2792,10 @@ const styles = StyleSheet.create({
   },
   bankCard: {
     width: 350,
-    height: 265,
+    height: 215,
     backgroundColor: "#FFF",
     borderRadius: 24,
-    marginHorizontal: 13,
+    marginHorizontal: 10,
     padding: 12,
     overflow: "visible",
     shadowColor: "#000",
@@ -2549,9 +2823,9 @@ const styles = StyleSheet.create({
   },
 
   iconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 46,
+    height: 46,
+    borderRadius: 23,
     backgroundColor: "#EEF2FF",
     justifyContent: "center",
     alignItems: "center",
@@ -2746,7 +3020,7 @@ const styles = StyleSheet.create({
 
 
   balanceText: { color: "#777" },
-  balanceAmount: { fontFamily: "Gilroy-Bold", fontSize: 16 },
+  balanceAmount: { fontFamily: "Gilroy-Bold", fontSize: 16, marginTop: 10 },
   addAmountText: {
     color: "#1D5DFF",
     fontFamily: "Gilroy-Semibold",
@@ -3314,7 +3588,7 @@ const styles = StyleSheet.create({
   },
   addNewCard: {
     width: 120,
-    height: 265,
+    height: 215,
     borderWidth: 2,
     borderStyle: "dashed",
     borderColor: "#3D6DFF",
@@ -3360,7 +3634,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginTop: 10,
+    marginTop: 5,
     marginBottom: 14,
     paddingHorizontal: 14,
   },
@@ -3446,22 +3720,22 @@ const styles = StyleSheet.create({
   },
 
   iconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 28,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     justifyContent: "center",
     alignItems: "center",
   },
 
   transactionIcon: {
-    width: 23,
-    height: 23,
+    width: 15,
+    height: 15,
     resizeMode: "contain",
     tintColor: "#FFFFFF", // white icon
   },
 
   transactionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#222",
     fontFamily: "Gilroy-SemiBold",
   },
@@ -3490,8 +3764,8 @@ const styles = StyleSheet.create({
   },
 
   smallIcon: {
-    width: 23,
-    height: 23,
+    width: 20,
+    height: 20,
     resizeMode: "contain",
   },
 
@@ -3537,9 +3811,9 @@ const styles = StyleSheet.create({
     tintColor: "#B8860B",
   },
   infoButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
     borderWidth: 1.5,
     borderColor: "#718096",
     justifyContent: "center",
@@ -3548,7 +3822,7 @@ const styles = StyleSheet.create({
   },
 
   infoIconText: {
-    fontSize: 15,
+    fontSize: 10,
     fontFamily: "Gilroy-Bold",
     color: "#718096",
     lineHeight: 17,
@@ -3641,5 +3915,24 @@ const styles = StyleSheet.create({
     color: "#202020",
     fontFamily: "Gilroy-Semibold",
   },
+
+  balanceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+
+  // infoButton: {
+  //   width: 28,
+  //   height: 28,
+  //   borderRadius: 14,
+  //   borderWidth: 1.5,
+  //   borderColor: "#718096",
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   marginLeft: 8,
+  // },
+
 
 });

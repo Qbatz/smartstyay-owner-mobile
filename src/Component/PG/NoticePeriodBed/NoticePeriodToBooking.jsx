@@ -22,6 +22,7 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import InputComponent from "../../MorePages/InputComponent"
 
 export default function NewBookingSheet({ visible, onClose, room, bed, selectedBed, onBedAdded }) {
   const { getCustomersByHostel, deleteCustomer, loading, checkInCustomer, bookCustomer, getCustomerDetails } = useCustomer();
@@ -219,6 +220,17 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
   //   };
   // }, []);
 
+  const paymentOptions = Array.isArray(AccountsList)
+    ? AccountsList.map((item) => ({
+      ...item,
+      value: String(item.bankingId),
+      displayName: item?.displayName || "",
+      holderName:
+        item?.holderName || item?.accountHolderName || "",
+      bankName: item?.bankName || "",
+    }))
+    : [];
+
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, g) => g.dy > 10,
@@ -376,7 +388,15 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
               <View style={{ position: "relative" }}>
                 <TouchableOpacity
-                  style={styles.select}
+                  // style={styles.select}
+                   style={[
+                                    styles.select,
+                                    {
+                                        borderColor: BookingTenantsOpen ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: BookingTenantsOpen ? 1.5 : 1,
+                                    },
+                                   
+                                ]}
                   onPress={() => setBookingTenantsopen(!BookingTenantsOpen)}
                 >
                   <Text style={styles.selectText}>
@@ -422,7 +442,15 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                   Keyboard.dismiss()
                   setShowDatePicker(true)
                 }}
-                style={styles.inputBox}
+                // style={styles.inputBox}
+                   style={[
+                                    styles.inputBox,
+                                    {
+                                        borderColor: showDatePicker ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: showDatePicker ? 1.5 : 1,
+                                    },
+                                   
+                                ]}
               >
                 <Text style={{ color: bookingDate ? "#000" : "#999" }}>
                   {bookingDate ? bookingDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
@@ -438,7 +466,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
               <Text style={styles.label}>
                 Booking Amount <Text style={{ color: "red" }}>*</Text>
               </Text>
-              <TextInput
+              {/* <TextInput
                 placeholder="Enter Amount"
                 placeholderTextColor="#999"
                 value={bookingAmount}
@@ -454,6 +482,24 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                 }}
                 keyboardType="numeric"
                 style={styles.inputBox}
+              /> */}
+
+              <InputComponent
+                placeholder="Enter Amount"
+                value={bookingAmount}
+                onFocus={() => {
+                  setTimeout(() => {
+                    scrollRef.current?.scrollTo({ y: 200, animated: true });
+                  }, 150);
+                }}
+                onChangeText={(t) => {
+                  const onlyNumbers = t.replace(/[^0-9]/g, "");
+                  setBookingAmount(onlyNumbers);
+                  setBookingAmountError("");
+                }}
+                keyboardType="numeric"
+                error={!!BookingAmountError}
+
               />
 
 
@@ -468,7 +514,15 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                   Keyboard.dismiss();
                   setShowJoinDatePicker(true)
                 }}
-                style={styles.inputBox}
+                // style={styles.inputBox}
+                                    style={[
+                                    styles.inputBox,
+                                    {
+                                        borderColor: showJoinDatePicker ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: showJoinDatePicker ? 1.5 : 1,
+                                    },
+                                   
+                                ]}
               >
                 <Text style={{ color: joiningDate ? "#000" : "#999" }}>
                   {joiningDate ? joiningDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
@@ -487,14 +541,41 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
               <View style={{ position: "relative" }}>
                 <TouchableOpacity
-                  onPress={() => setAccountopen(!accountOpen)}
-                  style={styles.inputBox}
+                  onPress={() => {
+                    setBookingTenantsopen(false);
+                    setAccountopen(!accountOpen);
+
+                    setTimeout(() => {
+                      scrollRef.current?.scrollTo({
+                        y: 350,
+                        animated: true,
+                      });
+                    }, 100);
+                  }}
+                  // style={styles.inputBox}
+                     style={[
+                                    styles.inputBox,
+                                    {
+                                        borderColor: accountOpen ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: accountOpen ? 1.5 : 1,
+                                    },
+                                   
+                                ]}
                 >
-                  <Text style={styles.selectText}>
-                    {accountSelected
-                      ? `${accountSelected.accountHolderName} - ${accountSelected.accountType}`
-                      : "Select Bank"}
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.selectText} numberOfLines={1}>
+                      {accountSelected?.displayName || "Select Bank"}
+                    </Text>
+
+                    {accountSelected && (
+                      <Text
+                        style={{ fontSize: 12, color: "#777", marginTop: 3 }}
+                        numberOfLines={1}
+                      >
+                        {accountSelected?.holderName} - {accountSelected?.bankName}
+                      </Text>
+                    )}
+                  </View>
                   <Image source={DownArrow} style={styles.arrow} />
                 </TouchableOpacity>
 
@@ -502,8 +583,14 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
                 {accountOpen && (
                   <View style={styles.dropdownMenu}>
-                    <ScrollView style={{ maxHeight: 150 }}>
-                      {AccountsList.map((v, i) => (
+                    <ScrollView
+                      style={{ maxHeight: 180 }}
+                      nestedScrollEnabled={true}
+                      keyboardShouldPersistTaps="always"
+                      showsVerticalScrollIndicator={true}
+                      scrollEnabled={true}
+                    >
+                      {paymentOptions?.map((v, i) => (
                         <TouchableOpacity
                           key={i}
                           style={styles.option}
@@ -513,9 +600,22 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                             setBankIdError("");
                           }}
                         >
-                          <Text style={styles.optionText}>
-                            {v.accountHolderName}-{v.accountType}
-                          </Text>
+                          <View>
+                            <Text style={styles.optionText} numberOfLines={1}>
+                              {v.displayName}
+                            </Text>
+
+                            <Text
+                              style={{
+                                fontSize: 12,
+                                color: "#777",
+                                marginTop: 3,
+                              }}
+                              numberOfLines={1}
+                            >
+                              {v.holderName} - {v.bankName}
+                            </Text>
+                          </View>
                         </TouchableOpacity>
                       ))}
                     </ScrollView>
@@ -526,7 +626,30 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
               {/* Transaction */}
               <Text style={styles.label}>Transaction Id</Text>
 
-              <TextInput
+              {/* <TextInput
+                placeholder="Enter Transaction Id"
+                placeholderTextColor="#999"
+                value={referenceNumber}
+                onPressIn={() => {
+                
+                  Keyboard.dismiss();
+
+                  setTimeout(() => {
+                    txnRef.current?.focus();
+                    scrollRef.current?.scrollToEnd({ animated: true });
+                  }, 150);
+                }}
+                onChangeText={(text) => {
+                  const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
+                  setReferenceNumber(noEmojis)
+                }
+                }
+                style={styles.inputBox}
+              /> */}
+
+              <InputComponent
+                // multiline={true}
+                type="text"
                 placeholder="Enter Transaction Id"
                 placeholderTextColor="#999"
                 value={referenceNumber}
@@ -544,7 +667,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                   setReferenceNumber(noEmojis)
                 }
                 }
-                style={styles.inputBox}
+
               />
 
 
@@ -736,10 +859,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 12,
-    zIndex: 1000,
-    elevation: 10,
+    zIndex: 9999,
+    elevation: 15,
+    maxHeight: 180,
   },
-
   option: {
     padding: 12,
   },

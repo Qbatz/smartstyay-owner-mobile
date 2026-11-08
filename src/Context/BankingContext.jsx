@@ -260,14 +260,14 @@ export default function BankingProvider({ children }) {
   };
 
 
+
   const getAllTransactions = async (
     hostelId,
     page = 1,
-    size = 30,
+    size = 20,
     filters = {}
   ) => {
     try {
-      // setLoading(true);
       setErrorMsg("");
 
       const axios = getAxios();
@@ -275,52 +275,89 @@ export default function BankingProvider({ children }) {
       const params = {
         page,
         size,
-        ...(filters.dateFilter && { dateFilter: filters.dateFilter }),
-        ...(filters.source && { source: filters.source }),
-        ...(filters.fromDate && { fromDate: filters.fromDate }),
-        ...(filters.toDate && { toDate: filters.toDate }),
       };
+
+      const dateFilter = Array.isArray(filters?.dateFilter)
+        ? filters.dateFilter.filter(Boolean)
+        : filters?.dateFilter
+          ? [filters.dateFilter]
+          : [];
+
+      const source = Array.isArray(filters?.source)
+        ? filters.source.filter(Boolean)
+        : filters?.source
+          ? [filters.source]
+          : [];
+
+      if (dateFilter.length > 0 && !dateFilter.includes("ALL")) {
+        params.dateFilter = dateFilter[0];
+      }
+
+      if (source.length > 0) {
+        params.source = source.join(",");
+      }
+
+      if (filters?.fromDate) {
+        params.fromDate = filters.fromDate;
+      }
+
+      if (filters?.toDate) {
+        params.toDate = filters.toDate;
+      }
+
+      console.log("BANKING FILTERS:", filters);
+      console.log("BANKING API PARAMS:", params);
 
       const res = await axios.get(
         `/v3/bank/allTransactions/${hostelId}`,
         { params }
       );
 
-
       if (res.status === 200) {
         const responseData = res?.data ?? {};
+        const currentPage = responseData?.currentPage;
 
         const bankV2Lists = Array.isArray(responseData?.bankV2Lists)
           ? responseData.bankV2Lists
           : Array.isArray(responseData?.listBanks)
-            ? responseData?.listBanks
+            ? responseData.listBanks
             : [];
 
         const transactions = Array.isArray(responseData?.transactions)
-          ? responseData?.transactions
+          ? responseData.transactions
           : [];
 
         setBankList(bankV2Lists);
         setNewTransactionList(responseData);
 
-        setNewOnlyTransactionList((prev) => [
-          ...(Array.isArray(prev) ? prev : []),
-          ...transactions,
-        ]);
+        if (currentPage === 1) {
+          setNewOnlyTransactionList(transactions)
+        } else {
+          setNewOnlyTransactionList((prev) => [
+            ...(Array.isArray(prev) ? prev : []),
+            ...transactions,
+          ]);
+
+        }
+
 
         return {
           success: true,
-          data: responseData,
+          data: transactions,
           response: responseData,
         };
       }
-
 
       return {
         success: false,
         message: "Failed to fetch transactions",
       };
     } catch (error) {
+      console.log(
+        "getAllTransactions error:",
+        error?.response?.data || error.message
+      );
+
       const msg = getErrorMessage(error);
       setErrorMsg(msg);
 
@@ -332,6 +369,7 @@ export default function BankingProvider({ children }) {
       setLoading(false);
     }
   };
+
 
   const getBankOverview = async (
     hostelId,
@@ -355,8 +393,8 @@ export default function BankingProvider({ children }) {
         { params }
       );
 
-      if (res.status === 200) {
-        const overview = res.data || {};
+      if (res?.status === 200) {
+        const overview = res?.data || {};
 
         setBankOverview(overview);
 
@@ -956,6 +994,59 @@ export default function BankingProvider({ children }) {
   };
 
 
+const deleteBankAccount = async (hostelId, bankId) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.delete(
+      `/v3/bank/${hostelId}/${bankId}`
+    );
+
+    if (res?.status === 200 || res?.status === 204) {
+      await NewgetBankList(hostelId);
+
+      return {
+        success: true,
+        message:
+          res?.data?.message || "Bank deleted successfully",
+        data: res?.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: res?.data?.message || "Failed to delete bank",
+    };
+
+  } catch (error) {
+    console.log(
+      "DELETE BANK STATUS =>",
+      error?.response?.status
+    );
+
+    console.log(
+      "DELETE BANK ERROR =>",
+      error?.response?.data
+    );
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
   return (
     <BankingContext.Provider
       value={{
@@ -979,7 +1070,7 @@ export default function BankingProvider({ children }) {
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
         getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer, getCreditCardInitialize, creditCardPayment,
-        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount
+        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount ,deleteBankAccount
       }}
 
     >

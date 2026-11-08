@@ -18,6 +18,7 @@ import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
 import BankIcon from "../../../Assets/Images/bankBlue.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen"
+import InputComponent from "../InputComponent"
 
 
 
@@ -161,30 +162,42 @@ const NewRecordPayment = ({ route }) => {
     //                 : item?.bankAccountType || "Bank Account",
     // }));
 
+
     const transactionOptions = (
         InitializeRecordPaymentDetails?.accountInfo || []
-    ).map((item, index) => {
-        const isCash = item?.bankName?.toLowerCase()?.includes("cash");
+    ).map((bank, index) => {
+        const accountType = String(
+            bank?.type || bank?.accountType || bank?.bankName || ""
+        ).trim().toUpperCase();
+
+        const isCash =
+            bank?.bankName?.toUpperCase() === "CASH" ||
+            accountType === "CASH";
+
+        const iconType =
+            accountType === "BANK" || bank?.bankName?.toUpperCase() === "BANK"
+                ? "BANK"
+                : isCash
+                    ? "CASH"
+                    : "CARD";
 
         return {
-            id: item?.bankId || `account-${index}`,
-            bankId: item?.bankId,
+            id: bank?.bankId || `account-${index}`,
+            bankId: bank?.bankId,
+            value: bank?.bankId,
 
-            accountHolderName:
-                item?.accountHolderName || "Account",
+            displayName: bank?.displayName || "",
+            bankName: bank?.bankName || "",
+            holderName: bank?.accountHolderName || bank?.holderName || "",
 
-            bankName:
-                item?.bankName || "Bank Account",
-
+            accountHolderName: bank?.accountHolderName || bank?.holderName || "Account",
+            accountType,
+            iconType,
             isCash,
-
-            label:
-                item?.accountHolderName || "Account",
-
-            subLabel:
-                item?.bankName || "Bank Account",
+            data: bank,
         };
     });
+
 
 
 
@@ -464,16 +477,22 @@ const NewRecordPayment = ({ route }) => {
 
                     <Text style={styles.txtinputhead}>Paid Amount(INR) <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
-                    <TextInput
+                    {/* <TextInput
                         style={styles.txtInputBox}
                         placeholder="Enter Paid Amount"
                         value={paidAmount}
                         keyboardType="number-pad"
-                        // onChangeText={(text) => {
-                        //     if (text > totalAmount) return;
-                        //     setPaidAmount(text)
-                        // }} 
                         onChangeText={handlePaidAmountChange}
+                    /> */}
+
+                    <InputComponent
+                        type="number"
+                        value={paidAmount}
+                        placeholder="Enter Paid Amount"
+                        // keyboardType="numeric"
+                        keyboardType="number-pad"
+                        onChangeText={handlePaidAmountChange}
+                        error={!!amountError}
                     />
 
                     {amountError && <ErrorMessage message={amountError} type="error" />}
@@ -533,7 +552,10 @@ const NewRecordPayment = ({ route }) => {
                                             o => o.id === selectedMode
                                         );
 
-                                      const isCash = selectedPaymentMethod?.isCash;
+                                        // const isCash = selectedPaymentMethod?.isCash;
+
+                                        const isCash = selectedPaymentMethod?.iconType === "CASH";
+                                        const isBank = selectedPaymentMethod?.iconType === "BANK";
 
                                         return (
                                             <>
@@ -561,14 +583,17 @@ const NewRecordPayment = ({ route }) => {
                                                         style={styles.selectedPaymentName}
                                                         numberOfLines={1}
                                                     >
-                                                        {selectedPaymentMethod?.accountHolderName}
+                                                        {selectedPaymentMethod?.displayName}
                                                     </Text>
 
                                                     <Text
                                                         style={styles.selectedPaymentSubText}
-                                                        numberOfLines={1}
+                                                        numberOfLines={2}
                                                     >
-                                                           {selectedPaymentMethod?.bankName}
+                                                        {selectedPaymentMethod?.holderName}
+                                                        {" - "}
+                                                        {selectedPaymentMethod?.bankName}
+
 
                                                     </Text>
                                                 </View>
@@ -664,7 +689,9 @@ const NewRecordPayment = ({ route }) => {
                                         {transactionOptions.map((opt) => {
                                             const isSelected = selectedMode === opt.id;
 
-                                        const isCash = opt.isCash;
+                                            // const isCash = opt.isCash;
+                                            const isCash = opt.iconType === "CASH";
+                                            const isBank = opt.iconType === "BANK";
 
                                             return (
                                                 <TouchableOpacity
@@ -708,17 +735,20 @@ const NewRecordPayment = ({ route }) => {
                                                             style={styles.paymentMethodName}
                                                             numberOfLines={1}
                                                         >
-                                                              {opt.accountHolderName}
+                                                            {opt?.displayName}
                                                         </Text>
 
                                                         <Text
                                                             style={styles.paymentMethodSubText}
-                                                            numberOfLines={1}
+                                                            numberOfLines={2}
                                                         >
-                                                            {opt.subLabel}
+                                                            {opt?.holderName}
+                                                            {" - "}
+                                                            {opt?.bankName}
+
+
                                                         </Text>
                                                     </View>
-
                                                     {/* CASH / BANK BADGE */}
                                                     <View
                                                         style={[
@@ -736,7 +766,8 @@ const NewRecordPayment = ({ route }) => {
                                                                     : styles.bankText,
                                                             ]}
                                                         >
-                                                            {isCash ? "CASH" : "BANK"}
+                                                            {opt.iconType}
+                                                            {/* {isCash ? "CASH" : "BANK"} */}
                                                         </Text>
                                                     </View>
                                                 </TouchableOpacity>
@@ -793,7 +824,7 @@ const NewRecordPayment = ({ route }) => {
 
                     <Text style={styles.txtinputhead}>Transaction ID</Text>
 
-                    <TextInput
+                    {/* <TextInput
                         style={styles.txtInputBox}
                         value={transactionId}
                         placeholder="Enter Transaction ID"
@@ -804,7 +835,20 @@ const NewRecordPayment = ({ route }) => {
                             );
 
                             setTransactionId(filteredText);
-                        }} />
+                        }} /> */}
+
+                    <InputComponent
+                        value={transactionId}
+                        placeholder="Enter Transaction Id"
+                        onChangeText={(text) => {
+                            const filteredText = text.replace(
+                                /([\u2700-\u27BF]|[\uE000-\uF8FF]|[\uD83C-\uDBFF\uDC00-\uDFFF])+/
+                                , ""
+                            );
+
+                            setTransactionId(filteredText);
+                        }}
+                    />
 
                     <Text style={styles.txtinputhead}>Notes/Description</Text>
 

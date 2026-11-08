@@ -47,7 +47,7 @@ export default function ApplyBookingToInvoice({ route }) {
         advanceCreditDetails, getRetainerInvoiceDetail, retainerInvoiceDetail, ApplyRetainerToInvoices } = useContext(BillContext);
     const { activeHostelId } = useContext(CommonContexts);
 
-     const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
+    const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 
     const isApplyTriggeredRef = useRef(false);
     const instructionSheetRef = useRef(new Animated.Value(0)).current;
@@ -633,14 +633,14 @@ export default function ApplyBookingToInvoice({ route }) {
 
 
             if (res?.success) {
-              
+
                 await GetAllBillDetails(activeHostelId);
                 await GetAdvanceBookingBills(activeHostelId);
                 await getBillsPdfDetails(activeHostelId, advanceInfo?.advanceInvoiceId)
                 setModalType("success");
                 setModalMessage("Applied successfully");
-                  setShowSuccessModal(true);
-                
+                setShowSuccessModal(true);
+
 
                 setTimeout(() => {
                     navigation.goBack();
@@ -652,7 +652,7 @@ export default function ApplyBookingToInvoice({ route }) {
                 setShowSuccessModal(true);
                 setModalType("warning");
                 setModalMessage(res?.message || "Something went wrong");
-                
+
 
                 setTimeout(() => {
                     setShowSuccessModal(false);
@@ -1280,8 +1280,8 @@ const styles = StyleSheet.create({
 
     inputWrapper: {
         flexDirection: "row",
-        borderWidth: 1,
-        borderColor: "#4F46E5",
+        // borderWidth: 1.5,
+        // borderColor: "#0085FF",
         borderRadius: 10,
         marginTop: 6,
     },
@@ -1290,6 +1290,9 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 12,
         fontFamily: "Gilroy-Regular",
+        borderWidth: 1.5,
+        borderColor: "#0085FF",
+        borderRadius: 10,
     },
 
     toggleBox: {

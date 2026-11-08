@@ -72,64 +72,64 @@ export const CustomerProvider = ({ children }) => {
   // }
 
   const getCustomersByHostel = async (
-  hostelId,
-  name = "",
-  type = [],
-  period = [],
-  sharingType = []
-) => {
-  try {
-    setLoading(true);
-    setErrorMsg("");
+    hostelId,
+    name = "",
+    type = [],
+    period = [],
+    sharingType = []
+  ) => {
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    const token = await retriveData("token");
-    const axios = getAxios();
+      const token = await retriveData("token");
+      const axios = getAxios();
 
-    const response = await axios.get(
-      `/v2/customers/${hostelId}`,
-      {
-        params: {
-          ...(name && { name }),
-          ...(type?.length > 0 && { type }),
-          ...(period?.length > 0 && { period }),
-          ...(sharingType?.length > 0 && { sharingType }),
-        },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await axios.get(
+        `/v2/customers/${hostelId}`,
+        {
+          params: {
+            ...(name && { name }),
+            ...(type?.length > 0 && { type }),
+            ...(period?.length > 0 && { period }),
+            ...(sharingType?.length > 0 && { sharingType }),
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setLoading(false);
+      setCustomersList(response?.data);
+
+      console.log("CUSTOMER API PARAMS:", {
+        name,
+        type,
+        period,
+        sharingType,
+      });
+
+      console.log("CUSTOMER API RESPONSE:", response?.data);
+
+      return response.data;
+
+    } catch (error) {
+      setLoading(false);
+
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext);
       }
-    );
 
-    setLoading(false);
-    setCustomersList(response?.data);
+      const msg =
+        error.response?.data?.message || "Customer fetch failed";
 
-    console.log("CUSTOMER API PARAMS:", {
-      name,
-      type,
-      period,
-      sharingType,
-    });
+      console.log("CUSTOMER API ERROR:", msg);
+      setErrorMsg(msg);
 
-    console.log("CUSTOMER API RESPONSE:", response?.data);
-
-    return response.data;
-
-  } catch (error) {
-    setLoading(false);
-
-    if (error?.response?.status === 401) {
-      await AutoLogout(loginContext);
+      return [];
     }
-
-    const msg =
-      error.response?.data?.message || "Customer fetch failed";
-
-    console.log("CUSTOMER API ERROR:", msg);
-    setErrorMsg(msg);
-
-    return [];
-  }
-};
+  };
 
   const GetParticularCustomerDetails = async (customerId) => {
     if (!customerId) return { success: false };
@@ -883,99 +883,99 @@ export const CustomerProvider = ({ children }) => {
 
 
 
- const getVendorList = async (hostelId, filters = {}) => {
-  setLoading(true);
-  setVendorList([]);
+  const getVendorList = async (hostelId, filters = {}) => {
+    setLoading(true);
+    setVendorList([]);
 
-  try {
-    const axios = getAxios();
+    try {
+      const axios = getAxios();
 
-    const queryParams = new URLSearchParams();
+      const queryParams = new URLSearchParams();
 
-    // Search
-    if (filters?.name !== undefined && filters?.name !== "") {
-      queryParams.append("name", filters.name);
-    }
+      // Search
+      if (filters?.name !== undefined && filters?.name !== "") {
+        queryParams.append("name", filters.name);
+      }
 
-    // Category
-    if (
-      filters?.categoryId !== undefined &&
-      filters?.categoryId !== null &&
-      filters?.categoryId !== ""
-    ) {
+      // Category
+      if (
+        filters?.categoryId !== undefined &&
+        filters?.categoryId !== null &&
+        filters?.categoryId !== ""
+      ) {
+        queryParams.append(
+          "categoryId",
+          String(filters.categoryId)
+        );
+      }
+
+      // Payment Status
+      // Swagger: paymentStatus = array<string>
+      if (
+        filters?.paymentStatus !== undefined &&
+        filters?.paymentStatus !== null &&
+        filters?.paymentStatus !== ""
+      ) {
+        const statuses = Array.isArray(filters.paymentStatus)
+          ? filters.paymentStatus
+          : [filters.paymentStatus];
+
+        statuses.forEach((status) => {
+          if (status) {
+            queryParams.append("paymentStatus", status);
+          }
+        });
+      }
+
+      // Pagination
       queryParams.append(
-        "categoryId",
-        String(filters.categoryId)
+        "page",
+        String(filters?.page || 1)
       );
-    }
 
-    // Payment Status
-    // Swagger: paymentStatus = array<string>
-    if (
-      filters?.paymentStatus !== undefined &&
-      filters?.paymentStatus !== null &&
-      filters?.paymentStatus !== ""
-    ) {
-      const statuses = Array.isArray(filters.paymentStatus)
-        ? filters.paymentStatus
-        : [filters.paymentStatus];
+      queryParams.append(
+        "size",
+        String(filters?.size || 0)
+      );
 
-      statuses.forEach((status) => {
-        if (status) {
-          queryParams.append("paymentStatus", status);
-        }
-      });
-    }
+      const queryString = queryParams.toString();
 
-    // Pagination
-    queryParams.append(
-      "page",
-      String(filters?.page || 1)
-    );
+      const url =
+        `/v2/vendors/all-vendors/${hostelId}` +
+        (queryString ? `?${queryString}` : "");
 
-    queryParams.append(
-      "size",
-      String(filters?.size || 0)
-    );
+      console.log("GET VENDOR URL =>", url);
 
-    const queryString = queryParams.toString();
+      const res = await axios.get(url);
 
-    const url =
-      `/v2/vendors/all-vendors/${hostelId}` +
-      (queryString ? `?${queryString}` : "");
+      if (res.status === 200) {
+        setVendorList(res.data || []);
 
-    console.log("GET VENDOR URL =>", url);
+        return {
+          success: true,
+          data: res.data,
+        };
+      }
 
-    const res = await axios.get(url);
+      return { success: false };
+    } catch (err) {
+      console.log(
+        "Vendor list error:",
+        err?.response?.data || err
+      );
 
-    if (res.status === 200) {
-      setVendorList(res.data || []);
+      if (err?.response?.status === 401) {
+        await AutoLogout(loginContext);
+      }
 
       return {
-        success: true,
-        data: res.data,
+        success: false,
+        message: getErrorMessage(err),
       };
+    } finally {
+      setLoading(false);
     }
-
-    return { success: false };
-  } catch (err) {
-    console.log(
-      "Vendor list error:",
-      err?.response?.data || err
-    );
-
-    if (err?.response?.status === 401) {
-      await AutoLogout(loginContext);
-    }
-
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const deleteVendor = async (vendorId, hostelId) => {
     setLoading(true);
@@ -1687,12 +1687,7 @@ export const CustomerProvider = ({ children }) => {
   // }
 
 
-const settleVendorPayment = async (
-  hostelId,
-  vendorId,
-  payload,
-  images = []
-) => {
+ const settleVendorPayment = async (hostelId, vendorId, payload, images = []) => {
   try {
     setLoading(true);
 
@@ -1700,10 +1695,10 @@ const settleVendorPayment = async (
     const axios = getAxios();
     const formData = new FormData();
 
-    formData.append(
-      "payLoads",
-      JSON.stringify(payload.payLoads)
-    );
+    formData.append("payLoads", {
+      string: JSON.stringify(payload.payLoads),
+      type: "application/json",
+    });
 
     images.forEach((image, index) => {
       if (!image?.uri) return;
@@ -1711,11 +1706,12 @@ const settleVendorPayment = async (
       formData.append("images", {
         uri: image.uri,
         type: image.type || "image/jpeg",
-        name:
-          image.fileName ||
-          `vendor_settle_${index}.jpg`,
+        name: image.fileName || `vendor_settle_${index}.jpg`,
       });
     });
+
+    console.log("SETTLE URL", `/v2/vendors/settle/${hostelId}/${vendorId}`);
+    console.log("SETTLE PAYLOAD", JSON.stringify(payload.payLoads, null, 2));
 
     const res = await axios.post(
       `/v2/vendors/settle/${hostelId}/${vendorId}`,
@@ -1723,19 +1719,14 @@ const settleVendorPayment = async (
       {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       }
     );
 
-    return {
-      success: true,
-      data: res.data,
-    };
+    return { success: true, data: res.data };
   } catch (error) {
-    console.log(
-      "SETTLE VENDOR ERROR",
-      error?.response?.data || error?.message || error
-    );
+    console.log("SETTLE VENDOR ERROR", error?.response?.status, error?.response?.data || error?.message);
 
     if (error?.response?.status === 401) {
       await AutoLogout(loginContext);
@@ -1745,6 +1736,7 @@ const settleVendorPayment = async (
       success: false,
       message:
         error?.response?.data?.message ||
+        (typeof error?.response?.data === "string" ? error.response.data : null) ||
         error?.message ||
         "Something went wrong",
     };
@@ -2049,64 +2041,64 @@ const settleVendorPayment = async (
   const DeleteTenantDraft = async (hostelId, customerId) => {
 
 
-  if (!hostelId || !customerId) {
-    return {
-      success: false,
-      message: "Missing hostelId or customerId",
-    };
-  }
-
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const res = await axios.delete(
-      `/v3/customers/draft/${hostelId}/${customerId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    if (res?.status === 204) {
-      setDraftDetails(null);
-
+    if (!hostelId || !customerId) {
       return {
-        success: true,
-        data: res?.data,
-        message: "Draft tenant deleted successfully",
+        success: false,
+        message: "Missing hostelId or customerId",
       };
     }
 
-    return {
-      success: false,
-      message: "Unable to delete draft tenant",
-    };
-  } catch (error) {
-    console.log(
-      "DELETE TENANT DRAFT ERROR",
-      error?.response?.data
-    );
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    if (error?.response?.status === 401) {
-      await AutoLogout(loginContext);
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const res = await axios.delete(
+        `/v3/customers/draft/${hostelId}/${customerId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (res?.status === 204) {
+        setDraftDetails(null);
+
+        return {
+          success: true,
+          data: res?.data,
+          message: "Draft tenant deleted successfully",
+        };
+      }
+
+      return {
+        success: false,
+        message: "Unable to delete draft tenant",
+      };
+    } catch (error) {
+      console.log(
+        "DELETE TENANT DRAFT ERROR",
+        error?.response?.data
+      );
+
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext);
+      }
+
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message ||
+          error?.response?.data ||
+          "Unable to delete draft tenant",
+      };
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      success: false,
-      message:
-        error?.response?.data?.message ||
-        error?.response?.data ||
-        "Unable to delete draft tenant",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
   const SearchCustomer = async (hostelId, search) => {
@@ -2271,177 +2263,177 @@ const settleVendorPayment = async (
   };
 
 
- const UpdateAdditionalDraftDetails = async (
-  hostelId,
-  customerId,
-  payload,
-  aadhaarImage = null,
-  pancardImage = null
-) => {
-  if (!hostelId || !customerId) {
-    return {
-      success: false,
-      message: "Missing hostelId or customerId",
-    };
-  }
-
-  try {
-    setLoading(true);
-    setErrorMsg("");
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const formData = new FormData();
-
- 
-    formData.append("additionalData", {
-      string: JSON.stringify(payload?.additionalData || {}),
-      type: "application/json",
-      name: "blob",
-    });
-
-
-    if (aadhaarImage?.uri) {
-      formData.append("aadhaarPic", {
-        uri: aadhaarImage.uri,
-        type: aadhaarImage.type || "image/jpeg",
-        name: aadhaarImage.fileName || "aadhaar.jpg",
-      });
-    }
-
-    if (pancardImage?.uri) {
-      formData.append("panPic", {
-        uri: pancardImage.uri,
-        type: pancardImage.type || "image/jpeg",
-        name: pancardImage.fileName || "pan.jpg",
-      });
-    }
-
-    console.log(
-      "UPDATE ADDITIONAL DETAILS URL =>",
-      `/v3/customers/additional-details/${hostelId}/${customerId}`
-    );
-
-    console.log(
-      "UPDATE ADDITIONAL DETAILS JSON =>",
-      JSON.stringify(payload?.additionalData, null, 2)
-    );
-
-    console.log(
-      "UPDATE ADDITIONAL DETAILS FORMDATA =>",
-      formData?._parts
-    );
-
-    // ==========================================
-    // API
-    // ==========================================
-    const res = await axios.put(
-      `/v3/customers/additional-details/${hostelId}/${customerId}`,
-      formData,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    console.log(
-      "UPDATE ADDITIONAL DETAILS RESPONSE =>",
-      res?.data
-    );
-
-
-    if (res?.status === 200 || res?.status === 201) {
-      await GetParticularCustomerDetails(customerId);
-
+  const UpdateAdditionalDraftDetails = async (
+    hostelId,
+    customerId,
+    payload,
+    aadhaarImage = null,
+    pancardImage = null
+  ) => {
+    if (!hostelId || !customerId) {
       return {
-        success: true,
-        data: res?.data,
+        success: false,
+        message: "Missing hostelId or customerId",
       };
     }
 
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    return {
-      success: false,
-      message:
-        res?.data?.message ||
-        "Additional details update failed",
-    };
-  } catch (error) {
-    console.log(
-      "UPDATE ADDITIONAL DETAILS ERROR 👉",
-      error?.response?.data
-    );
+      const token = await retriveData("token");
+      const axios = getAxios();
 
-    console.log(
-      "UPDATE ADDITIONAL DETAILS STATUS 👉",
-      error?.response?.status
-    );
+      const formData = new FormData();
 
-    if (error?.response?.status === 401) {
-      await AutoLogout(loginContext);
+
+      formData.append("additionalData", {
+        string: JSON.stringify(payload?.additionalData || {}),
+        type: "application/json",
+        name: "blob",
+      });
+
+
+      if (aadhaarImage?.uri) {
+        formData.append("aadhaarPic", {
+          uri: aadhaarImage.uri,
+          type: aadhaarImage.type || "image/jpeg",
+          name: aadhaarImage.fileName || "aadhaar.jpg",
+        });
+      }
+
+      if (pancardImage?.uri) {
+        formData.append("panPic", {
+          uri: pancardImage.uri,
+          type: pancardImage.type || "image/jpeg",
+          name: pancardImage.fileName || "pan.jpg",
+        });
+      }
+
+      console.log(
+        "UPDATE ADDITIONAL DETAILS URL =>",
+        `/v3/customers/additional-details/${hostelId}/${customerId}`
+      );
+
+      console.log(
+        "UPDATE ADDITIONAL DETAILS JSON =>",
+        JSON.stringify(payload?.additionalData, null, 2)
+      );
+
+      console.log(
+        "UPDATE ADDITIONAL DETAILS FORMDATA =>",
+        formData?._parts
+      );
+
+      // ==========================================
+      // API
+      // ==========================================
+      const res = await axios.put(
+        `/v3/customers/additional-details/${hostelId}/${customerId}`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log(
+        "UPDATE ADDITIONAL DETAILS RESPONSE =>",
+        res?.data
+      );
+
+
+      if (res?.status === 200 || res?.status === 201) {
+        await GetParticularCustomerDetails(customerId);
+
+        return {
+          success: true,
+          data: res?.data,
+        };
+      }
+
+
+      return {
+        success: false,
+        message:
+          res?.data?.message ||
+          "Additional details update failed",
+      };
+    } catch (error) {
+      console.log(
+        "UPDATE ADDITIONAL DETAILS ERROR 👉",
+        error?.response?.data
+      );
+
+      console.log(
+        "UPDATE ADDITIONAL DETAILS STATUS 👉",
+        error?.response?.status
+      );
+
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext);
+      }
+
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message ||
+          error?.response?.data?.error ||
+          (typeof error?.response?.data === "string"
+            ? error.response.data
+            : null) ||
+          error?.message ||
+          "Something went wrong",
+      };
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      success: false,
-      message:
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        (typeof error?.response?.data === "string"
-          ? error.response.data
-          : null) ||
-        error?.message ||
-        "Something went wrong",
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const retainerCustomerList = async (hostelId, purpose) => {
-  try {
-    const token = retriveData("token");
-    const axios = getAxios();
+    try {
+      const token = retriveData("token");
+      const axios = getAxios();
 
-    const res = await axios.get(`/v2/customers/get/${hostelId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      params: {
-        purpose: purpose,
-      },
-    });
+      const res = await axios.get(`/v2/customers/get/${hostelId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        params: {
+          purpose: purpose,
+        },
+      });
 
-    console.log("Customer List Response 👉", res);
+      console.log("Customer List Response 👉", res);
 
-    if (res.status === 200) {
-      setReatinerList(res?.data?.customersLists || []);
-      setRetainerBankList(res?.data?.listBanks || []);
+      if (res.status === 200) {
+        setReatinerList(res?.data?.customersLists || []);
+        setRetainerBankList(res?.data?.listBanks || []);
+      }
+
+      return {
+        success: true,
+        data: res.data || {},
+      };
+
+    } catch (error) {
+      console.log("Customer List ERROR 👉", error?.response?.data);
+
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext);
+      }
+
+      return {
+        success: false,
+        data: [],
+        message:
+          error?.response?.data?.message ||
+          "Customer search failed",
+      };
     }
-
-    return {
-      success: true,
-      data: res.data || {},
-    };
-
-  } catch (error) {
-    console.log("Customer List ERROR 👉", error?.response?.data);
-
-    if (error?.response?.status === 401) {
-      await AutoLogout(loginContext);
-    }
-
-    return {
-      success: false,
-      data: [],
-      message:
-        error?.response?.data?.message ||
-        "Customer search failed",
-    };
-  }
-};
+  };
 
   const UpdateJobDetails = async (hostelId, customerId, payload) => {
     if (!hostelId || !customerId) {
@@ -2503,169 +2495,169 @@ const settleVendorPayment = async (
 
 
 
- const createPaymentMethod = async (
-  hostelId,
-  bankId,
-  payload,
-  qrImage = null
-) => {
-  const formData = new FormData();
-  try {
-    setLoading(true);
-    setErrorMsg("");
+  const createPaymentMethod = async (
+    hostelId,
+    bankId,
+    payload,
+    qrImage = null
+  ) => {
+    const formData = new FormData();
+    try {
+      setLoading(true);
+      setErrorMsg("");
 
-    const token = await retriveData("token");
-    const axios = getAxios();
+      const token = await retriveData("token");
+      const axios = getAxios();
 
-    if (qrImage?.uri) {
-      formData.append("qrImage", {
-        uri:
-          Platform.OS === "ios"
-            ? qrImage.uri.replace("file://", "")
-            : qrImage.uri,
-        type: qrImage.type || "image/jpeg",
-        name: qrImage.fileName || "qr.jpg",
-      });
-    } else {
-      // 👇 FIX: Credit/Debit la image illainaalum formData
-      // completely empty-ah post pannaadhu. Illana React Native
-      // networking layer boundary correct-ah generate pannadhu,
-      // andha malformed multipart body backend-ku pogum bodhu 500 varum.
-      formData.append("qrImage", "");
-    }
+      if (qrImage?.uri) {
+        formData.append("qrImage", {
+          uri:
+            Platform.OS === "ios"
+              ? qrImage.uri.replace("file://", "")
+              : qrImage.uri,
+          type: qrImage.type || "image/jpeg",
+          name: qrImage.fileName || "qr.jpg",
+        });
+      } else {
+        // 👇 FIX: Credit/Debit la image illainaalum formData
+        // completely empty-ah post pannaadhu. Illana React Native
+        // networking layer boundary correct-ah generate pannadhu,
+        // andha malformed multipart body backend-ku pogum bodhu 500 varum.
+        formData.append("qrImage", "");
+      }
 
-    // Same as Web
-    const params = {
-      paymentMethod: payload.paymentMethod,
-      displayName: payload.displayName,
-      description: payload.description,
-    };
+      // Same as Web
+      const params = {
+        paymentMethod: payload.paymentMethod,
+        displayName: payload.displayName,
+        description: payload.description,
+      };
 
-    // UPI
-    if (payload.paymentMethod === "UPI") {
-      params.upiId = payload.upiId;
-      params.upiApp = payload.upiApp;
+      // UPI
+      if (payload.paymentMethod === "UPI") {
+        params.upiId = payload.upiId;
+        params.upiApp = payload.upiApp;
 
-      if (payload.linkedUpiId) {
+        if (payload.linkedUpiId) {
+          params.linkedUpiId = payload.linkedUpiId;
+        }
+      }
+
+      // Credit Card & Debit Card
+      if (
+        payload.paymentMethod === "Credit Card" ||
+        payload.paymentMethod === "Debit Card"
+      ) {
+        params.cardNumber = payload.cardNumber;
+        params.cardNetwork = payload.cardNetwork;
+        params.cardHolderName = payload.cardHolderName;
+      }
+
+      // Credit Card only
+      if (payload.paymentMethod === "Credit Card") {
+        params.creditLimit = payload.creditLimit;
+        params.billingCycle = payload.billingCycle;
+      }
+
+      // Debit Card only
+      if (
+        payload.paymentMethod === "Debit Card" &&
+        payload.linkedUpiId
+      ) {
         params.linkedUpiId = payload.linkedUpiId;
       }
-    }
 
-    // Credit Card & Debit Card
-    if (
-      payload.paymentMethod === "Credit Card" ||
-      payload.paymentMethod === "Debit Card"
-    ) {
-      params.cardNumber = payload.cardNumber;
-      params.cardNetwork = payload.cardNetwork;
-      params.cardHolderName = payload.cardHolderName;
-    }
+      console.log("URL =>", `/v3/bank/bankMethod/${hostelId}/${bankId}`);
+      console.log("PARAMS =>", params);
+      console.log("FORMDATA =>", formData._parts);
 
-    // Credit Card only
-    if (payload.paymentMethod === "Credit Card") {
-      params.creditLimit = payload.creditLimit;
-      params.billingCycle = payload.billingCycle;
-    }
+      const response = await axios.post(
+        `/v3/bank/bankMethod/${hostelId}/${bankId}`,
+        formData,
+        {
+          params,
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
-    // Debit Card only
-    if (
-      payload.paymentMethod === "Debit Card" &&
-      payload.linkedUpiId
-    ) {
-      params.linkedUpiId = payload.linkedUpiId;
-    }
-
-    console.log("URL =>", `/v3/bank/bankMethod/${hostelId}/${bankId}`);
-    console.log("PARAMS =>", params);
-    console.log("FORMDATA =>", formData._parts);
-
-    const response = await axios.post(
-      `/v3/bank/bankMethod/${hostelId}/${bankId}`,
-      formData,
-      {
-        params,
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-
-    return {
-      success: true,
-      data: response.data,
-    };
-  } catch (error) {
-    console.log("STATUS =>", error.response?.status);
-    console.log("DATA =>", error.response?.data);
-    console.log("HEADERS =>", error.response?.headers);
-    console.log("REQUEST =>", error.config?.url);
-    console.log("PARAMS =>", error.config?.params);
-    console.log("FORMDATA =>", formData._parts);
-
-    return {
-      success: false,
-      status: error.response?.status,
-      message:
-        error.response?.data?.message ||
-        error.response?.data ||
-        error.message,
-    };
-  } finally {
-    setLoading(false);
-  }
-}
-
-
-const cancelUpcomingRent = async (hostelId, customerId) => {
-  try {
-    setLoading(true);
-
-    const token = await retriveData("token");
-    const axios = getAxios();
-
-    const res = await axios.put(
-      `/v2/bookings/rent/${hostelId}/${customerId}/cancel-upcoming-rent`,
-      {}, 
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (res.status === 200) {
       return {
         success: true,
-        data: res.data,
+        data: response.data,
       };
+    } catch (error) {
+      console.log("STATUS =>", error.response?.status);
+      console.log("DATA =>", error.response?.data);
+      console.log("HEADERS =>", error.response?.headers);
+      console.log("REQUEST =>", error.config?.url);
+      console.log("PARAMS =>", error.config?.params);
+      console.log("FORMDATA =>", formData._parts);
+
+      return {
+        success: false,
+        status: error.response?.status,
+        message:
+          error.response?.data?.message ||
+          error.response?.data ||
+          error.message,
+      };
+    } finally {
+      setLoading(false);
     }
-
-    return {
-      success: false,
-      message: "Unable to cancel upcoming rent",
-    };
-  } catch (error) {
-    console.log("CANCEL UPCOMING RENT ERROR ", error?.response?.data);
-
-    if (error?.response?.status === 401) {
-      await AutoLogout(loginContext);
-    }
-
-    return {
-      success: false,
-      message:
-        error?.response?.data?.message ||
-        error?.response?.data ||
-        "Unable to cancel upcoming rent",
-    };
-  } finally {
-    setLoading(false);
   }
-};
 
-   const RequestKYCAgain = async (customerId) => {
+
+  const cancelUpcomingRent = async (hostelId, customerId) => {
+    try {
+      setLoading(true);
+
+      const token = await retriveData("token");
+      const axios = getAxios();
+
+      const res = await axios.put(
+        `/v2/bookings/rent/${hostelId}/${customerId}/cancel-upcoming-rent`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        return {
+          success: true,
+          data: res.data,
+        };
+      }
+
+      return {
+        success: false,
+        message: "Unable to cancel upcoming rent",
+      };
+    } catch (error) {
+      console.log("CANCEL UPCOMING RENT ERROR ", error?.response?.data);
+
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext);
+      }
+
+      return {
+        success: false,
+        message:
+          error?.response?.data?.message ||
+          error?.response?.data ||
+          "Unable to cancel upcoming rent",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const RequestKYCAgain = async (customerId) => {
     if (!customerId) {
       return { success: false, message: "CustomerId missing" };
     }
@@ -2738,11 +2730,11 @@ const cancelUpcomingRent = async (hostelId, customerId) => {
         moveToNoticePeriod,
         bookCustomer, cancelCheckout, getSettlementByCustomerId, submitSettlement, initializeCheckout, confirmCheckout,
         initializeCheckIn, bookedCheckInCustomer, initializeCancelBooking, cancelBooking, getCheckoutCustomersByHostel, editBasicDetails, editJoiningDate, editRentalAmount, editAdvanceAmount, assignAmenitiesForTenant, initializeCancelCheckout,
-        addVendor, updateVendor, vendorList,setVendorList,
+        addVendor, updateVendor, vendorList, setVendorList,
         getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,
-        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn, UpdateAdditionalDraftDetails, UpdateJobDetails, retainerCustomerList, createPaymentMethod, cancelUpcomingRent , DeleteTenantDraft ,
-        retainerList, retainerBankList, customersList,RequestKYCAgain
+        handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn, UpdateAdditionalDraftDetails, UpdateJobDetails, retainerCustomerList, createPaymentMethod, cancelUpcomingRent, DeleteTenantDraft,
+        retainerList, retainerBankList, customersList, RequestKYCAgain
       }}
     >
       {children}

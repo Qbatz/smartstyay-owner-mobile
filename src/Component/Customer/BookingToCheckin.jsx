@@ -33,7 +33,7 @@ import BedDetailsSheet from "./BedDetailsBottomsheet"
 import { UseSetting } from "../../Context/SettingContext";
 import CloseIcon from "../../Assets/Images/remove.png";
 import AddRentIcon from "../../Assets/Images/directionbottom.png";
-
+import InputComponent from "../MorePages/InputComponent"
 
 
 export default function BookingCheckIn({ navigation, route }) {
@@ -152,7 +152,7 @@ export default function BookingCheckIn({ navigation, route }) {
                     await loadBeds(joiningDate);
                     // setSelectedFloor(null);
                     // setSelectedRoom(null);
-                    setSelectedBed(null);
+                    // setSelectedBed(null);
                 }
             }
             else {
@@ -163,7 +163,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
                 setSelectedFloor(null);
                 setSelectedRoom(null);
-                setSelectedBed(null);
+                // setSelectedBed(null);
             }
         };
 
@@ -263,6 +263,10 @@ export default function BookingCheckIn({ navigation, route }) {
         )
         : false;
 
+    const sanitizeAmount = (text) => {
+        return text.replace(/[^0-9]/g, "").replace(/^0+/, "");
+    };
+
     const showFullRentOption = React.useMemo(() => {
         if (!billingRuleData) {
             return false;
@@ -344,11 +348,25 @@ export default function BookingCheckIn({ navigation, route }) {
         setShowBedSheet(true);
     }
 
-    const filteredBeds = beds.filter(item =>
-        item.floorId === selectedFloor?.id &&
-        item.roomId === selectedRoom?.id &&
-        item.currentStatus === "VACANT"
-    );
+    // const filteredBeds = beds.filter(item =>
+    //     item.floorId === selectedFloor?.id &&
+    //     item.roomId === selectedRoom?.id &&
+    //     item.currentStatus === "VACANT"
+    // );
+
+    const filteredBeds = beds.filter((item) => {
+        const sameFloor =
+            String(item.floorId) === String(selectedFloor?.id);
+
+        const sameRoom =
+            String(item.roomId) === String(selectedRoom?.id);
+
+        const status = String(item.currentStatus || "")
+            .trim()
+            .toUpperCase();
+
+        return sameFloor && sameRoom && status === "VACANT";
+    });
 
     const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
@@ -593,7 +611,8 @@ export default function BookingCheckIn({ navigation, route }) {
     };
 
     const updateAmount = (id, amount) => {
-        const onlyNum = amount.replace(/[^0-9]/g, "");
+        const onlyNum = sanitizeAmount(amount);
+        // const onlyNum = amount.replace(/[^0-9]/g, "");
 
         setExtraCharges((prev) =>
             prev.map((i) =>
@@ -871,6 +890,18 @@ export default function BookingCheckIn({ navigation, route }) {
         return total + amount;
     }, 0);
 
+    //     const isBedUnavailable = bookingDetailsError === "Bed is Unavailable";
+
+    // const isStayDetailsDisabled =
+    //     isDashboardCheckIn ||
+    //     (!!bookingDetails?.bedName && !isBedUnavailable);
+
+    const isBedUnavailable = bookingDetailsError === "Bed is Unavailable";
+
+    const isStayDetailsDisabled =
+        !isBedUnavailable &&
+        (isDashboardCheckIn || !!bookingDetails?.bedName);
+
 
     return (
         <>
@@ -996,7 +1027,14 @@ export default function BookingCheckIn({ navigation, route }) {
                                 <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
                                 <TouchableOpacity
-                                    style={styles.dateBox}
+                                    // style={styles.dateBox}
+                                      style={[
+                                    styles.dateBox,
+                                    {
+                                        borderColor: openDatePicker ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDatePicker ? 1.5 : 1,
+                                    },
+                                ]}
                                     onPress={() => setOpenDatePicker(true)}
                                 >
                                     <Text style={styles.placeholder}>
@@ -1010,10 +1048,10 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
                                     <TouchableOpacity style={{
                                         flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10,
-                                        opacity: isDashboardCheckIn || bookingDetails?.bedName != null && styles.disabledSelect ? 0.5 : 1,
+                                        opacity: isStayDetailsDisabled && styles.disabledSelect ? 0.5 : 1,
                                     }}
                                         onPress={handleshowBedDetailsheet}
-                                        disabled={isDashboardCheckIn || bookingDetails?.bedName != null}
+                                        disabled={isStayDetailsDisabled}
                                     >
 
                                         <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
@@ -1034,10 +1072,10 @@ export default function BookingCheckIn({ navigation, route }) {
                                         // ]}
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn || bookingDetails?.bedName != null && styles.disabledSelect,
+                                            isStayDetailsDisabled && styles.disabledSelect,
                                         ]}
                                         onPress={() => setFloorOpen(!floorOpen)}
-                                        disabled={isDashboardCheckIn || bookingDetails?.bedName != null}
+                                        disabled={isStayDetailsDisabled}
                                     // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
@@ -1100,9 +1138,9 @@ export default function BookingCheckIn({ navigation, route }) {
                                         // ]}
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn || bookingDetails?.bedName != null && styles.disabledSelect,
+                                            isStayDetailsDisabled && styles.disabledSelect,
                                         ]}
-                                        disabled={isDashboardCheckIn || bookingDetails?.bedName != null}
+                                        disabled={isStayDetailsDisabled}
                                         onPress={() => {
                                             if (selectedFloor) {
                                                 setRoomOpen(!roomOpen);
@@ -1145,9 +1183,9 @@ export default function BookingCheckIn({ navigation, route }) {
                                     <TouchableOpacity
                                         style={[
                                             styles.select,
-                                            isDashboardCheckIn || bookingDetails?.bedName != null && styles.disabledSelect,
+                                            isStayDetailsDisabled && styles.disabledSelect,
                                         ]}
-                                        disabled={isDashboardCheckIn || bookingDetails?.bedName != null}
+                                        disabled={isStayDetailsDisabled}
                                         onPress={() => {
                                             if (selectedRoom) {
                                                 setBedOpen(!bedOpen);
@@ -1267,7 +1305,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                             {/* <Text style={styles.label}>Refundable Amount </Text> */}
 
-                                            <TextInput
+                                            {/* <TextInput
                                                 style={[
                                                     styles.input,
                                                     refuseAdvanceAmount && styles.disabledInput,
@@ -1283,7 +1321,26 @@ export default function BookingCheckIn({ navigation, route }) {
                                                     setAdvanceError("");
                                                 }}
 
+                                            /> */}
+
+                                            <InputComponent
+                                                type="number"
+                                                placeholder="Enter AdvanceAmount"
+                                                keyboardType="numeric"
+                                                value={advanceAmount}
+                                                editable={!refuseAdvanceAmount}
+                                                onChangeText={(text) => {
+                                                    const onlyNumbers = text.replace(/[^0-9]/g, "");
+                                                    setAdvanceAmount(onlyNumbers);
+                                                    setAdvanceError("");
+                                                }}
+                                                disabled={refuseAdvanceAmount}
+                                            // style={[
+                                            //     styles.input,
+                                            //     refuseAdvanceAmount && styles.disabledInput,
+                                            // ]}
                                             />
+
                                             {advanceError && (
                                                 <ErrorMessage message={advanceError} type="error" />
                                             )}
@@ -1453,7 +1510,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                 <View style={styles.field}>
                                     <Text style={styles.label}>Total Rent <Text style={{ color: "red" }}>*</Text></Text>
-                                    <TextInput
+                                    {/* <TextInput
                                         style={styles.input}
                                         keyboardType="numeric"
                                         value={rentalAmount}
@@ -1463,13 +1520,28 @@ export default function BookingCheckIn({ navigation, route }) {
                                                 : "Enter Rental Amount"
                                         }
                                         placeholderTextColor="#9CA3AF"
-                                        // onChangeText={setRentalAmount}
                                         onChangeText={(text) => {
                                             const onlyNumbers = text.replace(/[^0-9]/g, "");
-                                            setRentalAmount(onlyNumbers);
+                                            setRentalAmount(sanitizeAmount(text));
                                             setRentError("");
                                         }}
 
+                                    /> */}
+
+                                    <InputComponent
+                                        type="number"
+                                        placeholder={
+                                            defaultRent
+                                                ? `Selected Bed Rent is ${defaultRent}`
+                                                : "Enter Rental Amount"
+                                        }
+                                        keyboardType="numeric"
+                                        value={rentalAmount}
+                                        onChangeText={(text) => {
+                                            setRentalAmount(sanitizeAmount(text));
+                                            setRentError("");
+                                        }}
+                                        // style={styles.input}
                                     />
 
                                 </View>
@@ -1532,16 +1604,16 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         ]}
                                                     >
                                                         {(showCustomRentEditor || isCustomRentSaved) ? "Close" : "Add Custom Rent"}
-                                                      
+
                                                     </Text>
-                                                      {(showCustomRentEditor || isCustomRentSaved) ?
-                                                        <Image source={CloseIcon} style={{ height: 10, width: 10, marginLeft: 5 }} /> : 
+                                                    {(showCustomRentEditor || isCustomRentSaved) ?
+                                                        <Image source={CloseIcon} style={{ height: 10, width: 10, marginLeft: 5 }} /> :
                                                         <Image source={AddRentIcon} style={{ height: 10, width: 10, marginLeft: 5 }} />}
                                                 </TouchableOpacity>
 
                                                 {(showCustomRentEditor || isCustomRentSaved) && (
                                                     <View style={styles.customRentCard}>
-                                                         <View style={styles.customRentArrow} />
+                                                        <View style={styles.customRentArrow} />
 
                                                         <Text style={styles.customRentTitle}>
                                                             Custom Rent Amount
@@ -1551,97 +1623,98 @@ export default function BookingCheckIn({ navigation, route }) {
                                                             This amount reflects First month Rent only.
                                                         </Text>
 
-                                                             {!isCustomRentSaved ? (
+                                                        {!isCustomRentSaved ? (
 
-                                                    <>
-                            
+                                                            <>
 
-                                                        <View style={styles.amountInputWrapper}>
 
-                                                            <TextInput
-                                                                style={styles.customRentInput}
-                                                                placeholder="₹ 0.00"
-                                                                placeholderTextColor="#9CA3AF"
-                                                                keyboardType="numeric"
-                                                                value={customRentAmount}
-                                                                onChangeText={(text) => {
-                                                                    setCustomRentAmount(
-                                                                        text.replace(/[^0-9]/g, "")
-                                                                    );
-                                                                    setCustomRentError("");
-                                                                }}
-                                                            />
+                                                                <View style={styles.amountInputWrapper}>
 
-                                                            <TouchableOpacity
-                                                                style={styles.setBtnInside}
-                                                                onPress={() => {
+                                                                    <TextInput
+                                                                        style={styles.customRentInput}
+                                                                        placeholder="Enter Rent Amount"
+                                                                        placeholderTextColor="#9CA3AF"
+                                                                        keyboardType="numeric"
+                                                                        value={customRentAmount}
+                                                                        onChangeText={(text) => {
+                                                                            setCustomRentAmount(sanitizeAmount(text));
+                                                                            // setCustomRentAmount(
+                                                                            //     text.replace(/[^0-9]/g, "")
+                                                                            // );
+                                                                            setCustomRentError("");
+                                                                        }}
+                                                                    />
 
-                                                                    if (!customRentAmount) {
-                                                                        setCustomRentError(
-                                                                            "Please enter custom rent amount"
-                                                                        );
-                                                                        return;
-                                                                    }
+                                                                    <TouchableOpacity
+                                                                        style={styles.setBtnInside}
+                                                                        onPress={() => {
 
-                                                                    if (Number(customRentAmount) <= 0) {
-                                                                        setCustomRentError(
-                                                                            "Amount should be greater than zero"
-                                                                        );
-                                                                        return;
-                                                                    }
+                                                                            if (!customRentAmount) {
+                                                                                setCustomRentError(
+                                                                                    "Please enter custom rent amount"
+                                                                                );
+                                                                                return;
+                                                                            }
 
-                                                                    setSavedCustomRent(customRentAmount);
-                                                                    setIsCustomRentSaved(true);
-                                                                    setShowCustomRentEditor(false);
-                                                                    setCustomRentError("");
-                                                                }}
-                                                            >
-                                                                <Text style={styles.setBtnText}>
-                                                                    ✓ Set
+                                                                            if (Number(customRentAmount) <= 0) {
+                                                                                setCustomRentError(
+                                                                                    "Amount should be greater than zero"
+                                                                                );
+                                                                                return;
+                                                                            }
+
+                                                                            setSavedCustomRent(customRentAmount);
+                                                                            setIsCustomRentSaved(true);
+                                                                            setShowCustomRentEditor(false);
+                                                                            setCustomRentError("");
+                                                                        }}
+                                                                    >
+                                                                        <Text style={styles.setBtnText}>
+                                                                            ✓ Set
+                                                                        </Text>
+                                                                    </TouchableOpacity>
+
+                                                                </View>
+
+                                                                {customRentError ? (
+                                                                    <ErrorMessage message={customRentError} />
+                                                                ) : null}
+                                                            </>
+
+                                                        ) : (
+
+                                                            <View style={styles.savedRow}>
+
+                                                                <Text style={styles.savedAmount}>
+                                                                    ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
                                                                 </Text>
-                                                            </TouchableOpacity>
 
-                                                        </View>
+                                                                <TouchableOpacity
+                                                                    onPress={() => {
 
-                                                        {customRentError ? (
-                                                            <ErrorMessage message={customRentError} />
-                                                        ) : null}
-                                                    </>
+                                                                        setCustomRentAmount(savedCustomRent);
 
-                                                ) : (
+                                                                        setIsCustomRentSaved(false);
 
-                                                    <View style={styles.savedRow}>
+                                                                        setShowCustomRentEditor(true);
 
-                                                        <Text style={styles.savedAmount}>
-                                                            ₹ {Number(savedCustomRent).toLocaleString("en-IN")}
-                                                        </Text>
+                                                                    }}
+                                                                >
+                                                                    <Image
+                                                                        source={require("../../Assets/Images/EditRent.png")}
+                                                                        style={{
+                                                                            width: 24,
+                                                                            height: 24,
+                                                                            tintColor: "#6B7280",
+                                                                        }}
+                                                                    />
+                                                                </TouchableOpacity>
 
-                                                        <TouchableOpacity
-                                                            onPress={() => {
+                                                            </View>
 
-                                                                setCustomRentAmount(savedCustomRent);
+                                                        )}
 
-                                                                setIsCustomRentSaved(false);
 
-                                                                setShowCustomRentEditor(true);
-
-                                                            }}
-                                                        >
-                                                            <Image
-                                                                source={require("../../Assets/Images/EditRent.png")}
-                                                                style={{
-                                                                    width: 24,
-                                                                    height: 24,
-                                                                    tintColor: "#6B7280",
-                                                                }}
-                                                            />
-                                                        </TouchableOpacity>
-
-                                                    </View>
-
-                                                )}
-
-                                                       
 
                                                     </View>
                                                 )}
@@ -2524,7 +2597,7 @@ const styles = StyleSheet.create({
     },
 
     customRentBtn: {
-         marginTop: 15,
+        marginTop: 15,
         backgroundColor: "#EEF2FF",
         paddingVertical: 14,
         borderRadius: 10,
@@ -2542,31 +2615,31 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Semibold"
     },
 
-     customRentCard: {
-    marginTop: 12,
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#C8D3FF",
-    padding: 16,
-    position: "relative",
-},
-customRentArrow: {
-    position: "absolute",
-    top: -12,
-    right: 38,
+    customRentCard: {
+        marginTop: 12,
+        backgroundColor: "#fff",
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: "#C8D3FF",
+        padding: 16,
+        position: "relative",
+    },
+    customRentArrow: {
+        position: "absolute",
+        top: -12,
+        right: 38,
 
-    width: 0,
-    height: 0,
+        width: 0,
+        height: 0,
 
-    borderLeftWidth: 12,
-    borderRightWidth: 12,
-    borderBottomWidth: 12,
+        borderLeftWidth: 12,
+        borderRightWidth: 12,
+        borderBottomWidth: 12,
 
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    borderBottomColor: "#C8D3FF",
-},
+        borderLeftColor: "transparent",
+        borderRightColor: "transparent",
+        borderBottomColor: "#C8D3FF",
+    },
 
     customRentTitle: {
         fontSize: 18,

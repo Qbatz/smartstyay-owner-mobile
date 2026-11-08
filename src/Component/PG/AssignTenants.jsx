@@ -29,7 +29,7 @@ import AddRentIcon from "../../Assets/Images/directionbottom.png";
 import { Switch } from "react-native";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 import { UseSetting } from "../../Context/SettingContext";
-
+import InputComponent from "../MorePages/InputComponent"
 
 
 export default function AssignTenant({ navigation, route }) {
@@ -150,8 +150,57 @@ export default function AssignTenant({ navigation, route }) {
       console.log("AssignTenant bookingInitializeResponse", res);
 
       if (res?.success) {
-        // Payment modes ONLY from getBedsByHostelAndDate
-        setAccountList(res?.data?.bankDetails || []);
+        setAccountList(
+          (res?.data?.bankDetails || []).map((bank, index) => {
+            const isBank = bank?.isBank;
+
+            const label = isBank
+              ? `${bank?.accountHolderName || ""}${bank?.bankName != null ? `-${bank.bankName}` : ""
+              }-${bank?.accountType || ""}`
+              : `${bank?.accountHolderName || ""}-${bank?.bankName != null ? `-${bank.bankName}` : ""
+              }${bank?.accountType || ""}`;
+
+            const iconType = isBank
+              ? bank?.accountType === "BANK" || bank?.bankName === "BANK"
+                ? "BANK"
+                : bank?.bankName === "CASH" || bank?.accountType === "CASH"
+                  ? "CASH"
+                  : "CARD"
+              : bank?.type === "BANK" || bank?.bankName === "BANK"
+                ? "BANK"
+                : bank?.bankName === "CASH" || bank?.type === "CASH"
+                  ? "CASH"
+                  : "CARD";
+
+            return {
+              id: bank?.bankId || `account-${index}`,
+              bankId: bank?.bankId,
+              value: String(bank?.bankId || ""),
+              label: `${bank?.displayName || ""} - ${bank?.holderName || bank?.accountHolderName || ""} - ${bank?.bankName || ""}`,
+              isBank,
+
+              displayName: bank?.displayName || "",
+              holderName: bank?.holderName || bank?.accountHolderName || "",
+              accountHolderName: bank?.holderName || bank?.accountHolderName || "",
+              bankName: bank?.bankName || "",
+
+              accountType: bank?.accountType || "",
+              type: bank?.type || bank?.accountType || bank?.bankName || "",
+              iconType,
+              isCash: iconType === "CASH",
+              paymentMethod: bank?.accountType || bank?.type || bank?.bankName || "",
+              cashAccountType:
+                iconType === "CASH" ? bank?.accountType || "Cash" : "",
+              bankAccountType:
+                iconType !== "CASH"
+                  ? bank?.accountType || bank?.bankName || ""
+                  : "",
+              upiId: bank?.upiId || "",
+              isUpi: bank?.isUpi || false,
+              data: bank,
+            };
+          })
+        );
       } else {
         setAccountList([]);
       }
@@ -161,43 +210,45 @@ export default function AssignTenant({ navigation, route }) {
     }
   };
 
-  const transactionOptions = (AccountsList || []).map((item, index) => {
-    const isCash = item?.type === "CASH";
+  const transactionOptions = AccountsList || [];
 
-    return {
-      id: item?.bankId || `account-${index}`,
+  // const transactionOptions = (AccountsList || []).map((item, index) => {
+  //   const isCash = item?.type === "CASH";
 
-      bankId: item?.bankId,
+  //   return {
+  //     id: item?.bankId || `account-${index}`,
 
-      accountHolderName:
-        item?.holderName || "Account",
+  //     bankId: item?.bankId,
 
-      displayName:
-        item?.holderName || "Account",
+  //     accountHolderName:
+  //       item?.holderName || "Account",
 
-      accountType:
-        item?.type || "BANK",
+  //     displayName:
+  //       item?.holderName || "Account",
 
-      bankName:
-        item?.bankName || "",
+  //     accountType:
+  //       item?.type || "BANK",
 
-      paymentMethod:
-        item?.type || "BANK",
+  //     bankName:
+  //       item?.bankName || "",
 
-      cashAccountType:
-        isCash ? item?.bankName || "Cash" : "",
+  //     paymentMethod:
+  //       item?.type || "BANK",
 
-      bankAccountType:
-        !isCash ? item?.bankName || "Bank Account" : "",
+  //     cashAccountType:
+  //       isCash ? item?.bankName || "Cash" : "",
 
-      isCash,
+  //     bankAccountType:
+  //       !isCash ? item?.bankName || "Bank Account" : "",
 
-      subLabel:
-        isCash
-          ? item?.bankName || "Cash"
-          : item?.bankName || "Bank Account",
-    };
-  });
+  //     isCash,
+
+  //     subLabel:
+  //       isCash
+  //         ? item?.bankName || "Cash"
+  //         : item?.bankName || "Bank Account",
+  //   };
+  // });
 
 
 
@@ -357,16 +408,16 @@ export default function AssignTenant({ navigation, route }) {
   }
 
 
-  const fetchBankingList = async () => {
-    const data = await getBankListByHostel(activeHostelId);
-    setAccountList(data.data);
-  };
+  // const fetchBankingList = async () => {
+  //   const data = await getBankListByHostel(activeHostelId);
+  //   setAccountList(data.data);
+  // };
 
-  useEffect(() => {
-    if (activeHostelId) {
-      fetchBankingList(activeHostelId);
-    }
-  }, [activeHostelId]);
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     fetchBankingList(activeHostelId);
+  //   }
+  // }, [activeHostelId]);
 
 
 
@@ -1363,18 +1414,31 @@ export default function AssignTenant({ navigation, route }) {
                   <ErrorMessage message={bookingDateError} type="error" />
                 )}
                 <Text style={styles.label}>Booking Amount <Text style={{ color: "red" }}>*</Text></Text>
-                <TextInput
+                {/* <TextInput
                   style={styles.input}
                   placeholder="Enter Amount"
                   keyboardType="numeric"
                   value={bookingAmount}
-                  // onChangeText={setBookingAmount}
                   onChangeText={(text) => {
                     const onlyNum = text.replace(/[^0-9]/g, "");
                     setBookingAmount(onlyNum);
                     setBookingAmountError("");
                   }}
+                /> */}
+
+                <InputComponent
+                  type="number"
+                  value={bookingAmount}
+                  placeholder="Enter Amount"
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    const onlyNum = text.replace(/[^0-9]/g, "");
+                    setBookingAmount(onlyNum);
+                    setBookingAmountError("");
+                  }}
+                  error={!!bookingAmountError}
                 />
+
                 {bookingAmountError && (
                   <ErrorMessage message={bookingAmountError} type="error" />
                 )}
@@ -1447,14 +1511,14 @@ export default function AssignTenant({ navigation, route }) {
                         <View
                           style={[
                             styles.paymentMethodIcon,
-                           accountSelected?.isCash
+                            accountSelected?.isCash
                               ? styles.cashIconBg
                               : styles.bankIconBg,
                           ]}
                         >
                           <Image
                             source={
-                             accountSelected?.isCash
+                              accountSelected?.isCash
                                 ? CashIcon
                                 : BankIcon
                             }
@@ -1470,10 +1534,7 @@ export default function AssignTenant({ navigation, route }) {
                             numberOfLines={1}
                             ellipsizeMode="tail"
                           >
-                            {accountSelected?.accountHolderName ||
-                              accountSelected?.displayName ||
-                              accountSelected?.holderName ||
-                              "Account"}
+                            {accountSelected?.displayName}
                           </Text>
 
                           <Text
@@ -1481,13 +1542,7 @@ export default function AssignTenant({ navigation, route }) {
                             numberOfLines={1}
                             ellipsizeMode="tail"
                           >
-                            {accountSelected?.isCash
-                              ? accountSelected?.cashAccountType ||
-                              "Petty Cash"
-                              : accountSelected?.paymentMethod ||
-                              accountSelected?.bankAccountType ||
-                              accountSelected?.bankName ||
-                              "Bank Account"}
+                            {accountSelected?.holderName} - {accountSelected?.bankName}
                           </Text>
 
                         </View>
@@ -1496,7 +1551,7 @@ export default function AssignTenant({ navigation, route }) {
                         <View
                           style={[
                             styles.paymentTypeBadge,
-                          accountSelected?.isCash
+                            accountSelected?.isCash
                               ? styles.cashBadge
                               : styles.bankBadge,
                           ]}
@@ -1504,7 +1559,7 @@ export default function AssignTenant({ navigation, route }) {
                           <Text
                             style={[
                               styles.paymentTypeText,
-                            accountSelected?.isCash
+                              accountSelected?.isCash
                                 ? styles.cashText
                                 : styles.bankText,
                             ]}
@@ -1549,7 +1604,7 @@ export default function AssignTenant({ navigation, route }) {
   }}
   onChangeText={setReferenceNumber}
 /> */}
-                <TextInput
+                {/* <TextInput
                   ref={transactionRef}
                   style={styles.inputBox}
                   placeholder="Enter Transaction Id"
@@ -1559,6 +1614,21 @@ export default function AssignTenant({ navigation, route }) {
                   onChangeText={(text) => {
 
                     const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
+                    setReferenceNumber(noEmojis);
+                  }}
+                /> */}
+
+                <InputComponent
+                  ref={transactionRef}
+                  type="text"
+                  value={referenceNumber}
+                  placeholder="Enter Transaction Id"
+                  onFocus={() => scrollInputIntoView(transactionRef)}
+                  onChangeText={(text) => {
+                    const noEmojis = text.replace(
+                      /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,
+                      ""
+                    );
                     setReferenceNumber(noEmojis);
                   }}
                 />
@@ -1720,7 +1790,7 @@ export default function AssignTenant({ navigation, route }) {
 
 
                 <Text style={styles.label}>Rental Amount <Text style={{ color: "red" }}>*</Text></Text>
-                <TextInput
+                {/* <TextInput
                   style={styles.input}
                   placeholder={
                     selectedBed?.rentAmount
@@ -1736,7 +1806,26 @@ export default function AssignTenant({ navigation, route }) {
                     setRentalError("");
                   }}
 
+                /> */}
+
+                <InputComponent
+                  type="number"
+                  value={rentalAmount}
+                  placeholder={
+                    selectedBed?.rentAmount
+                      ? String(selectedBed.rentAmount)
+                      : "Enter Amount"
+                  }
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    const onlyNum = text.replace(/[^0-9]/g, "");
+                    setRentalAmount(onlyNum);
+                    setRentalError("");
+                  }}
+                  error={!!rentalError}
                 />
+
+
                 {rentalError && (
                   <ErrorMessage message={rentalError} type="error" />
                 )}
@@ -1817,7 +1906,7 @@ export default function AssignTenant({ navigation, route }) {
                     <View style={styles.advanceDetailsContent}>
 
                       {/* <Text style={styles.label}>Refundable Amount </Text> */}
-                      <TextInput
+                      {/* <TextInput
                         style={[
                           styles.input,
                           refuseAdvanceAmount && styles.disabledInput,
@@ -1834,7 +1923,24 @@ export default function AssignTenant({ navigation, route }) {
                           setAdvanceError("");
                         }}
 
+                      /> */}
+
+                      <InputComponent
+                        type="number"
+                        value={advanceAmount}
+                        placeholder="Enter Amount"
+                        keyboardType="numeric"
+                        editable={!refuseAdvanceAmount}
+                        disabled={refuseAdvanceAmount}
+                        onChangeText={(text) => {
+                          const onlyNum = text.replace(/[^0-9]/g, "");
+                          setAdvanceAmount(onlyNum);
+                          setAdvanceError("");
+                        }}
+                        error={!!advanceError}
                       />
+
+
                       {advanceError && (
                         <ErrorMessage message={advanceError} type="error" />
                       )}
@@ -2477,29 +2583,17 @@ export default function AssignTenant({ navigation, route }) {
                           }
                         >
                           <Text
-                            style={
-                              styles.paymentMethodName
-                            }
+                            style={styles.paymentMethodName}
                             numberOfLines={1}
                           >
-                            {payment?.accountHolderName ||
-                              payment?.displayName ||
-                              "Account"}
+                            {payment?.displayName}
                           </Text>
 
                           <Text
-                            style={
-                              styles.paymentMethodSubText
-                            }
+                            style={styles.paymentMethodSubText}
                             numberOfLines={1}
                           >
-                            {payment?.accountType === "CASH"
-                              ? payment?.cashAccountType ||
-                              "Petty Cash"
-                              : payment?.paymentMethod ||
-                              payment?.bankAccountType ||
-                              payment?.bankName ||
-                              "Bank Account"}
+                            {payment?.holderName} - {payment?.bankName}
                           </Text>
                         </View>
 

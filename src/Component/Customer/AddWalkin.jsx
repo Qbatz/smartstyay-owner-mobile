@@ -17,6 +17,7 @@ import CalendarIcon from "../../Assets/Images/calendar.png";
 import DownArrow from "../../Assets/Images/direction_down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
+import InputComponent from "../MorePages/InputComponent"
 
 
 export default function AddWalkin({ navigation }) {
@@ -28,11 +29,13 @@ export default function AddWalkin({ navigation }) {
   const [showDate, setShowDate] = useState(false);
   const [walkinDate, setWalkinDate] = useState("");
 
+  const [showErrors, setShowErrors] = useState(false);
+
   const [openRequestPicker, setOpenRequestPicker] = useState(false);
 
   const handleDateChange = (event, selectedDate) => {
     if (Platform.OS === "android") {
-      setShowDate(false); 
+      setShowDate(false);
     }
 
     if (selectedDate) {
@@ -58,11 +61,20 @@ export default function AddWalkin({ navigation }) {
           <Text style={styles.label}>
             First Name <Text style={{ color: "red" }}>*</Text>
           </Text>
-          <TextInput
+          {/* <TextInput
             placeholder="Enter First Name"
             value={firstName}
             onChangeText={setFirstName}
             style={styles.input}
+          /> */}
+          <InputComponent
+            type="name"
+            value={firstName}
+            onChangeText={setFirstName}
+            placeholder="Enter First Name"
+            error={
+              showErrors && !firstName.trim()
+            }
           />
 
           <Text style={styles.label}>Last Name</Text>
@@ -102,47 +114,47 @@ export default function AddWalkin({ navigation }) {
 
           <Text style={styles.label}>Walkin Date</Text>
 
+          <TouchableOpacity
+            style={styles.inputBox}
+            onPress={() => setShowDate(true)}
+          >
+            <Text style={styles.textInput}>
+              {walkinDate || "DD/MM/YYYY"}
+            </Text>
+            <Image source={CalendarIcon} style={styles.calendarIcon} />
+          </TouchableOpacity>
+
+
+          <View style={styles.btnRow}>
             <TouchableOpacity
-                                          style={styles.inputBox}
-                                          onPress={() => setShowDate(true)}
-                                      >
-                                          <Text style={styles.textInput}>
-                                              {walkinDate || "DD/MM/YYYY"}
-                                          </Text>
-                                          <Image source={CalendarIcon} style={styles.calendarIcon} />
-                                      </TouchableOpacity>
+              style={styles.cancelBtn}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
 
-      
-<View style={styles.btnRow}>
-  <TouchableOpacity
-    style={styles.cancelBtn}
-    onPress={() => navigation.goBack()}
-  >
-    <Text style={styles.cancelText}>Cancel</Text>
-  </TouchableOpacity>
-
-  <TouchableOpacity style={styles.addBtn2}>
-    <Text style={styles.addBtnText}>Add</Text>
-  </TouchableOpacity>
-</View>
+            <TouchableOpacity style={styles.addBtn2}>
+              <Text style={styles.addBtnText}>Add</Text>
+            </TouchableOpacity>
+          </View>
 
         </View>
       </ScrollView>
-      
-            <Modal visible={showDate} transparent animationType="fade">
-                    <View style={styles.calendarOverlay}>
-                        <View style={styles.calendarBox}>
-                            <DatePicker
-                                mode="single"
-                                date={dayjs()}
-                                onChange={(p) => {
-                                    setWalkinDate(dayjs(p.date).format("DD/MM/YYYY"));
-                                    setShowDate(false);
-                                }}
-                            />
-                        </View>
-                    </View>
-                </Modal>
+
+      <Modal visible={showDate} transparent animationType="fade">
+        <View style={styles.calendarOverlay}>
+          <View style={styles.calendarBox}>
+            <DatePicker
+              mode="single"
+              date={dayjs()}
+              onChange={(p) => {
+                setWalkinDate(dayjs(p.date).format("DD/MM/YYYY"));
+                setShowDate(false);
+              }}
+            />
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -188,16 +200,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: "#fff",
   },
-     inputBox: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#E5E7EB",
-        borderRadius: 10,
-        paddingHorizontal: 12,
-        height: 48,
-    },
-    textInput: { flex: 1, fontSize: 14, color: "#111" },
+  inputBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    height: 48,
+  },
+  textInput: { flex: 1, fontSize: 14, color: "#111" },
 
   mobileRow: {
     flexDirection: "row",
@@ -231,50 +243,50 @@ const styles = StyleSheet.create({
   },
 
   calendarIcon: { width: 20, height: 20 },
-   calendarOverlay: {
-        flex: 1,
-        backgroundColor: "rgba(0,0,0,0.4)",
-        justifyContent: "center",
-        padding: 20,
-    },
-    calendarBox: {
-        backgroundColor: "#fff",
-        borderRadius: 15,
-        padding: 10,
-    },
+  calendarOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
+    padding: 20,
+  },
+  calendarBox: {
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 10,
+  },
 
   /* BUTTONS */
-btnRow: {
-    display:'flex',
-  flexDirection: "row",
-//   alignItems: "flex-end",
-  justifyContent: "flex-end",
-  marginTop: 40,
-  paddingHorizontal: 12,
-},
+  btnRow: {
+    display: 'flex',
+    flexDirection: "row",
+    //   alignItems: "flex-end",
+    justifyContent: "flex-end",
+    marginTop: 40,
+    paddingHorizontal: 12,
+  },
 
-cancelBtn: {
-  paddingVertical: 12,
-  paddingHorizontal: 32,
-},
+  cancelBtn: {
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+  },
 
-cancelText: {
-  color: "#6B7280",
-  fontSize: 15,
-  fontWeight: "500",
-},
+  cancelText: {
+    color: "#6B7280",
+    fontSize: 15,
+    fontWeight: "500",
+  },
 
-addBtn2: {
-  backgroundColor: "#2B6CF6",
-  paddingVertical: 12,
-  paddingHorizontal: 40,
-  borderRadius: 10,
-},
+  addBtn2: {
+    backgroundColor: "#2B6CF6",
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+  },
 
-addBtnText: {
-  color: "#fff",
-  fontSize: 15,
-  fontWeight: "600",
-},
+  addBtnText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 
 });

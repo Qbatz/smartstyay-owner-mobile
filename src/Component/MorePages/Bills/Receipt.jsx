@@ -8,7 +8,8 @@ import {
   StyleSheet, TouchableWithoutFeedback,
   Modal, Animated,
   PanResponder,
-  BackHandler, TextInput, ScrollView, Dimensions
+  BackHandler, TextInput, ScrollView, Dimensions,
+  ActivityIndicator
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -45,13 +46,13 @@ import ReactNativeBlobUtil from "react-native-blob-util";
 
 
 const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
-  handleResetFilters, setShowTabBar}) => {
+  handleResetFilters, setShowTabBar }) => {
 
 
 
   const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
     UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails,
-    downloadReceipt, shareReceiptOnWhatsapp, ReceiptFilter,onlyReceiptList,setOnlyReceiptList } = useContext(BillContext);
+    downloadReceipt, shareReceiptOnWhatsapp, ReceiptFilter, onlyReceiptList, setOnlyReceiptList } = useContext(BillContext);
   const { activeHostelId } = useContext(CommonContexts);
 
   console.log("receiptsList", receiptsList);
@@ -78,29 +79,29 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
   const [showFilter, setShowFilter] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState(null);
 
-    const lastScrollY = useRef(0);
-    const isTabBarVisible = useRef(true);
-  
-    const handleScroll = (event) => {
-      const currentY = event.nativeEvent.contentOffset.y;
-      const diff = currentY - lastScrollY.current;
-  
-      if (Math.abs(diff) < 10) return;
-  
-      if (diff > 0 && currentY > 50) {
-        if (isTabBarVisible.current) {
-          setShowTabBar(false);
-          isTabBarVisible.current = false;
-        }
-      } else if (diff < 0) {
-        if (!isTabBarVisible.current) {
-          setShowTabBar(true);
-          isTabBarVisible.current = true;
-        }
+  const lastScrollY = useRef(0);
+  const isTabBarVisible = useRef(true);
+
+  const handleScroll = (event) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const diff = currentY - lastScrollY.current;
+
+    if (Math.abs(diff) < 10) return;
+
+    if (diff > 0 && currentY > 50) {
+      if (isTabBarVisible.current) {
+        setShowTabBar(false);
+        isTabBarVisible.current = false;
       }
-  
-      lastScrollY.current = currentY;
-    };
+    } else if (diff < 0) {
+      if (!isTabBarVisible.current) {
+        setShowTabBar(true);
+        isTabBarVisible.current = true;
+      }
+    }
+
+    lastScrollY.current = currentY;
+  };
 
 
   const [fromDate, setFromDate] = useState(dayjs());
@@ -108,9 +109,11 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
   const [openFrom, setOpenFrom] = useState(false);
   const [openTo, setOpenTo] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
-  const [receiptPage,setReceiptPage]=useState(1);
-  const[pageLoading,setPageLoading]=useState(false);
-  const[hasMoreReceipt,setHasMoreReceipt]=useState(true)
+  const [receiptPage, setReceiptPage] = useState(1);
+  const [pageLoading, setPageLoading] = useState(false);
+  const [hasMoreReceipt, setHasMoreReceipt] = useState(true)
+  const onEndReachedCalledDuringMomentum = useRef(true);
+  const isFetchingList = useRef(false);
 
   const detailsY = useRef(new Animated.Value(0)).current;
   const detailsSheetY = useRef(new Animated.Value(0)).current;
@@ -384,6 +387,7 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
 
 
 
+  console.log("pagination", receiptPage, hasMoreReceipt)
 
   const renderItem = ({ item }) => {
     return (
@@ -510,10 +514,10 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
       .join(", ");
 
 
-    
-  const onEndReachFetchReceiptList=async(page=1, isRefresh=false)=>{
 
-    if (!activeHostelId) {
+  const onEndReachFetchReceiptList = async (page = 1, isRefresh = false) => {
+
+    if (!activeHostelId || isFetchingList.current) {
       return;
     }
 
@@ -526,29 +530,57 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
     if (!isRefresh && !hasMoreReceipt) {
       return;
     }
+    isFetchingList.current = true;
 
-    try{
-       const res= await ReceiptFilter({hostelId: activeHostelId,
+    // const filters = {
+    //   startDate: fromDate ? dayjs(fromDate).format("DD/MM/YYYY") : null,
+    //   endDate: toDate ? dayjs(toDate).format("DD/MM/YYYY") : null,
+    //   paymentStatus: billStatus,
+    //   type: type,
+    //   modes: paymentmode,
+    //   collectedBy: collectedBy,
+    //   period: selectedPeriod,
+    //   minAmount: minAmount,
+    //   maxAmount: maxAmount,
+    // };
+
+    setPageLoading(true)
+    try {
+      const res = await ReceiptFilter({
+        hostelId: activeHostelId,
         keyword: "",
         page: page,
-        size: 20})
+        size: 20,
+        period: appliedFilters?.period ? appliedFilters?.period : "",
+        invoiceType: appliedFilters?.type.length > 0 ? appliedFilters?.type : undefined,
+        bankIds: appliedFilters?.modes.length > 0 ? appliedFilters?.modes : undefined,
+        collectedBy: appliedFilters?.collectedBy.length > 0 ? appliedFilters?.collectedBy : undefined,
+        minAmount: appliedFilters?.minAmount != null ? appliedFilters?.minAmount : null,
+        maxAmount: appliedFilters?.maxAmount != null ? appliedFilters?.maxAmount : null,
+      })
 
-        console.log("onlyNewReceiptlist",res)
-        if(res?.success){
-          const newReceiptList= res?.data?.listReceipts || [];
+      console.log("onlyNewReceiptlist", res)
+      if (res?.success) {
+        const newReceiptList = res?.data?.listReceipts || [];
+        const currentPage= res?.data?.currentPage;
+        const totalPage= res?.data?.totalPages;
 
-          if(newReceiptList.length < 20){
-            setHasMoreReceipt(false)
-          }
+        // if (newReceiptList.length < 50) {
+        //   setHasMoreReceipt(false)
+        // }
+        setHasMoreReceipt(totalPage !=null ? currentPage < totalPage : newReceiptList.length < 20)
 
-          setReceiptPage(page)
-        }
-    }catch(error){
+        setReceiptPage(currentPage || page)
+      }
+    } catch (error) {
       console.log(error)
+    } finally {
+      isFetchingList.current = false;
+      setPageLoading(false)
     }
   }
 
-console.log("someone",onlyReceiptList)
+  console.log("someone", onlyReceiptList)
 
 
 
@@ -599,7 +631,7 @@ console.log("someone",onlyReceiptList)
                 appliedFilters.period ||
                 appliedFilters.type?.length ||
                 appliedFilters.modes?.length ||
-                appliedFilters.collectedBy?.length || appliedFilters?.minAmount ||appliedFilters?.maxAmount
+                appliedFilters.collectedBy?.length || appliedFilters?.minAmount || appliedFilters?.maxAmount
               ) && (
                 <View style={{ marginBottom: 10 }}>
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -624,7 +656,7 @@ console.log("someone",onlyReceiptList)
                           </View>
                         ))}
 
-                         {appliedFilters?.minAmount ? (
+                        {appliedFilters?.minAmount ? (
                           <View style={styles.chip}>
                             <Text style={styles.chipText}>
                               Amount : {appliedFilters?.minAmount} - {appliedFilters?.maxAmount}
@@ -683,16 +715,27 @@ console.log("someone",onlyReceiptList)
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{
                 flexGrow: 1,
-                paddingBottom: 120,
+                paddingBottom: 110,
               }}
               ListEmptyComponent={!loading && <EmptyReceiptState />}
-               onScroll={handleScroll}
-               onEndReached={()=>{
-                if(!pageLoading && hasMoreReceipt){
-                    onEndReachFetchReceiptList(receiptPage + 1)
-                }}
+              onScroll={handleScroll}
+              onMomentumScrollBegin={() => {
+                onEndReachedCalledDuringMomentum.current = false;
+              }}
+              onEndReached={() => {
+                if (
+                  !onEndReachedCalledDuringMomentum.current &&
+                  !isFetchingList.current &&
+                  !pageLoading && hasMoreReceipt) {
+                  onEndReachedCalledDuringMomentum.current = true;
+                  onEndReachFetchReceiptList(receiptPage + 1)
                 }
-                 onEndReachedThreshold={0.5}
+              }
+              }
+              onEndReachedThreshold={0.3}
+              ListFooterComponent={
+                pageLoading ? <ActivityIndicator size="small" color="blue" /> : null
+              }
             />
           </>
         )}
