@@ -206,15 +206,17 @@ export default function LoginDesign() {
               <Text style={styles.loginText}>Log in</Text>
             </TouchableOpacity>
 
-            <Text style={styles.registerText}>
-              Not Registered yet?{" "}
-              <Text
-                style={styles.registerLink}
-                onPress={() => navigation.replace("CreateAccount")}
-              >
-                Create Account
+            {Platform.OS === "android" && (
+              <Text style={styles.registerText}>
+                Not Registered yet?{" "}
+                <Text
+                  style={styles.registerLink}
+                  onPress={() => navigation.replace("CreateAccount")}
+                >
+                  Create Account
+                </Text>
               </Text>
-            </Text>
+            )}
           </View>
         </ScrollView>
 
