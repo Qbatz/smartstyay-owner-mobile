@@ -35,13 +35,19 @@ target 'smartstayOwnerApp' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
-installer.pods_project.targets.each do |target|
-    if target.name == 'fmt'
+    installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        # Xcode 27 only supports deployment targets >= 15.0; bump any pod
+        # (incl. resource-bundle targets) that declares an older minimum.
+        current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if current.nil? || Gem::Version.new(current) < Gem::Version.new('15.6')
+          config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.6'
+        end
+        if target.name == 'fmt'
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        end
       end
     end
-  end
   
   end
 end
