@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>BASE_URL</key>
+	<string>$(BASE_URL)</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
@@ -34,13 +36,13 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>SmartStay needs access to your camera so you can capture photos.</string>
+	<string>SmartStay needs access to your camera for KYC verification and to capture room photos, belongings, and damages.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>SmartStay needs permission to save images to your photo library.</string>
+	<string>SmartStay needs permission to upload room photos, belongings, and damages.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>SmartStay needs access to your photo library so you can select images to upload.</string>
+	<string>SmartStay needs access to your photo library to upload room photos, belongings, and damages.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>
@@ -49,6 +51,10 @@
 		<string>Gilroy-Medium.ttf</string>
 		<string>Gilroy-Regular.ttf</string>
 		<string>Gilroy-SemiBold.ttf</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
 	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>

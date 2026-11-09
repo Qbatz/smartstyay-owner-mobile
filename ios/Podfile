@@ -13,6 +13,12 @@ source 'https://github.com/CocoaPods/Specs.git'
 platform :ios, 15.6
 prepare_react_native_project!
 
+project 'smartstayOwnerApp',
+  'DevDebug' => :debug,
+  'DevRelease' => :release,
+  'ProdDebug' => :debug,
+  'ProdRelease' => :release
+
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -27,6 +33,15 @@ target 'smartstayOwnerApp' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
+
+
+  pod 'FirebaseMessaging', '~> 12.0', :modular_headers => true
+  pod 'FirebaseCrashlytics', '~> 12.0'
+  pod 'FirebaseAnalytics', '~> 12.0'
+
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'GoogleDataTransport', :modular_headers => true
+  pod 'nanopb', :modular_headers => true
 
   post_install do |installer|
     react_native_post_install(
@@ -47,7 +62,17 @@ target 'smartstayOwnerApp' do
           config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
         end
       end
-    end
   
+    # Xcode 27 fails the build when a target's deployment target is below iOS 15.0.
+    # Some pods' resource bundles still declare iOS 9-13, so raise those to the
+    # app's minimum (keep in sync with `platform :ios` above).
+    target.build_configurations.each do |config|
+      current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if current && Gem::Version.new(current.to_s) < Gem::Version.new('15.6')
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.6'
+      end
+    end
+  end
+
   end
 end
