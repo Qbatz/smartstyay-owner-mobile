@@ -1,4 +1,4 @@
-package com.qbatz.smartstay;
+package com.qbatz.smartstay
 
 import android.app.Application
 import com.facebook.react.PackageList

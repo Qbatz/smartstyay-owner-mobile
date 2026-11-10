@@ -157,7 +157,7 @@ function App() {
 
   return (
     <SafeAreaProvider>
-      <StatusBar barStyle={'light-content'} backgroundColor={'#1A73E8F0'} />
+      <StatusBar barStyle={'light-content'} backgroundColor={'#1D5DFF'} />
       <LoginContext>
         <CommonContext>
           <GeneralProvider>

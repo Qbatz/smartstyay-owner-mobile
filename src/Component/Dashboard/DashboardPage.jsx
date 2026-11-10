@@ -792,7 +792,7 @@ const subTabs = [
 
       <View style={[styles.safe, { paddingTop: insets.top }]}>
 
-        <StatusBar backgroundColor="#E9F2FF" barStyle="dark-content" />
+        <StatusBar backgroundColor="#1D5DFF" barStyle="light-content" />
 
         <LinearGradient
           colors={["#E9F2FF", "#F6FBFF"]}
