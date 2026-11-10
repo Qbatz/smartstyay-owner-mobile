@@ -28,6 +28,13 @@ import DownArrow from "../../Assets/Images/direction-down.png";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import InputComponent from "../MorePages/InputComponent";
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
+import { Home, Setting2, ArrowUp, ArrowUp2, ArrowDown2 } from 'iconsax-react-native';
+
+import customParseFormat from "dayjs/plugin/customParseFormat";
+
+dayjs.extend(customParseFormat);
 
 const ITEM_HEIGHT = 14;
 const MIN_ITEMS = 3;
@@ -163,6 +170,9 @@ export default function AddComplaint() {
   useEffect(() => {
     if (mode === "edit" && data) {
 
+      console.log("editcomplaintdata", data);
+
+
       const formattedDate = data.complaintDate
         ? dayjs(data.complaintDate, "DD/MM/YYYY").format("YYYY-MM-DD")
         : null;
@@ -212,36 +222,36 @@ export default function AddComplaint() {
   };
 
   const handleLeavePage = useCallback(() => {
-  // ---------------- EDIT MODE ----------------
-  if (mode === "edit") {
-    if (hasEditChanges()) {
+    // ---------------- EDIT MODE ----------------
+    if (mode === "edit") {
+      if (hasEditChanges()) {
+        setShowLeavePageScreen(true);
+      } else {
+        navigation.goBack();
+      }
+
+      return;
+    }
+
+    // ---------------- ADD MODE ----------------
+    const hasMandatoryValue =
+      !!selectedCustomer ||
+      !!selectedComplaintType ||
+      !!complaintDate;
+
+    if (hasMandatoryValue) {
       setShowLeavePageScreen(true);
     } else {
       navigation.goBack();
     }
-
-    return;
-  }
-
-  // ---------------- ADD MODE ----------------
-  const hasMandatoryValue =
-    !!selectedCustomer ||
-    !!selectedComplaintType ||
-    !!complaintDate;
-
-  if (hasMandatoryValue) {
-    setShowLeavePageScreen(true);
-  } else {
-    navigation.goBack();
-  }
-}, [
-  mode,
-  selectedCustomer,
-  selectedComplaintType,
-  complaintDate,
-  hasEditChanges,
-  navigation,
-]);
+  }, [
+    mode,
+    selectedCustomer,
+    selectedComplaintType,
+    complaintDate,
+    hasEditChanges,
+    navigation,
+  ]);
 
 
 
@@ -321,21 +331,49 @@ export default function AddComplaint() {
 
 
   useFocusEffect(
-  useCallback(() => {
-    const backAction = () => {
-      handleLeavePage();
-      return true;
-    };
+    useCallback(() => {
+      const backAction = () => {
+        handleLeavePage();
+        return true;
+      };
 
-    const subscription = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        backAction
+      );
 
-    return () => subscription.remove();
-  }, [handleLeavePage])
-);
+      return () => subscription.remove();
+    }, [handleLeavePage])
+  );
 
+
+
+const customerDropdownOptions = [
+  // Always keep selected tenant in dropdown options
+  ...(selectedCustomer?.customerId
+    ? [{
+        label: selectedCustomer.fullName || data?.customerName || "",
+        value: selectedCustomer.customerId,
+      }]
+    : []),
+
+  // Remaining customers
+  ...CustomerOptions
+    .filter(
+      item =>
+        String(item?.customerId) !==
+        String(selectedCustomer?.customerId)
+    )
+    .map(item => ({
+      label: item?.fullName,
+      value: item?.customerId,
+    })),
+];
+
+  const complaintTypeDropdownOptions = complaintTypes?.map(item => ({
+    label: item?.raw?.complaintTypeName,
+    value: item?.raw?.complaintTypeId,
+  })) || [];
 
 
 
@@ -379,19 +417,48 @@ export default function AddComplaint() {
     }
   }
 
+  // const isDateDisabled = (dateString) => {
+  //   const current = dayjs(dateString, "YYYY-MM-DD");
+
+  //   if (!selectedCustomer) return true;
+
+  //   if (current.isAfter(dayjs(), "day")) return true;
+
+  //   if (selectedCustomer.actualJoining) {
+  //     const joining = dayjs(
+  //       selectedCustomer.actualJoining,
+  //       "DD/MM/YYYY"
+  //     );
+  //     if (current.isBefore(joining, "day")) return true;
+  //   }
+
+  //   return false;
+  // };
+
   const isDateDisabled = (dateString) => {
-    const current = dayjs(dateString, "YYYY-MM-DD");
+    const current = dayjs(dateString, "YYYY-MM-DD", true);
+
+    if (!current.isValid()) return true;
 
     if (!selectedCustomer) return true;
 
+    // Future date validation
     if (current.isAfter(dayjs(), "day")) return true;
 
+    // Tenant joining date validation
     if (selectedCustomer.actualJoining) {
       const joining = dayjs(
         selectedCustomer.actualJoining,
-        "DD/MM/YYYY"
+        "DD/MM/YYYY",
+        true
       );
-      if (current.isBefore(joining, "day")) return true;
+
+      if (
+        joining.isValid() &&
+        current.isBefore(joining, "day")
+      ) {
+        return true;
+      }
     }
 
     return false;
@@ -423,11 +490,54 @@ export default function AddComplaint() {
   }
 
 
-  const onSelectCustomer = (item) => {
-    setCustomer(item.customerName);
-    setSelectedCustomer(item);
+  // const onSelectCustomer = (item) => {
+  //   setCustomer(item.customerName);
+  //   setSelectedCustomer(item);
+  //   setUserErrmsg("");
+  // };
+
+  // const onSelectCustomer = (customerId) => {
+  //   const selectedItem = CustomerOptions?.find(
+  //     item => item?.customerId === customerId
+  //   );
+
+  //   if (!selectedItem) return;
+
+  //   setSelectedCustomer(selectedItem);
+  //   setCustomer(selectedItem?.fullName);
+  //   setUserErrmsg("");
+  // };
+
+
+
+  const onSelectCustomer = (selectedValue) => {
+    // Handle both object and ID responses
+    const customerId =
+      typeof selectedValue === "object"
+        ? selectedValue?.value ?? selectedValue?.customerId
+        : selectedValue;
+
+    const selectedItem = CustomerOptions?.find(
+      item => String(item?.customerId) === String(customerId)
+    );
+
+    console.log("selectedItem", selectedItem);
+    
+
+    if (!selectedItem) {
+      console.log("Selected tenant not found:", selectedValue);
+      return;
+    }
+
+    setSelectedCustomer(selectedItem);
+    setCustomer(selectedItem?.fullName);
     setUserErrmsg("");
+
+    // Reset complaint date when tenant changes
+    setComplaintDate(null);
+    setDateErrmsg("");
   };
+
 
 
 
@@ -495,7 +605,7 @@ export default function AddComplaint() {
     let isValid = true;
 
     if (!selectedCustomer) {
-      setUserErrmsg("Please select customer");
+      setUserErrmsg("Please select Tenant");
       isValid = false;
     }
 
@@ -543,7 +653,7 @@ export default function AddComplaint() {
       }
     } catch (error) {
       console.log(error)
-       isSubmittingRef.current = false;
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
     }
     //  finally {
@@ -622,7 +732,7 @@ export default function AddComplaint() {
         type={modalType}
       />
 
-     
+
       <View style={{ flex: 1 }}>
 
         {/* HEADER - FIXED */}
@@ -632,6 +742,7 @@ export default function AddComplaint() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
             {mode === "edit" ? "Edit Complaint" : "Add Complaint"}
+
           </Text>
         </View>
 
@@ -644,11 +755,27 @@ export default function AddComplaint() {
           contentContainerStyle={{ paddingBottom: 180, paddingRight: 15, padding: 20 }}
         >
 
-          <Text style={styles.label}>
+          {/* <Text style={styles.label}>
             Tenant <Text style={{ color: "red" }}>*</Text>
-          </Text>
+          </Text> */}
 
-          <TouchableOpacity
+
+          <DropdownComponent
+    label="Tenant"
+    required
+    placeholder="Select Tenant"
+    options={customerDropdownOptions}
+    value={selectedCustomer?.customerId ?? null}
+    onChange={onSelectCustomer}
+    disabled={mode === "edit"}
+    error={userErrmsg}
+    emptyText="No customer available"
+    maxDropdownHeight={200}
+    containerStyle={{ marginTop: 10 }}
+/>
+
+
+          {/* <TouchableOpacity
             style={styles.selectBox}
             disabled={mode === "edit"}
             onPress={() => {
@@ -659,10 +786,9 @@ export default function AddComplaint() {
             <Text style={styles.selectedText}>
               {selectedCustomer?.fullName || "Select Tenant"}
             </Text>
-            {/* <Text style={styles.arrow}>⌄</Text> */}
              <Image source={DownArrow} style={styles.downArrowIcon} />
             
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {customerOpen && (
             <View
@@ -716,11 +842,33 @@ export default function AddComplaint() {
 
 
 
-          <Text style={styles.label}>
+          {/* <Text style={styles.label}>
             Complaint Type <Text style={{ color: "red" }}>*</Text>
-          </Text>
+          </Text> */}
 
-          <TouchableOpacity
+          <DropdownComponent
+            label="Complaint Type"
+            required
+            placeholder="Select Complaint Type"
+            options={complaintTypeDropdownOptions}
+            value={selectedComplaintType?.raw?.complaintTypeId ?? null}
+            onChange={(complaintTypeId) => {
+              const selectedItem = complaintTypes?.find(
+                item =>
+                  item.raw.complaintTypeId === complaintTypeId
+              );
+
+              setSelectedComplaintType(selectedItem || null);
+              setComplaintTypeErrmsg("");
+            }}
+            disabled={mode === "edit"}
+            error={complaintTypeErrmsg}
+            emptyText="No complaint type available"
+            maxDropdownHeight={200}
+            containerStyle={{ marginTop: 10 }}
+          />
+
+          {/* <TouchableOpacity
             style={styles.selectBox}
             disabled={mode === "edit"}
             onPress={() => {
@@ -733,7 +881,7 @@ export default function AddComplaint() {
                 "Select Complaint Type"}
             </Text>
             <Image source={DownArrow} style={styles.downArrowIcon} />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           {ctypeOpen && (
             <View
@@ -788,7 +936,45 @@ export default function AddComplaint() {
           )}
 
 
-          <Text style={styles.label}>Floor<Text style={{ color: "red" }}> *</Text></Text>
+          {/* FLOOR */}
+          <InputComponent
+            label="Floor"
+            required
+            type="text"
+            value={selectedCustomer?.floorName || ""}
+            placeholder="Floor"
+            disabled
+            inputHeight={52}
+            containerStyle={{ marginTop: 10 }}
+          />
+
+          {/* ROOM */}
+          <InputComponent
+            label="Room"
+            required
+            type="text"
+            value={selectedCustomer?.roomName || ""}
+            placeholder="Room"
+            disabled
+            inputHeight={52}
+            containerStyle={{ marginTop: 14 }}
+          />
+
+          {/* BED */}
+          <InputComponent
+            label="Bed"
+            required
+            type="text"
+            value={selectedCustomer?.bedName || ""}
+            placeholder="Bed"
+            disabled
+            inputHeight={52}
+            containerStyle={{ marginTop: 14 }}
+          />
+
+
+
+          {/* <Text style={styles.label}>Floor<Text style={{ color: "red" }}> *</Text></Text>
           <TextInput
             style={styles.inputBox}
             value={selectedCustomer?.floorName || ""}
@@ -810,10 +996,72 @@ export default function AddComplaint() {
             value={selectedCustomer?.bedName || ""}
             editable={false}
             placeholder=" Bed"
+          /> */}
+
+
+
+          <DatePickerComponent
+            label="Complaint Date"
+            required
+            selectedDate={complaintDate}
+            onSelect={handleDateChange}
+            placeholder="DD-MM-YYYY"
+            displayFormat="DD-MM-YYYY"
+            maxDate={dayjs().format("YYYY-MM-DD")}
+            isDateDisabled={isDateDisabled}
+            error={dateErrmsg}
+            containerStyle={{ marginTop: 10 }}
           />
 
 
-          <Text style={styles.label}>
+          {/* {dateErrmsg ? (
+            <ErrorMessage message={dateErrmsg} type="error" />
+          ) : null} */}
+
+
+          {/* <Text style={styles.label}>
+            Complaint Date <Text style={{ color: "red" }}>*</Text>
+          </Text>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => {
+              if (!selectedCustomer) {
+                setUserErrmsg("Please select customer");
+                return;
+              }
+
+              setComplaintDatePic(true);
+            }}
+          >
+            <View style={styles.dateInputWrapper}>
+              <TextInput
+                style={styles.dateInput}
+                placeholder="DD-MM-YYYY"
+                placeholderTextColor="#71717A"
+                value={
+                  complaintDate
+                    ? dayjs(complaintDate).format("DD-MM-YYYY")
+                    : ""
+                }
+                editable={false}
+                pointerEvents="none"
+              />
+
+              <Image
+                source={CalendarIcon}
+                style={{ width: 20, height: 20 }}
+              />
+            </View>
+          </TouchableOpacity>
+
+          {dateErrmsg ? (
+            <ErrorMessage message={dateErrmsg} type="error" />
+          ) : null} */}
+
+
+
+          {/* <Text style={styles.label}>
             Complaint Date  <Text style={{ color: "red" }}>*</Text>
           </Text>
 
@@ -843,7 +1091,7 @@ export default function AddComplaint() {
 
 
 
-          {dateErrmsg && <ErrorMessage message={dateErrmsg} type="error" />}
+          {dateErrmsg && <ErrorMessage message={dateErrmsg} type="error" />} */}
 
 
 
@@ -853,7 +1101,7 @@ export default function AddComplaint() {
 
 
 
-          <Text style={styles.label}>Description</Text>
+          {/* <Text style={styles.label}>Description</Text> */}
           {/* 
   <TextInput
     style={styles.descriptionBox}
@@ -864,7 +1112,7 @@ export default function AddComplaint() {
     value={description}
     onChangeText={handleDescriptionChange}
   /> */}
-          <View ref={descriptionRef}>
+          {/* <View ref={descriptionRef}>
             <TextInput
               style={styles.descriptionBox}
               placeholder="Enter Description"
@@ -875,7 +1123,34 @@ export default function AddComplaint() {
               onChangeText={handleDescriptionChange}
               onFocus={() => scrollToField(descriptionRef)}
             />
+          </View> */}
+
+
+          {/* DESCRIPTION */}
+
+          <View
+            ref={descriptionRef}
+            collapsable={false}
+          >
+            <InputComponent
+              label="Description"
+              type="description"
+              value={description}
+              onChangeText={handleDescriptionChange}
+              placeholder="Enter Description"
+              multiline
+              inputHeight={180}
+              onFocus={() => scrollToField(descriptionRef)}
+              inputStyle={{
+                textAlignVertical: "top",
+                paddingTop: 12,
+              }}
+              containerStyle={{
+                marginTop: 14,
+              }}
+            />
           </View>
+
           {totalErrmsg && <ErrorMessage message={totalErrmsg} type="error" />}
 
           <View style={styles.footer}>
@@ -908,7 +1183,7 @@ export default function AddComplaint() {
         </ScrollView>
       </View>
 
-      <Modal
+      {/* <Modal
         transparent
         visible={openDate}
         animationType="fade"
@@ -936,9 +1211,9 @@ export default function AddComplaint() {
             </TouchableWithoutFeedback>
           </View>
         </View>
-      </Modal>
+      </Modal> */}
 
-      {openComplaintDatePic && (
+      {/* {openComplaintDatePic && (
         <View style={styles.dateOverlay}>
           <TouchableWithoutFeedback onPress={() => setComplaintDatePic(false)}>
             <View style={styles.overlayBg} />
@@ -954,13 +1229,7 @@ export default function AddComplaint() {
                   : dayjs().format("YYYY-MM-DD")
               }
 
-              // onDayPress={(day) => {
-              //   if (isDateDisabled(day.dateString)) return;
-
-              //   setComplaintDate(day.dateString);
-              //   setComplaintDatePic(false);
-              //   setDateErrmsg("");
-              // }}
+           
 
               onDayPress={(day) => {
                 if (isDateDisabled(day.dateString)) return;
@@ -978,9 +1247,13 @@ export default function AddComplaint() {
             />
           </View>
         </View>
-      )}
+      )} */}
 
-       <LeavePageScreen
+
+
+
+
+      <LeavePageScreen
         visible={showLeavePageScreen}
         onClose={() => setShowLeavePageScreen(false)}
         discardClose={() => {
@@ -1010,9 +1283,9 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 18, fontFamily: "Gilroy-Bold" },
   label: {
     fontSize: 14,
-    fontFamily: "Gilroy-Semibold" ,
+    fontFamily: "Gilroy-Semibold",
     marginBottom: 6,
-    marginTop:10
+    marginTop: 10
   },
 
   selectWrapper: { position: "relative", width: "100%", marginBottom: 18 },
@@ -1029,7 +1302,7 @@ const styles = StyleSheet.create({
     // marginBottom: 5
   },
 
-  selectedText: { color: "#000", fontSize: 15 , fontFamily: "Gilroy-Semibold" },
+  selectedText: { color: "#000", fontSize: 15, fontFamily: "Gilroy-Semibold" },
 
   downArrowIcon: { width: 22, height: 22, tintColor: "#5E5E5E" },
 
@@ -1046,7 +1319,7 @@ const styles = StyleSheet.create({
   // },
 
   option: { padding: 14 },
-  optionText: { fontSize: 15, color: "#000" , fontFamily: "Gilroy-Semibold" },
+  optionText: { fontSize: 15, color: "#000", fontFamily: "Gilroy-Semibold" },
 
 
 
@@ -1080,7 +1353,7 @@ const styles = StyleSheet.create({
 
   optionTextSelected: {
     color: "#fff",
-   fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
   },
 
 
@@ -1093,7 +1366,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 15,
     justifyContent: "center",
-    fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
     // marginBottom:10
   },
 
@@ -1106,7 +1379,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     flexDirection: "row",
-    fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
     // marginBottom:10
   },
 
@@ -1118,7 +1391,7 @@ const styles = StyleSheet.create({
     height: 120,
     textAlignVertical: "top",
     marginTop: 5,
-    fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
   },
 
   footer: {
@@ -1213,7 +1486,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: "#111827",
-        fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
   },
 
   calendarIconWrapper: {
@@ -1235,7 +1508,7 @@ const styles = StyleSheet.create({
   emptyText: {
     color: "#9CA3AF",
     fontSize: 14,
-    fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
   },
 
   dropdownMenu: {
@@ -1279,12 +1552,12 @@ const styles = StyleSheet.create({
   newOptionText: {
     fontSize: 15,
     color: "#111",
-    fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
   },
 
   newOptionTextSelected: {
     color: "#fff",
-   fontFamily: "Gilroy-Semibold" 
+    fontFamily: "Gilroy-Semibold"
   },
 
 
