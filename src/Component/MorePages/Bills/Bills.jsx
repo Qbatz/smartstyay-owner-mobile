@@ -3641,9 +3641,8 @@ export default function BillsDesign({ route }) {
                             </View>
                           )}
 
-
-
-                          <View style={styles.reviewBillsCard}>
+        {PGDetails?.shouldVerifyRecurring && isValidSubscription && (
+ <View style={styles.reviewBillsCard}>
 
                             <View style={styles.reviewBillsHeader}>
                               <View style={styles.reviewBillsTitleRow}>
@@ -3772,6 +3771,9 @@ export default function BillsDesign({ route }) {
                             </TouchableOpacity>
 
                           </View>
+        )}
+
+                         
 
                         </>
                       }

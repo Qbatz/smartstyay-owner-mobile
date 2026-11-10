@@ -315,11 +315,13 @@ wrapper: {
     },
 
     label: {
-        fontSize: 13,
-        color: "#55555F",
+        fontSize: 14,
+        // color: "#55555F",
         marginBottom: 8,
-        fontFamily: "Gilroy-Medium",
+       fontFamily: "Gilroy-Semibold",
+        marginTop: 10
     },
+   
 
     required: {
         color: "#FF3333",
