@@ -16,7 +16,7 @@ class CommonModule: NSObject {
   @objc
   func fetchBaseUrl(_ resolve: RCTPromiseResolveBlock,
                     rejecter reject: RCTPromiseRejectBlock) {
-      resolve("https://webdevapi.qbatz.com")
+      resolve(Constant.BASE_URL)
   }
   
   @objc
