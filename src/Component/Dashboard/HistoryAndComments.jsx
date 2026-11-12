@@ -8,6 +8,7 @@ import {
   TextInput,
   ScrollView,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import { CommonContexts } from "../../Context/CommonContext";
 import { NotificationContext } from "../../Context/NotificationContext";
@@ -32,6 +33,7 @@ export default function HistoryAndComments({ navigation, route }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
   const [commentsList, setCommentsList] = useState([])
+  const [commentsLoader,setCommentsLoader]=useState(false)
   console.log('notificationId', item)
 
   const [updates, setUpdates] = useState([]);
@@ -90,6 +92,7 @@ export default function HistoryAndComments({ navigation, route }) {
       message: comment,
     });
 
+    console.log("commentError",res)
     if (res.success) {
 
       setComment("")
@@ -99,6 +102,7 @@ export default function HistoryAndComments({ navigation, route }) {
       fetchUpdates();
       setTimeout(() => {
         setShowSuccess(false);
+        set
       }, 800);
 
     }
@@ -172,7 +176,7 @@ export default function HistoryAndComments({ navigation, route }) {
               />
               {commentError && <ErrorMessage message={commentError} type="error" />}
               <TouchableOpacity style={styles.addBtn} onPress={handleAddComment}>
-                <Text style={styles.addBtnText}>Add Comment</Text>
+                <Text style={styles.addBtnText}>Add Comment {commentsLoader && <ActivityIndicator size="small" color="#ffffff"/>}</Text>
               </TouchableOpacity>
             </View>
           </View>

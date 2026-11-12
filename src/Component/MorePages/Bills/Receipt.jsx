@@ -387,7 +387,7 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
 
 
 
-  console.log("pagination", receiptPage, hasMoreReceipt)
+  
 
   const renderItem = ({ item }) => {
     return (
@@ -513,7 +513,7 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
       .filter(Boolean)
       .join(", ");
 
-
+console.log("pagination", receiptPage, hasMoreReceipt)
 
   const onEndReachFetchReceiptList = async (page = 1, isRefresh = false) => {
 
@@ -697,7 +697,10 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
                     </ScrollView>
 
                     <TouchableOpacity
-                      onPress={handleResetFilters}
+                      onPress={()=>{handleResetFilters()
+                        setReceiptPage(1)
+                        setHasMoreReceipt(true)
+                      }}
                       style={{ alignSelf: "flex-end", marginTop: 6 }}
                     >
                       <Text style={styles.resetTextSmall}>Reset</Text>
@@ -719,15 +722,15 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
               }}
               ListEmptyComponent={!loading && <EmptyReceiptState />}
               onScroll={handleScroll}
-              onMomentumScrollBegin={() => {
-                onEndReachedCalledDuringMomentum.current = false;
-              }}
+              // onMomentumScrollBegin={() => {
+              //   onEndReachedCalledDuringMomentum.current = false;
+              // }}
               onEndReached={() => {
                 if (
-                  !onEndReachedCalledDuringMomentum.current &&
-                  !isFetchingList.current &&
+                  // !onEndReachedCalledDuringMomentum.current &&
+                  // !isFetchingList.current &&
                   !pageLoading && hasMoreReceipt) {
-                  onEndReachedCalledDuringMomentum.current = true;
+                  // onEndReachedCalledDuringMomentum.current = true;
                   onEndReachFetchReceiptList(receiptPage + 1)
                 }
               }
