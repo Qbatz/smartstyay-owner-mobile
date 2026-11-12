@@ -8,7 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image, BackHandler, Animated, PanResponder,
-  ScrollView, Dimensions , Platform
+  ScrollView, Dimensions, Platform
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -28,7 +28,7 @@ import CommentBottomSheet from "../Complaints/CommentBox";
 import ChangeStatus from "../Complaints/ComplianceStatus";
 import LeftArrow from "../../Assets/Images/Arrow_left.png"
 import SearchIcon from "../../Assets/Images/SearchIcon.png";
-import {useHideTabbarOnScroll} from "../../Utils/useHideTabbarOnScroll"
+import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll"
 
 export default function Complaints({ route }) {
 
@@ -58,6 +58,10 @@ export default function Complaints({ route }) {
   const [showCommentSheet, setShowCommentSheet] = useState(false);
   const [showStatusSheet, setShowStatusSheet] = useState(false);
 
+  const [searchText, setSearchText] = useState("");
+
+
+
 
   // const { setShowTabBar } = route.params
   const navigation = useNavigation();
@@ -75,11 +79,35 @@ export default function Complaints({ route }) {
 
   // const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
 
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     GetComplaintListDetails(activeHostelId);
+  //   }
+  // }, [activeHostelId]);
+
+
   useEffect(() => {
-    if (activeHostelId) {
-      GetComplaintListDetails(activeHostelId);
-    }
-  }, [activeHostelId]);
+    if (!activeHostelId) return;
+
+    const timeout = setTimeout(() => {
+      GetComplaintListDetails(
+        activeHostelId,
+        {
+          customerName: searchText,
+        },
+        {
+          showLoader: !searchText.trim(),
+        }
+      );
+    }, searchText.trim() ? 400 : 0);
+
+    return () => clearTimeout(timeout);
+
+  }, [activeHostelId, searchText]);
+
+
+  console.log("searchtext", searchText);
+
 
   useEffect(() => {
     if (activeHostelId) {
@@ -300,45 +328,45 @@ export default function Complaints({ route }) {
   // }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
 
   useEffect(() => {
-  const backHandler = BackHandler.addEventListener(
-    "hardwareBackPress",
-    () => {
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
 
-      if (showFilter) {
-        setShowFilter(false);
+        if (showFilter) {
+          setShowFilter(false);
+          return true;
+        }
+
+        if (showAssignSheet) {
+          setShowAssignSheet(false);
+          return true;
+        }
+
+        if (showSheet) {
+          setShowSheet(false);
+          return true;
+        }
+
+        if (showStatusSheet) {
+          setShowStatusSheet(false);
+          return true;
+        }
+
+        if (showCommentSheet) {
+          setShowCommentSheet(false);
+          return true;
+        }
+
+        // setShowTabBar(true);
+        // isTabBarVisible.current = true;
+
+        navigation.goBack();
         return true;
       }
+    );
 
-      if (showAssignSheet) {
-        setShowAssignSheet(false);
-        return true;
-      }
-
-      if (showSheet) {
-        setShowSheet(false);
-        return true;
-      }
-
-      if (showStatusSheet) {
-        setShowStatusSheet(false);
-        return true;
-      }
-
-      if (showCommentSheet) {
-        setShowCommentSheet(false);
-        return true;
-      }
-
-      // setShowTabBar(true);
-      // isTabBarVisible.current = true;
-
-      navigation.goBack();
-      return true;
-    }
-  );
-
-  return () => backHandler.remove();
-}, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
+    return () => backHandler.remove();
+  }, [showFilter, showSheet, showAssignSheet, showStatusSheet, showCommentSheet]);
 
   // useLayoutEffect(() => {
   //   const backAction = () => {
@@ -514,81 +542,82 @@ export default function Complaints({ route }) {
       <View style={styles.container}>
 
         {/* Header */}
-      <View style={styles.headerRow}>
-  {complaintsList?.length === 0 && (
-    <>
-    <View style={{flexDirection:'row', alignItems:'center'}}>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Image
-          source={LeftArrow}
-          style={{ width: 20, height: 20, marginRight: 12 }}
-        />
-      </TouchableOpacity>
+        <View style={styles.headerRow}>
+          {complaintsList?.length === 0 && (
+            <>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                  <Image
+                    source={LeftArrow}
+                    style={{ width: 20, height: 20, marginRight: 12 }}
+                  />
+                </TouchableOpacity>
 
-      <Text style={styles.headerTitle}>Complaints</Text>
-      </View>
-    </>
-  // ) : (
-  //   <Text style={styles.headerTitle}>Complaints</Text>
-  )}
-</View>
+                <Text style={styles.headerTitle}>Complaints</Text>
+              </View>
+            </>
+            // ) : (
+            //   <Text style={styles.headerTitle}>Complaints</Text>
+          )}
+        </View>
 
 
         {/* Search Box */}
 
 
 
-        {!loading && complaintsList && complaintsList?.length > 0 &&
-          // <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 20, marginBottom: 10 }}>
-          //   <TouchableOpacity onPress={() => navigation.goBack()}>
-          //     <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
-          //   </TouchableOpacity>
-
-
-
-          //   <View style={styles.searchBox}>
-          //     <Image
-          //       source={{
-          //         uri: "https://cdn-icons-png.flaticon.com/512/622/622669.png",
-          //       }}
-          //       style={styles.searchIcon}
-          //     />
-
-          //     <TextInput
-          //       placeholder="Search Complaints"
-          //       placeholderTextColor="#A1A1A1"
-          //       style={[
-          //         styles.searchInput,
-          //         !canReadComplaints && { opacity: 0.5 }
-          //       ]}
-          //       pointerEvents={canReadComplaints ? "auto" : "none"}
-          //     />
-          //   </View>
-          // </View>
+        {/* {!loading && complaintsList && complaintsList?.length > 0 && */}
+      
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-  <TouchableOpacity onPress={() => navigation.goBack()}>
-    <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
-  </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.goBack()}>
+              <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
+            </TouchableOpacity>
 
-  <View style={{ flex: 1 }}>
-    <View style={styles.searchBox}>
-      <Image
-       source={SearchIcon}
-        style={styles.searchIcon}
-      />
+        
 
-      <TextInput
-        placeholder="Search Complaints"
-        placeholderTextColor="#9CA3AF"
-        style={styles.searchInput}
-        editable={false}
-          selectTextOnFocus={false}
-  pointerEvents="none"
-      />
-    </View>
-  </View>
-</View>
-        }
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 15,
+              }}
+            >
+             
+
+              <View style={[styles.searchBox, { flex: 1 }]}>
+                <Image
+                  source={SearchIcon}
+                  style={styles.searchIcon}
+                />
+
+                <TextInput
+                  placeholder="Search Complaints"
+                  placeholderTextColor="#9CA3AF"
+                  style={styles.searchInput}
+                  value={searchText}
+                  onChangeText={setSearchText}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                  clearButtonMode="while-editing"
+                />
+
+                {Platform.OS === "android" && searchText.length > 0 && (
+                  <TouchableOpacity
+                    onPress={() => setSearchText("")}
+                    hitSlop={10}
+                  >
+                    <Text style={{ color: "#777", fontSize: 20 }}>
+                      ×
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+          </View>
+
+          
+        
 
         {!loading && complaintsList && complaintsList?.length > 0 && (
           <FlatList
@@ -605,7 +634,10 @@ export default function Complaints({ route }) {
         {!loading && complaintsList && complaintsList?.length === 0 && (
           <View style={styles.centerContainer}>
             <Image source={EmptyState} style={styles.image} />
-            <Text style={styles.nodataText}>Complaints from tenants will appear here.</Text>
+            <Text style={styles.nodataText}>
+              {searchText.trim()
+                ? "No complaints found for this customer."
+                : "Complaints from tenants will appear here."}</Text>
             <TouchableOpacity style={[
               styles.addcomplaintBtn,
               !canWriteComplaints && { opacity: 0.6 }
@@ -802,26 +834,26 @@ const styles = StyleSheet.create({
 
 
   searchBox: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1,
-  borderColor: "#D9D9D9",
-  borderRadius: 30,
-  paddingHorizontal: 14,
-  height: 44,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#D9D9D9",
+    borderRadius: 30,
+    paddingHorizontal: 14,
+    height: 44,
+  },
 
   searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
   searchInput: {
-  flex: 1,
-  fontSize: 15,
-  color: "#000",
-  fontFamily: "Gilroy-Regular",
-  paddingVertical: 0, 
-  ...(Platform.OS === "ios" && {
-    height: 40,
-  }),
-},
+    flex: 1,
+    fontSize: 15,
+    color: "#000",
+    fontFamily: "Gilroy-Regular",
+    paddingVertical: 0,
+    ...(Platform.OS === "ios" && {
+      height: 40,
+    }),
+  },
   // searchInput: { flex: 1, fontSize: 15, color: "#000", fontFamily: "Gilroy-Regular" },
 
   card: {

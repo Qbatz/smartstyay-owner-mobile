@@ -17,9 +17,23 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+import { useRoute } from "@react-navigation/native";
 
+export default function AddBankAccount({ mode = "add",
+  editTab = {}, }) {
 
-export default function AddBankAccount() {
+  const route = useRoute();
+
+  const screenMode = route.params?.mode ?? mode;
+  const screenEditTab = route.params?.editTab ?? editTab;
+
+  const isEditMode = screenMode === "edit";
+
+  console.log("EDIT DEBUG =>", {
+    screenMode,
+    isEditMode,
+    screenEditTab,
+  });
 
   const { activeHostelId } = useContext(CommonContexts);
   const { createBankAccount, responsiblePersonList, NewgetBankList, getAllTransactions,
@@ -27,7 +41,22 @@ export default function AddBankAccount() {
     getQrCardTypeList, getBankMethod, createCreditCardAccount } = useContext(BankingContext);
 
   const { createPaymentMethod } = useContext(CustomerContext)
-  const [accountType, setAccountType] = useState("bank")
+
+  // const isEditMode = mode === "edit";
+
+  console.log("edit", isEditMode, editTab);
+
+
+  const [accountType, setAccountType] = useState(
+    isEditMode
+      ? screenEditTab?.tab === "Credit"
+        ? "Credit"
+        : screenEditTab?.tab === "Cash"
+          ? "cash"
+          : "bank"
+      : "bank"
+  );
+  // const [accountType, setAccountType] = useState("bank")
 
   const navigation = useNavigation()
 
@@ -74,6 +103,69 @@ export default function AddBankAccount() {
     billingCycle: "",
     linkedBankId: "",
   })
+
+  useEffect(() => {
+    if (!isEditMode || !screenEditTab?.raw) return;
+
+    const item = screenEditTab.raw;
+
+    console.log("EDIT BANK DATA RECEIVED =>", item);
+
+    const type = String(item.accountType || "").toUpperCase();
+
+    const selectedType =
+      type === "CARD"
+        ? "Credit"
+        : type === "CASH"
+          ? "cash"
+          : "bank";
+
+    setAccountType(selectedType);
+
+    setForm({
+      displayName: item.displayName || "",
+      bankName: item.bankName || "",
+
+      accountHolder:
+        item.accountHolder ||
+        item.accountHolderName ||
+        item.holderName || "",
+
+      accountNumber: String(
+        item.accountNumber || item.accountNo || ""
+      ),
+
+      branch: item.branchName || "",
+      ifsc: item.ifscCode || "",
+
+      accountCategory: item.bankAccountType || "",
+      cashType: item.cashAccountType || "",
+      responsiblePerson: item.responsiblePerson || "",
+
+      openingBalance: String(
+        item.openingBalance ?? item.balance ?? ""
+      ),
+
+      description: item.description || "",
+
+      cardNetwork: item.cardNetwork || "",
+
+      cardHolderName:
+        item.accountHolder ||
+        item.accountHolderName ||
+        item.holderName || "",
+
+      cardLast4: String(item.cardNumber || "").slice(-4),
+
+      creditLimit: String(item.creditLimit ?? ""),
+      billingCycle: String(item.billingCycle ?? ""),
+      linkedBankId: item.linkedBankId || "",
+    });
+
+    setLinkBank(Boolean(item.linkedBankId));
+    setErrors({});
+
+  }, [isEditMode, screenEditTab?.raw]);
 
   const billingCycleOptions = [
     { label: "1st of every month", value: "1" },
@@ -205,13 +297,22 @@ export default function AddBankAccount() {
 
   const bankNameRegex = /^[a-zA-Z.&\s]{3,50}$/;
 
-  const isAccountNoValid = (v) => {
-    if (!v) return "Please Enter Account Number";
-    if (/^0+$/.test(v)) return "Account Number cannot be zeros";
-    if (v.length < 9 || v.length > 18)
-      return "Account Number must be 9-18 digits";
-    return "";
-  };
+ const isAccountNoValid = (value) => {
+  const v = String(value ?? "").trim();
+
+  // Optional field
+  if (!v) return "";
+
+  if (!/^\d{9,18}$/.test(v)) {
+    return "Account Number must be 9-18 digits";
+  }
+
+  if (/^0+$/.test(v)) {
+    return "Account Number cannot be zeros";
+  }
+
+  return "";
+};
 
 
   const handleIfscChange = (value) => {
@@ -284,118 +385,190 @@ export default function AddBankAccount() {
     return () => subscription.remove();
   }, [handleLeavePage]);
 
-  const validate = () => {
-    let err = {};
+  // const validate = () => {
+  //   let err = {};
 
-    if (!form.displayName.trim())
-      err.displayName = "Please Enter Account Name";
+  //   if (!form.displayName.trim())
+  //     err.displayName = "Please Enter Account Name";
 
-    if (accountType !== "Credit") {
-      if (!form.openingBalance) {
-        err.openingBalance = "Please Enter Opening Balance";
-      } else if (/^0+$/.test(form.openingBalance)) {
-        err.openingBalance = "Opening Balance must be greater than 0";
-      }
+  //   if (accountType !== "Credit") {
+  //     if (!form.openingBalance) {
+  //       err.openingBalance = "Please Enter Opening Balance";
+  //     } else if (/^0+$/.test(form.openingBalance)) {
+  //       err.openingBalance = "Opening Balance must be greater than 0";
+  //     }
+  //   }
+
+  //   if (accountType === "bank") {
+  //     if (!form.bankName.trim()) {
+  //       err.bankName = "Please Enter Bank Name";
+  //     } else if (!bankNameRegex.test(form.bankName.trim())) {
+  //       err.bankName = "Please Enter Valid Bank Name";
+  //     }
+
+  //     if (!form.accountHolder.trim())
+  //       err.accountHolder = "Please Enter Account Holder Name";
+
+  //     const accErr = isAccountNoValid(form.accountNumber);
+
+  //     if (accErr)
+  //       err.accountNumber = accErr;
+
+  //     if (!form.branch.trim())
+  //       err.branch = "Please Enter Branch Name";
+
+  //     if (!form.branch.trim()) {
+  //       err.branch = "Please Enter Branch Name";
+  //     }
+
+  //     if (!form.ifsc.trim()) {
+  //       err.ifsc = "Please Enter IFSC";
+  //     } else if (form.ifsc.length !== 11) {
+  //       err.ifsc = "Please Enter Valid IFSC";
+  //     }
+
+  //     if (!form.accountCategory.trim()) {
+  //       err.accountCategory = "Please Enter Account Type";
+  //     }
+  //   }
+
+  //   if (accountType === "cash") {
+  //     if (!form.cashType.trim())
+  //       err.cashType = "Please Enter Cash Account Type";
+
+  //     if (!form.responsiblePerson.trim())
+  //       err.responsiblePerson = "Please Enter Responsible Person";
+  //   }
+
+  //   if (accountType === "Credit") {
+  //     if (!form.cardNetwork) {
+  //       err.cardNetwork = "Please Select Card Network";
+  //     }
+
+  //     if (!form.cardHolderName.trim()) {
+  //       err.cardHolderName = "Please Enter Card Holder Name";
+  //     }
+
+  //     if (!form.cardLast4) {
+  //       err.cardLast4 = "Please Enter Last 4 Digits";
+  //     } else if (!/^\d{4}$/.test(form.cardLast4)) {
+  //       err.cardLast4 = "Card Number must be 4 digits";
+  //     }
+
+  //     if (!form.displayName.trim()) {
+  //       err.displayName = "Please Enter Display Name";
+  //     }
+
+    
+
+  //     const selectedBankId = linkBank
+  //       ? form.linkedBankId
+  //       : "";
+
+
+
+  //     if (linkBank && !selectedBankId) {
+  //       setErrors(prev => ({
+  //         ...prev,
+  //         linkedBankId: "Please Select Bank Account",
+  //       }));
+  //       isApplyTriggeredRef.current = false;
+  //       return;
+  //     }
+
+     
+  //   }
+
+  //   // if (!form.creditLimit) {
+  //   //     err.creditLimit = "Please Enter Credit Limit";
+  //   // }
+
+  //   setErrors(err);
+
+  //   return Object.keys(err).length === 0;
+  // };
+
+
+  
+const validate = () => {
+  let err = {};
+
+
+  if (!form.displayName?.trim()) {
+    err.displayName = "Please Enter Account Name";
+  }
+
+  // BANK ACCOUNT
+  if (accountType === "bank") {
+
+   
+    if (!form.bankName?.trim()) {
+      err.bankName = "Please Enter Bank Name";
+    } else if (!bankNameRegex.test(form.bankName.trim())) {
+      err.bankName = "Please Enter Valid Bank Name";
     }
 
-    if (accountType === "bank") {
-      if (!form.bankName.trim()) {
-        err.bankName = "Please Enter Bank Name";
-      } else if (!bankNameRegex.test(form.bankName.trim())) {
-        err.bankName = "Please Enter Valid Bank Name";
-      }
 
-      if (!form.accountHolder.trim())
-        err.accountHolder = "Please Enter Account Holder Name";
-
-      const accErr = isAccountNoValid(form.accountNumber);
-
-      if (accErr)
-        err.accountNumber = accErr;
-
-      if (!form.branch.trim())
-        err.branch = "Please Enter Branch Name";
-
-      if (!form.branch.trim()) {
-        err.branch = "Please Enter Branch Name";
-      }
-
-      if (!form.ifsc.trim()) {
-        err.ifsc = "Please Enter IFSC";
-      } else if (form.ifsc.length !== 11) {
-        err.ifsc = "Please Enter Valid IFSC";
-      }
-
-      if (!form.accountCategory.trim()) {
-        err.accountCategory = "Please Enter Account Type";
-      }
+    if (!form.accountHolder?.trim()) {
+      err.accountHolder = "Please Enter Account Holder Name";
     }
 
-    if (accountType === "cash") {
-      if (!form.cashType.trim())
-        err.cashType = "Please Enter Cash Account Type";
 
-      if (!form.responsiblePerson.trim())
-        err.responsiblePerson = "Please Enter Responsible Person";
+    const accErr = isAccountNoValid(form.accountNumber);
+
+    if (accErr) {
+      err.accountNumber = accErr;
     }
 
-    if (accountType === "Credit") {
-      if (!form.cardNetwork) {
-        err.cardNetwork = "Please Select Card Network";
-      }
+   
+    const ifsc = form.ifsc?.trim().toUpperCase();
 
-      if (!form.cardHolderName.trim()) {
-        err.cardHolderName = "Please Enter Card Holder Name";
-      }
-
-      if (!form.cardLast4) {
-        err.cardLast4 = "Please Enter Last 4 Digits";
-      } else if (!/^\d{4}$/.test(form.cardLast4)) {
-        err.cardLast4 = "Card Number must be 4 digits";
-      }
-
-      if (!form.displayName.trim()) {
-        err.displayName = "Please Enter Display Name";
-      }
-
-      // if (!form.billingCycle) {
-      //   err.billingCycle = "Please Select Billing Cycle";
-      // }
-
-      const selectedBankId = linkBank
-        ? form.linkedBankId
-        : "";
-
-
-
-      if (linkBank && !selectedBankId) {
-        setErrors(prev => ({
-          ...prev,
-          linkedBankId: "Please Select Bank Account",
-        }));
-        isApplyTriggeredRef.current = false;
-        return;
-      }
-
-      // if (!selectedBankId) {
-      //   setModalType("error");
-      //   setModalMessage(
-      //     "Credit Card API requires a Bank Account ID. Please link a bank account."
-      //   );
-      //   setShowSuccessModal(true);
-      //   isApplyTriggeredRef.current = false;
-      //   return;
-      // }
+    if (ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+      err.ifsc = "Please Enter Valid IFSC Code";
     }
 
-    // if (!form.creditLimit) {
-    //     err.creditLimit = "Please Enter Credit Limit";
-    // }
+ 
+  }
 
-    setErrors(err);
+  // CASH ACCOUNT
+  if (accountType === "cash") {
 
-    return Object.keys(err).length === 0;
-  };
+   
+    if (!form.cashType?.trim()) {
+      err.cashType = "Please Enter Cash Account Type";
+    }
+
+
+  }
+
+  // CREDIT CARD
+  if (accountType === "Credit") {
+
+    if (!form.cardNetwork) {
+      err.cardNetwork = "Please Select Card Network";
+    }
+
+    if (!form.cardHolderName?.trim()) {
+      err.cardHolderName = "Please Enter Card Holder Name";
+    }
+
+    if (!form.cardLast4) {
+      err.cardLast4 = "Please Enter Last 4 Digits";
+    } else if (!/^\d{4}$/.test(form.cardLast4)) {
+      err.cardLast4 = "Card Number must be 4 digits";
+    }
+
+
+    if (linkBank && !form.linkedBankId) {
+      err.linkedBankId = "Please Select Bank Account";
+    }
+  }
+
+  setErrors(err);
+
+  return Object.keys(err).length === 0;
+};
+
 
   const handleChange = (key, value) => {
     setForm((prev) => ({
@@ -471,7 +644,112 @@ export default function AddBankAccount() {
 
     try {
 
+      if (isEditMode) {
+        // const bankId =
+        //   editTab?.bankId ||
+        //   editTab?.raw?.bankId ||
+        //   editTab?.raw?.bankingId;
 
+        const bankId = screenEditTab?.bankId || screenEditTab?.raw?.bankId ||
+          screenEditTab?.raw?.bankingId;
+
+
+
+        if (!bankId) {
+          setModalType("error");
+          setModalMessage("Invalid account ID");
+          setShowSuccessModal(true);
+          return;
+        }
+
+        const payload = {
+          accountHolderName:
+            accountType === "Credit"
+              ? form.cardHolderName.trim()
+              : accountType === "bank"
+                ? form.accountHolder.trim()
+                : "",
+
+          bankName:
+            accountType === "bank" ? form.bankName.trim() : "",
+
+          displayName: form.displayName.trim(),
+
+          branchName:
+            accountType === "bank" ? form.branch.trim() : "",
+
+          accountNo:
+            accountType === "bank" ? form.accountNumber : "",
+
+          ifscCode:
+            accountType === "bank" ? form.ifsc : "",
+
+          description: form.description.trim(),
+
+          newAccountType:
+            accountType === "bank"
+              ? "BANK"
+              : accountType === "cash"
+                ? "CASH"
+                : "CARD",
+
+          cashAccountType:
+            accountType === "cash" ? form.cashType : "",
+
+          responsiblePerson:
+            accountType === "cash" ? form.responsiblePerson : "",
+
+          cardNumber:
+            accountType === "Credit" ? String(form.cardLast4) : "",
+
+          creditLimit:
+            accountType === "Credit"
+              ? Number(form.creditLimit) || 0
+              : 0,
+
+          billingCycle:
+            accountType === "Credit"
+              ? Number(form.billingCycle) || 0
+              : 0,
+
+          cardNetwork:
+            accountType === "Credit" ? form.cardNetwork : "",
+        };
+
+        console.log("UPDATE BANK PAYLOAD =>", payload);
+
+        const res = await updateBankAccount(
+          activeHostelId,
+          bankId,
+          payload
+        );
+
+        if (res?.success) {
+          await getAllTransactions(activeHostelId, 1, 20, {});
+
+          setModalType("success");
+          setModalMessage(
+            res?.message || "Account Updated Successfully"
+          );
+          setShowSuccessModal(true);
+
+          setTimeout(() => {
+            setShowSuccessModal(false);
+            onClose?.();
+          }, 1200);
+        } else {
+          setModalType("error");
+          setModalMessage(
+            res?.message || "Failed to update account"
+          );
+          setShowSuccessModal(true);
+          setTimeout(() => {
+            setShowSuccessModal(false);
+          }, 1500);
+        }
+
+        return;
+      }
 
       if (accountType === "Credit") {
         const selectedBankId = linkBank
@@ -641,7 +919,10 @@ export default function AddBankAccount() {
               <Image source={ArrowLeft} style={styles.backIcon} />
             </TouchableOpacity>
 
-            <Text style={styles.title}>Add New Account</Text>
+            {/* <Text style={styles.title}>Add New Account</Text> */}
+            <Text style={styles.title}>
+              {isEditMode ? "Edit Account" : "Add New Account"}
+            </Text>
           </View>
 
           <ScrollView
@@ -665,7 +946,13 @@ export default function AddBankAccount() {
             <View style={styles.accountTypeRow}>
 
               <TouchableOpacity
-                style={styles.accountTypeItem}
+                style={[
+                  styles.accountTypeItem,
+                  isEditMode && accountType !== "bank" && {
+                    opacity: 0.4,
+                  },
+                ]}
+                disabled={isEditMode}
                 onPress={() => {
                   setAccountType("bank");
                   resetCashFields();
@@ -685,7 +972,13 @@ export default function AddBankAccount() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.accountTypeItem}
+                style={[
+                  styles.accountTypeItem,
+                  isEditMode && accountType !== "cash" && {
+                    opacity: 0.4,
+                  },
+                ]}
+                disabled={isEditMode}
                 onPress={() => {
                   setAccountType("cash");
                   resetBankFields();
@@ -705,7 +998,13 @@ export default function AddBankAccount() {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.accountTypeItem}
+                style={[
+                  styles.accountTypeItem,
+                  isEditMode && accountType !== "Credit" && {
+                    opacity: 0.4,
+                  },
+                ]}
+                disabled={isEditMode}
                 onPress={() => {
                   setAccountType("Credit");
                   resetBankFields();
@@ -798,7 +1097,7 @@ export default function AddBankAccount() {
                   />
                 )}
 
-                <Text style={styles.label}>Account Number <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>Account Number </Text>
                 <TextInput
                   value={form.accountNumber}
                   placeholder="Enter Account Number"
@@ -820,7 +1119,7 @@ export default function AddBankAccount() {
                   />
                 )}
 
-                <Text style={styles.label}>Bank Branch <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>Bank Branch </Text>
                 <TextInput
                   value={form.branch}
                   placeholder="Enter Branch"
@@ -834,13 +1133,17 @@ export default function AddBankAccount() {
 
                 <View style={styles.row}>
                   <View style={styles.half}>
-                    <Text style={styles.label}>IFSC Code <Text style={{ color: "red" }}>*</Text></Text>
+                    <Text style={styles.label}>IFSC Code </Text>
                     <TextInput
                       value={form.ifsc}
                       placeholder="Enter Ifsc Code"
                       autoCapitalize="characters"
                       maxLength={11}
-                      style={styles.input}
+                      editable={!isEditMode}
+                      style={[
+                        styles.input,
+                        isEditMode && styles.disabledInput,
+                      ]}
                       onChangeText={handleIfscChange}
                     />
 
@@ -855,7 +1158,7 @@ export default function AddBankAccount() {
                     ]}
                   >
                     <Text style={styles.label}>
-                      Account Type <Text style={{ color: "red" }}>*</Text>
+                      Account Type 
                     </Text>
 
                     <TouchableOpacity
@@ -1013,13 +1316,19 @@ export default function AddBankAccount() {
                       </ScrollView>
                     </View>
                   )}
+                  {errors.cashType && (
+  <ErrorMessage
+    message={errors.cashType}
+    type="error"
+  />
+)}
 
                   {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
                 </View>
 
                 <View style={{ position: "relative" }}>
                   <Text style={styles.label}>
-                    Responsible Person  <Text style={{ color: "red", fontSize: 19 }}>*</Text>
+                    Responsible Person 
                   </Text>
 
                   {/* INPUT */}
@@ -1105,7 +1414,11 @@ export default function AddBankAccount() {
 
                 <View style={{ position: "relative", zIndex: 3000 }}>
                   <TouchableOpacity
-                    style={styles.inputBox}
+                    style={[
+                      styles.inputBox,
+                      isEditMode && styles.disabledInput,
+                    ]}
+                    disabled={isEditMode}
                     activeOpacity={0.8}
                     onPress={() => {
                       setShowAccountType(false);
@@ -1529,12 +1842,16 @@ export default function AddBankAccount() {
             {accountType !== "Credit" && (
               <>
 
-                <Text style={styles.label}>Current Opening Balance <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>Current Opening Balance </Text>
                 <TextInput
                   value={form.openingBalance}
                   placeholder="Enter Amount"
                   keyboardType="numeric"
-                  style={styles.input}
+                  editable={!isEditMode}
+                  style={[
+                    styles.input,
+                    isEditMode && styles.disabledInput,
+                  ]}
                   onChangeText={(v) => {
                     const value = v.replace(/[^0-9]/g, "");
                     if (value.length > 1 && value.startsWith("0")) {
@@ -1584,7 +1901,7 @@ export default function AddBankAccount() {
                 disabled={isApplyTriggeredRef.current}
                 onPress={handleCreate}>
                 <Text style={styles.submitText}>
-                  Create Account
+                  {isEditMode ? "Update Account" : "Create Account"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -1941,4 +2258,9 @@ const styles = StyleSheet.create({
     color: "#111",
     fontFamily: "Gilroy-Medium",
   },
+  disabledInput: {
+  backgroundColor: "#F3F4F6",
+  borderColor: "#E5E7EB",
+  opacity: 0.7,
+},
 });

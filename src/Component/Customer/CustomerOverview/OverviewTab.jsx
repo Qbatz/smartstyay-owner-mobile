@@ -424,7 +424,7 @@ export default function OverviewTab({ customerDetails,
                   !canWriteTenant) && { opacity: 0.4 }]}
                 // disabled={customerDetails?.customerCurrentStatus == "BOOKED" ? true : false}
                 disabled={
-                  customerDetails?.customerCurrentStatus == "BOOKED" ||  customerDetails?.customerCurrentStatus === "CANCELLED_BOOKING"||
+                  customerDetails?.customerCurrentStatus == "BOOKED" || customerDetails?.customerCurrentStatus === "CANCELLED_BOOKING" ||
                   !canWriteTenant
                 }
                 onPress={handleshowkycsheet}>
@@ -981,7 +981,7 @@ export default function OverviewTab({ customerDetails,
                     <>
 
                       {
-                        !["VACATED", "NOTICE","SETTLEMENT_GENERATED"].includes(status) && (
+                        !["VACATED", "NOTICE", "SETTLEMENT_GENERATED"].includes(status) && (
                           <TouchableOpacity
                             disabled={
                               disableFinancialEdit || !canUpdateTenant || !canEditAdvance || !isJoiningDateEditable}
@@ -1052,15 +1052,17 @@ export default function OverviewTab({ customerDetails,
 
 
 
+            <View style={styles.twoColumnRow}>
+              <View style={styles.amountBox}>
+                <Text style={styles.amountValue}>Wallet Balance</Text>
+                <Text style={styles.amountLabel}>
+                  ₹ {customerDetails?.walletInfo?.walletAmount || 0}
+                </Text>
+              </View>
 
-
-
-
-
+            </View>
 
           </View>
-
-
 
           <View style={styles.docContainer}>
 
@@ -1755,7 +1757,7 @@ export default function OverviewTab({ customerDetails,
           </View>
 
 
-          
+
 
           {/* <View style={{ backgroundColor: "#fff",
     borderRadius: 16,

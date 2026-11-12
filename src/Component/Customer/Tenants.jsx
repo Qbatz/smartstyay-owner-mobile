@@ -1331,8 +1331,8 @@ export default function TenantsScreen({ route }) {
                 )}
 
 
-                {!isProd &&
-                  (
+                {/* {!isProd &&
+                  ( */}
                     <ScrollView
                       horizontal persistentScrollbar={false}
                       showsHorizontalScrollIndicator={false}
@@ -1462,8 +1462,8 @@ export default function TenantsScreen({ route }) {
                         }
                       </>
                     </ScrollView>
-                  )
-                }
+                  {/* )
+                } */}
   {console.log("abilash",tempFilterStatus)}
    {console.log("abiash",tempFilterSharing)}
    {console.log("seetha",tempFilterMonth)}

@@ -1059,7 +1059,7 @@ export default function NewBankingList() {
       }, 1200);
     } else {
       setAmountError(res?.message);
-    }
+    } 
   };
 
   const addBalanceTranslateY = useRef(new Animated.Value(0)).current;
@@ -1223,6 +1223,41 @@ export default function NewBankingList() {
     // setAddBankingShow(true);
   };
 
+  const handleEditBanking = (item) => {
+    setShowMenu(false);
+
+    const raw = item?.raw || {};
+
+    const type = String(raw.accountType || "").toUpperCase();
+
+    const editData = {
+      mode: "edit",
+
+      tab:
+        type === "BANK"
+          ? "Bank"
+          : type === "CARD"
+            ? "Credit"
+            : "Cash",
+
+      bankId: raw.bankId || raw.bankingId || item?.id,
+
+      raw: raw,
+
+      // Mapped values also available if needed
+      selectedItem: item,
+    };
+
+    console.log("EDIT BANK DATA SENDING =>", editData);
+
+    navigation.navigate("AddBankAccount", {
+      mode: "edit",
+      editTab: editData,
+    });
+  }
+
+  
+
   const handleCloseAddBanking = () => {
     setAddBankingShow(false);
     setEditMode({ mode: "add", tab: "Bank", raw: null, bankId: null });
@@ -1300,7 +1335,7 @@ export default function NewBankingList() {
       const res = await deleteBankAccount(activeHostelId, bankId);
 
       console.log("bankdeleteres", res);
-      
+
 
       if (res?.success) {
         setDeleteShow(false);
@@ -1330,7 +1365,7 @@ export default function NewBankingList() {
 
       }
     } catch (error) {
-        console.log("bankdeletereserr", error);
+      console.log("bankdeletereserr", error);
       setModalType("error");
       setModalMessage(error?.message || "Something went wrong.")
       setShowSuccessModal(true);
@@ -1345,21 +1380,21 @@ export default function NewBankingList() {
     }
   };
 
-  const handleEditBanking = (item) => {
-    setShowMenu(false);
-    setAddBankingShow(true);
+  // const handleEditBanking = (item) => {
+  //   setShowMenu(false);
+  //   setAddBankingShow(true);
 
-    setEditMode({
-      mode: "edit",
-      tab:
-        item.raw.accountType === "BANK" ? "Bank" :
-          item.raw.accountType === "UPI" ? "UPI" :
-            item.raw.accountType === "CARD" ? "Card" :
-              "Cash",
-      raw: item.raw,
-      bankId: item.raw.bankingId
-    });
-  };
+  //   setEditMode({
+  //     mode: "edit",
+  //     tab:
+  //       item.raw.accountType === "BANK" ? "Bank" :
+  //         item.raw.accountType === "UPI" ? "UPI" :
+  //           item.raw.accountType === "CARD" ? "Card" :
+  //             "Cash",
+  //     raw: item.raw,
+  //     bankId: item.raw.bankingId
+  //   });
+  // };
 
 
 
@@ -1397,10 +1432,10 @@ export default function NewBankingList() {
     );
   }
 
-
   return (
     <>
       {loading || pageLoading && <Loader />}
+
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -2561,26 +2596,23 @@ export default function NewBankingList() {
               <Text style={styles.popupText}>Self Transfer</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              //  style={styles.popupRow} 
-              //  onPress={()=>handleEditBanking(selectedItem)}
 
+
+            <TouchableOpacity
               style={[
                 styles.popupRow,
-                // (!canUpdateBanking || selectedItem?.isDeleted) 
-                { opacity: 0.4 }
+                (!canUpdateBanking || selectedItem?.isDeleted) && {
+                  opacity: 0.4,
+                },
               ]}
-
               disabled={!canUpdateBanking || selectedItem?.isDeleted}
-            // onPress={() => {
-            //   if (!canUpdateBanking || selectedItem?.isDeleted) return;
-            //   handleEditBanking(selectedItem);
-            // }}
+              onPress={() => {
+                if (!canUpdateBanking || selectedItem?.isDeleted) return;
+
+                handleEditBanking(selectedItem);
+              }}
             >
-              <Image
-                source={EditIcon}
-                style={styles.popupIcon}
-              />
+              <Image source={EditIcon} style={styles.popupIcon} />
               <Text style={styles.popupText}>Edit</Text>
             </TouchableOpacity>
 

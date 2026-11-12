@@ -993,6 +993,54 @@ export default function BankingProvider({ children }) {
     }
   };
 
+  const updateBankAccount = async (hostelId, bankId, payload) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.put(
+      `/v3/bank/${hostelId}/${bankId}`,
+      payload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (res?.status === 200 || res?.status === 201) {
+      await NewgetBankList(hostelId);
+
+      return {
+        success: true,
+        data: res.data,
+        message:
+          res?.data?.message || "Account Updated Successfully",
+      };
+    }
+
+    return {
+      success: false,
+      message: res?.data?.message || "Failed to update account",
+    };
+  } catch (error) {
+    console.log("UPDATE BANK STATUS =>", error?.response?.status);
+    console.log("UPDATE BANK ERROR =>", error?.response?.data);
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+  } finally {
+    setLoading(false);
+  }
+};
+
 
 const deleteBankAccount = async (hostelId, bankId) => {
   try {
@@ -1070,7 +1118,8 @@ const deleteBankAccount = async (hostelId, bankId) => {
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
         getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer, getCreditCardInitialize, creditCardPayment,
-        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount ,deleteBankAccount
+        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount ,
+        deleteBankAccount , updateBankAccount
       }}
 
     >

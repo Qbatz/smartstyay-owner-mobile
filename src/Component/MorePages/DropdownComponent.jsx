@@ -1,5 +1,5 @@
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
-  Keyboard,
+  Keyboard, Dimensions, 
 } from 'react-native';
 
 import { ArrowUp2, ArrowDown2, SearchNormal1 } from 'iconsax-react-native';
@@ -40,11 +40,11 @@ const DropdownComponent = ({
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  const [dropdownPosition, setDropdownPosition] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
+  // const [dropdownPosition, setDropdownPosition] = useState({
+  //   top: 0,
+  //   left: 0,
+  //   width: 0,
+  // });
 
   const triggerRef = useRef(null);
 
@@ -100,27 +100,140 @@ const DropdownComponent = ({
     searchText.trim().length > 0 &&
     !customValueExists;
 
-  // Open dropdown
+
+  const [dropdownPosition, setDropdownPosition] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+    triggerTop: 0,
+    triggerHeight: 48,
+    maxHeight: maxDropdownHeight,
+  });
+
+  // const triggerRef = useRef(null);
+  const triggerLayoutRef = useRef(null);
+  const keyboardHeightRef = useRef(0);
+
+  // const triggerRef = useRef(null);
+  const searchInputRef = useRef(null);
+  // const keyboardHeightRef = useRef(0);
+
+  // const focusSearchInput = () => {
+  //   InteractionManager.runAfterInteractions(() => {
+  //     requestAnimationFrame(() => {
+  //       searchInputRef.current?.focus();
+  //     });
+  //   });
+  // };
+
+  const calculateDropdownPosition = (y, height, x, width) => {
+    const screenHeight = Dimensions.get('screen').height;
+
+    const visibleHeight =
+      keyboardHeightRef.current > 0
+        ? keyboardHeightRef.current > screenHeight
+          ? screenHeight
+          : screenHeight - keyboardHeightRef.current
+        : screenHeight;
+
+    const spaceBelow = visibleHeight - (y + height) - 12;
+    const spaceAbove = y - 12;
+
+    const showBelow =
+      spaceBelow >= 160 || spaceBelow >= spaceAbove;
+
+    const availableSpace = showBelow
+      ? spaceBelow
+      : spaceAbove;
+
+    const finalHeight = Math.max(
+      60,
+      Math.min(maxDropdownHeight, availableSpace)
+    );
+
+    setDropdownPosition({
+      top: showBelow
+        ? y + height + 6
+        : Math.max(12, y - finalHeight - 6),
+      left: x,
+      width,
+      triggerTop: y,
+      triggerHeight: height,
+      maxHeight: finalHeight,
+    });
+  };
+
   const openDropdown = () => {
     if (disabled) return;
 
     setSearchText('');
 
     triggerRef.current?.measureInWindow((x, y, width, height) => {
-      const statusBarOffset =
-        Platform.OS === 'android'
-          ? StatusBar.currentHeight || 0
-          : 0;
+      triggerLayoutRef.current = { x, y, width, height };
 
-      setDropdownPosition({
-        top: y + height + 6 + statusBarOffset,
-        left: x,
-        width,
-      });
+      calculateDropdownPosition(y, height, x, width);
 
       setIsOpen(true);
     });
   };
+
+
+  // const openDropdown = () => {
+  //   if (disabled) return;
+
+  //   setSearchText('');
+
+  //   triggerRef.current?.measureInWindow((x, y, width, height) => {
+  //     const statusBarOffset =
+  //       Platform.OS === 'android'
+  //         ? StatusBar.currentHeight || 0
+  //         : 0;
+
+  //     setDropdownPosition({
+  //       top: y + height + 6 + statusBarOffset,
+  //       left: x,
+  //       width,
+  //     });
+
+  //     setIsOpen(true);
+  //   });
+  // };
+
+  useEffect(() => {
+    const showListener = Keyboard.addListener(
+      'keyboardDidShow',
+      event => {
+        keyboardHeightRef.current =
+          event.endCoordinates.height;
+
+        triggerRef.current?.measureInWindow(
+          (x, y, width, height) => {
+            calculateDropdownPosition(y, height, x, width);
+          }
+        );
+      }
+    );
+
+    const hideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        keyboardHeightRef.current = 0;
+
+        if (isOpen) {
+          triggerRef.current?.measureInWindow(
+            (x, y, width, height) => {
+              calculateDropdownPosition(y, height, x, width);
+            }
+          );
+        }
+      }
+    );
+
+    return () => {
+      showListener.remove();
+      hideListener.remove();
+    };
+  }, [isOpen]);
 
   const closeDropdown = () => {
     Keyboard.dismiss();
@@ -158,12 +271,13 @@ const DropdownComponent = ({
         </Text>
       ) : null}
 
+
       {/* Dropdown Trigger */}
       <TouchableOpacity
         ref={triggerRef}
         activeOpacity={0.8}
         onPress={openDropdown}
-        disabled={disabled}
+        disabled={disabled || isOpen}
         style={[
           styles.trigger,
           error && styles.errorBorder,
@@ -193,70 +307,83 @@ const DropdownComponent = ({
         transparent
         animationType="none"
         statusBarTranslucent
+        // onShow={focusSearchInput}
         onRequestClose={closeDropdown}
       >
         <View style={styles.modalContainer}>
+
           <Pressable
             style={StyleSheet.absoluteFill}
             onPress={closeDropdown}
           />
 
-          <View
-            style={[
-              styles.optionsContainer,
-              {
-                position: 'absolute',
-                top: dropdownPosition.top,
-                left: dropdownPosition.left,
-                width:
-                  dropdownPosition.width * dropdownWidthRatio,
-                maxHeight: maxDropdownHeight,
-              },
-              dropdownStyle,
-            ]}
-          >
-            {/* Search Input */}
-            {searchable && (
-              <View style={styles.searchContainer}>
-                <SearchNormal1
-                  size={18}
-                  color="#71717A"
-                />
-
-                <TextInput
-                  style={styles.searchInput}
-                  placeholder={searchPlaceholder}
-                  placeholderTextColor="#A1A1AA"
-                  value={searchText}
-                  onChangeText={setSearchText}
-                  returnKeyType={
-                    canAddCustomValue ? 'done' : 'search'
-                  }
-                  onSubmitEditing={
-                    canAddCustomValue
-                      ? handleAddCustomValue
-                      : undefined
-                  }
-                  blurOnSubmit={false}
-                  autoCorrect={false}
-                />
-
-                {searchText.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => setSearchText('')}
-                  >
-                    <Text style={styles.clearText}>×</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-            )}
-
-            <ScrollView
-              keyboardShouldPersistTaps="always"
-              nestedScrollEnabled
-              showsVerticalScrollIndicator={false}
+          {/* Same Input Position - Search */}
+          {searchable && (
+            <View
+              style={[
+                styles.searchTrigger,
+                {
+                  position: 'absolute',
+                  top: dropdownPosition.triggerTop,
+                  left: dropdownPosition.left,
+                  width: dropdownPosition.width,
+                  height: dropdownPosition.triggerHeight,
+                },
+              ]}
             >
-              {/* Existing Options */}
+              <SearchNormal1
+                size={20}
+                color="#71717A"
+              />
+
+              <TextInput
+                ref={searchInputRef}
+                style={styles.searchTriggerInput}
+                placeholder={searchPlaceholder}
+                placeholderTextColor="#A1A1AA"
+                value={searchText}
+                onChangeText={setSearchText}
+                autoCorrect={false}
+                autoCapitalize="none"
+                returnKeyType="search"
+                showSoftInputOnFocus={true}
+                editable={true}
+                blurOnSubmit={false}
+              />
+
+              {searchText.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchText('')}
+                >
+                  <Text style={styles.clearText}>×</Text>
+                </TouchableOpacity>
+              )}
+
+              <ArrowUp2 size={20} color="#18181B" />
+            </View>
+          )}
+
+          {/* Options */}
+   <View
+  style={[
+    styles.optionsShadow,
+    {
+      position: 'absolute',
+      top: dropdownPosition.top,
+      left: dropdownPosition.left,
+      width: dropdownPosition.width * dropdownWidthRatio,
+      maxHeight: dropdownPosition.maxHeight,
+    },
+    dropdownStyle,
+  ]}
+>
+             <View style={styles.optionsClip}>
+    <ScrollView
+      keyboardShouldPersistTaps="always"
+      nestedScrollEnabled
+      showsVerticalScrollIndicator={false}
+    >
+
               {filteredOptions.map((item, index) => {
                 const itemValue =
                   typeof item === 'object'
@@ -294,7 +421,6 @@ const DropdownComponent = ({
                 );
               })}
 
-              {/* No Results */}
               {filteredOptions.length === 0 &&
                 !canAddCustomValue && (
                   <View style={styles.emptyContainer}>
@@ -304,10 +430,8 @@ const DropdownComponent = ({
                   </View>
                 )}
 
-              {/* Add Custom Value */}
               {canAddCustomValue && (
                 <TouchableOpacity
-                  activeOpacity={0.7}
                   style={styles.addCustomOption}
                   onPress={handleAddCustomValue}
                 >
@@ -317,9 +441,11 @@ const DropdownComponent = ({
                 </TouchableOpacity>
               )}
             </ScrollView>
+              </View>
           </View>
         </View>
       </Modal>
+
     </View>
   );
 };
@@ -424,18 +550,18 @@ const styles = StyleSheet.create({
     color: '#71717A',
   },
 
-  option: {
-    minHeight: 44,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    justifyContent: 'center',
-  },
+  // option: {
+  //   minHeight: 44,
+  //   paddingHorizontal: 14,
+  //   paddingVertical: 12,
+  //   justifyContent: 'center',
+  // },
 
-  optionText: {
-    fontSize: 14,
-    color: '#18181B',
-    fontFamily: 'Gilroy-Semibold',
-  },
+  // optionText: {
+  //   fontSize: 14,
+  //   color: '#18181B',
+  //   fontFamily: 'Gilroy-Semibold',
+  // },
 
   selectedOption: {
     backgroundColor: '#F4F4F5',
@@ -475,6 +601,123 @@ const styles = StyleSheet.create({
   errorBorder: {
     borderColor: '#EF4444',
   },
+  searchTrigger: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DEDEDE',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
+    zIndex: 10,
+  },
+
+  searchTriggerInput: {
+    flex: 1,
+    height: '100%',
+    padding: 0,
+    fontSize: 14,
+    color: '#18181B',
+    fontFamily: 'Gilroy-Medium',
+  },
+
+  optionsContainer: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    paddingVertical: 6,
+    overflow: 'hidden',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+  },
+
+optionsShadow: {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: '#E4E4E7',
+
+  // iOS Shadow
+  shadowColor: '#000000',
+  shadowOffset: {
+    width: 0,
+    height: 5,
+  },
+  shadowOpacity: 0.16,
+  shadowRadius: 8,
+
+  // Android Shadow
+  elevation: 12,
+
+  overflow: 'visible',
+  zIndex: 20,
+},
+
+optionsClip: {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 15,
+  overflow: 'hidden',
+},
+
+searchTrigger: {
+  backgroundColor: '#FFFFFF',
+  borderWidth: 1,
+  borderColor: '#DEDEDE',
+  borderRadius: 16,
+  paddingHorizontal: 12,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+
+  shadowColor: '#000000',
+  shadowOffset: {
+    width: 0,
+    height: 4,
+  },
+  shadowOpacity: 0.12,
+  shadowRadius: 5,
+  elevation: 5,
+  zIndex: 10,
+},
+
+searchTriggerInput: {
+  flex: 1,
+  height: '100%',
+  padding: 0,
+  fontSize: 14,
+  color: '#18181B',
+  fontFamily: 'Gilroy-Medium',
+  textAlignVertical: 'center',
+},
+
+option: {
+  minHeight: 48,
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  justifyContent: 'center',
+},
+
+optionText: {
+  fontSize: 14,
+  color: '#18181B',
+  fontFamily: 'Gilroy-Semibold',
+},
+
+
 });
 
 export default DropdownComponent;
