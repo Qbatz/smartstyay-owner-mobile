@@ -32,6 +32,7 @@ import Loader from "../../Loader/Loader";
 import { storeData } from "../../../Utils/Storage";
 import { ACTIVEHOSTELID } from "../../../Utils/Constant";
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+import DropdownComponent from "../../MorePages/DropdownComponent";
 
 export default function AddPG({ navigation, route }) {
 
@@ -202,9 +203,13 @@ export default function AddPG({ navigation, route }) {
     };
   }, []);
 
+  // const closeAll = () => {
+  //   setStateOpen(false);
+  // };
+
   const closeAll = () => {
-    setStateOpen(false);
-  };
+  Keyboard.dismiss();
+};
 
 
   const pickImage = async (setImage) => {
@@ -936,8 +941,37 @@ export default function AddPG({ navigation, route }) {
               )}
 
 
+      
+{/* State Dropdown */}
+<DropdownComponent
+  label="State"
+  required
+  placeholder="Select State"
+  options={stateList}
+  value={state}
+  onChange={(value) => {
+    setState(value);
+    setErrors(prev => ({
+      ...prev,
+      state: "",
+    }));
+    setTopWarning("");
+  }}
+  searchable={true}
+  searchPlaceholder="Search State..."
+  emptyText="No state found"
+  error={!!errors.state}
+/>
 
-              <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text>
+{errors.state && (
+  <ErrorMessage
+    message={errors.state}
+    type="error"
+  />
+)}
+
+
+              {/* <Text style={styles.label}>State <Text style={{ color: "red" }}>*</Text></Text>
               <View style={{ position: "relative", marginBottom: 6 }}>
 
 
@@ -1025,7 +1059,7 @@ export default function AddPG({ navigation, route }) {
                 )}
               </View>
 
-              {errors.state && <ErrorMessage message={errors.state} type="error" />}
+              {errors.state && <ErrorMessage message={errors.state} type="error" />} */}
 
               <ScrollView
                 horizontal

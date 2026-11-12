@@ -1,5 +1,6 @@
-import React, { createContext, useState } from "react";
-import {getAxios} from "../Config/AxiosConfig";
+// import React, { createContext, useState } from "react";
+import React, { createContext, useState, useRef } from "react";
+import { getAxios } from "../Config/AxiosConfig";
 
 
 export const ComplaintContext = createContext();
@@ -8,279 +9,364 @@ export default function ComplaintProvider({ children }) {
   const [complaintTypes, setComplaintTypes] = useState([]);
   const [complaintsList, setComplaintsList] = useState([]);
   const [complaintListOtherDetails, setComplaintListOtherDetails] = useState({
-  startDate: null,
-  endDate: null,
-  complaintCount: 0,
-});
-  const [assignError, setAssignError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [selectedComplaint, setSelectedComplaint] = useState(null);
-const [commentsLoading, setCommentsLoading] = useState(false);
-const [complaintUpdates, setComplaintUpdates] = useState([]);
-
-
-  const getErrorMessage = (err) => {
-  return (
-    err?.response?.data?.message || 
-    err?.response?.data || 
-    "Something went wrong"
-  );
-};
-
-
-
-
-
-const fetchComplaintTypes = async (hostelId) => {
-
-  setComplaintTypes([]);  
-     
-
-  try {
-      setLoading(true);  
-    const axios = getAxios();
-    const res = await axios.get(
-      `/v2/ComplaintType/all-complaintTypes/${hostelId}`
-    );
-
-    if (res.status === 200) {
-      const list = Array.isArray(res.data) ? res.data : [];
-
-      const formatted = list.map((item) => ({
-        id: item.complaintTypeId,
-        title: item.complaintTypeName,
-        raw: item,
-      }));
-
-      setComplaintTypes(formatted);
-      return { success: true, data: formatted };
-    }
-
-    return { success: false, data: [] };
-
-  } catch (err) {
-    console.log("Complaint Fetch Error:", err);
-    return { success: false, data: [] };
-
-  } finally {
-             setLoading(false);
-  }
-};
-
-
-
- const addComplaintType = async ({ hostelId, complaintTypeName }) => {
-  try {
-    const payload = { complaintTypeName, hostelId, isActive: true };
-    const axios = getAxios();
-    const res = await axios.post("/v2/ComplaintType", payload);
-
-    if (res?.status === 200 || res?.status === 201) {
-        console.log("response", res);
-        
-      await fetchComplaintTypes(hostelId);
-      return { success: true , message: res?.data || "Created Successfully" };
-    }
-  } catch (err) {
-    return { success: false, message: getErrorMessage(err) };
-  }
-};
-
-
-  const editComplaintType = async (data) => {
-  const { id, complaintTypeName, isActive, hostelId } = data;
-
-  try {
-    const axios = getAxios();
-    const res = await axios.put(
-      `/v2/ComplaintType/${id}`,
-      { complaintTypeName, isActive, hostelId }
-    );
-
-    if (res?.status === 200) {
-          console.log("response", res);
-      await fetchComplaintTypes(hostelId);
-      return { success: true ,message: res?.data || "Updated Successfully" };
-    }
-  } catch (err) {
-    return { success: false, message: getErrorMessage(err) };
-  }
-};
-
-  const deleteComplaintType = async (id, hostelId) => {
-  try {
-    const axios = getAxios();
-    const res = await axios.delete(`/v2/ComplaintType/${id}`);
-
-    if (res?.status === 200) {
-         console.log("response", res);
-      await fetchComplaintTypes(hostelId);
-      return { success: true , message: res?.data || "Deleted Successfully"};
-    }
-  } catch (err) {
-    return { success: false, message: getErrorMessage(err) };
-  }
-};
-
-  const GetComplaintListDetails = async (hostelId) => {
-  setComplaintsList([]);
-  setComplaintListOtherDetails({
     startDate: null,
     endDate: null,
     complaintCount: 0,
   });
-  setLoading(true);
+  const [assignError, setAssignError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [selectedComplaint, setSelectedComplaint] = useState(null);
+  const [commentsLoading, setCommentsLoading] = useState(false);
+  const [complaintUpdates, setComplaintUpdates] = useState([]);
 
-  try {
-    const axios = getAxios();
-    const res = await axios.get(
-      `/v2/complaint/all-complaints/${hostelId}`
+  const complaintRequestId = useRef(0);
+
+
+  const getErrorMessage = (err) => {
+    return (
+      err?.response?.data?.message ||
+      err?.response?.data ||
+      "Something went wrong"
     );
+  };
 
-    if (res.status === 200) {
-      const data = res?.data || {};
 
-      setComplaintsList(data?.complaintsList || []);
-      setComplaintListOtherDetails({
-        startDate: data?.startDate || null,
-        endDate: data?.endDate || null,
-        complaintCount: data?.complaintCount || 0,
-      });
 
-      return { success: true, data };
-    }
 
-    return { success: false, data: {} };
-  } catch (error) {
-    console.log("Complaint Fetch Error:", error);
-    return { success: false, data: {} };
-  } finally {
-    setLoading(false);
-  }
-};
 
-const AddComplaint = async (payload) => {
-  setLoading(true);
+  const fetchComplaintTypes = async (hostelId) => {
 
-  try {
-    const axios = getAxios();
-    const res = await axios.post("/v2/complaint", payload);
+    setComplaintTypes([]);
 
-    if (res.status === 201 || res.status === 200) {
-      await GetComplaintListDetails(payload.hostelId);
 
-      return {
-        success: true,
-        message: res.data || "Complaint added successfully",
-      };
-    }
+    try {
+      setLoading(true);
+      const axios = getAxios();
+      const res = await axios.get(
+        `/v2/ComplaintType/all-complaintTypes/${hostelId}`
+      );
 
-    return { success: false, message: "Failed to add complaint" };
-  } catch (err) {
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+      if (res.status === 200) {
+        const list = Array.isArray(res.data) ? res.data : [];
 
-const EditComplaint = async ({ complaintId, complaintDate, description, hostelId }) => {
-  setLoading(true);
+        const formatted = list.map((item) => ({
+          id: item.complaintTypeId,
+          title: item.complaintTypeName,
+          raw: item,
+        }));
 
-  try {
-    const axios = getAxios();
-    const res = await axios.put(
-      `/v2/complaint/${complaintId}`,
-      {
-        complaintDate,
-        description,
+        setComplaintTypes(formatted);
+        return { success: true, data: formatted };
       }
-    );
 
-    if (res.status === 200) {
-      await GetComplaintListDetails(hostelId);
+      return { success: false, data: [] };
+
+    } catch (err) {
+      console.log("Complaint Fetch Error:", err);
+      return { success: false, data: [] };
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+  const addComplaintType = async ({ hostelId, complaintTypeName }) => {
+    try {
+      const payload = { complaintTypeName, hostelId, isActive: true };
+      const axios = getAxios();
+      const res = await axios.post("/v2/ComplaintType", payload);
+
+      if (res?.status === 200 || res?.status === 201) {
+        console.log("response", res);
+
+        await fetchComplaintTypes(hostelId);
+        return { success: true, message: res?.data || "Created Successfully" };
+      }
+    } catch (err) {
+      return { success: false, message: getErrorMessage(err) };
+    }
+  };
+
+
+  const editComplaintType = async (data) => {
+    const { id, complaintTypeName, isActive, hostelId } = data;
+
+    try {
+      const axios = getAxios();
+      const res = await axios.put(
+        `/v2/ComplaintType/${id}`,
+        { complaintTypeName, isActive, hostelId }
+      );
+
+      if (res?.status === 200) {
+        console.log("response", res);
+        await fetchComplaintTypes(hostelId);
+        return { success: true, message: res?.data || "Updated Successfully" };
+      }
+    } catch (err) {
+      return { success: false, message: getErrorMessage(err) };
+    }
+  };
+
+  const deleteComplaintType = async (id, hostelId) => {
+    try {
+      const axios = getAxios();
+      const res = await axios.delete(`/v2/ComplaintType/${id}`);
+
+      if (res?.status === 200) {
+        console.log("response", res);
+        await fetchComplaintTypes(hostelId);
+        return { success: true, message: res?.data || "Deleted Successfully" };
+      }
+    } catch (err) {
+      return { success: false, message: getErrorMessage(err) };
+    }
+  };
+
+  //   const GetComplaintListDetails = async (hostelId) => {
+  //   setComplaintsList([]);
+  //   setComplaintListOtherDetails({
+  //     startDate: null,
+  //     endDate: null,
+  //     complaintCount: 0,
+  //   });
+  //   setLoading(true);
+
+  //   try {
+  //     const axios = getAxios();
+  //     const res = await axios.get(
+  //       `/v2/complaint/all-complaints/${hostelId}`
+  //     );
+
+  //     if (res.status === 200) {
+  //       const data = res?.data || {};
+
+  //       setComplaintsList(data?.complaintsList || []);
+  //       setComplaintListOtherDetails({
+  //         startDate: data?.startDate || null,
+  //         endDate: data?.endDate || null,
+  //         complaintCount: data?.complaintCount || 0,
+  //       });
+
+  //       return { success: true, data };
+  //     }
+
+  //     return { success: false, data: {} };
+  //   } catch (error) {
+  //     console.log("Complaint Fetch Error:", error);
+  //     return { success: false, data: {} };
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+  const GetComplaintListDetails = async (
+    hostelId,
+    filters = {},
+    options = {}
+  ) => {
+    const requestId = ++complaintRequestId.current;
+
+    const { showLoader = true } = options;
+
+    if (showLoader) setLoading(true);
+
+    try {
+      const axios = getAxios();
+
+      // Backward compatibility: string means customerName
+      const filterValues =
+        typeof filters === "string"
+          ? { customerName: filters }
+          : filters;
+
+      const params = {};
+
+      ["customerName", "status", "startDate", "endDate"].forEach(
+        (key) => {
+          const value = filterValues?.[key];
+
+          if (value !== undefined && value !== null && String(value).trim() !== "") {
+            params[key] = String(value).trim();
+          }
+        }
+      );
+
+      console.log("Complaint API params:", params);
+
+      const res = await axios.get(
+        `/v2/complaint/all-complaints/${hostelId}`,
+        { params }
+      );
+
+      // Ignore previous search response
+      if (requestId !== complaintRequestId.current) {
+        return { success: false };
+      }
+
+      if (res.status === 200) {
+        const data = res?.data || {};
+
+        setComplaintsList(
+          Array.isArray(data?.complaintsList)
+            ? data.complaintsList
+            : []
+        );
+
+        setComplaintListOtherDetails({
+          startDate: data?.startDate || null,
+          endDate: data?.endDate || null,
+          complaintCount: data?.complaintCount || 0,
+        });
+
+        return { success: true, data };
+      }
+
+      return { success: false, data: {} };
+
+    } catch (error) {
+      if (requestId === complaintRequestId.current) {
+        console.log(
+          "Complaint Fetch Error:",
+          error?.response?.data || error
+        );
+      }
+
+      return { success: false, data: {} };
+
+    } finally {
+      if (showLoader && requestId === complaintRequestId.current) {
+        setLoading(false);
+      }
+    }
+  };
+
+
+  const AddComplaint = async (payload) => {
+    setLoading(true);
+
+    try {
+      const axios = getAxios();
+      const res = await axios.post("/v2/complaint", payload);
+
+      if (res.status === 201 || res.status === 200) {
+        await GetComplaintListDetails(payload.hostelId);
+
+        return {
+          success: true,
+          message: res.data || "Complaint added successfully",
+        };
+      }
+
+      return { success: false, message: "Failed to add complaint" };
+    } catch (err) {
+      return {
+        success: false,
+        message: getErrorMessage(err),
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const EditComplaint = async ({ complaintId, complaintDate, description, hostelId }) => {
+    setLoading(true);
+
+    try {
+      const axios = getAxios();
+      const res = await axios.put(
+        `/v2/complaint/${complaintId}`,
+        {
+          complaintDate,
+          description,
+        }
+      );
+
+      if (res.status === 200) {
+        await GetComplaintListDetails(hostelId);
+
+        return {
+          success: true,
+          message: res.data || "Complaint updated successfully",
+        };
+      }
+
+      return { success: false, message: "Failed to update complaint" };
+    } catch (err) {
+      return {
+        success: false,
+        message: getErrorMessage(err),
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteComplaint = async (complaintId, hostelId) => {
+    setLoading(true);
+
+    try {
+      const axios = getAxios();
+      const res = await axios.delete(
+        `/v2/complaint/delete-complaint/${complaintId}`
+      );
+
+      if (res.status === 200) {
+        // 🔄 refresh complaint list
+        await GetComplaintListDetails(hostelId);
+
+        return {
+          success: true,
+          message: res.data || "Complaint deleted successfully",
+        };
+      }
 
       return {
-        success: true,
-        message: res.data || "Complaint updated successfully",
+        success: false,
+        message: "Failed to delete complaint",
       };
-    }
-
-    return { success: false, message: "Failed to update complaint" };
-  } catch (err) {
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
-
-const deleteComplaint = async (complaintId, hostelId) => {
-  setLoading(true);
-
-  try {
-    const axios = getAxios();
-    const res = await axios.delete(
-      `/v2/complaint/delete-complaint/${complaintId}`
-    );
-
-    if (res.status === 200) {
-      // 🔄 refresh complaint list
-      await GetComplaintListDetails(hostelId);
-
+    } catch (err) {
       return {
-        success: true,
-        message: res.data || "Complaint deleted successfully",
+        success: false,
+        message: getErrorMessage(err),
       };
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return {
-      success: false,
-      message: "Failed to delete complaint",
-    };
-  } catch (err) {
-    return {
-      success: false,
-      message: getErrorMessage(err),
-    };
-  } finally {
-    setLoading(false);
-  }
-};
+  const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
+    // setLoading(true);
 
-const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
-  // setLoading(true);
+    try {
+      const axios = getAxios();
+      const res = await axios.put(
+        `/v2/complaint/update-status/${complaintId}`,
+        { status }
+      );
 
-  try {
-    const axios = getAxios();
-    const res = await axios.put(
-      `/v2/complaint/update-status/${complaintId}`,
-      { status }
-    );
+      if (res.status === 200) {
+        await GetComplaintListDetails(hostelId);
 
-    if (res.status === 200) {
-      await GetComplaintListDetails(hostelId); 
+        return {
+          success: true,
+          message: res.data || "Status updated successfully",
+        };
+      }
 
-      return {
-        success: true,
-        message: res.data || "Status updated successfully",
-      };
+      return { success: false, message: "Failed to update status" };
+    } catch (err) {
+      return { success: false, message: getErrorMessage(err) };
+    } finally {
+      setLoading(false);
     }
-
-    return { success: false, message: "Failed to update status" };
-  } catch (err) {
-    return { success: false, message: getErrorMessage(err) };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
- const assignComplaint = async ({ complaintId, userId }) => {
+  const assignComplaint = async ({ complaintId, userId }) => {
     try {
       // setLoading(true);
       setAssignError("");
@@ -312,88 +398,88 @@ const changeComplaintStatus = async ({ complaintId, status, hostelId }) => {
     }
   };
 
- const getParticularComplaint = async (hostelId, complaintId) => {
-  // setLoading(true);
-  try {
+  const getParticularComplaint = async (hostelId, complaintId) => {
+    // setLoading(true);
+    try {
 
-    const axios = getAxios()
-    const res = await axios.get(
-      `/v2/complaint/${complaintId}`
-    );
+      const axios = getAxios()
+      const res = await axios.get(
+        `/v2/complaint/${complaintId}`
+      );
 
-    console.log("response", res);
+      console.log("response", res);
 
-    
-    if (res?.status === 200) {
-      setSelectedComplaint(res?.data);
-      return { success: true, data: res?.data };
+
+      if (res?.status === 200) {
+        setSelectedComplaint(res?.data);
+        return { success: true, data: res?.data };
+      }
+
+      return { success: false };
+    } catch (err) {
+      return { success: false, message: getErrorMessage(err) };
+    } finally {
+      setLoading(false);
     }
-
-    return { success: false };
-  } catch (err) {
-    return { success: false, message: getErrorMessage(err) };
-  } finally {
-    setLoading(false);
   }
-}
 
 
-const addComplaintComment = async ({ complaintId, message }) => {
-  // setCommentsLoading(true);
+  const addComplaintComment = async ({ complaintId, message }) => {
+    // setCommentsLoading(true);
 
-  console.log("complaintId", complaintId , message);
-  
+    console.log("complaintId", complaintId, message);
 
-  try {
-    const axios = getAxios();
-    const res = await axios.post(
-      `/v2/complaint/add-comment/${complaintId}`,
-      { message },
-      { headers: { "Content-Type": "application/json" } }
-    );
-     console.log("complaintId", res);
 
-    if (res.status === 201 || res.status === 200) {
-      await getParticularComplaint(complaintId);
-console.log("rescomment",res)
-      return {
-        success: true,
-        message: res.data || "Comment added successfully",
-      };
+    try {
+      const axios = getAxios();
+      const res = await axios.post(
+        `/v2/complaint/add-comment/${complaintId}`,
+        { message },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      console.log("complaintId", res);
+
+      if (res.status === 201 || res.status === 200) {
+        await getParticularComplaint(complaintId);
+        console.log("rescomment", res)
+        return {
+          success: true,
+          message: res.data || "Comment added successfully",
+        };
+      }
+
+      return { success: false, message: "Failed to add comment" };
+    } catch (err) {
+      console.log("complaintId", err);
+      return { success: false, message: getErrorMessage(err) };
+    } finally {
+      setCommentsLoading(false);
     }
+  };
 
-    return { success: false, message: "Failed to add comment" };
-  } catch (err) {
-         console.log("complaintId", err);
-    return { success: false, message: getErrorMessage(err) };
-  } finally {
-    setCommentsLoading(false);
-  }
-};
+  const complaintsViewUpdates = async ({ hostelId, complaintsId }) => {
+    setLoading(true);
+    setComplaintUpdates([]);
 
-const complaintsViewUpdates = async ({ hostelId, complaintsId }) => {
-  setLoading(true);
-  setComplaintUpdates([]);
+    try {
+      const axios = getAxios();
+      const res = await axios.get(
+        `/v2/complaint/updates/${hostelId}/${complaintsId}`
+      );
 
-  try {
-    const axios = getAxios();
-    const res = await axios.get(
-      `/v2/complaint/updates/${hostelId}/${complaintsId}`
-    );
+      if (res?.status === 200) {
+        const data = Array.isArray(res?.data?.complaintUpdates) ? res?.data?.complaintUpdates : [];
+        setComplaintUpdates(data);
+        return { success: true, data };
+      }
 
-    if (res?.status === 200) {
-      const data = Array.isArray(res?.data?.complaintUpdates) ? res?.data?.complaintUpdates : [];
-      setComplaintUpdates(data);
-      return { success: true, data };
+      return { success: false, data: [] };
+    } catch (err) {
+      return { success: false, message: getErrorMessage(err) };
+    } finally {
+      setLoading(false);
     }
-
-    return { success: false, data: [] };
-  } catch (err) {
-    return { success: false, message: getErrorMessage(err) };
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
 
 
@@ -417,9 +503,9 @@ const complaintsViewUpdates = async ({ hostelId, complaintsId }) => {
         deleteComplaint,
         changeComplaintStatus,
         assignComplaint,
-        getParticularComplaint,  
+        getParticularComplaint,
         addComplaintComment,
-        complaintsViewUpdates  
+        complaintsViewUpdates
       }}
     >
       {children}
