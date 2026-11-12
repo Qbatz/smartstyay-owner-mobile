@@ -62,7 +62,7 @@ import RoomView from "../../Assets/Images/Roomview.png";
 import RoomIcon from "../../Assets/Images/Room_Icon.png"
 import LeftArrow from "../../Assets/Images/Arrow_left.png"
 import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
-import { Swipeable } from "react-native-gesture-handler";
+import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60

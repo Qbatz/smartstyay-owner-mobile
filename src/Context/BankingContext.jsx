@@ -994,6 +994,59 @@ export default function BankingProvider({ children }) {
   };
 
 
+const deleteBankAccount = async (hostelId, bankId) => {
+  try {
+    setLoading(true);
+    setErrorMsg("");
+
+    const axios = getAxios();
+
+    const res = await axios.delete(
+      `/v3/bank/${hostelId}/${bankId}`
+    );
+
+    if (res?.status === 200 || res?.status === 204) {
+      await NewgetBankList(hostelId);
+
+      return {
+        success: true,
+        message:
+          res?.data?.message || "Bank deleted successfully",
+        data: res?.data,
+      };
+    }
+
+    return {
+      success: false,
+      message: res?.data?.message || "Failed to delete bank",
+    };
+
+  } catch (error) {
+    console.log(
+      "DELETE BANK STATUS =>",
+      error?.response?.status
+    );
+
+    console.log(
+      "DELETE BANK ERROR =>",
+      error?.response?.data
+    );
+
+    const msg = getErrorMessage(error);
+    setErrorMsg(msg);
+
+    return {
+      success: false,
+      message: msg,
+    };
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
   return (
     <BankingContext.Provider
       value={{
@@ -1017,7 +1070,7 @@ export default function BankingProvider({ children }) {
         createBankAccount, NewgetBankList, getResponsiblePersonList, getAllTransactions,
         getBankOverview, getBankTransactionHistory, getQrCardTypeList,
         getBankMethod, addMoneyInvestment, getTransferInitialize, moneyTransfer, getCreditCardInitialize, creditCardPayment,
-        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount
+        newOnlyTransactionList, setNewOnlyTransactionList, getoldbankingTransferInitialize, oldBankSelfTransfer, createCreditCardAccount ,deleteBankAccount
       }}
 
     >

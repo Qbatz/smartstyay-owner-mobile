@@ -1,6 +1,7 @@
 package com.qbatz.smartstay;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
@@ -9,9 +10,9 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
@@ -19,13 +20,8 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
-
-import android.content.ActivityNotFoundException;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.qbatz.utils.Constants;
-
-import android.provider.MediaStore;
-import android.webkit.MimeTypeMap;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,20 +32,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class CommonModule extends ReactContextBaseJavaModule {
-    Context context;
+    private final Context context;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private final ReactApplicationContext reactContext;
     private final ConnectivityManager connectivityManager;
 
-    private static final int REQUEST_CALL =1;
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
+    private static final int REQUEST_CALL = 1;
 
     CommonModule(ReactApplicationContext context) {
         super(context);
         this.reactContext = context;
-        this.context = context; 
-        connectivityManager =(ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        this.context = context;
+        this.connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         registerNetworkListener();
     }
 
@@ -59,21 +54,9 @@ public class CommonModule extends ReactContextBaseJavaModule {
         return "CommonModule";
     }
 
-//    @ReactMethod
-//    public void checkInternet(Promise promise){
-//        ConnectivityManager connectivityManager=(ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-//
-//        boolean connected=(connectivityManager.getNetworkInfo(connectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
-//                connectivityManager.getNetworkInfo(connectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED);
-//
-//        System.out.println("connne ," + connected);
-//        promise.resolve(connected);
-//    }
-
     @ReactMethod
     public void checkInternet(Promise promise) {
         try {
-
             if (connectivityManager == null) {
                 promise.resolve(false);
                 return;
@@ -100,15 +83,13 @@ public class CommonModule extends ReactContextBaseJavaModule {
     }
 
     private void registerNetworkListener() {
-
         if (connectivityManager == null) return;
 
         connectivityManager.registerDefaultNetworkCallback(
                 new ConnectivityManager.NetworkCallback() {
 
                     @Override
-                    public void onAvailable(Network network) {
-//                        sendEvent(true);
+                    public void onAvailable(@NonNull Network network) {
                         NetworkCapabilities capabilities =
                                 connectivityManager.getNetworkCapabilities(network);
 
@@ -120,7 +101,7 @@ public class CommonModule extends ReactContextBaseJavaModule {
                     }
 
                     @Override
-                    public void onLost(Network network) {
+                    public void onLost(@NonNull Network network) {
                         sendEvent(false);
                     }
                 }
@@ -132,7 +113,6 @@ public class CommonModule extends ReactContextBaseJavaModule {
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit("networkStatus", isConnected);
     }
-
 
     @ReactMethod
     public void fetchBaseUrl(Promise promise) {
@@ -181,8 +161,10 @@ public class CommonModule extends ReactContextBaseJavaModule {
                 }
 
                 File cachePath = new File(context.getCacheDir(), "shared_files");
-                if (!cachePath.exists())
+                if (!cachePath.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
                     cachePath.mkdirs();
+                }
 
                 File outputFile = new File(cachePath, fileName);
                 InputStream inputStream = connection.getInputStream();
@@ -207,9 +189,7 @@ public class CommonModule extends ReactContextBaseJavaModule {
 
     private void shareDownloadedFile(File file, Promise promise) {
         try {
-//            Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".fileprovider", file);
             Uri contentUri = FileProvider.getUriForFile(context, context.getPackageName() + ".imagepickerprovider", file);
-
 
             if (contentUri != null) {
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
@@ -247,43 +227,44 @@ public class CommonModule extends ReactContextBaseJavaModule {
     public void fetchEnvironment(Promise promise) {
         promise.resolve(Constants.ENVIRONMENT);
     }
+
     @ReactMethod
-    public void makeCall(String phn_number){
-        if(ContextCompat.checkSelfPermission(reactContext, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(reactContext.getCurrentActivity(),
-                    new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL);
-        }else {
+    public void makeCall(String phn_number) {
+        if (ContextCompat.checkSelfPermission(reactContext, Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+            if (reactContext.getCurrentActivity() != null) {
+                androidx.core.app.ActivityCompat.requestPermissions(reactContext.getCurrentActivity(),
+                        new String[]{Manifest.permission.CALL_PHONE}, REQUEST_CALL);
+            }
+        } else {
             String dial = "tel:" + phn_number;
 
             Intent intent = new Intent(Intent.ACTION_CALL, Uri.parse(dial));
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
             reactContext.startActivity(intent);
-
         }
     }
 
     @ReactMethod
-    public void getVersionName(Promise promise){
+    public void getVersionName(Promise promise) {
         try {
-            PackageManager pm =getReactApplicationContext().getPackageManager();
-            PackageInfo pInfo = pm.getPackageInfo(getReactApplicationContext().getPackageName(),0);
+            PackageManager pm = getReactApplicationContext().getPackageManager();
+            PackageInfo pInfo = pm.getPackageInfo(getReactApplicationContext().getPackageName(), 0);
             promise.resolve(pInfo.versionName);
-        }catch (Exception e){
+        } catch (Exception e) {
             promise.reject("ERROR", "Unable to get version name");
         }
     }
 
     @ReactMethod
-    public void getBuildNumber(Promise promise){
+    public void getBuildNumber(Promise promise) {
         try {
-            PackageManager pm =getReactApplicationContext().getPackageManager();
-            PackageInfo pInfo = pm.getPackageInfo(getReactApplicationContext().getPackageName(),0);
-            promise.resolve(String.valueOf(pInfo.versionCode));
+            PackageManager pm = getReactApplicationContext().getPackageManager();
+            PackageInfo pInfo = pm.getPackageInfo(getReactApplicationContext().getPackageName(), 0);
+            long versionCode = androidx.core.content.pm.PackageInfoCompat.getLongVersionCode(pInfo);
+            promise.resolve(String.valueOf(versionCode));
         } catch (Exception e) {
             promise.reject("ERROR", "Unable to get build number");
         }
     }
-
-   
 }

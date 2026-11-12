@@ -22,6 +22,7 @@ import Profile from "../../../Assets/Images/profile.png";
 import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
 import EditConfigure from "../../../Assets/Images/Edit_Configure.png"
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+import InputComponent from "../InputComponent"
 
 const CreateInvoice = ({ }) => {
 
@@ -120,41 +121,41 @@ const CreateInvoice = ({ }) => {
     // }
 
 
-   const getDetailOptions = (currentIndex) => {
-  if (isEditMode) {
-    if (items[currentIndex]?.isExisting) return [];
-    return ["Other"];
-  }
+    const getDetailOptions = (currentIndex) => {
+        if (isEditMode) {
+            if (items[currentIndex]?.isExisting) return [];
+            return ["Other"];
+        }
 
-  // Advance selected in another row: no more options
-  const hasAdvance = items.some(
-    (item, index) =>
-      index !== currentIndex &&
-      item?.itemDetail === "Advance"
-  );
+        // Advance selected in another row: no more options
+        const hasAdvance = items.some(
+            (item, index) =>
+                index !== currentIndex &&
+                item?.itemDetail === "Advance"
+        );
 
-  if (hasAdvance) return [];
+        if (hasAdvance) return [];
 
-  const hasRoomRent = items.some(
-    (item, index) =>
-      index !== currentIndex &&
-      item?.itemDetail === "Room Rent"
-  );
+        const hasRoomRent = items.some(
+            (item, index) =>
+                index !== currentIndex &&
+                item?.itemDetail === "Room Rent"
+        );
 
-  const hasEB = items.some(
-    (item, index) =>
-      index !== currentIndex &&
-      item?.itemDetail === "EB"
-  );
+        const hasEB = items.some(
+            (item, index) =>
+                index !== currentIndex &&
+                item?.itemDetail === "EB"
+        );
 
-  return detailOptions.filter((option) => {
-    if (option === "Room Rent") return !hasRoomRent;
+        return detailOptions.filter((option) => {
+            if (option === "Room Rent") return !hasRoomRent;
 
-    if (option === "EB") return !hasEB;
+            if (option === "EB") return !hasEB;
 
-    return true;
-  });
-};
+            return true;
+        });
+    };
 
 
     // const getDetailOptions = (currentIndex) => {
@@ -1487,12 +1488,11 @@ const CreateInvoice = ({ }) => {
                         )}
 
                         <Text style={styles.headerTxt}>Invoice Number </Text>
-                        <ValidatedInput
+                        {/* <ValidatedInput
                             ref={transactionRef}
                             type="alphaNumeric"
                             inputType="text"
                             value={transactionId}
-                            // style={[styles.inputBox, { marginTop: 10 }]}
                             style={[
                                 styles.inputBox,
                                 {
@@ -1508,7 +1508,23 @@ const CreateInvoice = ({ }) => {
                             }}
                             placeholder="Enter Invoice Number"
                             placeholderTextColor="#B5B5B5"
-                            // onFocus={() => scrollToField(transactionRef)}
+                            onChangeText={setTransactionId}
+                        /> */}
+
+                        <InputComponent
+                            ref={transactionRef}
+                            type="alphaNumeric"
+
+                            inputType="text"
+                            value={transactionId}
+
+                            editable={!isEditMode}
+                            onFocus={() => {
+                                if (!isEditMode) {
+                                    scrollToField(transactionRef);
+                                }
+                            }}
+                            placeholder="Enter Invoice Number"
                             onChangeText={setTransactionId}
                         />
 
@@ -1782,7 +1798,7 @@ const CreateInvoice = ({ }) => {
                                     <Text style={{ color: "red", fontSize: 19 }}>*</Text>
                                 </Text>
 
-                                <ValidatedInput
+                                {/* <ValidatedInput
                                     type="numberOnly"
                                     inputType="numeric"
                                     style={styles.itemAmountBox}
@@ -1795,6 +1811,22 @@ const CreateInvoice = ({ }) => {
                                             [`amount_${index}`]: "",
                                         }));
                                     }}
+                                /> */}
+
+                                <InputComponent
+                                    type="number"
+                                    placeholder="Enter  Amount"
+                                    // keyboardType="numeric"
+                                    keyboardType="number-pad"
+                                    value={item.amount}
+                                    onChangeText={value => {
+                                        handleChange(index, "amount", value);
+                                        setErrors(prev => ({
+                                            ...prev,
+                                            [`amount_${index}`]: "",
+                                        }));
+                                    }}
+                                    error={!!errors[`amount_${index}`]}
                                 />
 
                                 {errors[`amount_${index}`] && (

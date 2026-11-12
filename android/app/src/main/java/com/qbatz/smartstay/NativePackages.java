@@ -21,7 +21,7 @@ public class NativePackages implements ReactPackage {
     @NonNull
     @Override
     public List<NativeModule> createNativeModules(@NonNull ReactApplicationContext reactContext) {
-        List<NativeModule> nativeModules=new ArrayList<>();
+        List<NativeModule> nativeModules = new ArrayList<>();
         nativeModules.add(new NotificationModule(reactContext));
         nativeModules.add(new CommonModule(reactContext));
 

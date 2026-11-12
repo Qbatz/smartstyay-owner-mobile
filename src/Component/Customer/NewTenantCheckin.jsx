@@ -39,7 +39,7 @@ import BedDetailsSheet from "./BedDetailsBottomsheet"
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 import CloseIcon from "../../Assets/Images/remove.png";
 import AddRentIcon from "../../Assets/Images/directionbottom.png";
-
+import InputComponent from "../MorePages/InputComponent"
 
 
 
@@ -1287,7 +1287,14 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                 <View ref={checkinDateRef} collapsable={false}>
                                     <TouchableOpacity
-                                        style={styles.dateBox}
+                                        // style={styles.dateBox}
+                                         style={[
+                                    styles.dateBox,
+                                    {
+                                        borderColor: showCalendar ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: showCalendar ? 1.5 : 1,
+                                    },
+                                ]}
                                         onPress={() => {
                                             Keyboard.dismiss();
                                             setOpenDropdownId(null);
@@ -1360,7 +1367,14 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
-                                        style={[styles.select,]}
+                                        // style={[styles.select,]}
+                                               style={[
+                                    styles.select,
+                                    {
+                                        borderColor: openDropdown === "floor" ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDropdown === "floor" ? 1.5 : 1,
+                                    },
+                                ]}
                                         // disabled={isFloorDisabled}
                                         onPress={() => toggleDropdown("floor")}
                                     >
@@ -1429,7 +1443,15 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
-                                        style={[styles.select, isRoomDisabled && styles.disabledSelect]}
+                                        // style={[styles.select, isRoomDisabled && styles.disabledSelect]}
+                                                     style={[
+                                    styles.select,
+                                    {
+                                        borderColor: openDropdown === "room" ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDropdown === "room" ? 1.5 : 1,
+                                    },
+                                    isRoomDisabled && styles.disabledSelect
+                                ]}
                                         disabled={isRoomDisabled}
                                         onPress={() => toggleDropdown("room")}
                                     >
@@ -1495,7 +1517,15 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
-                                        style={[styles.select, isBedDisabled && styles.disabledSelect]}
+                                                       style={[
+                                    styles.select,
+                                    {
+                                        borderColor: openDropdown === "bed" ? "#0085FF" : "#D9D9D9",
+                                        borderWidth: openDropdown === "bed" ? 1.5 : 1,
+                                    },
+                                    isBedDisabled && styles.disabledSelect
+                                ]}
+                                        // style={[styles.select, isBedDisabled && styles.disabledSelect]}
                                         disabled={isBedDisabled}
                                         onPress={() => toggleDropdown("bed")}
                                     >
@@ -1629,7 +1659,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                             {/* <Text style={styles.label}>Refundable Amount </Text> */}
 
-                                            <TextInput
+                                            {/* <TextInput
                                                 style={[
                                                     styles.input,
                                                     refuseAdvanceAmount && styles.disabledInput,
@@ -1645,9 +1675,27 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                     setAdvanceAmount(onlyNum);
                                                     setAdvanceError("");
                                                 }}
+                                                    
 
 
+                                            /> */}
+
+                                            <InputComponent
+                                                type="number"
+                                                value={advanceAmount}
+                                                placeholder="Enter Amount"
+                                                keyboardType="numeric"
+                                                editable={!refuseAdvanceAmount}
+                                                onChangeText={(text) => {
+                                                    const onlyNum = text.replace(/[^0-9]/g, "");
+                                                    setAdvanceAmount(onlyNum);
+                                                    setAdvanceError("");
+                                                }}
+                                                disabled={refuseAdvanceAmount}
+                                                error={!!advanceError}
                                             />
+
+
 
                                             {advanceError && (
                                                 <ErrorMessage message={advanceError} type="error" />
@@ -1710,12 +1758,25 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                                     scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
                                                                 }}
 
-                                                                // onChangeText={(t) => updateTitle(item.id, t)}
                                                                 onChangeText={(t) => {
                                                                     const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                                                     updateTitle(item.id, onlyLetters);
                                                                 }}
                                                             />
+                                                            // <InputComponent
+                                                            //     ref={(r) => { inputRefs.current[`reason-${item.id}`] = r }}
+                                                            //     type="name"
+                                                            //     placeholder="Enter reason"
+                                                            //     value={item.title}
+                                                            //     onChangeText={(t) => {
+                                                            //         const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
+                                                            //         updateTitle(item.id, onlyLetters);
+                                                            //     }}
+                                                            //     onFocus={() => {
+                                                            //         setOpenDropdownId(null);
+                                                            //         scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
+                                                            //     }}
+                                                            // />
                                                         ) : (
                                                             <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
                                                                 <Text>Maintenance</Text>
@@ -1760,6 +1821,38 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                                                 }
                                                             />
+                                                
+                                                            // <InputComponent
+                                                            //     ref={(r) => {
+                                                            //         inputRefs.current[`amount-${item.id}`] = r;
+                                                            //     }}
+                                                            //     onFocus={() => {
+                                                            //         setOpenDropdownId(null);
+                                                            //         scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
+                                                            //     }}
+                                                            //     type="number"
+                                                            //     placeholder="Enter amount"
+                                                            //     keyboardType="numeric"
+                                                            //     value={item.amount}
+                                                            //     onChangeText={(t) => {
+
+                                                            //         let cleaned = t.replace(/[^0-9.]/g, "");
+
+                                                            //         const parts = cleaned.split(".");
+
+                                                            //         if (parts.length > 2) {
+                                                            //             cleaned = parts[0] + "." + parts[1];
+                                                            //         }
+
+                                                            //         if (parts[1]?.length > 2) {
+                                                            //             cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                                                            //         }
+
+                                                            //         updateAmount(item.id, cleaned)
+                                                            //     }
+
+                                                            //     }
+                                                            // />
                                                         )}
 
                                                     </View>
@@ -1844,7 +1937,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                 </Text>
 
                                 <Text style={styles.label}>Total Rent (INR) <Text style={{ color: "red" }}>*</Text></Text>
-                                <TextInput
+                                {/* <TextInput
                                     style={styles.input}
                                     placeholder={
                                         selectedBed?.rentAmount
@@ -1857,11 +1950,28 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     onChangeText={(text) => {
                                         const onlyNum = text.replace(/[^0-9]/g, "");
                                         setCheckinRentalAmount(sanitizeAmount(text));
-                                        // setCheckinRentalAmount(onlyNum);
                                         setRentalError("");
                                     }}
 
+                                /> */}
+
+                                <InputComponent
+                                    type="number"
+                                    placeholder={
+                                        selectedBed?.rentAmount
+                                            ? String(selectedBed.rentAmount)
+                                            : "Enter Amount"
+                                    }
+                                    keyboardType="numeric"
+                                    value={checkinrentalAmount}
+                                    onChangeText={(text) => {
+                                        const onlyNum = text.replace(/[^0-9]/g, "");
+                                        setCheckinRentalAmount(sanitizeAmount(text));
+                                        setRentalError("");
+                                    }}
+                                    error={!!rentalError}
                                 />
+
                                 {rentalError && (
                                     <ErrorMessage message={rentalError} type="error" />
                                 )}
@@ -2002,9 +2112,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                                 keyboardType="numeric"
                                                                 value={customRentAmount}
                                                                 onChangeText={(text) => {
-                                                                    // setCustomRentAmount(
-                                                                    //     text.replace(/[^0-9]/g, "")
-                                                                     // );
+                                                                   
 
                                                                     setCustomRentAmount(sanitizeAmount(text));
                                                                     setCustomRentError("");

@@ -1068,6 +1068,30 @@ const BillDetailsSheet = ({
                     </Text>
                   </View>
                 </View>
+                {BillPdfdetails?.deductionsInfo?.listDeductions?.map(
+                                          (item, index) => (
+                                            <View
+                                              key={`${item?.item}-${index}`}
+                                              style={{
+                                                marginTop: 10,
+                                                flexDirection: "row",
+                                                justifyContent: "space-between",
+                                              }}
+                                            >
+                                              <Text
+                                                style={{
+                                                  fontSize: 13,
+                                                  fontFamily: "Gilroy-Medium",
+                                                  color: "#6B7280",
+                                                }}
+                                              >
+                                                {item?.item
+                                                  ? `${item?.item.charAt(0).toUpperCase()}${item?.item.slice(1)} - ${Number(item?.amount || 0).toLocaleString("en-IN")}`
+                                                  : "-"}
+                                              </Text>
+                                            </View>
+                                          )
+                                        )}
 
                 <View style={{ marginTop: 10, display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                   <View>

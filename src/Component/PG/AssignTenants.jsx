@@ -29,7 +29,7 @@ import AddRentIcon from "../../Assets/Images/directionbottom.png";
 import { Switch } from "react-native";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 import { UseSetting } from "../../Context/SettingContext";
-
+import InputComponent from "../MorePages/InputComponent"
 
 
 export default function AssignTenant({ navigation, route }) {
@@ -1414,18 +1414,31 @@ export default function AssignTenant({ navigation, route }) {
                   <ErrorMessage message={bookingDateError} type="error" />
                 )}
                 <Text style={styles.label}>Booking Amount <Text style={{ color: "red" }}>*</Text></Text>
-                <TextInput
+                {/* <TextInput
                   style={styles.input}
                   placeholder="Enter Amount"
                   keyboardType="numeric"
                   value={bookingAmount}
-                  // onChangeText={setBookingAmount}
                   onChangeText={(text) => {
                     const onlyNum = text.replace(/[^0-9]/g, "");
                     setBookingAmount(onlyNum);
                     setBookingAmountError("");
                   }}
+                /> */}
+
+                <InputComponent
+                  type="number"
+                  value={bookingAmount}
+                  placeholder="Enter Amount"
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    const onlyNum = text.replace(/[^0-9]/g, "");
+                    setBookingAmount(onlyNum);
+                    setBookingAmountError("");
+                  }}
+                  error={!!bookingAmountError}
                 />
+
                 {bookingAmountError && (
                   <ErrorMessage message={bookingAmountError} type="error" />
                 )}
@@ -1591,7 +1604,7 @@ export default function AssignTenant({ navigation, route }) {
   }}
   onChangeText={setReferenceNumber}
 /> */}
-                <TextInput
+                {/* <TextInput
                   ref={transactionRef}
                   style={styles.inputBox}
                   placeholder="Enter Transaction Id"
@@ -1601,6 +1614,21 @@ export default function AssignTenant({ navigation, route }) {
                   onChangeText={(text) => {
 
                     const noEmojis = text.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, "");
+                    setReferenceNumber(noEmojis);
+                  }}
+                /> */}
+
+                <InputComponent
+                  ref={transactionRef}
+                  type="text"
+                  value={referenceNumber}
+                  placeholder="Enter Transaction Id"
+                  onFocus={() => scrollInputIntoView(transactionRef)}
+                  onChangeText={(text) => {
+                    const noEmojis = text.replace(
+                      /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu,
+                      ""
+                    );
                     setReferenceNumber(noEmojis);
                   }}
                 />
@@ -1762,7 +1790,7 @@ export default function AssignTenant({ navigation, route }) {
 
 
                 <Text style={styles.label}>Rental Amount <Text style={{ color: "red" }}>*</Text></Text>
-                <TextInput
+                {/* <TextInput
                   style={styles.input}
                   placeholder={
                     selectedBed?.rentAmount
@@ -1778,7 +1806,26 @@ export default function AssignTenant({ navigation, route }) {
                     setRentalError("");
                   }}
 
+                /> */}
+
+                <InputComponent
+                  type="number"
+                  value={rentalAmount}
+                  placeholder={
+                    selectedBed?.rentAmount
+                      ? String(selectedBed.rentAmount)
+                      : "Enter Amount"
+                  }
+                  keyboardType="numeric"
+                  onChangeText={(text) => {
+                    const onlyNum = text.replace(/[^0-9]/g, "");
+                    setRentalAmount(onlyNum);
+                    setRentalError("");
+                  }}
+                  error={!!rentalError}
                 />
+
+
                 {rentalError && (
                   <ErrorMessage message={rentalError} type="error" />
                 )}
@@ -1859,7 +1906,7 @@ export default function AssignTenant({ navigation, route }) {
                     <View style={styles.advanceDetailsContent}>
 
                       {/* <Text style={styles.label}>Refundable Amount </Text> */}
-                      <TextInput
+                      {/* <TextInput
                         style={[
                           styles.input,
                           refuseAdvanceAmount && styles.disabledInput,
@@ -1876,7 +1923,24 @@ export default function AssignTenant({ navigation, route }) {
                           setAdvanceError("");
                         }}
 
+                      /> */}
+
+                      <InputComponent
+                        type="number"
+                        value={advanceAmount}
+                        placeholder="Enter Amount"
+                        keyboardType="numeric"
+                        editable={!refuseAdvanceAmount}
+                        disabled={refuseAdvanceAmount}
+                        onChangeText={(text) => {
+                          const onlyNum = text.replace(/[^0-9]/g, "");
+                          setAdvanceAmount(onlyNum);
+                          setAdvanceError("");
+                        }}
+                        error={!!advanceError}
                       />
+
+
                       {advanceError && (
                         <ErrorMessage message={advanceError} type="error" />
                       )}

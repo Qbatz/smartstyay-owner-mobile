@@ -7,14 +7,10 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.media.RingtoneManager;
-import android.os.Build;
 import android.util.Log;
 
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -27,15 +23,13 @@ public class FirebaseServices extends FirebaseMessagingService {
 
     private static final String CHANNEL_ID = "smartstay_notifications";
 
-
     @Override
-    public void onNewToken(@Nonnull String token){
+    public void onNewToken(@Nonnull String token) {
         super.onNewToken(token);
         Log.e("token ----->", token);
-        System.out.println(token);
 
-        SharedPreferences mpref=getSharedPreferences("user_details", Context.MODE_PRIVATE);
-        SharedPreferences.Editor edt=mpref.edit();
+        SharedPreferences mpref = getSharedPreferences("user_details", Context.MODE_PRIVATE);
+        SharedPreferences.Editor edt = mpref.edit();
         edt.putString("token", token);
         edt.putBoolean("is_token_set", false);
         edt.apply();
@@ -45,21 +39,21 @@ public class FirebaseServices extends FirebaseMessagingService {
     public void onMessageReceived(@Nonnull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        Log.e("FirebaseMessafing--->>",remoteMessage.getData().toString());
+        Map<String, String> data = remoteMessage.getData();
+        Log.e("FirebaseMessaging--->>", data.toString());
 
         String title = "SmartStay";
         String description = "You have a new notification";
 
-        if (remoteMessage.getData() != null) {
-            Map<String, String> data = remoteMessage.getData();
-            if (data.containsKey("type")) {
-                String type = data.get("type");
-                if (type != null && type.equalsIgnoreCase(NotificationType.COMPLAINTS_RAISED.name())) {
-
+        if (data.containsKey("type")) {
+            String type = data.get("type");
+            if (type != null && type.equalsIgnoreCase(NotificationType.COMPLAINTS_RAISED.name())) {
+                if (data.get("title") != null) {
                     title = data.get("title");
+                }
+                if (data.get("description") != null) {
                     description = data.get("description");
                 }
-
             }
         }
 
@@ -91,20 +85,21 @@ public class FirebaseServices extends FirebaseMessagingService {
         NotificationManager manager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-        manager.notify((int) System.currentTimeMillis(), notification);
+        if (manager != null) {
+            manager.notify((int) System.currentTimeMillis(), notification);
+        }
     }
 
     private void createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    "SmartStay Notifications",
-                    NotificationManager.IMPORTANCE_HIGH
-            );
-            channel.setDescription("SmartStay alerts and updates");
+        NotificationChannel channel = new NotificationChannel(
+                CHANNEL_ID,
+                "SmartStay Notifications",
+                NotificationManager.IMPORTANCE_HIGH
+        );
+        channel.setDescription("SmartStay alerts and updates");
 
-            NotificationManager manager =
-                    getSystemService(NotificationManager.class);
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        if (manager != null) {
             manager.createNotificationChannel(channel);
         }
     }
