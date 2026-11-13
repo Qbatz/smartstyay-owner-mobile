@@ -222,7 +222,19 @@ export default function ExpensesList({ navigation }) {
         setAmountDropdownVisible((v) => !v);
     };
 
+    // const [showStatusFilter, setShowStatusFilter] = useState(false);
+    // const [tempPaymentStatus, setTempPaymentStatus] = useState("");
+
     const [hasActiveFilter, setHasActiveFilter] = useState(false);
+
+    const [showStatusFilter, setShowStatusFilter] = useState(false);
+    const [tempPaymentStatus, setTempPaymentStatus] = useState([]);
+
+    const [showCategoryFilter, setShowCatergoryFilter] = useState(false);
+    const [tempQuickCategory, setTempQuickCategory] = useState([]);
+
+    const [selectedCategory, setSelectedCategory] = useState([]);
+    const [paymentStatus, setPaymentStatus] = useState([]);
 
 
     const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -235,9 +247,9 @@ export default function ExpensesList({ navigation }) {
 
     const [searchText, setSearchText] = useState("");
     const [searchOpen, setSearchOpen] = useState(false);
-    const [showCategoryFilter, setShowCatergoryFilter] = useState(false)
+    // const [showCategoryFilter, setShowCatergoryFilter] = useState(false)
     const [tempCatgory, setTempCategory] = useState("")
-    const [selectedCategory, setSelectedCategory] = useState([])
+    // const [selectedCategory, setSelectedCategory] = useState([])
     const [selectedVendor, setSelectedVendor] = useState([])
     const [paymentMode, setPaymentMode] = useState([])
     const [selectedCreatedBy, setSelectedCreatedBy] = useState([])
@@ -346,7 +358,7 @@ export default function ExpensesList({ navigation }) {
     ];
     const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
     const [activeDropdown, setActiveDropdown] = useState(null)
-    const [paymentStatus, setPaymentStatus] = useState([])
+    // const [paymentStatus, setPaymentStatus] = useState([])
     const [showMoreFilterOptions, setShowMoreFilterOption] = useState(true)
     const translateY = useRef(new Animated.Value(0)).current;
     const panResponder = useRef(
@@ -441,6 +453,24 @@ export default function ExpensesList({ navigation }) {
             //   vendor: item,
         })
 
+    };
+
+    const handleApplyStatus = async () => {
+        setShowStatusFilter(false);
+
+        await applyToFilter({
+            newCategory: selectedCategory,
+            newPaymentStatus: tempPaymentStatus,
+        });
+    };
+
+    const handleApplyCategory = async () => {
+        setShowCatergoryFilter(false);
+
+        await applyToFilter({
+            newCategory: tempQuickCategory,
+            newPaymentStatus: paymentStatus,
+        });
     };
 
     const totalExpense =
@@ -619,6 +649,23 @@ export default function ExpensesList({ navigation }) {
         value: item?.type,
     }))
 
+    const getSelectedLabels = (options = [], selectedValues = []) => {
+        return options
+            ?.filter(option => selectedValues.includes(option.value))
+            ?.map(option => option.label)
+            ?.join(", ");
+    };
+
+    const selectedStatusLabel = getSelectedLabels(
+        paymentStatusOptions,
+        paymentStatus
+    );
+
+    const selectedCategoryLabel = getSelectedLabels(
+        CategoryOptions,
+        selectedCategory
+    );
+
 
     const renderExpensesItem = ({ item }) => (
         <TouchableOpacity
@@ -678,50 +725,137 @@ export default function ExpensesList({ navigation }) {
     console.log("silaana", formatDate(fromDate))
     console.log(toDate)
 
+    // const applyToFilter = async ({
+    //     newCategory = selectedCategory ?? tempCatgory,
+    //     newPaymentStatus = paymentStatus,
+    //     newVendor = selectedVendor,
+    //     newPaymentMode = paymentMode,
+    //     newCreatedBy = selectedCreatedBy,
+    // } = {}) => {
+
+    //     const finalCategory = newCategory.length ? newCategory : tempCatgory
+
+    //     const filters = {
+    //         categoryId: finalCategory?.length ? finalCategory : undefined,
+    //         paymentStatus: newPaymentStatus?.length ? newPaymentStatus : undefined,
+    //         vendorId: newVendor?.length ? newVendor : undefined,
+    //         paymentMode: newPaymentMode?.length ? newPaymentMode : undefined,
+    //         createdBy: newCreatedBy?.length ? newCreatedBy : undefined,
+    //         subCategoryId: selectedSubCategory?.length ? selectedSubCategory : undefined,
+    //         startDate: fromDate ? formatDate(fromDate) : undefined,
+    //         endDate: toDate ? formatDate(toDate) : undefined,
+    //         period: selectedMonth ? selectedMonth : undefined,
+    //         minAmount: minAmount || undefined,
+    //         maxAmount: maxAmount || undefined,
+    //     }
+
+    //     const hasFilter =
+    //         !!searchText.trim() ||
+    //         !!finalCategory?.length ||
+    //         !!newPaymentStatus?.length ||
+    //         !!newVendor?.length ||
+    //         !!newPaymentMode?.length ||
+    //         !!newCreatedBy?.length ||
+    //         !!selectedSubCategory?.length ||
+    //         !!fromDate ||
+    //         !!toDate ||
+    //         !!selectedMonth ||
+    //         !!minAmount ||
+    //         !!maxAmount;
+
+    //     setHasActiveFilter(hasFilter);
+
+    //     const res = await GetExpenseList(activeHostelId, filters)
+
+    // }
+
+
     const applyToFilter = async ({
-        newCategory = selectedCategory ?? tempCatgory,
+        newCategory = selectedCategory,
         newPaymentStatus = paymentStatus,
-        newVendor = selectedVendor,
-        newPaymentMode = paymentMode,
-        newCreatedBy = selectedCreatedBy,
     } = {}) => {
 
-        const finalCategory = newCategory.length ? newCategory : tempCatgory
+        const finalCategory = Array.isArray(newCategory)
+            ? newCategory
+            : [];
+
+        const finalStatus = Array.isArray(newPaymentStatus)
+            ? newPaymentStatus
+            : [];
 
         const filters = {
-            categoryId: finalCategory?.length ? finalCategory : undefined,
-            paymentStatus: newPaymentStatus?.length ? newPaymentStatus : undefined,
-            vendorId: newVendor?.length ? newVendor : undefined,
-            paymentMode: newPaymentMode?.length ? newPaymentMode : undefined,
-            createdBy: newCreatedBy?.length ? newCreatedBy : undefined,
-            subCategoryId: selectedSubCategory?.length ? selectedSubCategory : undefined,
+            categoryId: finalCategory.length ? finalCategory : undefined,
+            paymentStatus: finalStatus.length ? finalStatus : undefined,
+            vendorId: selectedVendor.length ? selectedVendor : undefined,
+            paymentMode: paymentMode.length ? paymentMode : undefined,
+            createdBy: selectedCreatedBy.length ? selectedCreatedBy : undefined,
+            subCategoryId: selectedSubCategory.length
+                ? selectedSubCategory
+                : undefined,
             startDate: fromDate ? formatDate(fromDate) : undefined,
             endDate: toDate ? formatDate(toDate) : undefined,
-            period: selectedMonth ? selectedMonth : undefined,
+            period: selectedMonth || undefined,
             minAmount: minAmount || undefined,
             maxAmount: maxAmount || undefined,
-        }
+            page: 1,
+            size: 10,
+        };
 
         const hasFilter =
             !!searchText.trim() ||
-            !!finalCategory?.length ||
-            !!newPaymentStatus?.length ||
-            !!newVendor?.length ||
-            !!newPaymentMode?.length ||
-            !!newCreatedBy?.length ||
-            !!selectedSubCategory?.length ||
+            finalCategory.length > 0 ||
+            finalStatus.length > 0 ||
+            selectedVendor.length > 0 ||
+            paymentMode.length > 0 ||
+            selectedCreatedBy.length > 0 ||
+            selectedSubCategory.length > 0 ||
             !!fromDate ||
             !!toDate ||
             !!selectedMonth ||
             !!minAmount ||
             !!maxAmount;
 
+        setSelectedCategory(finalCategory);
+        setPaymentStatus(finalStatus);
         setHasActiveFilter(hasFilter);
+        setExpensesPage(1);
+        setHasMoreExpense(true);
 
-        const res = await GetExpenseList(activeHostelId, filters)
+        await GetExpenseList(activeHostelId, filters);
+    };
 
-    }
 
+    // const handleResetFilter = () => {
+    //     setSearchText("");
+    //     setSearchOpen(false);
+
+    //     setSelectedCategoryId([]);
+    //     setSelectedCategory([]);
+    //     setTempCategory("");
+    //     setSelectedVendor([]);
+    //     setPaymentMode([]);
+    //     setSelectedCreatedBy([]);
+    //     setPaymentStatus([]);
+    //     setSelectedSubCategory([]);
+    //     setSelectedMonth("");
+
+    //     setFromDate(undefined);
+    //     setToDate(undefined);
+    //     setMinAmount(null);
+    //     setMaxAmount(null);
+
+    //     setShowFilter(false);
+    //     setShowCatergoryFilter(false);
+    //     setErrorMsg("");
+    //     setHasActiveFilter(false);
+
+    //     if (activeHostelId) {
+    //         GetExpenseList(activeHostelId, {
+    //             page: 1,
+    //             size: 10,
+    //         });
+    //     }
+    // }
 
     const handleResetFilter = () => {
         setSearchText("");
@@ -729,23 +863,32 @@ export default function ExpensesList({ navigation }) {
 
         setSelectedCategoryId([]);
         setSelectedCategory([]);
-        setTempCategory("");
+        setTempQuickCategory([]);
+
+        setPaymentStatus([]);
+        setTempPaymentStatus([]);
+
         setSelectedVendor([]);
         setPaymentMode([]);
         setSelectedCreatedBy([]);
-        setPaymentStatus([]);
         setSelectedSubCategory([]);
-        setSelectedMonth("");
 
+        setSelectedMonth("");
         setFromDate(undefined);
         setToDate(undefined);
+
         setMinAmount(null);
         setMaxAmount(null);
 
-        setShowFilter(false);
-        setShowCatergoryFilter(false);
         setErrorMsg("");
         setHasActiveFilter(false);
+
+        setShowFilter(false);
+        setShowStatusFilter(false);
+        setShowCatergoryFilter(false);
+
+        setExpensesPage(1);
+        setHasMoreExpense(true);
 
         if (activeHostelId) {
             GetExpenseList(activeHostelId, {
@@ -753,7 +896,7 @@ export default function ExpensesList({ navigation }) {
                 size: 10,
             });
         }
-    }
+    };
 
     console.log("paginationdetail", expensesPage, hasMoreExpense)
 
@@ -920,7 +1063,7 @@ export default function ExpensesList({ navigation }) {
 
 
 
-                {!loading && Expensesdata?.length === 0 ? (
+                {!loading && Expensesdata?.length === 0 && !hasActiveFilter ? (
                     <View style={styles.emptyContainer}>
                         <Image
                             source={EmptyState}
@@ -1086,36 +1229,141 @@ export default function ExpensesList({ navigation }) {
                                     </ScrollView>
 
                                     <View style={styles.filterRow}>
-                                        <View style={{ display: 'flex', flexDirection: 'row' }}>
-                                            <TouchableOpacity style={styles.filterChipActive}
-                                                onPress={() => setShowFilter(true)}>
-                                                <Text style={styles.filterChipTextActive}>All</Text>
+
+                                        <View style={{ flexDirection: "row", gap: 5 }}>
+
+                                            {/* STATUS */}
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.filterChip,
+                                                    paymentStatus.length > 0 && styles.filterChipActive
+                                                ]}
+                                                onPress={() => {
+                                                    setTempPaymentStatus(paymentStatus);
+                                                    setShowStatusFilter(true);
+                                                }}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        styles.filterChipText,
+                                                        paymentStatus.length > 0 &&
+                                                        styles.filterChipTextActive
+                                                    ]}
+                                                    numberOfLines={1}
+                                                >
+                                                    {selectedStatusLabel || "Status"}
+                                                </Text>
+
+                                                <Image
+                                                    source={DownArrow}
+                                                    style={[
+                                                        styles.chipArrow,
+                                                        paymentStatus.length > 0 && {
+                                                            tintColor: "#1677FF"
+                                                        }
+                                                    ]}
+                                                />
                                             </TouchableOpacity>
 
-                                            <TouchableOpacity onPress={() => setShowCatergoryFilter(true)}
-                                                style={styles.filterChip}>
-                                                <Text style={styles.filterChipText}>Category</Text>
+                                            {/* CATEGORY */}
+                                            <TouchableOpacity
+                                                style={[
+                                                    styles.filterChip,
+                                                    selectedCategory.length > 0 && styles.filterChipActive
+                                                ]}
+                                                onPress={() => {
+                                                    setTempQuickCategory(selectedCategory);
+                                                    setShowCatergoryFilter(true);
+                                                }}
+                                            >
+                                                <Text
+                                                    style={[
+                                                        styles.filterChipText,
+                                                        selectedCategory.length > 0 &&
+                                                        styles.filterChipTextActive
+                                                    ]}
+                                                    numberOfLines={1}
+                                                >
+                                                    {selectedCategoryLabel || "Category"}
+                                                </Text>
+
+                                                <Image
+                                                    source={DownArrow}
+                                                    style={[
+                                                        styles.chipArrow,
+                                                        selectedCategory.length > 0 && {
+                                                            tintColor: "#1677FF"
+                                                        }
+                                                    ]}
+                                                />
                                             </TouchableOpacity>
+
                                         </View>
 
                                         <TouchableOpacity
                                             style={styles.filterIconBtn}
                                             onPress={() => setShowFilter(true)}
                                         >
-                                            <Image source={FilterIcon} style={{ width: 18, height: 18 }} />
+                                            <Image
+                                                source={FilterIcon}
+                                                style={{ width: 18, height: 18 }}
+                                            />
                                         </TouchableOpacity>
+
                                     </View>
-                                    {hasActiveFilter && Expensesdata?.length > 0 && (
-                                        <View style={styles.resetFilterRow}>
+
+                                    {hasActiveFilter && (
+                                        <View style={styles.appliedFiltersRow}>
+
+                                            {selectedCategoryLabel ? (
+                                                <View style={styles.appliedFilterChip}>
+                                                    <Text style={styles.appliedFilterText}>
+                                                        Category is : {selectedCategoryLabel}
+                                                    </Text>
+                                                </View>
+                                            ) : null}
+
+                                            {selectedStatusLabel ? (
+                                                <View style={styles.appliedFilterChip}>
+                                                    <Text style={styles.appliedFilterText}>
+                                                        Status is : {selectedStatusLabel}
+                                                    </Text>
+                                                </View>
+                                            ) : null}
+
                                             <TouchableOpacity
                                                 onPress={handleResetFilter}
                                                 activeOpacity={0.7}
                                             >
                                                 <Text style={styles.resetFilterText}>Reset</Text>
                                             </TouchableOpacity>
+
                                         </View>
                                     )}
                                 </>
+                            }
+                            ListEmptyComponent={
+                                hasActiveFilter ? (
+                                    <View style={styles.emptyContainer}>
+                                        <Image
+                                            source={EmptyState}
+                                            style={styles.emptyImage}
+                                        />
+
+                                        <Text style={styles.emptyText}>
+                                            No Expenses found for the selected filters
+                                        </Text>
+
+                                        <TouchableOpacity
+                                            style={styles.emptyResetButton}
+                                            onPress={handleResetFilter}
+                                        >
+                                            <Text style={styles.emptyResetText}>
+                                                Reset
+                                            </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : null
                             }
                             contentContainerStyle={{
                                 paddingHorizontal: 20,
@@ -1528,33 +1776,52 @@ export default function ExpensesList({ navigation }) {
                 </View>
             </Modal>
 
+            {/* STATUS FILTER */}
+            <FilterBottomSheet
+                visible={showStatusFilter}
+                title="Payment Status"
+                options={paymentStatusOptions || []}
+                selectedValues={tempPaymentStatus}
+                setSelectedValues={setTempPaymentStatus}
+                isSingleSelect={true}
+
+                onReset={() => {
+                    setTempPaymentStatus([]);
+                    setShowStatusFilter(false);
+
+                    applyToFilter({
+                        newCategory: selectedCategory,
+                        newPaymentStatus: [],
+                    });
+                }}
+
+                onApply={handleApplyStatus}
+                onClose={() => setShowStatusFilter(false)}
+            />
+
+
+            {/* CATEGORY FILTER */}
             <FilterBottomSheet
                 visible={showCategoryFilter}
                 title="Category"
                 options={CategoryOptions || []}
-                selectedValues={tempCatgory}
-                setSelectedValues={setTempCategory}
+                selectedValues={tempQuickCategory}
+                setSelectedValues={setTempQuickCategory}
+                isSingleSelect={true}
 
-                onReset={async () => {
-
-
-                    setTempCategory("")
+                onReset={() => {
+                    setTempQuickCategory([]);
                     setShowCatergoryFilter(false);
 
-                    // applyToFilter("")
-                    handleResetFilter()
+                    applyToFilter({
+                        newCategory: [],
+                        newPaymentStatus: paymentStatus,
+                    });
                 }}
 
-                onApply={async () => {
-
-                    setShowCatergoryFilter(false);
-
-                    applyToFilter(tempCatgory)
-                }}
-
+                onApply={handleApplyCategory}
                 onClose={() => setShowCatergoryFilter(false)}
             />
-
 
 
 
@@ -2245,14 +2512,15 @@ const styles = StyleSheet.create({
     },
 
     filterIconBtn: {
-        width: 36,
+        width: 30,
         height: 36,
-        borderRadius: 18,
+        borderRadius: 15,
         // backgroundColor: "#F3F4F6",
         justifyContent: "center",
         alignItems: "center",
         borderWidth: 1,
         borderColor: "#F3F4F6",
+        marginRight:10
     },
     chipContent: {
         flexDirection: "row",
@@ -2405,6 +2673,65 @@ const styles = StyleSheet.create({
         color: "#1677FF",
         fontSize: 16,
         fontFamily: "Gilroy-Semibold",
+    },
+    appliedFiltersRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: 10,
+        marginTop: 10,
+        marginBottom: 14,
+        paddingHorizontal: 4,
+    },
+
+    appliedFilterChip: {
+        backgroundColor: "#F0F1F3",
+        borderRadius: 22,
+        paddingHorizontal: 14,
+        paddingVertical: 9,
+    },
+
+    appliedFilterText: {
+        fontSize: 13,
+        color: "#333333",
+        fontFamily: "Gilroy-Medium",
+    },
+
+    filterChip: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        borderWidth: 1,
+        borderColor: "#E5E7EB",
+        borderRadius: 22,
+        paddingHorizontal: 14,
+        paddingVertical: 10,
+        flex: 1,
+        maxWidth: "48%",
+        backgroundColor: "#FFFFFF",
+    },
+
+    filterChipActive: {
+        backgroundColor: "#EAF2FF",
+        borderColor: "#1677FF",
+    },
+
+    filterChipText: {
+        fontSize: 13,
+        color: "#374151",
+        flexShrink: 1,
+    },
+
+    filterChipTextActive: {
+        fontSize: 13,
+        color: "#1677FF",
+        fontFamily: "Gilroy-Semibold",
+    },
+
+    chipArrow: {
+        width: 14,
+        height: 14,
+        marginLeft: 6,
     },
 })
 

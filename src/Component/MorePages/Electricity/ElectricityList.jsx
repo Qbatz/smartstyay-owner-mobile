@@ -812,7 +812,8 @@ if (!canReadElectricity && !loading) {
             placeholder="Search Electricity"
             placeholderTextColor="#9CA3AF"
             style={styles.searchInput}
-            editable={canReadElectricity}
+            editable={false}
+            disabled
           />
         </View>
       </View>

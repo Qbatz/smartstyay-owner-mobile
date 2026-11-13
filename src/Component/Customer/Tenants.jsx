@@ -295,6 +295,9 @@ export default function TenantsScreen({ route }) {
       sharing
     );
 
+    console.log("customers", customers);
+    
+
     setCustomers(data || []);
   };
 

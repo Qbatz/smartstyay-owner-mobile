@@ -183,17 +183,13 @@ export default function ComplaintProvider({ children }) {
           ? { customerName: filters }
           : filters;
 
-      const params = {};
-
-      ["customerName", "status", "startDate", "endDate"].forEach(
-        (key) => {
-          const value = filterValues?.[key];
-
-          if (value !== undefined && value !== null && String(value).trim() !== "") {
-            params[key] = String(value).trim();
-          }
-        }
-      );
+      // const params = {};
+      const params = {
+        customerName: filterValues?.customerName?.trim() || "",
+        status: filterValues?.status || "",
+        startDate: filterValues?.startDate || "",
+        endDate: filterValues?.endDate || "",
+      };
 
       console.log("Complaint API params:", params);
 
@@ -201,6 +197,8 @@ export default function ComplaintProvider({ children }) {
         `/v2/complaint/all-complaints/${hostelId}`,
         { params }
       );
+
+      console.log("Complaint API response:", JSON.stringify(res.data, null, 2));
 
       // Ignore previous search response
       if (requestId !== complaintRequestId.current) {
@@ -220,7 +218,8 @@ export default function ComplaintProvider({ children }) {
           startDate: data?.startDate || null,
           endDate: data?.endDate || null,
           complaintCount: data?.complaintCount || 0,
-        });
+          filterOption : data?.filterOption
+        }); 
 
         return { success: true, data };
       }
