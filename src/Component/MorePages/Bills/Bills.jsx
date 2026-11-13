@@ -5530,16 +5530,17 @@ export default function BillsDesign({ route }) {
                             </Text>
                           </View>
 
-                          <View style={styles.tableHeader}>
+                         
+
+
+                          {showAdditionalAdvance && (<>
+                             <View style={styles.tableHeader}>
                             <Text style={[styles.th, { flex: 1 }]}>Inv No</Text>
                             {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
                             <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
                               Amount
                             </Text>
                           </View>
-
-
-                          {showAdditionalAdvance && (
                             <View style={styles.accordionBody}>
                               {BillPdfdetails?.additionalAdvanceItems?.additionalAdvanceItems?.length > 0 ? (
                                 BillPdfdetails?.additionalAdvanceItems?.additionalAdvanceItems?.map((item, index) => (
@@ -5574,6 +5575,7 @@ export default function BillsDesign({ route }) {
                                 </View>
                               )}
                             </View>
+                            </>
                           )}
                         </TouchableOpacity>
 

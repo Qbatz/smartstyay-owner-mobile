@@ -29,6 +29,9 @@ import ChangeStatus from "../Complaints/ComplianceStatus";
 import LeftArrow from "../../Assets/Images/Arrow_left.png"
 import SearchIcon from "../../Assets/Images/SearchIcon.png";
 import { useHideTabbarOnScroll } from "../../Utils/useHideTabbarOnScroll"
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DateRangePicker from "../MorePages/DateRangePickerComponent";
+import dayjs from "dayjs";
 
 export default function Complaints({ route }) {
 
@@ -60,13 +63,16 @@ export default function Complaints({ route }) {
 
   const [searchText, setSearchText] = useState("");
 
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [dateRangeError, setDateRangeError] = useState("");
 
 
 
   // const { setShowTabBar } = route.params
   const navigation = useNavigation();
   const [showFilter, setShowFilter] = useState(false);
-  const [status, setStatus] = useState("All");
+  const [status, setStatus] = useState("");
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [users, setUsers] = useState([])
 
@@ -76,6 +82,18 @@ export default function Complaints({ route }) {
 
   const lastScrollY = useRef(0);
   const isTabBarVisible = useRef(true);
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    status: "",
+    startDate: null,
+    endDate: null,
+  });
+
+  const hasAppliedFilters = Boolean(
+    appliedFilters.status ||
+    appliedFilters.startDate ||
+    appliedFilters.endDate
+  );
 
   // const {handleScroll} =useHideTabbarOnScroll(setShowTabBar);
 
@@ -230,10 +248,92 @@ export default function Complaints({ route }) {
     return date;
   };
 
+  const statusOptions = (
+    complaintListOtherDetails?.filterOption?.status || []
+  ).map((item) => ({
+    label: item?.name,
+    value: item?.type,
+  }));
+
+  console.log("complaintListOtherDetails", complaintListOtherDetails);
+
+
+  const handleApplyFilters = () => {
+    const hasStartDate = !!startDate;
+    const hasEndDate = !!endDate;
+
+    // Only one date selected
+    if (hasStartDate && !hasEndDate) {
+      setDateRangeError("Please select End Date.");
+      return;
+    }
+
+    if (!hasStartDate && hasEndDate) {
+      setDateRangeError("Please select Start Date.");
+      return;
+    }
+
+    // Invalid date range
+    if (
+      startDate &&
+      endDate &&
+      dayjs(endDate).isBefore(dayjs(startDate), "day")
+    ) {
+      setDateRangeError("End Date cannot be before Start Date.");
+      return;
+    }
+
+    setDateRangeError("");
+
+    const nextFilters = {
+      status,
+      startDate,
+      endDate,
+    };
+
+    setAppliedFilters(nextFilters);
+
+    const filterParams = {
+      customerName: searchText.trim(),
+      ...(status && { status }),
+      ...(startDate && {
+        startDate: dayjs(startDate).format("DD/MM/YYYY"),
+      }),
+      ...(endDate && {
+        endDate: dayjs(endDate).format("DD/MM/YYYY"),
+      }),
+    };
+
+    GetComplaintListDetails(
+      activeHostelId,
+      filterParams,
+      { showLoader: true }
+    );
+
+    closeFilterSheet();
+  };
 
   const handleReset = () => {
-    setStatus("All")
-  }
+    setStatus("");
+    setStartDate(null);
+    setEndDate(null);
+
+    setAppliedFilters({
+      status: "",
+      startDate: null,
+      endDate: null,
+    });
+
+    GetComplaintListDetails(
+      activeHostelId,
+      {
+        customerName: searchText.trim(),
+      },
+      { showLoader: true }
+    );
+
+    closeFilterSheet();
+  };
 
   const handleComplaintDetails = async (item) => {
     setSelectedComplaint(item);
@@ -542,7 +642,7 @@ export default function Complaints({ route }) {
       <View style={styles.container}>
 
         {/* Header */}
-        <View style={styles.headerRow}>
+        {/* <View style={styles.headerRow}>
           {complaintsList?.length === 0 && (
             <>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -556,10 +656,9 @@ export default function Complaints({ route }) {
                 <Text style={styles.headerTitle}>Complaints</Text>
               </View>
             </>
-            // ) : (
-            //   <Text style={styles.headerTitle}>Complaints</Text>
+           
           )}
-        </View>
+        </View> */}
 
 
         {/* Search Box */}
@@ -567,57 +666,97 @@ export default function Complaints({ route }) {
 
 
         {/* {!loading && complaintsList && complaintsList?.length > 0 && */}
-      
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-              <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6 }} />
-            </TouchableOpacity>
 
-        
+        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 10 }}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Image source={LeftArrow} style={{ width: 20, height: 20, marginRight: 6, marginBottom: 6 }} />
+          </TouchableOpacity>
 
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                marginBottom: 15,
-              }}
-            >
-             
 
-              <View style={[styles.searchBox, { flex: 1 }]}>
-                <Image
-                  source={SearchIcon}
-                  style={styles.searchIcon}
-                />
 
-                <TextInput
-                  placeholder="Search Complaints"
-                  placeholderTextColor="#9CA3AF"
-                  style={styles.searchInput}
-                  value={searchText}
-                  onChangeText={setSearchText}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  returnKeyType="search"
-                  clearButtonMode="while-editing"
-                />
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginBottom: 15,
+            }}
+          >
 
-                {Platform.OS === "android" && searchText.length > 0 && (
-                  <TouchableOpacity
-                    onPress={() => setSearchText("")}
-                    hitSlop={10}
-                  >
-                    <Text style={{ color: "#777", fontSize: 20 }}>
-                      ×
-                    </Text>
-                  </TouchableOpacity>
-                )}
-              </View>
+
+            <View style={[styles.searchBox, { flex: 1, marginRight: 10 }]}>
+              <Image
+                source={SearchIcon}
+                style={styles.searchIcon}
+              />
+
+              <TextInput
+                placeholder="Search Complaints"
+                placeholderTextColor="#9CA3AF"
+                style={styles.searchInput}
+                value={searchText}
+                onChangeText={setSearchText}
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+                clearButtonMode="while-editing"
+              // editable={false}
+              />
+
+              {Platform.OS === "android" && searchText.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearchText("")}
+                  hitSlop={10}
+                >
+                  <Text style={{ color: "#777", fontSize: 20 }}>
+                    ×
+                  </Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
+        </View>
 
-          
-        
+        {/* APPLIED FILTERS */}
+        {hasAppliedFilters && (
+          <View style={styles.appliedFiltersContainer}>
+            <View style={styles.appliedHeader}>
+              <Text style={styles.appliedTitle}>
+                Applied Filters
+              </Text>
+
+              <TouchableOpacity onPress={handleReset}>
+                <Text style={styles.resetFilterText}>Reset </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.appliedChips}>
+              {appliedFilters.status ? (
+                <View style={styles.filterChip}>
+                  <Text style={styles.filterChipText}>
+                    {statusOptions.find(
+                      item => item.value === appliedFilters.status
+                    )?.label || appliedFilters.status}
+                  </Text>
+                </View>
+              ) : null}
+
+              {(appliedFilters.startDate || appliedFilters.endDate) && (
+                <View style={styles.filterChip}>
+                  <Text style={styles.filterChipText}>
+                    {appliedFilters.startDate
+                      ? dayjs(appliedFilters.startDate).format("DD MMM YYYY")
+                      : "Start Date"}
+                    {" - "}
+                    {appliedFilters.endDate
+                      ? dayjs(appliedFilters.endDate).format("DD MMM YYYY")
+                      : "End Date"}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
 
         {!loading && complaintsList && complaintsList?.length > 0 && (
           <FlatList
@@ -630,30 +769,49 @@ export default function Complaints({ route }) {
             // onScroll={handleScroll}
             scrollEventThrottle={16}
           />)}
-
-        {!loading && complaintsList && complaintsList?.length === 0 && (
+        {!loading && complaintsList?.length === 0 && (
           <View style={styles.centerContainer}>
             <Image source={EmptyState} style={styles.image} />
+
             <Text style={styles.nodataText}>
-              {searchText.trim()
-                ? "No complaints found for this customer."
-                : "Complaints from tenants will appear here."}</Text>
-            <TouchableOpacity style={[
-              styles.addcomplaintBtn,
-              !canWriteComplaints && { opacity: 0.6 }
-            ]}
-              disabled={!canWriteComplaints} onPress={handleAddComplaint}>
-              <Text style={styles.addComplaintText}>+ Add Complaint</Text>
+              {hasAppliedFilters
+                ? "No complaints found for the selected filters."
+                : searchText.trim()
+                  ? "No complaints found for this customer."
+                  : "Complaints from tenants will appear here."}
+            </Text>
+
+            {hasAppliedFilters && (
+              <TouchableOpacity
+                style={styles.emptyResetBtn}
+                onPress={handleReset}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.emptyResetText}>
+                  Reset Filters
+                </Text>
+              </TouchableOpacity>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.addcomplaintBtn,
+                !canWriteComplaints && { opacity: 0.6 }
+              ]}
+              disabled={!canWriteComplaints}
+              onPress={handleAddComplaint}
+            >
+              <Text style={styles.addComplaintText}>
+                + Add Complaint
+              </Text>
             </TouchableOpacity>
-
-
           </View>
         )}
 
         {!loading && complaintsList && complaintsList?.length > 0 &&
           <>
 
-            {/* <TouchableOpacity style={[
+            <TouchableOpacity style={[
               styles.filterBtn,
               !canReadComplaints && { opacity: 0.4 }
             ]} disabled={!canReadComplaints} onPress={() => setShowFilter(true)}>
@@ -662,7 +820,7 @@ export default function Complaints({ route }) {
                 style={{ width: 25, height: 25 }}
               />
 
-            </TouchableOpacity> */}
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[
@@ -751,37 +909,40 @@ export default function Complaints({ route }) {
                 </View>
               </View>
 
-              {/* STATUS DROPDOWN */}
-              <Text style={styles.label}>Status</Text>
-              <View style={{ position: "relative" }}>
-                <TouchableOpacity
-                  style={styles.dropdownBox}
-                  onPress={() => setShowStatusDropdown(!showStatusDropdown)}
-                >
-                  <Text style={styles.dropdownText}>{status}</Text>
-                  <Text style={styles.arrow}>⌄</Text>
-                </TouchableOpacity>
+              <DropdownComponent
+                label="Status"
+                placeholder="Select Status"
+                options={statusOptions}
+                value={status}
+                onChange={setStatus}
+                searchable={false}
+                emptyText="No status available"
+              />
 
-                {showStatusDropdown && (
-                  <View style={styles.dropdownMenu}>
-                    <ScrollView nestedScrollEnabled={true}>
-                      {["All", "Active", "In-Active", "Checked Out", "Notice"].map(
-                        (v) => (
-                          <TouchableOpacity
-                            key={v}
-                            style={styles.dropdownItem}
-                            onPress={() => {
-                              setStatus(v);
-                              setShowStatusDropdown(false);
-                            }}
-                          >
-                            <Text style={styles.dropdownItemText}>{v}</Text>
-                          </TouchableOpacity>
-                        )
-                      )}
-                    </ScrollView>
-                  </View>
-                )}
+              <View style={{ marginTop: 20 }}>
+                <DateRangePicker
+                  // label="Date Range"
+                  startLabel="Start"
+                  endLabel="End"
+
+                  startDate={startDate}
+                  endDate={endDate}
+
+                  onStartDateChange={(date) => {
+                    setStartDate(date);
+                    setDateRangeError("");
+                  }}
+
+                  onEndDateChange={(date) => {
+                    setEndDate(date);
+                    setDateRangeError("");
+                  }}
+                  startPlaceholder="Start Date"
+                  endPlaceholder="End Date"
+
+                  displayFormat="DD MMM YYYY"
+                  error={dateRangeError}
+                />
               </View>
 
               <View style={{ height: 100 }} />
@@ -792,7 +953,10 @@ export default function Complaints({ route }) {
                   <Text style={styles.resetText}>Reset All</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.applyBtn}>
+                <TouchableOpacity
+                  style={styles.applyBtn}
+                  onPress={handleApplyFilters}
+                >
                   <Text style={styles.applyText}>Apply</Text>
                 </TouchableOpacity>
               </View>
@@ -843,7 +1007,7 @@ const styles = StyleSheet.create({
     height: 44,
   },
 
-  searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10 },
+  searchIcon: { width: 20, height: 20, tintColor: "#9B9B9B", marginRight: 10, },
   searchInput: {
     flex: 1,
     fontSize: 15,
@@ -873,15 +1037,26 @@ const styles = StyleSheet.create({
   time: { fontSize: 10, color: "#9C9C9C", fontFamily: "Gilroy-Regular" },
   status: { marginTop: 6, fontSize: 14, fontFamily: "Gilroy-Semibold" },
 
-  filterBtn: {
-    position: "absolute",
-    bottom: 150,
-    right: 30,
-    backgroundColor: "#fff",
-    padding: 12,
-    borderRadius: 30,
-    elevation: 5,
+ filterBtn: {
+  position: "absolute",
+  bottom: 150,
+  right: 30,
+  backgroundColor: "#FFFFFF",
+  padding: 12,
+  borderRadius: 30,
+
+  elevation: 6,
+
+  shadowColor: "#000000",
+  shadowOffset: {
+    width: 0,
+    height: 3,
   },
+  shadowOpacity: 0.20,
+  shadowRadius: 5,
+
+  // zIndex: 10,
+},
 
   addBtn: {
     position: "absolute",
@@ -1121,7 +1296,69 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold",
     color: "#4B5563",
   },
+  // Applied Filters
 
+  appliedFiltersContainer: {
+    marginBottom: 12,
+  },
+
+  appliedHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+
+  appliedTitle: {
+    fontSize: 14,
+    color: "#18181B",
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  resetFilterText: {
+    fontSize: 13,
+    color: "#0066E5",
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  appliedChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+
+  filterChip: {
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+  },
+
+  filterChipText: {
+    fontSize: 12,
+    color: "#2563EB",
+    fontFamily: "Gilroy-Medium",
+  },
+
+  // Empty State Reset
+
+  emptyResetBtn: {
+    marginTop: 18,
+    paddingHorizontal: 24,
+    paddingVertical: 11,
+    borderRadius: 10,
+    backgroundColor: "#EFF6FF",
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+  },
+
+  emptyResetText: {
+    fontSize: 14,
+    color: "#0066E5",
+    fontFamily: "Gilroy-Semibold",
+  },
 
 
 });

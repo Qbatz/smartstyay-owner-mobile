@@ -796,34 +796,116 @@ export default function NewBankingList() {
 
 
 
-  const mappedBankList = (
-    Array.isArray(newtransactionList?.bankV2Lists) ? newtransactionList?.bankV2Lists : []).map((item) => {
+  // const mappedBankList = (
+  //   Array.isArray(newtransactionList?.bankV2Lists) ? newtransactionList?.bankV2Lists : []).map((item) => {
+  //     const accountType = String(item?.accountType || "").toUpperCase();
+  //     const cardType = String(item?.cardType || "").toUpperCase();
+
+  //     const isBank = accountType === "BANK";
+  //     const isCard = accountType === "CARD";
+  //     const isCreditCard = isCard && cardType === "CREDIT_CARD";
+  //     const isDebitCard = isCard && cardType === "DEBIT_CARD";
+  //     const isCash = accountType === "CASH";
+  //     const isUpi = accountType === "UPI";
+
+  //     return {
+  //       id: item?.bankId,
+
+  //       type: isCard ? "CARD" : accountType,
+
+  //       title: isBank
+  //         ? `${item?.bankName || "Bank"} - ${item?.displayName || ""}`.trim()
+  //         : isCard
+  //           ? `${item?.displayName || "Card"} - ${isCreditCard ? "Credit Card" : "Debit Card"
+  //           }`
+  //           : isCash
+  //             ? item?.cashAccountType || item?.displayName || "Cash"
+  //             : isUpi
+  //               ? item?.displayName || item?.upiId || "UPI"
+  //               : item?.displayName || "Account",
+
+  //       subtitle: isBank
+  //         ? "Bank Account"
+  //         : isCard
+  //           ? "Card Account"
+  //           : isCash
+  //             ? "Cash Account"
+  //             : isUpi
+  //               ? "UPI"
+  //               : accountType,
+
+  //       name: item?.accountHolder || "",
+  //       acc: isBank
+  //         ? item?.accountNumber || ""
+  //         : isCard
+  //           ? item?.cardNumber || ""
+  //           : isUpi
+  //             ? item?.upiId || ""
+  //             : "",
+
+  //       balance: Number(item?.balance ?? 0),
+
+  //       branch: item?.branchName || "",
+  //       bankName: item?.bankName || "",
+  //       displayName: item?.displayName || "",
+  //       ResponsiblePerson: item?.responsiblePerson || "",
+
+  //       isDefaultAccount: item?.isDefaultAccount,
+  //       lastTransactionDate: item?.lastTransactionDate ?? null,
+  //       dueDate: item?.dueDate ?? null,
+
+  //       cardType: item?.cardType || null,
+  //       paymentMethod: item?.paymentMethod || null,
+  //       isDebitcardtrue: isDebitCard,
+  //       isCreditCard,
+
+  //       Icon: isBank
+  //         ? BankIcon
+  //         : isCash
+  //           ? CashIcon
+  //           : isCard
+  //             ? CardIcon
+  //             : isUpi
+  //               ? UpiIcon
+  //               : BankIcon,
+
+  //       raw: item,
+  //     };
+  //   });
+
+  const bankSource = Array.isArray(bankList)
+    ? bankList
+    : Array.isArray(bankList?.bankV2Lists)
+      ? bankList.bankV2Lists
+      : Array.isArray(bankList?.data?.bankV2Lists)
+        ? bankList.data.bankV2Lists
+        : Array.isArray(newtransactionList?.bankV2Lists)
+          ? newtransactionList.bankV2Lists
+          : [];
+
+  const mappedBankList = bankSource
+    .filter(item => item && item.bankId)
+    .map(item => {
       const accountType = String(item?.accountType || "").toUpperCase();
       const cardType = String(item?.cardType || "").toUpperCase();
 
       const isBank = accountType === "BANK";
       const isCard = accountType === "CARD";
-      const isCreditCard = isCard && cardType === "CREDIT_CARD";
-      const isDebitCard = isCard && cardType === "DEBIT_CARD";
       const isCash = accountType === "CASH";
       const isUpi = accountType === "UPI";
 
       return {
-        // Use the ID returned by the new banking API
-        id: item?.bankId,
-
-        type: isCard ? "CARD" : accountType,
+        id: item.bankId,
+        type: accountType,
 
         title: isBank
-          ? `${item?.bankName || "Bank"} - ${item?.displayName || ""}`.trim()
+          ? `${item.bankName || "Bank"} - ${item.displayName || ""}`.trim()
           : isCard
-            ? `${item?.displayName || "Card"} - ${isCreditCard ? "Credit Card" : "Debit Card"
+            ? `${item.displayName || "Card"} - ${cardType === "CREDIT_CARD" ? "Credit Card" : "Debit Card"
             }`
             : isCash
-              ? item?.cashAccountType || item?.displayName || "Cash"
-              : isUpi
-                ? item?.displayName || item?.upiId || "UPI"
-                : item?.displayName || "Account",
+              ? item.cashAccountType || item.displayName || "Cash"
+              : item.displayName || item.upiId || "UPI",
 
         subtitle: isBank
           ? "Bank Account"
@@ -831,36 +913,29 @@ export default function NewBankingList() {
             ? "Card Account"
             : isCash
               ? "Cash Account"
-              : isUpi
-                ? "UPI"
-                : accountType,
+              : "UPI",
 
-        // New API field names
-        name: item?.accountHolder || "",
+        name: item.accountHolder || "",
         acc: isBank
-          ? item?.accountNumber || ""
+          ? item.accountNumber || ""
           : isCard
-            ? item?.cardNumber || ""
+            ? item.cardNumber || ""
             : isUpi
-              ? item?.upiId || ""
+              ? item.upiId || ""
               : "",
 
-        balance: Number(item?.balance ?? 0),
-
-        branch: item?.branchName || "",
-        bankName: item?.bankName || "",
-        displayName: item?.displayName || "",
-        ResponsiblePerson: item?.responsiblePerson || "",
-
-        isDefaultAccount: item?.isDefaultAccount,
-        lastTransactionDate: item?.lastTransactionDate ?? null,
-        dueDate: item?.dueDate ?? null,
-
-        // Preserve the actual card type from the response
-        cardType: item?.cardType || null,
-        paymentMethod: item?.paymentMethod || null,
-        isDebitcardtrue: isDebitCard,
-        isCreditCard,
+        balance: Number(item.balance ?? 0),
+        branch: item.branchName || "",
+        bankName: item.bankName || "",
+        displayName: item.displayName || "",
+        ResponsiblePerson: item.responsiblePerson || "",
+        isDefaultAccount: item.isDefaultAccount,
+        lastTransactionDate: item.lastTransactionDate ?? null,
+        dueDate: item.dueDate ?? null,
+        cardType: item.cardType || null,
+        paymentMethod: item.paymentMethod || null,
+        isDebitcardtrue: cardType === "DEBIT_CARD",
+        isCreditCard: cardType === "CREDIT_CARD",
 
         Icon: isBank
           ? BankIcon
@@ -868,15 +943,11 @@ export default function NewBankingList() {
             ? CashIcon
             : isCard
               ? CardIcon
-              : isUpi
-                ? UpiIcon
-                : BankIcon,
+              : UpiIcon,
 
         raw: item,
       };
     });
-
-
 
   const mappedTransactions = (newOnlyTransactionList || []).map((t) => {
     const isCredit = t.type === "CREDIT";
@@ -1059,7 +1130,7 @@ export default function NewBankingList() {
       }, 1200);
     } else {
       setAmountError(res?.message);
-    } 
+    }
   };
 
   const addBalanceTranslateY = useRef(new Animated.Value(0)).current;
@@ -1256,7 +1327,7 @@ export default function NewBankingList() {
     });
   }
 
-  
+
 
   const handleCloseAddBanking = () => {
     setAddBankingShow(false);
@@ -1514,8 +1585,7 @@ export default function NewBankingList() {
 
               ListHeaderComponent={
                 <>
-                  {/* Bank cards */}
-                  <Animated.View
+                  {/* =                  <Animated.View
                     style={{
                       height: bankListHeight,
                       opacity: bankListOpacity,
@@ -1555,7 +1625,6 @@ export default function NewBankingList() {
                             ]}
                           >
 
-                            {/* HEADER */}
                             <View style={styles.cardHeader}>
                               <View style={styles.headerLeft}>
 
@@ -1605,7 +1674,6 @@ export default function NewBankingList() {
                                 ref={(ref) => {
                                   dotsRef.current[item.id] = ref;
                                 }}
-                                // style={styles.infoButton}
                                 activeOpacity={0.7}
                                 onPress={(e) => {
                                   e.stopPropagation?.();
@@ -1619,24 +1687,228 @@ export default function NewBankingList() {
                                 />
                               </TouchableOpacity>
 
-                              {/* <TouchableOpacity
-                                style={styles.infoButton}
-                                activeOpacity={0.7}
-                                onPress={(e) => {
-                                  e.stopPropagation?.();
-
-                                  setSelectedBank(item?.raw);
-                                  setShowBankInfo(true);
-                                }}
-                              >
-                                <Text style={styles.infoIconText}>
-                                  !
-                                </Text>
-                              </TouchableOpacity> */}
+                             
 
 
                             </View>
 
+
+                            <View style={styles.balanceRow}>
+                              <Text style={styles.balanceAmount}>
+                                ₹{item?.balance?.toLocaleString("en-IN")}
+                              </Text>
+
+                              <TouchableOpacity
+                                style={styles.infoButton}
+                                activeOpacity={0.7}
+                                onPress={(e) => {
+                                  e.stopPropagation?.();
+                                  setSelectedBank(item?.raw);
+                                  setShowBankInfo(true);
+                                }}
+                              >
+                                <Text style={styles.infoIconText}>!</Text>
+                              </TouchableOpacity>
+                            </View>
+
+                            <Text style={styles.balanceLabel}>
+                              Balance
+                            </Text>
+
+                            <View style={styles.tagRow}>
+
+                              {type === "BANK" && item?.branch ? (
+                                <View style={styles.locationChip}>
+                                  <Image
+                                    source={Location}
+                                    style={styles.smallLocation}
+                                  />
+
+                                  <Text numberOfLines={1}>
+                                    {item?.branch}
+                                  </Text>
+                                </View>
+                              ) : null}
+
+                           
+                              {type === "BANK" && item?.upiId ? (
+                                <View style={styles.upiChip}>
+                                  <Text numberOfLines={1}>
+                                    UPI : {item.acc}
+                                  </Text>
+                                </View>
+                              ) : null}
+
+                              {type === "CARD" && (
+                                <View style={styles.upiChip}>
+                                  <Text numberOfLines={1}>
+                                    **** **** **** {item?.acc?.slice(-4) || "----"}
+                                  </Text>
+                                </View>
+                              )}
+
+                              {type === "CASH" && (
+                                <View style={styles.defaultChip}>
+                                  <Text style={styles.defaultChipText}>
+                                    {item?.name || item?.raw?.accountHolderName || "Cash"}
+                                  </Text>
+                                </View>
+                              )}
+
+                            </View>
+
+                           
+
+                          </TouchableOpacity>
+                        );
+                      })}
+
+                      <TouchableOpacity
+
+                        style={[
+                          styles.addNewCard,
+                          (!canWriteBanking || !isSubscriptionAllow) && {
+                            opacity: 0.4,
+                          },
+                        ]}
+                        disabled={!canWriteBanking || !isSubscriptionAllow}
+                        onPress={handleAddBanking}
+                      >
+
+                     
+
+                        <View style={styles.addIconWrapper}>
+                          <Image
+                            source={AddBankIcon}
+                            style={styles.addIcon}
+                            resizeMode="contain"
+                          />
+                        </View>
+
+
+                        <Text style={styles.addText}>
+                          Add New
+                        </Text>
+
+                        <Text style={styles.addText}>
+                          Bank / Cash
+                        </Text>
+
+                        <Text style={styles.addText}>
+                          / Credit
+                        </Text>
+
+                      </TouchableOpacity>
+                    </ScrollView>
+                  </Animated.View> */}
+
+
+                  <Animated.View
+                    style={{
+                      height: bankListHeight,
+                      opacity: bankListOpacity,
+                    }}
+                  >
+                    <FlatList
+                      horizontal
+                      data={mappedBankList}
+                      keyExtractor={(item, index) =>
+                        String(item?.id || index)
+                      }
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{
+                        paddingHorizontal: 10,
+                        alignItems: "center",
+                      }}
+                      initialNumToRender={3}
+                      maxToRenderPerBatch={3}
+                      windowSize={3}
+                      removeClippedSubviews={false}
+                      renderItem={({ item }) => {
+                        const type = item?.type;
+
+                        return (
+                          <TouchableOpacity
+                            onPress={() => {
+                              console.log("item", item?.raw);
+
+                              getBankOverview(
+                                activeHostelId,
+                                item?.id
+                              );
+
+                              navigation.navigate("BankingDetails", {
+                                bankDetails: item?.raw,
+                                bankId: item?.id,
+                              });
+                            }}
+                            style={[
+                              styles.bankCard,
+                              type === "CASH" && styles.cashCard,
+                              type === "CARD" && styles.creditCard,
+                              type === "BANK" && styles.bankAccountCard,
+                            ]}
+                          >
+                            {/* HEADER */}
+                            <View style={styles.cardHeader}>
+                              <View style={styles.headerLeft}>
+                                <View
+                                  style={[
+                                    styles.iconCircle,
+                                    type === "BANK" && {
+                                      backgroundColor: "#EEF2FF",
+                                    },
+                                    type === "CASH" && {
+                                      backgroundColor: "#c0e8cf",
+                                    },
+                                    type === "CARD" && {
+                                      backgroundColor: "#FFF3E8",
+                                    },
+                                  ]}
+                                >
+                                  <Image
+                                    source={
+                                      type === "BANK"
+                                        ? BankIcon
+                                        : type === "CASH"
+                                          ? CashIcon
+                                          : type === "CARD"
+                                            ? CardIcon
+                                            : UpiIcon
+                                    }
+                                    style={styles.bankIcon}
+                                  />
+                                </View>
+
+                                <View>
+                                  <Text style={styles.bankName}>
+                                    {item?.title}
+                                  </Text>
+
+                                  <Text style={styles.bankType}>
+                                    {item?.subtitle}
+                                  </Text>
+                                </View>
+                              </View>
+
+                              {/* THREE DOTS */}
+                              <TouchableOpacity
+                                ref={(ref) => {
+                                  dotsRef.current[item.id] = ref;
+                                }}
+                                activeOpacity={0.7}
+                                onPress={(e) => {
+                                  e.stopPropagation?.();
+                                  openMenu(item);
+                                }}
+                              >
+                                <Image
+                                  source={ThreeDotsIcon}
+                                  style={{ width: 24, height: 24 }}
+                                  resizeMode="contain"
+                                />
+                              </TouchableOpacity>
+                            </View>
 
                             {/* BALANCE */}
                             <View style={styles.balanceRow}>
@@ -1663,7 +1935,6 @@ export default function NewBankingList() {
 
                             {/* CHIPS */}
                             <View style={styles.tagRow}>
-
                               {type === "BANK" && item?.branch ? (
                                 <View style={styles.locationChip}>
                                   <Image
@@ -1677,19 +1948,11 @@ export default function NewBankingList() {
                                 </View>
                               ) : null}
 
-                              {/* {(type === "BANK" || type === "CARD") && item?.raw?.bankName ? (
-                                <View style={styles.defaultChip}>
-                                  <Text style={styles.defaultChipText}>
-                                    {item?.raw?.bankName}
-                                  </Text>
-                                </View>
-                              ) : null} */}
-
                               {/* UPI */}
-                              {type === "BANK" && item?.upiId ? (
+                              {type === "BANK" && item?.raw?.upiId ? (
                                 <View style={styles.upiChip}>
                                   <Text numberOfLines={1}>
-                                    UPI : {item.acc}
+                                    UPI : {item?.raw?.upiId}
                                   </Text>
                                 </View>
                               ) : null}
@@ -1707,76 +1970,43 @@ export default function NewBankingList() {
                               {type === "CASH" && (
                                 <View style={styles.defaultChip}>
                                   <Text style={styles.defaultChipText}>
-                                    {item?.name || item?.raw?.accountHolderName || "Cash"}
+                                    {item?.name ||
+                                      item?.raw?.accountHolderName ||
+                                      "Cash"}
                                   </Text>
                                 </View>
                               )}
-
                             </View>
-
-                            {/* LAST TRANSACTION */}
-
-                            {/* <Text style={styles.lastTxn}>
-                              {type === "CARD" || item?.paymentMethod
-                                ? `Due Date : ${item?.dueDate || "-"}`
-                                : `Last Txn : ${item?.lastTransactionDate || "-"}`}
-                            </Text> */}
-                            {/* <Text style={styles.lastTxn}>
-                              {type === "CARD"
-                                ? "Due Date : 10 Jun 2026"
-                                : !item?.paymentMethod
-                                  ? `Last Txn : ${item?.lastTransactionDate}`
-                                  : `Due Date : ${item?.dueDate}`}
-                            </Text> */}
-
                           </TouchableOpacity>
                         );
-                      })}
+                      }}
+                      ListFooterComponent={
+                        <TouchableOpacity
+                          style={[
+                            styles.addNewCard,
+                            (!canWriteBanking || !isSubscriptionAllow) && {
+                              opacity: 0.4,
+                            },
+                          ]}
+                          disabled={!canWriteBanking || !isSubscriptionAllow}
+                          onPress={handleAddBanking}
+                        >
+                          <View style={styles.addIconWrapper}>
+                            <Image
+                              source={AddBankIcon}
+                              style={styles.addIcon}
+                              resizeMode="contain"
+                            />
+                          </View>
 
-                      <TouchableOpacity
-                        // style={[styles.addNewCard, !canWriteBanking && { opacity: 0.4 }]}
-                        // disabled={!canWriteBanking}
-
-                        style={[
-                          styles.addNewCard,
-                          (!canWriteBanking || !isSubscriptionAllow) && {
-                            opacity: 0.4,
-                          },
-                        ]}
-                        disabled={!canWriteBanking || !isSubscriptionAllow}
-                        onPress={handleAddBanking}
-                      >
-
-                        {/* <View style={{ height: 50, width: 50 }}>
-                          <Image source={AddBankIcon} style={styles.addIcon} />
-                        </View> */}
-
-                        <View style={styles.addIconWrapper}>
-                          <Image
-                            source={AddBankIcon}
-                            style={styles.addIcon}
-                            resizeMode="contain"
-                          />
-                        </View>
-
-
-                        <Text style={styles.addText}>
-                          Add New
-                        </Text>
-
-                        <Text style={styles.addText}>
-                          Bank / Cash
-                        </Text>
-
-                        <Text style={styles.addText}>
-                          / Credit
-                        </Text>
-
-                      </TouchableOpacity>
-                    </ScrollView>
+                          <Text style={styles.addText}>Add New</Text>
+                          <Text style={styles.addText}>Bank / Cash</Text>
+                          <Text style={styles.addText}>/ Credit</Text>
+                        </TouchableOpacity>
+                      }
+                    />
                   </Animated.View>
 
-                  {/* Filters */}
 
                   <ScrollView
                     horizontal
@@ -2740,7 +2970,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    paddingTop: 40,
+    paddingTop: 50,
     paddingHorizontal: 16,
     paddingBottom: 10,
     backgroundColor: "#fff",
