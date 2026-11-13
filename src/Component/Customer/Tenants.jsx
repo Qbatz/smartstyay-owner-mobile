@@ -11,7 +11,7 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated, BackHandler, PanResponder,
   NativeModules, Linking, Platform,
-  FlatList
+  FlatList, ActivityIndicator
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -66,6 +66,7 @@ import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60
+const PAGE_SIZE = 30;
 
 
 
@@ -90,6 +91,12 @@ export default function TenantsScreen({ route }) {
   const detailDotsRef = useRef(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [customers, setCustomers] = useState([]);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const pageRef = useRef(1);
+  const hasMoreRef = useRef(true);
+  const loadingMoreRef = useRef(false);
+  const loadedCountRef = useRef(0);
+  const lastFiltersRef = useRef({ status: [], month: "", sharing: [] });
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [reassignCustomer, setReassignCustomer] = useState(null);
@@ -280,6 +287,18 @@ export default function TenantsScreen({ route }) {
 
   console.log("selectedCustomer", selectedCustomer);
 
+  // Uses noOfTenants (total count) when the API returns it; otherwise falls back to
+  // "a full page came back, so there may be more"
+  const computeHasMore = (data, loadedCount) => {
+    const pageCount = data?.listCustomers?.length ?? 0;
+    const total = Number(data?.noOfTenants);
+    if (Number.isFinite(total) && total > pageCount) {
+      return loadedCount < total;
+    }
+    return pageCount >= PAGE_SIZE;
+  };
+
+  // Pagination: always loads page 1 and resets the list
   const fetchCustomers = async (
     status = tenantStatusFilter,
     month = selectedMonth,
@@ -287,15 +306,64 @@ export default function TenantsScreen({ route }) {
   ) => {
     if (!activeHostelId) return;
 
+    // Remember the filters so onEndReached loads further pages with the same filters
+    lastFiltersRef.current = { status, month, sharing };
+    pageRef.current = 1;
+    hasMoreRef.current = true;
+
     const data = await getCustomersByHostel(
       activeHostelId,
       searchText,
       status,
       month ? [month] : [],
-      sharing
+      sharing,
+      1,
+      PAGE_SIZE
     );
 
+    loadedCountRef.current = data?.listCustomers?.length ?? 0;
+    hasMoreRef.current = computeHasMore(data, loadedCountRef.current);
     setCustomers(data || []);
+  };
+
+  const loadMoreCustomers = async () => {
+    if (!activeHostelId || loadingMoreRef.current || !hasMoreRef.current || loading) return;
+
+    loadingMoreRef.current = true;
+    setLoadingMore(true);
+
+    const nextPage = pageRef.current + 1;
+    const { status, month, sharing } = lastFiltersRef.current;
+
+    const data = await getCustomersByHostel(
+      activeHostelId,
+      searchText,
+      status,
+      month ? [month] : [],
+      sharing,
+      nextPage,
+      PAGE_SIZE
+    );
+
+    const newItems = data?.listCustomers || [];
+    if (newItems.length > 0) {
+      pageRef.current = nextPage;
+      loadedCountRef.current += newItems.length;
+      setCustomers(prev => {
+        const existingIds = new Set((prev?.listCustomers || []).map(c => c.customerId));
+        return {
+          ...prev,
+          listCustomers: [
+            ...(prev?.listCustomers || []),
+            ...newItems.filter(c => !existingIds.has(c.customerId)),
+          ],
+        };
+      });
+    }
+    hasMoreRef.current = newItems.length > 0 && computeHasMore(data, loadedCountRef.current);
+
+    loadingMoreRef.current = false;
+    setLoadingMore(false);
   };
 
   // const fetchCustomers = async () => {
@@ -1498,6 +1566,13 @@ export default function TenantsScreen({ route }) {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16, }}
                     scrollEventThrottle={16}
+                    onEndReached={loadMoreCustomers}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={
+                      loadingMore ? (
+                        <ActivityIndicator size="small" color="#1E45E1" style={{ marginVertical: 16 }} />
+                      ) : null
+                    }
                     renderItem={({ item }) => (
                       <Swipeable
                         ref={(ref) => {

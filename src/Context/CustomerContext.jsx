@@ -76,10 +76,14 @@ export const CustomerProvider = ({ children }) => {
     name = "",
     type = [],
     period = [],
-    sharingType = []
+    sharingType = [],
+    page,
+    size
   ) => {
+    // Load-more requests (page > 1) should not trigger the full-screen loader
+    const isLoadMore = page > 1;
     try {
-      setLoading(true);
+      if (!isLoadMore) setLoading(true);
       setErrorMsg("");
 
       const token = await retriveData("token");
@@ -93,6 +97,8 @@ export const CustomerProvider = ({ children }) => {
             ...(type?.length > 0 && { type }),
             ...(period?.length > 0 && { period }),
             ...(sharingType?.length > 0 && { sharingType }),
+            ...(page && { page }),
+            ...(size && { size }),
           },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -100,14 +106,18 @@ export const CustomerProvider = ({ children }) => {
         }
       );
 
-      setLoading(false);
-      setCustomersList(response?.data);
+      if (!isLoadMore) {
+        setLoading(false);
+        setCustomersList(response?.data);
+      }
 
       console.log("CUSTOMER API PARAMS:", {
         name,
         type,
         period,
         sharingType,
+        page,
+        size,
       });
 
       console.log("CUSTOMER API RESPONSE:", response?.data);
@@ -115,7 +125,7 @@ export const CustomerProvider = ({ children }) => {
       return response.data;
 
     } catch (error) {
-      setLoading(false);
+      if (!isLoadMore) setLoading(false);
 
       if (error?.response?.status === 401) {
         await AutoLogout(loginContext);
