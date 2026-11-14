@@ -252,44 +252,116 @@ const RefundPaymentSheet = ({
   // );
 
 
+  const RefundPaymentIcon = ({ item, size = 44 }) => {
+    const type = item?.iconType;
+
+    const iconBackground = {
+      CASH: "#DDF8E8",
+      CARD: "#FFEBD2",
+      DEBIT_CARD: "#FFEBD2",
+      UPI: "#F3E5FF",
+      BANK: "#DCE9FF",
+    };
+
+    return (
+      <View
+        style={[
+          styles.paymentMethodIcon,
+          {
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+            backgroundColor: iconBackground[type] || "#DCE9FF",
+          },
+        ]}
+      >
+        {type === "CASH" ? (
+          <Image
+            source={CashIcon}
+            style={{ width: 22, height: 22 }}
+            resizeMode="contain"
+          />
+        ) : type === "UPI" && item?.upiIcon ? (
+          <Image
+            source={{ uri: item.upiIcon }}
+            style={{
+              width: size * 0.62,
+              height: size * 0.62,
+            }}
+            resizeMode="contain"
+          />
+        ) : type === "CARD" || type === "DEBIT_CARD" ? (
+          <View style={styles.refundCardIcon}>
+            <View style={styles.refundCardTopLine} />
+            <View style={styles.refundCardBottomLine} />
+          </View>
+        ) : (
+          <Image
+            source={BankIcon}
+            style={{ width: 23, height: 23 }}
+            resizeMode="contain"
+          />
+        )}
+      </View>
+    );
+  };
+
+
 
   const refundPaymentOptions = (
     refundInitDetails?.listBanks || []
   ).map((bank, index) => {
     const accountType = String(
-      bank?.type || bank?.accountType || bank?.bankName || ""
+      bank?.type || bank?.accountType || ""
     ).trim().toUpperCase();
 
-    const isBank =
-      bank?.isBank ||
-      accountType === "BANK" ||
-      String(bank?.bankName || "").toUpperCase() === "BANK";
+    let iconType = accountType;
 
-    const isCash =
-      String(bank?.bankName || "").toUpperCase() === "CASH" ||
-      accountType === "CASH";
+    if (!["CASH", "CARD", "UPI", "DEBIT_CARD", "BANK"].includes(iconType)) {
+      iconType = bank?.isUpi
+        ? "UPI"
+        : bank?.isBank
+          ? "BANK"
+          : "CARD";
+    }
 
-    const iconType = isBank
-      ? "BANK"
-      : isCash
-        ? "CASH"
-        : "CARD";
+    const isCash = iconType === "CASH";
+
+    const title = isCash
+      ? bank?.displayName || bank?.accountHolderName || "Account"
+      : bank?.accountHolderName || bank?.displayName || "Account";
+
+    let subtitle = "";
+
+    if (iconType === "CASH") {
+      subtitle = `CASH - ${bank?.displayName || ""}`;
+    } else if (iconType === "CARD") {
+      subtitle = `CARD - ${bank?.displayName || ""}`;
+    } else {
+      subtitle = [
+        bank?.bankName,
+        bank?.displayName,
+      ].filter(Boolean).join(" - ");
+    }
 
     return {
       id: bank?.bankId || `account-${index}`,
       bankId: bank?.bankId,
       value: bank?.bankId,
 
+      title,
+      subtitle,
+
       displayName: bank?.displayName || "",
       bankName: bank?.bankName || "",
-      holderName: bank?.accountHolderName || bank?.holderName || "",
-
-      accountHolderName:
-        bank?.accountHolderName || bank?.holderName || "Account",
+      holderName: bank?.accountHolderName || "",
 
       accountType,
       iconType,
       isCash,
+
+      upiIcon: bank?.upiIcon || bank?.upiAppIcon || null,
+
       data: bank,
     };
   });
@@ -864,7 +936,7 @@ const RefundPaymentSheet = ({
                 Refund From <Text style={{ color: "red" }}>*</Text>
               </Text>
 
-              {/* SELECTED PAYMENT METHOD */}
+
               <TouchableOpacity
                 style={[
                   styles.inputBox,
@@ -872,77 +944,68 @@ const RefundPaymentSheet = ({
                 ]}
                 onPress={() => {
                   setRefundFromError("");
-                  setShowRefundFrom(v => !v);
+                  setShowRefundFrom(prev => !prev);
                 }}
                 activeOpacity={0.7}
               >
-
                 {refundFrom ? (
                   (() => {
                     const selectedPayment = refundPaymentOptions.find(
                       item => item.id === refundFrom
                     );
 
-                    // const isCash =
-                    //   selectedPayment?.accountType === "CASH";
-
-                    // const isCash = selectedPayment?.isCash;
-
-                    const isCash = selectedPayment?.iconType === "CASH";
-                    const isBank = selectedPayment?.iconType === "BANK";
+                    if (!selectedPayment) {
+                      return (
+                        <Text style={styles.refundPlaceholder}>
+                          Please Select
+                        </Text>
+                      );
+                    }
 
                     return (
                       <View style={styles.selectedPaymentContent}>
+                        <RefundPaymentIcon
+                          item={selectedPayment}
+                          size={40}
+                        />
 
-                        {/* ICON */}
-                        <View
-                          style={[
-                            styles.refundPaymentIcon,
-                            isCash
-                              ? styles.cashIconBg
-                              : styles.bankIconBg,
-                          ]}
-                        >
-                          <Image
-                            source={
-                              isCash
-                                ? CashIcon
-                                : BankIcon
-                            }
-                            style={{
-                              width: 20,
-                              height: 20,
-                            }}
-                          />
-                        </View>
-
-                        {/* NAME */}
                         <View style={styles.refundPaymentDetails}>
                           <Text
                             style={styles.refundPaymentName}
                             numberOfLines={1}
                           >
-                            {selectedPayment?.displayName}
+                            {selectedPayment.title}
                           </Text>
 
                           <Text
                             style={styles.refundPaymentSubText}
-                            numberOfLines={2}
+                            numberOfLines={1}
                           >
-                            {selectedPayment?.holderName}
-                            {" - "}
-                            {selectedPayment?.bankName}
-
-
+                            {selectedPayment.subtitle}
                           </Text>
                         </View>
 
+                        <View
+                          style={[
+                            styles.paymentTypeBadge,
+                            styles[`${selectedPayment.iconType.toLowerCase()}Badge`],
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.paymentTypeText,
+                              styles[`${selectedPayment.iconType.toLowerCase()}Text`],
+                            ]}
+                          >
+                            {selectedPayment.iconType}
+                          </Text>
+                        </View>
                       </View>
                     );
                   })()
                 ) : (
                   <Text style={styles.refundPlaceholder}>
-                    Select payment method
+                    Please Select
                   </Text>
                 )}
 
@@ -954,31 +1017,21 @@ const RefundPaymentSheet = ({
                     tintColor: "#555",
                   }}
                 />
-
               </TouchableOpacity>
 
 
-              {/* DROPDOWN */}
+
+
               {showRefundFrom && (
                 <View style={styles.paymentMethodDropdown}>
-
                   <ScrollView
                     nestedScrollEnabled
                     showsVerticalScrollIndicator={false}
-                    scrollEnabled={refundPaymentOptions.length > 3}
+                    keyboardShouldPersistTaps="handled"
                   >
-
-                    {refundPaymentOptions.length > 0 ? (
-
-                      refundPaymentOptions.map((opt) => {
-
-                        const isSelected =
-                          refundFrom === opt.id;
-
-                        // const isCash = opt.isCash;
-
-                        const isCash = opt.iconType === "CASH";
-                        const isBank = opt.iconType === "BANK";
+                    {refundPaymentOptions?.length > 0 ? (
+                      refundPaymentOptions?.map(opt => {
+                        const isSelected = refundFrom === opt?.id;
 
                         return (
                           <TouchableOpacity
@@ -986,112 +1039,72 @@ const RefundPaymentSheet = ({
                             activeOpacity={0.7}
                             style={[
                               styles.paymentMethodRow,
-                              isSelected &&
-                              styles.paymentMethodRowSelected,
+                              isSelected && styles.paymentMethodRowSelected,
                             ]}
                             onPress={() => {
-
                               setRefundFrom(opt.id);
-
                               setShowRefundFrom(false);
-
                               setRefundFromError("");
-
                             }}
                           >
+                            {/* PAYMENT ICON */}
+                            <RefundPaymentIcon
+                              item={opt}
+                              size={44}
+                            />
 
-                            {/* ICON */}
-                            <View
-                              style={[
-                                styles.paymentMethodIcon,
-                                isCash
-                                  ? styles.cashIconBg
-                                  : styles.bankIconBg,
-                              ]}
-                            >
-                              <Image
-                                source={
-                                  isCash
-                                    ? CashIcon
-                                    : BankIcon
-                                }
-                                style={{
-                                  width: 20,
-                                  height: 20,
-                                }}
-                              />
-                            </View>
-
-
-                            {/* DETAILS */}
+                            {/* ACCOUNT DETAILS */}
                             <View style={styles.paymentMethodDetails}>
                               <Text
                                 style={styles.paymentMethodName}
                                 numberOfLines={1}
                               >
-                                {opt?.displayName}
+                                {opt.title}
                               </Text>
 
                               <Text
                                 style={styles.paymentMethodSubText}
-                                numberOfLines={2}
+                                numberOfLines={1}
                               >
-                                {opt?.holderName}
-                                {" - "}
-                                {opt?.bankName}
-
-
+                                {opt.subtitle}
                               </Text>
                             </View>
 
-
-                            {/* CASH / BANK */}
+                            {/* PAYMENT TYPE */}
                             <View
                               style={[
                                 styles.paymentTypeBadge,
-                                isCash
-                                  ? styles.cashBadge
-                                  : styles.bankBadge,
+                                styles[`${opt.iconType.toLowerCase()}Badge`],
                               ]}
                             >
-
                               <Text
                                 style={[
                                   styles.paymentTypeText,
-                                  isCash
-                                    ? styles.cashText
-                                    : styles.bankText,
+                                  styles[`${opt.iconType.toLowerCase()}Text`],
                                 ]}
                               >
-                                {isCash
-                                  ? "CASH"
-                                  : "BANK"}
+                                {opt.iconType}
                               </Text>
-
                             </View>
-
                           </TouchableOpacity>
                         );
                       })
-
                     ) : (
-
-                      <Text
-                        style={{
-                          padding: 15,
-                          color: "#777",
-                          fontFamily: "Gilroy-Medium",
-                        }}
-                      >
+                      <Text style={styles.noPaymentMethodText}>
                         No payment methods available
                       </Text>
-
                     )}
-
                   </ScrollView>
-
                 </View>
               )}
+
+              {refundFromError ? (
+                <ErrorMessage
+                  message={refundFromError}
+                  type="error"
+                />
+              ) : null}
+
 
 
               {refundFromError && (
@@ -1359,30 +1372,30 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Bold",
     color: "#4B5563",
   },
-  refundSelectedPaymentBox: {
-    minHeight: 58,
-    paddingHorizontal: 12,
-  },
+  // refundSelectedPaymentBox: {
+  //   minHeight: 58,
+  //   paddingHorizontal: 12,
+  // },
 
-  selectedPaymentContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-  },
+  // selectedPaymentContent: {
+  //   flexDirection: "row",
+  //   alignItems: "center",
+  //   flex: 1,
+  // },
 
-  refundPaymentIcon: {
-    width: 38,
-    height: 38,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
+  // refundPaymentIcon: {
+  //   width: 38,
+  //   height: 38,
+  //   borderRadius: 20,
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  //   marginRight: 10,
+  // },
 
-  refundPaymentDetails: {
-    flex: 1,
-    justifyContent: "center",
-  },
+  // refundPaymentDetails: {
+  //   flex: 1,
+  //   justifyContent: "center",
+  // },
 
   refundPaymentName: {
     fontSize: 15,
@@ -1512,5 +1525,103 @@ const styles = StyleSheet.create({
   bankText: {
     color: "#2563EB",
   },
+
+
+
+refundSelectedPaymentBox: {
+  height: 64,
+  minHeight: 64,
+  paddingHorizontal: 12,
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+selectedPaymentContent: {
+  flex: 1,
+  flexDirection: "row",
+  alignItems: "center",
+  marginRight: 8,
+},
+
+refundPaymentIcon: {
+  width: 40,
+  height: 40,
+  borderRadius: 22,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 10,
+},
+
+refundPaymentDetails: {
+  flex: 1,
+  justifyContent: "center",
+},
+
+refundCardIcon: {
+  width: 27,
+  height: 20,
+  borderWidth: 1.7,
+  borderColor: "#FF9800",
+  borderRadius: 4,
+  justifyContent: "center",
+},
+
+refundCardTopLine: {
+  width: "100%",
+  height: 4,
+  backgroundColor: "#FF9800",
+  marginTop: 2,
+},
+
+refundCardBottomLine: {
+  width: 8,
+  height: 3,
+  backgroundColor: "#FF9800",
+  marginTop: 5,
+  marginLeft: 4,
+},
+
+cashBadge: {
+  backgroundColor: "#DDF8E8",
+},
+cashText: {
+  color: "#15803D",
+},
+
+cardBadge: {
+  backgroundColor: "#FFEBD2",
+},
+cardText: {
+  color: "#E65100",
+},
+
+debit_cardBadge: {
+  backgroundColor: "#FFEBD2",
+},
+debit_cardText: {
+  color: "#E65100",
+},
+
+upiBadge: {
+  backgroundColor: "#F3E5FF",
+},
+upiText: {
+  color: "#8515D9",
+},
+
+bankBadge: {
+  backgroundColor: "#DCE9FF",
+},
+bankText: {
+  color: "#2563EB",
+},
+
+noPaymentMethodText: {
+  padding: 15,
+  color: "#777",
+  fontFamily: "Gilroy-Medium",
+},
+
 
 })

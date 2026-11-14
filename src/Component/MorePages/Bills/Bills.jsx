@@ -2360,47 +2360,134 @@ export default function BillsDesign({ route }) {
 
 
 
+  const RefundPaymentIcon = ({ item, size = 44 }) => {
+    const type = item?.iconType;
+
+    const backgroundColors = {
+      CASH: "#DDFBE8",
+      CARD: "#FFEBD2",
+      DEBIT_CARD: "#FFEBD2",
+      UPI: "#F3E5FF",
+      BANK: "#DCE8FF",
+    };
+
+    return (
+      <View
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size / 2,
+          backgroundColor: backgroundColors[type] || "#DCE8FF",
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: 12,
+        }}
+      >
+        {type === "CASH" ? (
+          <Image
+            source={CashIcon}
+            style={{ width: 22, height: 22 }}
+            resizeMode="contain"
+          />
+        ) : type === "UPI" && item?.upiIcon ? (
+          <Image
+            source={{ uri: item.upiIcon }}
+            style={{
+              width: size * 0.58,
+              height: size * 0.58,
+            }}
+            resizeMode="contain"
+          />
+        ) : type === "CARD" || type === "DEBIT_CARD" ? (
+          <View style={styles.refundCardIcon}>
+            <View style={styles.refundCardLine} />
+            <View style={styles.refundCardSmallLine} />
+          </View>
+        ) : (
+          <Image
+            source={BankIcon}
+            style={{ width: 23, height: 23 }}
+            resizeMode="contain"
+          />
+        )}
+      </View>
+    );
+  };
+
+
 
   const refundPaymentOptions = (
     refundInitDetails?.listBanks || []
   ).map((bank, index) => {
     const accountType = String(
-      bank?.type || bank?.accountType || bank?.bankName || ""
+      bank?.type || bank?.accountType || ""
     ).trim().toUpperCase();
 
-    const isBank =
-      bank?.isBank ||
-      accountType === "BANK" ||
-      String(bank?.bankName || "").toUpperCase() === "BANK";
+    // UPI must be checked before isBank
+    let iconType = "BANK";
 
-    const isCash =
-      String(bank?.bankName || "").toUpperCase() === "CASH" ||
-      accountType === "CASH";
+    switch (accountType) {
+      case "CASH":
+        iconType = "CASH";
+        break;
+      case "CARD":
+        iconType = "CARD";
+        break;
+      case "UPI":
+        iconType = "UPI";
+        break;
+      case "DEBIT_CARD":
+        iconType = "DEBIT_CARD";
+        break;
+      case "BANK":
+        iconType = "BANK";
+        break;
+      default:
+        iconType = bank?.isUpi
+          ? "UPI"
+          : bank?.isBank
+            ? "BANK"
+            : "CARD";
+    }
 
-    const iconType = isBank
-      ? "BANK"
-      : isCash
-        ? "CASH"
-        : "CARD";
+    const title =
+      iconType === "CASH"
+        ? bank?.displayName || bank?.accountHolderName
+        : bank?.accountHolderName || bank?.displayName;
+
+    let subtitle = "";
+
+    if (iconType === "CASH") {
+      subtitle = `CASH - ${bank?.displayName || ""}`;
+    } else if (iconType === "CARD") {
+      subtitle = `CARD - ${bank?.displayName || ""}`;
+    } else if (iconType === "UPI") {
+      subtitle = `${bank?.bankName ? `${bank.bankName} - ` : ""}${bank?.displayName || ""}`;
+    } else {
+      subtitle = `${bank?.bankName ? `${bank.bankName} - ` : ""}${bank?.displayName || ""}`;
+    }
 
     return {
-      id: bank?.bankId || `account-${index}`,
+      id: bank?.bankId || `refund-account-${index}`,
       bankId: bank?.bankId,
       value: bank?.bankId,
 
+      title,
+      subtitle,
+
       displayName: bank?.displayName || "",
       bankName: bank?.bankName || "",
-      holderName: bank?.accountHolderName || bank?.holderName || "",
-
-      accountHolderName:
-        bank?.accountHolderName || bank?.holderName || "Account",
+      holderName: bank?.accountHolderName || "",
 
       accountType,
       iconType,
-      isCash,
+      isCash: iconType === "CASH",
+
+      upiIcon: bank?.upiIcon || null,
       data: bank,
     };
   });
+
 
   const handleReceiptMenu = (item, id) => {
 
@@ -3641,50 +3728,76 @@ export default function BillsDesign({ route }) {
                             </View>
                           )}
 
-        {PGDetails?.shouldVerifyRecurring && isValidSubscription && (
- <View style={styles.reviewBillsCard}>
+                          {PGDetails?.shouldVerifyRecurring && isValidSubscription && (
+                            <View style={styles.reviewBillsCard}>
 
-                            <View style={styles.reviewBillsHeader}>
-                              <View style={styles.reviewBillsTitleRow}>
+                              <View style={styles.reviewBillsHeader}>
+                                <View style={styles.reviewBillsTitleRow}>
 
-                                <Image
-                                  source={GenerateBillIcon}
-                                  style={styles.reviewBillsIcon}
-                                />
+                                  <Image
+                                    source={GenerateBillIcon}
+                                    style={styles.reviewBillsIcon}
+                                  />
 
-                                <Text style={styles.reviewBillsTitle}>
-                                  Review & Generate Bills
-                                </Text>
+                                  <Text style={styles.reviewBillsTitle}>
+                                    Review & Generate Bills
+                                  </Text>
+
+                                </View>
+                              </View>
+
+                              <Text style={styles.reviewBillsDescription}>
+                                Review calculated invoices before generating them for tenants.
+                              </Text>
+
+                              <View style={styles.reviewBillsInfoRow}>
+
+                                {!isJoiningDateBased && (
+
+                                  <View style={styles.reviewBillsInfoItem}>
+
+                                    <Text style={styles.reviewBillsLabel}>
+                                      Period :
+                                    </Text>
+
+                                    <Text style={styles.reviewBillsValue}>
+                                      {`${formatReviewDate(
+                                        availablerecurringInvoices?.billingStartDate
+                                      )} - ${formatReviewDate(
+                                        availablerecurringInvoices?.billingEndDate,
+                                        true
+                                      )}`}
+                                    </Text>
+
+                                  </View>)}
+
+                                {isJoiningDateBased && (
+                                  <View style={styles.reviewBillsDateRow}>
+
+                                    <Text style={styles.reviewBillsLabel}>
+                                      Gen. Date :
+                                    </Text>
+
+                                    <Text style={styles.reviewBillsValue}>
+                                      {formatReviewDate(
+                                        availablerecurringInvoices?.invoiceDate,
+                                        true
+                                      )}
+                                    </Text>
+
+                                  </View>
+                                )}
+
+                                <View style={styles.reviewRequiredBadge}>
+                                  <Text style={styles.reviewRequiredText}>
+                                    Review Required
+                                  </Text>
+                                </View>
 
                               </View>
-                            </View>
-
-                            <Text style={styles.reviewBillsDescription}>
-                              Review calculated invoices before generating them for tenants.
-                            </Text>
-
-                            <View style={styles.reviewBillsInfoRow}>
 
                               {!isJoiningDateBased && (
 
-                                <View style={styles.reviewBillsInfoItem}>
-
-                                  <Text style={styles.reviewBillsLabel}>
-                                    Period :
-                                  </Text>
-
-                                  <Text style={styles.reviewBillsValue}>
-                                    {`${formatReviewDate(
-                                      availablerecurringInvoices?.billingStartDate
-                                    )} - ${formatReviewDate(
-                                      availablerecurringInvoices?.billingEndDate,
-                                      true
-                                    )}`}
-                                  </Text>
-
-                                </View>)}
-
-                              {isJoiningDateBased && (
                                 <View style={styles.reviewBillsDateRow}>
 
                                   <Text style={styles.reviewBillsLabel}>
@@ -3701,79 +3814,53 @@ export default function BillsDesign({ route }) {
                                 </View>
                               )}
 
-                              <View style={styles.reviewRequiredBadge}>
-                                <Text style={styles.reviewRequiredText}>
-                                  Review Required
+                              <TouchableOpacity
+                                activeOpacity={
+                                  PGDetails?.shouldVerifyRecurring ? 0.8 : 1
+                                }
+                                disabled={!PGDetails?.shouldVerifyRecurring}
+                                style={[
+                                  styles.reviewBillsButton,
+                                  !PGDetails?.shouldVerifyRecurring &&
+                                  styles.reviewBillsButtonDisabled,
+                                ]}
+                                onPress={() => {
+                                  if (!canReadInvoice) return
+                                  if (PGDetails?.shouldVerifyRecurring) {
+                                    navigation.navigate("ReviewBillsScreen");
+                                  }
+                                }}
+                              >
+
+                                <Text
+                                  style={[
+                                    styles.reviewBillsButtonText,
+                                    !PGDetails?.shouldVerifyRecurring &&
+                                    styles.reviewBillsButtonTextDisabled,
+                                  ]}
+                                >
+                                  Review Bills
                                 </Text>
-                              </View>
+
+                                <Image
+                                  source={LeftArrowIcon}
+                                  style={[
+                                    {
+                                      height: 20,
+                                      width: 20,
+                                      marginLeft: 10,
+                                    },
+                                    !PGDetails?.shouldVerifyRecurring &&
+                                    styles.reviewBillsArrowDisabled,
+                                  ]}
+                                />
+
+                              </TouchableOpacity>
 
                             </View>
+                          )}
 
-                            {!isJoiningDateBased && (
 
-                              <View style={styles.reviewBillsDateRow}>
-
-                                <Text style={styles.reviewBillsLabel}>
-                                  Gen. Date :
-                                </Text>
-
-                                <Text style={styles.reviewBillsValue}>
-                                  {formatReviewDate(
-                                    availablerecurringInvoices?.invoiceDate,
-                                    true
-                                  )}
-                                </Text>
-
-                              </View>
-                            )}
-
-                            <TouchableOpacity
-                              activeOpacity={
-                                PGDetails?.shouldVerifyRecurring ? 0.8 : 1
-                              }
-                              disabled={!PGDetails?.shouldVerifyRecurring}
-                              style={[
-                                styles.reviewBillsButton,
-                                !PGDetails?.shouldVerifyRecurring &&
-                                styles.reviewBillsButtonDisabled,
-                              ]}
-                              onPress={() => {
-                                if (!canReadInvoice) return
-                                if (PGDetails?.shouldVerifyRecurring) {
-                                  navigation.navigate("ReviewBillsScreen");
-                                }
-                              }}
-                            >
-
-                              <Text
-                                style={[
-                                  styles.reviewBillsButtonText,
-                                  !PGDetails?.shouldVerifyRecurring &&
-                                  styles.reviewBillsButtonTextDisabled,
-                                ]}
-                              >
-                                Review Bills
-                              </Text>
-
-                              <Image
-                                source={LeftArrowIcon}
-                                style={[
-                                  {
-                                    height: 20,
-                                    width: 20,
-                                    marginLeft: 10,
-                                  },
-                                  !PGDetails?.shouldVerifyRecurring &&
-                                  styles.reviewBillsArrowDisabled,
-                                ]}
-                              />
-
-                            </TouchableOpacity>
-
-                          </View>
-        )}
-
-                         
 
                         </>
                       }
@@ -5530,17 +5617,17 @@ export default function BillsDesign({ route }) {
                             </Text>
                           </View>
 
-                         
+
 
 
                           {showAdditionalAdvance && (<>
-                             <View style={styles.tableHeader}>
-                            <Text style={[styles.th, { flex: 1 }]}>Inv No</Text>
-                            {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
-                            <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
-                              Amount
-                            </Text>
-                          </View>
+                            <View style={styles.tableHeader}>
+                              <Text style={[styles.th, { flex: 1 }]}>Inv No</Text>
+                              {/* <Text style={[styles.th, { flex: 1 }]}>Type</Text> */}
+                              <Text style={[styles.th, { flex: 1, textAlign: "right" }]}>
+                                Amount
+                              </Text>
+                            </View>
                             <View style={styles.accordionBody}>
                               {BillPdfdetails?.additionalAdvanceItems?.additionalAdvanceItems?.length > 0 ? (
                                 BillPdfdetails?.additionalAdvanceItems?.additionalAdvanceItems?.map((item, index) => (
@@ -5575,7 +5662,7 @@ export default function BillsDesign({ route }) {
                                 </View>
                               )}
                             </View>
-                            </>
+                          </>
                           )}
                         </TouchableOpacity>
 
@@ -7188,12 +7275,12 @@ export default function BillsDesign({ route }) {
                       Refund amount <Text style={{ color: "red", fontSize: 16 }}>*</Text>
                     </Text>
 
-                     <InputComponent
-                                  type="number"
-                                  placeholder="Enter Amount"
-                                  // keyboardType="numeric"
-                                  keyboardType="number-pad"
-                            value={refundAmount}
+                    <InputComponent
+                      type="number"
+                      placeholder="Enter Amount"
+                      // keyboardType="numeric"
+                      keyboardType="number-pad"
+                      value={refundAmount}
                       onChangeText={(val) => {
 
                         let cleaned = val.replace(/[^0-9.]/g, "");
@@ -7225,8 +7312,8 @@ export default function BillsDesign({ route }) {
                           setRefundAmountError("");
                         }
                       }}
-                                  error={!!refundAmountError}
-                                />
+                      error={!!refundAmountError}
+                    />
 
                     {/* <TextInput
                       style={styles.input}
@@ -7469,7 +7556,7 @@ export default function BillsDesign({ route }) {
                         Refund From <Text style={{ color: "red" }}>*</Text>
                       </Text>
 
-                      {/* SELECTED PAYMENT METHOD */}
+
                       <TouchableOpacity
                         style={[
                           styles.inputBox,
@@ -7477,7 +7564,7 @@ export default function BillsDesign({ route }) {
                         ]}
                         onPress={() => {
                           setRefundFromError("");
-                          setShowRefundFrom(v => !v);
+                          setShowRefundFrom(prev => !prev);
                         }}
                       >
                         {refundFrom ? (
@@ -7486,73 +7573,48 @@ export default function BillsDesign({ route }) {
                               item => item.id === refundFrom
                             );
 
-                            // const isCash = selectedPayment?.isCash;
-                            const isCash = selectedPayment?.iconType === "CASH";
-                            const isBank = selectedPayment?.iconType === "BANK";
+                            if (!selectedPayment) return null;
 
                             return (
                               <>
-                                {/* ICON */}
-                                <View
-                                  style={[
-                                    styles.refundPaymentIcon,
-                                    isCash
-                                      ? styles.cashIconBg
-                                      : styles.bankIconBg,
-                                  ]}
-                                >
-                                  <Image
-                                    source={
-                                      isCash
-                                        ? CashIcon
-                                        : BankIcon
-                                    }
-                                    style={{
-                                      width: 20,
-                                      height: 20,
-                                    }}
-                                  />
-                                </View>
-
-                                {/* NAME + PAYMENT METHOD */}
-                                {/* <View style={styles.refundPaymentDetails}>
-
-                                  <Text
-                                    style={styles.refundPaymentName}
-                                    numberOfLines={1}
-                                  >
-                                    {selectedPayment?.accountHolderName}
-                                  </Text>
-
-                                  <Text
-                                    style={styles.refundPaymentSubText}
-                                    numberOfLines={1}
-                                  >
-                                    {isCash
-                                      ? "CASH"
-                                      : selectedPayment?.paymentMethod ||
-                                      "BANK"}
-                                  </Text>
-
-                                </View> */}
+                                <RefundPaymentIcon
+                                  item={selectedPayment}
+                                  size={40}
+                                />
 
                                 <View style={styles.refundPaymentDetails}>
                                   <Text
                                     style={styles.refundPaymentName}
                                     numberOfLines={1}
                                   >
-                                    {selectedPayment?.displayName}
+                                    {selectedPayment.title}
                                   </Text>
 
                                   <Text
                                     style={styles.refundPaymentSubText}
-                                    numberOfLines={2}
+                                    numberOfLines={1}
                                   >
-                                    {selectedPayment?.holderName}
-                                    {" - "}
-                                    {selectedPayment?.bankName}
+                                    {selectedPayment.subtitle}
+                                  </Text>
+                                </View>
 
-
+                                <View
+                                  style={[
+                                    styles.paymentTypeBadge,
+                                    styles[
+                                    `${selectedPayment.iconType.toLowerCase()}Badge`
+                                    ],
+                                  ]}
+                                >
+                                  <Text
+                                    style={[
+                                      styles.paymentTypeText,
+                                      styles[
+                                      `${selectedPayment.iconType.toLowerCase()}Text`
+                                      ],
+                                    ]}
+                                  >
+                                    {selectedPayment.iconType}
                                   </Text>
                                 </View>
                               </>
@@ -7560,7 +7622,7 @@ export default function BillsDesign({ route }) {
                           })()
                         ) : (
                           <Text style={styles.refundPlaceholder}>
-                            Select bank
+                            Please Select
                           </Text>
                         )}
 
@@ -7575,19 +7637,16 @@ export default function BillsDesign({ route }) {
                       </TouchableOpacity>
 
 
+
                       {showRefundFrom && (
                         <View style={styles.transactiondropdown}>
-
                           <ScrollView
                             nestedScrollEnabled
                             showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps="handled"
                           >
-                            {refundPaymentOptions?.map((opt) => {
-
-                              const isSelected =
-                                refundFrom === opt.id;
-
-                              const isCash = opt.isCash;
+                            {refundPaymentOptions.map(opt => {
+                              const isSelected = refundFrom === opt.id;
 
                               return (
                                 <TouchableOpacity
@@ -7604,79 +7663,63 @@ export default function BillsDesign({ route }) {
                                     setRefundFromError("");
                                   }}
                                 >
-
                                   {/* ICON */}
-                                  <View
-                                    style={[
-                                      styles.paymentMethodIcon,
-                                      isCash
-                                        ? styles.cashIconBg
-                                        : styles.bankIconBg,
-                                    ]}
-                                  >
-                                    <Image
-                                      source={
-                                        isCash
-                                          ? CashIcon
-                                          : BankIcon
-                                      }
-                                      style={{
-                                        height: 20,
-                                        width: 20,
-                                      }}
-                                    />
-                                  </View>
+                                  <RefundPaymentIcon
+                                    item={opt}
+                                    size={44}
+                                  />
 
-                                  {/* ACCOUNT DETAILS */}
+                                  {/* DETAILS */}
                                   <View style={styles.paymentMethodDetails}>
                                     <Text
                                       style={styles.paymentMethodName}
                                       numberOfLines={1}
                                     >
-                                      {opt?.displayName}
+                                      {opt.title}
                                     </Text>
 
                                     <Text
                                       style={styles.paymentMethodSubText}
-                                      numberOfLines={2}
+                                      numberOfLines={1}
                                     >
-                                      {opt?.holderName}
-                                      {" - "}
-                                      {opt?.bankName}
-
-
+                                      {opt.subtitle}
                                     </Text>
                                   </View>
 
-
-                                  {/* CASH / BANK */}
+                                  {/* TYPE BADGE */}
                                   <View
                                     style={[
                                       styles.paymentTypeBadge,
-                                      isCash
-                                        ? styles.cashBadge
-                                        : styles.bankBadge,
+                                      styles[
+                                      `${opt.iconType.toLowerCase()}Badge`
+                                      ],
                                     ]}
                                   >
                                     <Text
                                       style={[
                                         styles.paymentTypeText,
-                                        isCash
-                                          ? styles.cashText
-                                          : styles.bankText,
+                                        styles[
+                                        `${opt.iconType.toLowerCase()}Text`
+                                        ],
                                       ]}
                                     >
-                                      {isCash ? "CASH" : "BANK"}
+                                      {opt.iconType}
                                     </Text>
                                   </View>
-
                                 </TouchableOpacity>
                               );
                             })}
                           </ScrollView>
-
                         </View>
                       )}
+
+                      {refundFromError ? (
+                        <ErrorMessage
+                          message={refundFromError}
+                          type="error"
+                        />
+                      ) : null}
+
 
                       {refundFromError && (
                         <ErrorMessage
@@ -11264,6 +11307,95 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Medium",
     flexShrink: 1,
   },
+
+refundSelectedPaymentBox: {
+    minHeight: 64,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+},
+
+refundPaymentDetails: {
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 8,
+},
+
+refundPaymentName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#222222",
+},
+
+refundPaymentSubText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#697386",
+    marginTop: 3,
+},
+
+refundCardIcon: {
+    width: 27,
+    height: 20,
+    borderWidth: 1.8,
+    borderColor: "#FF9800",
+    borderRadius: 4,
+    overflow: "hidden",
+},
+
+refundCardLine: {
+    width: "100%",
+    height: 4,
+    backgroundColor: "#FF9800",
+    marginTop: 3,
+},
+
+refundCardSmallLine: {
+    width: 7,
+    height: 3,
+    backgroundColor: "#FF9800",
+    marginTop: 4,
+    marginLeft: 4,
+},
+
+// Payment badges
+
+cashBadge: {
+    backgroundColor: "#DDFBE8",
+},
+cashText: {
+    color: "#07883C",
+},
+
+cardBadge: {
+    backgroundColor: "#FFEBD2",
+},
+cardText: {
+    color: "#E65100",
+},
+
+debit_cardBadge: {
+    backgroundColor: "#FFEBD2",
+},
+debit_cardText: {
+    color: "#E65100",
+},
+
+upiBadge: {
+    backgroundColor: "#F3E5FF",
+},
+upiText: {
+    color: "#8515D9",
+},
+
+bankBadge: {
+    backgroundColor: "#DCE8FF",
+},
+bankText: {
+    color: "#2457E6",
+},
 
 
 });
