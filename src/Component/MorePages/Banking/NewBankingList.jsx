@@ -1375,6 +1375,10 @@ export default function NewBankingList() {
       selectedItem?.raw?.bankId ||
       selectedItem?.raw?.bankingId;
 
+      console.log("bankid", bankId);
+      console.log("selectbankk", selectedItem);
+      
+
     if (!bankId) {
 
       setModalType("error");
@@ -1387,17 +1391,17 @@ export default function NewBankingList() {
       return;
     }
 
-    if (selectedItem?.raw?.isDeleted || selectedItem?.isDeleted) {
+    // if (selectedItem?.raw?.isDeleted || selectedItem?.isDeleted) {
 
-      setModalType("error");
-      setModalMessage("This account is already deleted.")
-      setShowSuccessModal(true);
+    //   setModalType("error");
+    //   setModalMessage("This account is already deleted.")
+    //   setShowSuccessModal(true);
 
-      setTimeout(() => {
-        setShowSuccessModal(false);
-      }, 1200);
-      return;
-    }
+    //   setTimeout(() => {
+    //     setShowSuccessModal(false);
+    //   }, 1200);
+    //   return;
+    // }
 
     try {
       isDeletingBankRef.current = true;

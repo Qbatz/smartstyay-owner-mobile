@@ -392,6 +392,8 @@ const TenantRegister = ({ navigation }) => {
           : undefined,
     };
 
+    console.log("pdffilterres", filters);
+    
     console.log("========== TENANT PDF FILTERS ==========");
     console.log("period:", filters.period);
     console.log("status:", filters.status);

@@ -70,8 +70,9 @@ export default function AddTenantNewform({ navigation, route }) {
 
     const customer = route.params?.customer;
     // const isEditMode = route.params?.isEdit;
+    const [isEditMode, setIsEditMode] = useState(route?.params?.mode === "EDIT")
 
-    const isEditMode = route?.params?.mode === "EDIT";
+    // const isEditMode = route?.params?.mode === "EDIT";
     const isAddMode = route?.params?.mode === "Add";
     const isBookingMode = route?.params?.mode === "BOOKING";
 
@@ -599,6 +600,37 @@ export default function AddTenantNewform({ navigation, route }) {
         }
     };
 
+    const handleSelectSearchTenant = async (item) => {
+        const customerId = item?.customerId;
+
+        if (!customerId) {
+            console.log("Customer ID not found", item);
+            return;
+        }
+
+        try {
+            Keyboard.dismiss();
+
+            setShowTenantList(false);
+            setSearchText("");
+            setDraftCustomerId(customerId);
+
+            // Switch form to Edit Mode
+            setIsEditMode(true);
+
+            // Clear previous draft data before fetching
+            resetDraftDetails();
+
+            // Fetch complete draft details using customerId
+            const response = await handleGetDraftDetails(customerId);
+
+            console.log("SELECTED DRAFT DETAILS:", response);
+
+        } catch (error) {
+            console.log("Error fetching draft details:", error);
+        }
+    };
+
     const highlightText = (text, keyword) => {
         if (!keyword) return <Text>{text}</Text>;
 
@@ -921,6 +953,65 @@ export default function AddTenantNewform({ navigation, route }) {
         return typeof value === "string" ? value.trim() : value;
     };
 
+    const parseDraftDate = (value) => {
+        if (!value) return null;
+
+        const v = String(value).trim();
+        let parsed = null;
+
+        if (v.includes("/")) {
+            parsed = dayjs(v, "DD/MM/YYYY", true);
+        } else if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
+            parsed = dayjs(v, "YYYY-MM-DD");
+        } else if (v.includes("-")) {
+            parsed = dayjs(v, "DD-MM-YYYY", true);
+        }
+
+        return parsed?.isValid() ? parsed.format("YYYY-MM-DD") : null;
+    };
+
+    const applyBookingFromDraft = (draft) => {
+        if (!draft) return;
+
+        const bookingInfo = draft.bookingInfo || {};
+        const booking = draft.booking || {};
+        const bed = draft.bedDetails || {};
+        const hostel = draft.hostelInfo || {};
+
+        // Dates
+        setPurchaseDate(parseDraftDate(bookingInfo.bookingDate || draft.bookingDate));
+        setJoiningDate(parseDraftDate(booking.joiningDateTentative || hostel.joiningDate));
+
+        // Amount
+        const amt = bookingInfo.bookingAmount || draft.bookingAmount;
+        setBookingAmount(amt ? String(amt) : "");
+
+        setReferenceNumber(
+            getValue(
+                bookingInfo.referenceNumber ||
+                bookingInfo.transactionId ||
+                draft.referenceNumber ||
+                draft.transactionId
+            )
+        );
+
+        // Floor / Room / Bed
+        const floorId = bed.floorId ?? hostel.floorId;
+        const roomId = bed.roomId ?? hostel.roomId;
+        const bedId = bed.bedId ?? hostel.bedId;
+
+        const floorName = bed.floorName || hostel.floorName || bookingInfo.bookedFloor || "";
+        const roomName = bed.roomName || hostel.roomName || bookingInfo.bookedRoom || "";
+        const bedName = bed.bedName || hostel.bedName || bookingInfo.bookedBed || "";
+
+        setFloorSelected(floorId ? { id: floorId, name: floorName } : null);
+        setRoomSelected(roomId ? { id: roomId, name: roomName } : null);
+        setBedSelected(
+            bedId ? { bedId, bedName, floorId, roomId, rentAmount: bed.rentAmount || 0 } : null
+        );
+
+        if (floorId) loadRoomsByFloor(floorId);
+    };
 
     useEffect(() => {
         if (isBookingMode) {
@@ -928,13 +1019,25 @@ export default function AddTenantNewform({ navigation, route }) {
         }
     }, [isBookingMode]);
 
-
-
     useFocusEffect(
         useCallback(() => {
-            if (route?.params?.mode === "EDIT") {
-                handleGetDraftDetails(route.params.customerId);
+            if (
+                route?.params?.mode === "EDIT" ||
+                route?.params?.mode === "BOOKING"
+            ) {
+                setIsEditMode(route?.params?.mode === "EDIT");
+
+                const customerId =
+                    route?.params?.customerId ||
+                    route?.params?.customer?.customerId;
+
+                if (customerId) {
+                    setDraftCustomerId(customerId);
+                    handleGetDraftDetails(customerId);
+                }
             } else {
+                setIsEditMode(false);
+
                 resetDraftDetails();
 
                 setDraftCustomerId(null);
@@ -955,10 +1058,127 @@ export default function AddTenantNewform({ navigation, route }) {
                     pincode: "",
                 });
 
-                setPurchaseDate(null);
-                setJoiningDate(null);
+                setSearchText("");
+                setTenantList([]);
+                setShowTenantList(false);
+                // Booking Information
+                // ===================================
+                // BOOKING DETAILS MAPPING
+                // ===================================
 
-                setBookingAmount("");
+                const bookingInfo = draftDetails?.bookingInfo || {};
+                const booking = draftDetails?.booking || {};
+
+                // 1. Booking Date
+                const bookingDateValue =
+                    bookingInfo?.bookingDate ||
+                    draftDetails?.bookingDate ||
+                    "";
+
+                setPurchaseDate(parseDraftDate(bookingDateValue));
+
+                // 2. Joining Date
+                const joiningDateValue =
+                    booking?.joiningDateTentative ||
+                    draftDetails?.hostelInfo?.joiningDate ||
+                    "";
+
+                setJoiningDate(parseDraftDate(joiningDateValue));
+
+                // 3. Booking Amount
+                const bookingAmountValue =
+                    bookingInfo?.bookingAmount ??
+                    draftDetails?.bookingAmount ??
+                    "";
+
+                setBookingAmount(
+                    bookingAmountValue !== "" && bookingAmountValue !== null
+                        ? String(bookingAmountValue)
+                        : ""
+                );
+
+                // 4. Reference Number
+                setReferenceNumber(
+                    getValue(draftDetails?.referenceNumber)
+                );
+
+
+                // ===================================
+                // FLOOR / ROOM / BED MAPPING
+                // ===================================
+
+                // API sometimes sends stay information in bedDetails
+                // and sometimes in hostelInfo.
+
+                const stayInfo =
+                    draftDetails?.hostelInfo?.floorId
+                        ? draftDetails.hostelInfo
+                        : draftDetails?.bedDetails?.floorId
+                            ? draftDetails.bedDetails
+                            : draftDetails?.hostelInfo || draftDetails?.bedDetails || {};
+
+                const floorId = stayInfo?.floorId;
+                const roomId = stayInfo?.roomId;
+                const bedId = stayInfo?.bedId;
+
+                const floorName =
+                    stayInfo?.floorName ||
+                    bookingInfo?.bookedFloor ||
+                    "";
+
+                const roomName =
+                    stayInfo?.roomName ||
+                    bookingInfo?.bookedRoom ||
+                    "";
+
+                const bedName =
+                    stayInfo?.bedName ||
+                    bookingInfo?.bookedBed ||
+                    "";
+
+                // Floor
+                if (floorId) {
+                    const selectedFloor =
+                        floors.find(f => String(f.id) === String(floorId));
+
+                    setFloorSelected(
+                        selectedFloor || {
+                            id: floorId,
+                            name: floorName,
+                        }
+                    );
+                } else {
+                    setFloorSelected(null);
+                }
+
+                // Room
+                if (roomId) {
+                    setRoomSelected({
+                        id: roomId,
+                        name: roomName,
+                    });
+
+                    // Load rooms for selected floor
+                    if (floorId) {
+                        loadRoomsByFloor(floorId);
+                    }
+                } else {
+                    setRoomSelected(null);
+                    setRooms([]);
+                }
+
+                // Bed
+                if (bedId) {
+                    setBedSelected({
+                        bedId: bedId,
+                        bedName: bedName,
+                        floorId: floorId,
+                        roomId: roomId,
+                        rentAmount: stayInfo?.monthlyRent || 0,
+                    });
+                } else {
+                    setBedSelected(null);
+                }
                 setAdvanceAmount("");
                 setCheckinRentalAmount("");
 
@@ -966,11 +1186,11 @@ export default function AddTenantNewform({ navigation, route }) {
                 setRoomSelected(null);
                 setBedSelected(null);
 
-                setEmploymentStatus("");
+                setEmploymentStatus(null);
                 setCompanyName("");
-                setJobRole("");
+                setJobRole(null);
                 setWorkLocations("");
-                setShiftType("");
+                setShiftType(null);
 
                 setGuardians([]);
                 setExtraCharges([]);
@@ -985,6 +1205,62 @@ export default function AddTenantNewform({ navigation, route }) {
             }
         }, [route?.params?.mode, route?.params?.customerId])
     );
+
+    // useFocusEffect(
+    //     useCallback(() => {
+    //         if (route?.params?.mode === "EDIT") {
+    //             handleGetDraftDetails(route.params.customerId);
+    //         } else {
+    //             resetDraftDetails();
+
+    //             setDraftCustomerId(null);
+    //             setSelectedImage(null);
+
+    //             setBasicDetails({
+    //                 firstName: "",
+    //                 lastName: "",
+    //                 mobile: "",
+    //                 email: "",
+    //             });
+
+    //             setAddressDetails({
+    //                 flat: "",
+    //                 area: "",
+    //                 landmark: "",
+    //                 city: "",
+    //                 pincode: "",
+    //             });
+
+    //             setPurchaseDate(null);
+    //             setJoiningDate(null);
+
+    //             setBookingAmount("");
+    //             setAdvanceAmount("");
+    //             setCheckinRentalAmount("");
+
+    //             setFloorSelected(null);
+    //             setRoomSelected(null);
+    //             setBedSelected(null);
+
+    //             setEmploymentStatus("");
+    //             setCompanyName("");
+    //             setJobRole("");
+    //             setWorkLocations("");
+    //             setShiftType("");
+
+    //             setGuardians([]);
+    //             setExtraCharges([]);
+    //             setOneTimePaymentCharges([]);
+
+    //             setAadhaarImage(null);
+    //             setPanCardImage(null);
+
+    //             setReferenceNumber("");
+    //             setCurrentStep(1);
+    //             setActiveTab("CheckIn");
+    //         }
+    //     }, [route?.params?.mode, route?.params?.customerId])
+    // );
 
     useEffect(() => {
         if (!draftDetails) return;
@@ -1032,19 +1308,23 @@ export default function AddTenantNewform({ navigation, route }) {
         setIdProofType(getValue(draftDetails?.idProof?.type));
         setIdProofNumber(getValue(draftDetails?.idProof?.number));
 
-        setPurchaseDate(
-            getValue(draftDetails?.bookingInfo?.bookingDate)
-                ? dayjs(draftDetails.bookingInfo?.bookingDate, "DD-MM-YYYY")
-                : null
-        );
 
-        setJoiningDate(
-            getValue(draftDetails?.booking?.joiningDateTentative)
-                ? dayjs(draftDetails.booking?.joiningDateTentative, "DD-MM-YYYY")
-                : null
-        );
+     applyBookingFromDraft(draftDetails);
 
-        setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, "")));
+
+        // setPurchaseDate(
+        //     getValue(draftDetails?.bookingInfo?.bookingDate)
+        //         ? dayjs(draftDetails.bookingInfo?.bookingDate, "DD-MM-YYYY")
+        //         : null
+        // );
+
+        // setJoiningDate(
+        //     getValue(draftDetails?.booking?.joiningDateTentative)
+        //         ? dayjs(draftDetails.booking?.joiningDateTentative, "DD-MM-YYYY")
+        //         : null
+        // );
+
+        // setBookingAmount(String(getValue(draftDetails?.bookingInfo?.bookingAmount, "")));
 
         setReferenceNumber(getValue(draftDetails?.referenceNumber));
 
@@ -1055,34 +1335,34 @@ export default function AddTenantNewform({ navigation, route }) {
         );
 
 
-        setFloorSelected(
-            draftDetails?.hostelInfo?.floorId
-                ? {
-                    id: draftDetails.hostelInfo.floorId,
-                    name: getValue(draftDetails.hostelInfo.floorName),
-                }
-                : null
-        );
+        // setFloorSelected(
+        //     draftDetails?.hostelInfo?.floorId
+        //         ? {
+        //             id: draftDetails.hostelInfo.floorId,
+        //             name: getValue(draftDetails.hostelInfo.floorName),
+        //         }
+        //         : null
+        // );
 
-        setRoomSelected(
-            draftDetails?.hostelInfo?.roomId
-                ? {
-                    id: draftDetails.hostelInfo.roomId,
-                    name: getValue(draftDetails.hostelInfo.roomName),
-                }
-                : null
-        );
+        // setRoomSelected(
+        //     draftDetails?.hostelInfo?.roomId
+        //         ? {
+        //             id: draftDetails.hostelInfo.roomId,
+        //             name: getValue(draftDetails.hostelInfo.roomName),
+        //         }
+        //         : null
+        // );
 
-        setBedSelected(
-            draftDetails?.hostelInfo?.bedId
-                ? {
-                    bedId: draftDetails.hostelInfo.bedId,
-                    bedName: getValue(draftDetails.hostelInfo.bedName),
-                    floorId: draftDetails.hostelInfo.floorId,
-                    roomId: draftDetails.hostelInfo.roomId,
-                }
-                : null
-        );
+        // setBedSelected(
+        //     draftDetails?.hostelInfo?.bedId
+        //         ? {
+        //             bedId: draftDetails.hostelInfo.bedId,
+        //             bedName: getValue(draftDetails.hostelInfo.bedName),
+        //             floorId: draftDetails.hostelInfo.floorId,
+        //             roomId: draftDetails.hostelInfo.roomId,
+        //         }
+        //         : null
+        // );
 
         const job = draftDetails?.jobDetails || {};
 
@@ -1171,6 +1451,8 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
     }, [draftDetails]);
+
+
 
 
     // useEffect(() => {
@@ -3820,25 +4102,26 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         <TouchableOpacity
                                                             style={styles.tenantRow}
                                                             activeOpacity={0.8}
-                                                            onPress={() => {
-                                                                setShowTenantList(false);
-                                                                setSearchText("");
+                                                            onPress={() => handleSelectSearchTenant(item)}
+                                                        // onPress={() => {
+                                                        //     setShowTenantList(false);
+                                                        //     setSearchText("");
 
-                                                                setBasicDetails(prev => ({
-                                                                    ...prev,
-                                                                    firstName: item.firstName,
-                                                                    lastName: item.lastName,
-                                                                    mobile: item.mobile.replace("+91 ", ""),
-                                                                    email: item.emailId,
-                                                                }));
-                                                                setSelectedImage(
-                                                                    item?.profilePic
-                                                                        ? { uri: item?.profilePic }
-                                                                        : null
-                                                                )
+                                                        //     setBasicDetails(prev => ({
+                                                        //         ...prev,
+                                                        //         firstName: item.firstName,
+                                                        //         lastName: item.lastName,
+                                                        //         mobile: item.mobile.replace("+91 ", ""),
+                                                        //         email: item.emailId,
+                                                        //     }));
+                                                        //     setSelectedImage(
+                                                        //         item?.profilePic
+                                                        //             ? { uri: item?.profilePic }
+                                                        //             : null
+                                                        //     )
 
-                                                                // setCustomerId(item.customerId);
-                                                            }}>
+                                                        // }}
+                                                        >
                                                             {item.profilePic ? (
                                                                 <Image
                                                                     source={{ uri: item.profilePic }}
@@ -4625,11 +4908,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 clearAllErrors();
                                                 resetCheckInState();
                                                 clearAllErrors();
-                                                setFloorSelected(null)
-                                                setRoomSelected(null)
-                                                setBedSelected(null)
-                                                setPurchaseDate(null);
-                                                setJoiningDate(null);
+                                                applyBookingFromDraft(draftDetails);
                                             }}
 
                                         >
