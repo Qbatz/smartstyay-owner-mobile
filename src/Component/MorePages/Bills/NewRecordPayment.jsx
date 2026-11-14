@@ -163,40 +163,123 @@ const NewRecordPayment = ({ route }) => {
     // }));
 
 
+    const PaymentMethodIcon = ({ item, size = 42 }) => {
+        const type = item?.iconType;
+
+        const iconBackground = {
+            CASH: "#DDFBE8",
+            CARD: "#FFEBD2",
+            DEBIT_CARD: "#FFEBD2",
+            UPI: "#F3E5FF",
+            BANK: "#DCE8FF",
+        };
+
+        return (
+            <View
+                style={{
+                    width: size,
+                    height: size,
+                    borderRadius: size / 2,
+                    backgroundColor: iconBackground[type] || "#DCE8FF",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginRight: 12,
+                }}
+            >
+                {type === "CASH" ? (
+                    <Image
+                        source={CashIcon}
+                        style={{ width: 22, height: 22 }}
+                        resizeMode="contain"
+                    />
+                ) : type === "UPI" && item?.upiAppIcon ? (
+                    <Image
+                        source={{ uri: item.upiAppIcon }}
+                        style={{ width: size * 0.55, height: size * 0.55 }}
+                        resizeMode="contain"
+                    />
+                ) : type === "CARD" || type === "DEBIT_CARD" ? (
+                    <View style={styles.cardIcon}>
+                        <View style={styles.cardIconLine} />
+                        <View style={styles.cardIconSmallLine} />
+                    </View>
+                ) : (
+                    <Image
+                        source={BankIcon}
+                        style={{ width: 23, height: 23 }}
+                        resizeMode="contain"
+                    />
+                )}
+            </View>
+        );
+    };
+
+
     const transactionOptions = (
         InitializeRecordPaymentDetails?.accountInfo || []
     ).map((bank, index) => {
-        const accountType = String(
-            bank?.type || bank?.accountType || bank?.bankName || ""
-        ).trim().toUpperCase();
+        const accountType = String(bank?.accountType || bank?.type || "")
+            .trim()
+            .toUpperCase();
 
-        const isCash =
-            bank?.bankName?.toUpperCase() === "CASH" ||
-            accountType === "CASH";
+        let iconType = "BANK";
 
-        const iconType =
-            accountType === "BANK" || bank?.bankName?.toUpperCase() === "BANK"
-                ? "BANK"
-                : isCash
-                    ? "CASH"
-                    : "CARD";
+        switch (accountType) {
+            case "CASH":
+                iconType = "CASH";
+                break;
+            case "CARD":
+                iconType = "CARD";
+                break;
+            case "UPI":
+                iconType = "UPI";
+                break;
+            case "DEBIT_CARD":
+                iconType = "DEBIT_CARD";
+                break;
+            case "BANK":
+                iconType = "BANK";
+                break;
+            default:
+                iconType = bank?.isUpi
+                    ? "UPI"
+                    : bank?.isBank
+                        ? "BANK"
+                        : "CARD";
+        }
+
+        const isCash = iconType === "CASH";
+
+        const title = isCash
+            ? bank?.displayName || bank?.accountHolderName
+            : bank?.accountHolderName || bank?.displayName;
+
+        const subtitle = isCash
+            ? `CASH - ${bank?.displayName || bank?.accountHolderName || ""}`
+            : ["CARD", "DEBIT_CARD"].includes(iconType)
+                ? `${iconType} - ${bank?.displayName || ""}`
+                : `${bank?.bankName ? `${bank.bankName} - ` : ""}${bank?.displayName || ""}`;
 
         return {
             id: bank?.bankId || `account-${index}`,
             bankId: bank?.bankId,
             value: bank?.bankId,
 
+            title,
+            subtitle,
+
             displayName: bank?.displayName || "",
             bankName: bank?.bankName || "",
-            holderName: bank?.accountHolderName || bank?.holderName || "",
+            holderName: bank?.accountHolderName || "",
 
-            accountHolderName: bank?.accountHolderName || bank?.holderName || "Account",
             accountType,
             iconType,
-            isCash,
+            upiAppIcon: bank?.upiAppIcon || null,
+
             data: bank,
         };
     });
+
 
 
 
@@ -546,55 +629,55 @@ const NewRecordPayment = ({ route }) => {
                                     { marginRight: 4 }
                                 ]}
                             >
+
                                 {selectedMode ? (
                                     (() => {
                                         const selectedPaymentMethod = transactionOptions.find(
-                                            o => o.id === selectedMode
+                                            item => item.id === selectedMode
                                         );
 
-                                        // const isCash = selectedPaymentMethod?.isCash;
-
-                                        const isCash = selectedPaymentMethod?.iconType === "CASH";
-                                        const isBank = selectedPaymentMethod?.iconType === "BANK";
+                                        if (!selectedPaymentMethod) return null;
 
                                         return (
                                             <>
-                                                {/* Icon */}
-                                                <View
-                                                    style={[
-                                                        styles.selectedPaymentIcon,
-                                                        isCash
-                                                            ? styles.cashIconBg
-                                                            : styles.bankIconBg,
-                                                    ]}
-                                                >
-                                                    <Image
-                                                        source={isCash ? CashIcon : BankIcon}
-                                                        style={{
-                                                            width: 20,
-                                                            height: 20,
-                                                        }}
-                                                    />
-                                                </View>
+                                                <PaymentMethodIcon
+                                                    item={selectedPaymentMethod}
+                                                    size={42}
+                                                />
 
-                                                {/* Name + Type */}
                                                 <View style={styles.selectedPaymentDetails}>
                                                     <Text
                                                         style={styles.selectedPaymentName}
                                                         numberOfLines={1}
                                                     >
-                                                        {selectedPaymentMethod?.displayName}
+                                                        {selectedPaymentMethod.title}
                                                     </Text>
 
                                                     <Text
                                                         style={styles.selectedPaymentSubText}
-                                                        numberOfLines={2}
+                                                        numberOfLines={1}
                                                     >
-                                                        {selectedPaymentMethod?.holderName}
-                                                        {" - "}
-                                                        {selectedPaymentMethod?.bankName}
+                                                        {selectedPaymentMethod.subtitle}
+                                                    </Text>
+                                                </View>
 
-
+                                                <View
+                                                    style={[
+                                                        styles.paymentTypeBadge,
+                                                        styles[
+                                                        `${selectedPaymentMethod.iconType.toLowerCase()}Badge`
+                                                        ],
+                                                    ]}
+                                                >
+                                                    <Text
+                                                        style={[
+                                                            styles.paymentTypeText,
+                                                            styles[
+                                                            `${selectedPaymentMethod.iconType.toLowerCase()}Text`
+                                                            ],
+                                                        ]}
+                                                    >
+                                                        {selectedPaymentMethod.iconType}
                                                     </Text>
                                                 </View>
                                             </>
@@ -605,6 +688,7 @@ const NewRecordPayment = ({ route }) => {
                                         Select payment mode
                                     </Text>
                                 )}
+
 
                                 <Image
                                     source={DownArrow}
@@ -680,18 +764,16 @@ const NewRecordPayment = ({ route }) => {
                                 </View>
                             )} */}
 
+
                             {showPaymentMode && (
                                 <View style={styles.transactiondropdown}>
                                     <ScrollView
                                         nestedScrollEnabled
                                         showsVerticalScrollIndicator={false}
+                                        keyboardShouldPersistTaps="handled"
                                     >
                                         {transactionOptions.map((opt) => {
                                             const isSelected = selectedMode === opt.id;
-
-                                            // const isCash = opt.isCash;
-                                            const isCash = opt.iconType === "CASH";
-                                            const isBank = opt.iconType === "BANK";
 
                                             return (
                                                 <TouchableOpacity
@@ -707,27 +789,8 @@ const NewRecordPayment = ({ route }) => {
                                                         setModeError("");
                                                     }}
                                                 >
-                                                    {/* LEFT ICON */}
-                                                    <View
-                                                        style={[
-                                                            styles.paymentMethodIcon,
-                                                            isCash
-                                                                ? styles.cashIconBg
-                                                                : styles.bankIconBg,
-                                                        ]}
-                                                    >
-                                                        <Image source={isCash ? CashIcon : BankIcon} style={{ height: 20, width: 20 }} />
-
-                                                        {/* <MaterialCommunityIcons
-                                                            name={
-                                                                isCash
-                                                                    ? "wallet-outline"
-                                                                    : "bank-outline"
-                                                            }
-                                                            size={25}
-                                                            color={isCash ? "#009B42" : "#2457E6"}
-                                                        /> */}
-                                                    </View>
+                                                    {/* PAYMENT ICON */}
+                                                    <PaymentMethodIcon item={opt} size={48} />
 
                                                     {/* ACCOUNT DETAILS */}
                                                     <View style={styles.paymentMethodDetails}>
@@ -735,39 +798,31 @@ const NewRecordPayment = ({ route }) => {
                                                             style={styles.paymentMethodName}
                                                             numberOfLines={1}
                                                         >
-                                                            {opt?.displayName}
+                                                            {opt.title}
                                                         </Text>
 
                                                         <Text
                                                             style={styles.paymentMethodSubText}
-                                                            numberOfLines={2}
+                                                            numberOfLines={1}
                                                         >
-                                                            {opt?.holderName}
-                                                            {" - "}
-                                                            {opt?.bankName}
-
-
+                                                            {opt.subtitle}
                                                         </Text>
                                                     </View>
-                                                    {/* CASH / BANK BADGE */}
+
+                                                    {/* ACCOUNT TYPE BADGE */}
                                                     <View
                                                         style={[
                                                             styles.paymentTypeBadge,
-                                                            isCash
-                                                                ? styles.cashBadge
-                                                                : styles.bankBadge,
+                                                            styles[`${opt.iconType.toLowerCase()}Badge`],
                                                         ]}
                                                     >
                                                         <Text
                                                             style={[
                                                                 styles.paymentTypeText,
-                                                                isCash
-                                                                    ? styles.cashText
-                                                                    : styles.bankText,
+                                                                styles[`${opt.iconType.toLowerCase()}Text`],
                                                             ]}
                                                         >
                                                             {opt.iconType}
-                                                            {/* {isCash ? "CASH" : "BANK"} */}
                                                         </Text>
                                                     </View>
                                                 </TouchableOpacity>
@@ -776,6 +831,9 @@ const NewRecordPayment = ({ route }) => {
                                     </ScrollView>
                                 </View>
                             )}
+
+
+
                             {modeError && <ErrorMessage message={modeError} type="error" />}
 
 
@@ -1029,77 +1087,68 @@ const styles = StyleSheet.create({
     },
     transactiondropdown: {
         position: "absolute",
-        top: 100,
-        left: 0,
-        right: 0,
-
-        backgroundColor: "#FFFFFF",
-
-        borderWidth: 1,
-        borderColor: "#D9DDE5",
-
-        borderRadius: 16,
-
-        zIndex: 9999,
-        elevation: 10,
-
-        maxHeight: 220,
-
-        overflow: "hidden",
-
-        shadowColor: "#000",
-        shadowOffset: {
-            width: 0,
-            height: 4,
-        },
-        shadowOpacity: 0.12,
-        shadowRadius: 8,
+    top: 100,
+    left: 0,
+    right: 0,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D9DDE5",
+    borderRadius: 16,
+    zIndex: 9999,
+    elevation: 10,
+    maxHeight: 260,
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
     },
+
     paymentMethodRow: {
         minHeight: 82,
-
-        flexDirection: "row",
-        alignItems: "center",
-
-        paddingHorizontal: 14,
-        paddingVertical: 10,
-
-        backgroundColor: "#FFFFFF",
-
-        borderBottomWidth: 1,
-        borderBottomColor: "#F0F1F3",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F1F3",
     },
+paymentMethodRowSelected: {
+    backgroundColor: "#F5F7FF",
+},
 
-    paymentMethodRowSelected: {
-        backgroundColor: "#F5F7FF",
-    },
+paymentMethodDetails: {
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 8,
+},
 
-    paymentMethodIcon: {
-        width: 34,
-        height: 34,
+paymentMethodName: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+    color: "#222222",
+},
 
-        borderRadius: 17,
+paymentMethodSubText: {
+    fontSize: 14,
+    fontFamily: "Gilroy-Medium",
+    color: "#697386",
+    marginTop: 4,
+},
 
-        alignItems: "center",
-        justifyContent: "center",
+paymentTypeBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+},
 
-        marginRight: 12,
-    },
-
-    cashIconBg: {
-        backgroundColor: "#DDFBE8",
-    },
-
-    bankIconBg: {
-        backgroundColor: "#DCE8FF",
-    },
-
-    paymentMethodDetails: {
-        flex: 1,
-        justifyContent: "center",
-        marginRight: 8,
-    },
-
+paymentTypeText: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+},
     paymentMethodName: {
         fontSize: 16,
         fontFamily: "Gilroy-Semibold",
@@ -1114,29 +1163,17 @@ const styles = StyleSheet.create({
         marginTop: 3,
     },
 
-    paymentTypeBadge: {
-        minWidth: 64,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+  
 
-        borderRadius: 20,
+    // cashBadge: {
+    //     backgroundColor: "#DDFBE8",
+    // },
 
-        alignItems: "center",
-        justifyContent: "center",
-    },
+    // bankBadge: {
+    //     backgroundColor: "#DCE8FF",
+    // },
 
-    cashBadge: {
-        backgroundColor: "#DDFBE8",
-    },
-
-    bankBadge: {
-        backgroundColor: "#DCE8FF",
-    },
-
-    paymentTypeText: {
-        fontSize: 12,
-        fontFamily: "Gilroy-Semibold",
-    },
+   
 
     cashText: {
         color: "#07883C",
@@ -1229,6 +1266,70 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Regular",
         color: "#222222",
     },
+
+cardIcon: {
+    width: 27,
+    height: 20,
+    borderWidth: 1.8,
+    borderColor: "#FF9800",
+    borderRadius: 4,
+    justifyContent: "center",
+    overflow: "hidden",
+},
+
+cardIconLine: {
+    width: "100%",
+    height: 4,
+    backgroundColor: "#FF9800",
+    marginTop: 3,
+},
+
+cardIconSmallLine: {
+    width: 7,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: "#FF9800",
+    marginTop: 4,
+    marginLeft: 4,
+},
+
+// Dropdown badges
+
+cashBadge: {
+    backgroundColor: "#DDFBE8",
+},
+cashText: {
+    color: "#07883C",
+},
+
+cardBadge: {
+    backgroundColor: "#FFEBD2",
+},
+cardText: {
+    color: "#E65100",
+},
+
+debit_cardBadge: {
+    backgroundColor: "#FFEBD2",
+},
+debit_cardText: {
+    color: "#E65100",
+},
+
+upiBadge: {
+    backgroundColor: "#F3E5FF",
+},
+upiText: {
+    color: "#8515D9",
+},
+
+bankBadge: {
+    backgroundColor: "#DCE8FF",
+},
+bankText: {
+    color: "#2457E6",
+},
+
 
 })
 export default NewRecordPayment;

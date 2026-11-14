@@ -1880,35 +1880,77 @@ export default function OverviewTab({ customerDetails,
               </TouchableOpacity>
             </View>
 
-            {Array.isArray(customerDetails?.assignedAmenities) &&
-              customerDetails?.assignedAmenities?.length > 0 ? (
+          
+{Array.isArray(customerDetails?.assignedAmenities) &&
+  customerDetails.assignedAmenities.length > 0 ? (
 
-              customerDetails.assignedAmenities.map((item, index) => (
-                <View style={[styles.amenityItem, { flexDirection: 'row', alignItems: 'center' }]} key={item.amenityId || index}>
+  customerDetails.assignedAmenities.map((item, index) => {
 
-                  <View style={{ paddingVertical: 5.93, paddingHorizontal: 5.5, backgroundColor: "#1E45E10F", borderRadius: 10 }}>
-                    <Image source={AmenitiesClipPath} style={{ width: 26, height: 26 }} />
-                  </View>
+    const endDate = item?.endDate?.trim();
 
-                  <View style={{ marginLeft: 10 }}>
-                    <Text style={styles.amenityTitle}>
-                      {item.amenityName}
-                    </Text>
+    const formattedEndDate = endDate
+      ? endDate.includes("-")
+        ? endDate.split("-").reverse().join("/")
+        : endDate
+      : "";
 
-                    <Text style={styles.amenityPrice}>
-                      ₹ {item.amenityAmount} / month
-                    </Text>
-                  </View>
-                </View>
-              ))
+    return (
+      <View
+        style={[
+          styles.amenityItem,
+          {
+            flexDirection: "row",
+            alignItems: "center",
+          },
+        ]}
+        key={item.amenityId || index}
+      >
 
-            ) : (
+        {/* ICON */}
+        <View
+          style={{
+            paddingVertical: 5.93,
+            paddingHorizontal: 5.5,
+            backgroundColor: "#1E45E10F",
+            borderRadius: 10,
+          }}
+        >
+          <Image
+            source={AmenitiesClipPath}
+            style={{ width: 26, height: 26 }}
+          />
+        </View>
 
-              <Text style={styles.noAmenityText}>
-                No amenities assigned
-              </Text>
+        {/* AMENITY DETAILS */}
+        <View style={{ marginLeft: 10, flex: 1 }}>
+          <Text style={styles.amenityTitle}>
+            {item.amenityName}
+          </Text>
 
-            )}
+          <Text style={styles.amenityPrice}>
+            ₹ {item.amenityAmount} / month
+          </Text>
+        </View>
+
+        {/* END DATE BADGE */}
+        {!!endDate && (
+          <View style={styles.amenityEndDateBadge}>
+            <Text style={styles.amenityEndDateText}>
+              Ending on {formattedEndDate}
+            </Text>
+          </View>
+        )}
+
+      </View>
+    );
+  })
+
+) : (
+  <Text style={styles.noAmenityText}>
+    No amenities assigned
+  </Text>
+)}
+
 
 
 
@@ -2852,4 +2894,21 @@ const styles = StyleSheet.create({
     color: "#FFF",
     fontFamily: "Gilroy-Semibold",
   },
+
+amenityEndDateBadge: {
+  backgroundColor: "#FEE2E2",
+  paddingHorizontal: 10,
+  paddingVertical: 8,
+  borderRadius: 10,
+  marginLeft: 6,
+  alignSelf: "center",
+},
+
+amenityEndDateText: {
+  color: "#DC2626",
+  fontSize: 12,
+  fontFamily: "Gilroy-Medium",
+  textAlign: "center",
+},
+
 });
