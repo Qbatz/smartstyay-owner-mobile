@@ -38,7 +38,7 @@ export default function AddBankAccount({ mode = "add",
   const { activeHostelId } = useContext(CommonContexts);
   const { createBankAccount, responsiblePersonList, NewgetBankList, getAllTransactions,
     getResponsiblePersonList, bankList, addBanking, editBanking, errorMsg, getBankListByHostel, newtransactionList, upiAppList,
-    getQrCardTypeList, getBankMethod, createCreditCardAccount } = useContext(BankingContext);
+    getQrCardTypeList, getBankMethod, createCreditCardAccount, updateBankAccount } = useContext(BankingContext);
 
   const { createPaymentMethod } = useContext(CustomerContext)
 
@@ -104,68 +104,147 @@ export default function AddBankAccount({ mode = "add",
     linkedBankId: "",
   })
 
+
+  const normalizeCashType = (value) => {
+    const normalized = String(value ?? "")
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+
+    if (normalized === "PETTY_CASH") return "PETTY_CASH";
+    if (normalized === "OFFICE_CASH") return "OFFICE_CASH";
+
+    return normalized;
+  };
+
+  const normalizeCardNetwork = (value) => {
+    const normalized = String(value ?? "")
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+
+    const aliases = {
+      MASTERCARD: "MASTER_CARD",
+      AMEX: "AMERICAN_EXPRESS",
+      DINERS_CLUB: "DINNERS_CLUB",
+    };
+
+    return aliases[normalized] || normalized;
+  };
+
+
+ 
+useEffect(() => {
+  if (!isEditMode || !screenEditTab) return;
+
+  const item =
+    screenEditTab?.selectedItem?.raw ||
+    screenEditTab?.selectedItem ||
+    screenEditTab?.raw ||
+    screenEditTab;
+
+  const type = String(
+    item?.accountType || item?.bankAccountType || ""
+  ).toUpperCase();
+
+  const selectedType =
+    type === "CARD" || type === "CREDIT_CARD"
+      ? "Credit"
+      : type === "CASH"
+        ? "cash"
+        : "bank";
+
+  // API uses cardNerwork (typo)
+  const cardNetworkValue =
+    item?.cardNetwork ??
+    item?.cardNerwork ??
+    item?.cardNetworkType ??
+    "";
+
+  const mappedCardNetwork =
+    normalizeCardNetwork(cardNetworkValue);
+
+  console.log("CARD NETWORK DEBUG:", {
+    original: cardNetworkValue,
+    mapped: mappedCardNetwork,
+  });
+
+  setAccountType(selectedType);
+
+  setForm(prev => ({
+    ...prev,
+    displayName: item?.displayName || "",
+    bankName: item?.bankName || "",
+    accountHolder: item?.accountHolder || "",
+    accountNumber: String(item?.accountNumber || ""),
+    branch: item?.branchName || "",
+    ifsc: item?.ifscCode || "",
+    accountCategory: item?.bankAccountType || "",
+    cashType: normalizeCashType(item?.cashAccountType),
+    openingBalance: String(item?.openingBalance ?? item?.balance ?? ""),
+    cardNetwork: mappedCardNetwork,
+    cardHolderName: item?.accountHolder || "",
+    cardLast4: String(item?.cardNumber || "").slice(-4),
+    creditLimit: String(item?.creditLimit ?? ""),
+    billingCycle: String(item?.billingCycle ?? ""),
+  }));
+
+  setErrors({});
+}, [isEditMode, screenEditTab]);
+
+
+
+
   useEffect(() => {
-    if (!isEditMode || !screenEditTab?.raw) return;
+    if (
+      !isEditMode ||
+      accountType !== "cash" ||
+      !screenEditTab?.raw ||
+      !responsiblePersonList?.length
+    ) {
+      return;
+    }
 
-    const item = screenEditTab.raw;
+    const rawPerson =
+      screenEditTab.raw.responsiblePerson;
 
-    console.log("EDIT BANK DATA RECEIVED =>", item);
+    const personValue =
+      screenEditTab.raw.responsiblePersonId ||
+      rawPerson?.userId ||
+      rawPerson;
 
-    const type = String(item.accountType || "").toUpperCase();
+    if (!personValue) return;
 
-    const selectedType =
-      type === "CARD"
-        ? "Credit"
-        : type === "CASH"
-          ? "cash"
-          : "bank";
+    const selectedPerson = responsiblePersonList.find(
+      (person) => {
+        const fullName =
+          `${person.firstName ?? ""} ${person.lastName ?? ""}`
+            .trim()
+            .toLowerCase();
 
-    setAccountType(selectedType);
+        return (
+          String(person.userId) === String(personValue) ||
+          fullName === String(personValue).trim().toLowerCase()
+        );
+      }
+    );
 
-    setForm({
-      displayName: item.displayName || "",
-      bankName: item.bankName || "",
+    if (selectedPerson) {
+      setResponsiblePerson(selectedPerson.userId);
 
-      accountHolder:
-        item.accountHolder ||
-        item.accountHolderName ||
-        item.holderName || "",
+      setForm((prev) => ({
+        ...prev,
+        responsiblePerson: selectedPerson.userId,
+      }));
+    }
+  }, [
+    isEditMode,
+    accountType,
+    screenEditTab?.raw,
+    responsiblePersonList,
+  ]);
 
-      accountNumber: String(
-        item.accountNumber || item.accountNo || ""
-      ),
 
-      branch: item.branchName || "",
-      ifsc: item.ifscCode || "",
-
-      accountCategory: item.bankAccountType || "",
-      cashType: item.cashAccountType || "",
-      responsiblePerson: item.responsiblePerson || "",
-
-      openingBalance: String(
-        item.openingBalance ?? item.balance ?? ""
-      ),
-
-      description: item.description || "",
-
-      cardNetwork: item.cardNetwork || "",
-
-      cardHolderName:
-        item.accountHolder ||
-        item.accountHolderName ||
-        item.holderName || "",
-
-      cardLast4: String(item.cardNumber || "").slice(-4),
-
-      creditLimit: String(item.creditLimit ?? ""),
-      billingCycle: String(item.billingCycle ?? ""),
-      linkedBankId: item.linkedBankId || "",
-    });
-
-    setLinkBank(Boolean(item.linkedBankId));
-    setErrors({});
-
-  }, [isEditMode, screenEditTab?.raw]);
 
   const billingCycleOptions = [
     { label: "1st of every month", value: "1" },
@@ -297,22 +376,22 @@ export default function AddBankAccount({ mode = "add",
 
   const bankNameRegex = /^[a-zA-Z.&\s]{3,50}$/;
 
- const isAccountNoValid = (value) => {
-  const v = String(value ?? "").trim();
+  const isAccountNoValid = (value) => {
+    const v = String(value ?? "").trim();
 
-  // Optional field
-  if (!v) return "";
+    // Optional field
+    if (!v) return "";
 
-  if (!/^\d{9,18}$/.test(v)) {
-    return "Account Number must be 9-18 digits";
-  }
+    if (!/^\d{9,18}$/.test(v)) {
+      return "Account Number must be 9-18 digits";
+    }
 
-  if (/^0+$/.test(v)) {
-    return "Account Number cannot be zeros";
-  }
+    if (/^0+$/.test(v)) {
+      return "Account Number cannot be zeros";
+    }
 
-  return "";
-};
+    return "";
+  };
 
 
   const handleIfscChange = (value) => {
@@ -459,7 +538,7 @@ export default function AddBankAccount({ mode = "add",
   //       err.displayName = "Please Enter Display Name";
   //     }
 
-    
+
 
   //     const selectedBankId = linkBank
   //       ? form.linkedBankId
@@ -476,7 +555,7 @@ export default function AddBankAccount({ mode = "add",
   //       return;
   //     }
 
-     
+
   //   }
 
   //   // if (!form.creditLimit) {
@@ -489,85 +568,85 @@ export default function AddBankAccount({ mode = "add",
   // };
 
 
-  
-const validate = () => {
-  let err = {};
+
+  const validate = () => {
+    let err = {};
 
 
-  if (!form.displayName?.trim()) {
-    err.displayName = "Please Enter Account Name";
-  }
-
-  // BANK ACCOUNT
-  if (accountType === "bank") {
-
-   
-    if (!form.bankName?.trim()) {
-      err.bankName = "Please Enter Bank Name";
-    } else if (!bankNameRegex.test(form.bankName.trim())) {
-      err.bankName = "Please Enter Valid Bank Name";
+    if (!form.displayName?.trim()) {
+      err.displayName = "Please Enter Account Name";
     }
 
+    // BANK ACCOUNT
+    if (accountType === "bank") {
 
-    if (!form.accountHolder?.trim()) {
-      err.accountHolder = "Please Enter Account Holder Name";
+
+      if (!form.bankName?.trim()) {
+        err.bankName = "Please Enter Bank Name";
+      } else if (!bankNameRegex.test(form.bankName.trim())) {
+        err.bankName = "Please Enter Valid Bank Name";
+      }
+
+
+      if (!form.accountHolder?.trim()) {
+        err.accountHolder = "Please Enter Account Holder Name";
+      }
+
+
+      const accErr = isAccountNoValid(form.accountNumber);
+
+      if (accErr) {
+        err.accountNumber = accErr;
+      }
+
+
+      const ifsc = form.ifsc?.trim().toUpperCase();
+
+      if (ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+        err.ifsc = "Please Enter Valid IFSC Code";
+      }
+
+
     }
 
+    // CASH ACCOUNT
+    if (accountType === "cash") {
 
-    const accErr = isAccountNoValid(form.accountNumber);
 
-    if (accErr) {
-      err.accountNumber = accErr;
+      if (!form.cashType?.trim()) {
+        err.cashType = "Please Enter Cash Account Type";
+      }
+
+
     }
 
-   
-    const ifsc = form.ifsc?.trim().toUpperCase();
+    // CREDIT CARD
+    if (accountType === "Credit") {
 
-    if (ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
-      err.ifsc = "Please Enter Valid IFSC Code";
+      if (!form.cardNetwork) {
+        err.cardNetwork = "Please Select Card Network";
+      }
+
+      if (!form.cardHolderName?.trim()) {
+        err.cardHolderName = "Please Enter Card Holder Name";
+      }
+
+      if (!form.cardLast4) {
+        err.cardLast4 = "Please Enter Last 4 Digits";
+      } else if (!/^\d{4}$/.test(form.cardLast4)) {
+        err.cardLast4 = "Card Number must be 4 digits";
+      }
+
+
+      if (linkBank && !form.linkedBankId) {
+        err.linkedBankId = "Please Select Bank Account";
+      }
     }
 
- 
-  }
+    setErrors(err);
 
-  // CASH ACCOUNT
-  if (accountType === "cash") {
-
-   
-    if (!form.cashType?.trim()) {
-      err.cashType = "Please Enter Cash Account Type";
-    }
-
-
-  }
-
-  // CREDIT CARD
-  if (accountType === "Credit") {
-
-    if (!form.cardNetwork) {
-      err.cardNetwork = "Please Select Card Network";
-    }
-
-    if (!form.cardHolderName?.trim()) {
-      err.cardHolderName = "Please Enter Card Holder Name";
-    }
-
-    if (!form.cardLast4) {
-      err.cardLast4 = "Please Enter Last 4 Digits";
-    } else if (!/^\d{4}$/.test(form.cardLast4)) {
-      err.cardLast4 = "Card Number must be 4 digits";
-    }
-
-
-    if (linkBank && !form.linkedBankId) {
-      err.linkedBankId = "Please Select Bank Account";
-    }
-  }
-
-  setErrors(err);
-
-  return Object.keys(err).length === 0;
-};
+    return Object.keys(err).length === 0;
+  };
 
 
   const handleChange = (key, value) => {
@@ -662,67 +741,58 @@ const validate = () => {
           return;
         }
 
-        const payload = {
-          accountHolderName:
-            accountType === "Credit"
-              ? form.cardHolderName.trim()
-              : accountType === "bank"
-                ? form.accountHolder.trim()
-                : "",
 
-          bankName:
-            accountType === "bank" ? form.bankName.trim() : "",
+        const payload =
+          accountType === "cash"
+            ? {
+            
+              newAccountType: "Cash",
+              displayName: form.displayName.trim(),
+              cashAccountType: form.cashType,
+              responsiblePerson: form.responsiblePerson,
+              description: form.description.trim(),
 
-          displayName: form.displayName.trim(),
+             
+            }
+            : accountType === "bank"
+              ? {
+            
+                newAccountType: "Bank",
+                accountHolderName: form.accountHolder.trim(),
+                bankName: form.bankName.trim(),
+                displayName: form.displayName.trim(),
+                branchName: form.branch.trim(),
+                accountNo: form.accountNumber,
+                ifscCode: form.ifsc,
+                description: form.description.trim(),
+              }
+              : {
+              
+                newAccountType: "Card",
+                accountHolderName: form.cardHolderName.trim(),
+                displayName: form.displayName.trim(),
+                cardNumber: String(form.cardLast4),
+                creditLimit: Number(form.creditLimit) || 0,
+                billingCycle: Number(form.billingCycle) || 0,
+                cardNetwork: form.cardNetwork,
+                linkedBankId: linkBank ? form.linkedBankId : "",
+              };
 
-          branchName:
-            accountType === "bank" ? form.branch.trim() : "",
-
-          accountNo:
-            accountType === "bank" ? form.accountNumber : "",
-
-          ifscCode:
-            accountType === "bank" ? form.ifsc : "",
-
-          description: form.description.trim(),
-
-          newAccountType:
-            accountType === "bank"
-              ? "BANK"
-              : accountType === "cash"
-                ? "CASH"
-                : "CARD",
-
-          cashAccountType:
-            accountType === "cash" ? form.cashType : "",
-
-          responsiblePerson:
-            accountType === "cash" ? form.responsiblePerson : "",
-
-          cardNumber:
-            accountType === "Credit" ? String(form.cardLast4) : "",
-
-          creditLimit:
-            accountType === "Credit"
-              ? Number(form.creditLimit) || 0
-              : 0,
-
-          billingCycle:
-            accountType === "Credit"
-              ? Number(form.billingCycle) || 0
-              : 0,
-
-          cardNetwork:
-            accountType === "Credit" ? form.cardNetwork : "",
-        };
-
+        console.log("UPDATE BANK TYPE =>", accountType);
         console.log("UPDATE BANK PAYLOAD =>", payload);
+             console.log("bankId", bankId);
 
         const res = await updateBankAccount(
           activeHostelId,
           bankId,
           payload
         );
+
+        console.log("UPDATE BANK RESPONSE =>", res);
+
+
+        console.log("updatebankres", res);
+
 
         if (res?.success) {
           await getAllTransactions(activeHostelId, 1, 20, {});
@@ -735,7 +805,7 @@ const validate = () => {
 
           setTimeout(() => {
             setShowSuccessModal(false);
-            onClose?.();
+            navigation.goBack();
           }, 1200);
         } else {
           setModalType("error");
@@ -1158,7 +1228,7 @@ const validate = () => {
                     ]}
                   >
                     <Text style={styles.label}>
-                      Account Type 
+                      Account Type
                     </Text>
 
                     <TouchableOpacity
@@ -1260,15 +1330,17 @@ const validate = () => {
                       setShowAccountType(v => !v);
                     }}
                   >
+
                     {/* <Text style={{ fontSize: 15 }}>
-                    {cashaccountType
-                      ? transactionOptions.find(o => o.value === cashaccountType)?.label
-                      : "Select Account Type "}
-                  </Text> */}
-                    <Text style={{ fontSize: 15 }}>
                       {cashaccountType
                         ? cashTypeOptions.find(x => x.value === cashaccountType)?.label
                         : "Select Cash Type"}
+                    </Text> */}
+
+                    <Text style={{ fontSize: 15 }}>
+                      {cashTypeOptions.find(
+                        x => x.value === form.cashType
+                      )?.label || "Select Cash Type"}
                     </Text>
 
                     <Image
@@ -1286,7 +1358,11 @@ const validate = () => {
                         showsVerticalScrollIndicator={false}
                       >
                         {cashTypeOptions.map(opt => {
-                          const isSelected = cashaccountType === opt.value;
+                          // const isSelected = cashaccountType === opt.value;
+
+                          const isSelected = form?.cashType === opt?.value;
+
+
 
                           return (
                             <TouchableOpacity
@@ -1295,9 +1371,14 @@ const validate = () => {
                                 styles.dropdownRow,
                                 isSelected && styles.dropdownRowSelected,
                               ]}
+                              // onPress={() => {
+                              //   handleChange("cashType", opt.value);
+                              //   setCashAccountType(opt.value);
+                              //   setShowAccountType(false);
+                              // }}
                               onPress={() => {
-                                handleChange("cashType", opt.value);
-                                setCashAccountType(opt.value);
+                                handleChange("cashType", opt?.value);
+                                setCashAccountType(opt?.value);
                                 setShowAccountType(false);
                               }}
                             >
@@ -1317,18 +1398,18 @@ const validate = () => {
                     </View>
                   )}
                   {errors.cashType && (
-  <ErrorMessage
-    message={errors.cashType}
-    type="error"
-  />
-)}
+                    <ErrorMessage
+                      message={errors.cashType}
+                      type="error"
+                    />
+                  )}
 
                   {/* {modeError && <ErrorMessage message={modeError} type="error" />} */}
                 </View>
 
                 <View style={{ position: "relative" }}>
                   <Text style={styles.label}>
-                    Responsible Person 
+                    Responsible Person
                   </Text>
 
                   {/* INPUT */}
@@ -1340,7 +1421,7 @@ const validate = () => {
                     }}
                   >
 
-                    <Text style={{ fontSize: 15 }}>
+                    {/* <Text style={{ fontSize: 15 }}>
                       {responsibleperson
                         ? responsiblePersonList
                           .find(x => x.userId === responsibleperson)
@@ -1350,6 +1431,25 @@ const validate = () => {
                           x => x.userId === responsibleperson
                         )?.lastName || "")
                         : "Select Responsible Person"}
+                    </Text> */}
+                    <Text style={{ fontSize: 15 }}>
+                      {responsiblePersonList?.find(
+                        x => String(x.userId) === String(form.responsiblePerson)
+                      )
+                        ? `${responsiblePersonList.find(
+                          x => String(x.userId) === String(form.responsiblePerson)
+                        )?.firstName || ""
+                          } ${responsiblePersonList.find(
+                            x => String(x.userId) === String(form.responsiblePerson)
+                          )?.lastName || ""
+                          }`.trim()
+                        : typeof form.responsiblePerson === "string" &&
+                          form.responsiblePerson &&
+                          !responsiblePersonList?.some(
+                            x => String(x.userId) === String(form.responsiblePerson)
+                          )
+                          ? form.responsiblePerson
+                          : "Select Responsible Person"}
                     </Text>
 
                     <Image
@@ -1368,7 +1468,12 @@ const validate = () => {
                       >
                         {responsiblePersonList.map((item) => {
                           const label = `${item.firstName ?? ""} ${item.lastName ?? ""}`.trim();
-                          const isSelected = responsibleperson === item.userId;
+                          // const isSelected = responsibleperson === item.userId;
+
+                          const isSelected =
+                            String(form.responsiblePerson) === String(item.userId);
+
+
 
                           return (
                             <TouchableOpacity
@@ -1377,11 +1482,17 @@ const validate = () => {
                                 styles.dropdownRow,
                                 isSelected && styles.dropdownRowSelected,
                               ]}
+                              // onPress={() => {
+                              //   setResponsiblePerson(item.userId);
+
+                              //   handleChange("responsiblePerson", item.userId);
+
+                              //   setShowResponsiblePerson(false);
+                              // }}
+
                               onPress={() => {
-                                setResponsiblePerson(item.userId);
-
-                                handleChange("responsiblePerson", item.userId);
-
+                                setResponsiblePerson(item?.userId);
+                                handleChange("responsiblePerson", item?.userId);
                                 setShowResponsiblePerson(false);
                               }}
                             >
@@ -1438,8 +1549,11 @@ const validate = () => {
                           x => x.value === form.cardNetwork
                         )?.label
                         : "Select Card Network"} */}
-                      {cardNetworkOptions.find(
+                      {/* {cardNetworkOptions.find(
                         item => item?.value === form.cardNetwork
+                      )?.label || "Select Card Network"} */}
+                      {cardNetworkOptions.find(item =>
+                        item?.value === normalizeCardNetwork(form?.cardNetwork)
                       )?.label || "Select Card Network"}
                     </Text>
 
@@ -1705,12 +1819,17 @@ const validate = () => {
                       linkBank && styles.checkboxActive,
                     ]}
                     onPress={() => {
-                      setLinkBank(prev => !prev);
+                      setLinkBank(prev => {
+                        const nextValue = !prev;
 
-                      if (linkBank) {
-                        handleChange("linkedBankId", "");
-                      }
+                        if (!nextValue) {
+                          handleChange("linkedBankId", "");
+                        }
+
+                        return nextValue;
+                      });
                     }}
+
                   >
                     {linkBank && (
                       <Text style={styles.checkmark}>✓</Text>
@@ -1748,9 +1867,17 @@ const validate = () => {
                             !form.linkedBankId && styles.placeholderText,
                           ]}
                         >
-                          {linkedBankOptions.find(
-                            item => String(item?.bankId) === String(form.linkedBankId)
-                          )?.label || "Select Bank"}
+                          <Text
+                            style={[
+                              styles.dropdownInputText,
+                              !form.linkedBankId && styles.placeholderText,
+                            ]}
+                          >
+                            {linkedBankOptions?.find(
+                              item =>
+                                String(item?.bankId) === String(form?.linkedBankId)
+                            )?.label || "Select Bank"}
+                          </Text>
                         </Text>
 
                         <Image
@@ -1769,6 +1896,7 @@ const validate = () => {
                             {linkedBankOptions?.map((item) => {
                               const isSelected =
                                 String(form.linkedBankId) === String(item?.bankId);
+
 
                               return (
                                 <TouchableOpacity
@@ -2259,8 +2387,8 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Medium",
   },
   disabledInput: {
-  backgroundColor: "#F3F4F6",
-  borderColor: "#E5E7EB",
-  opacity: 0.7,
-},
+    backgroundColor: "#F3F4F6",
+    borderColor: "#E5E7EB",
+    opacity: 0.7,
+  },
 });

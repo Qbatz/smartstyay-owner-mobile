@@ -993,7 +993,7 @@ export default function BankingProvider({ children }) {
     }
   };
 
-  const updateBankAccount = async (hostelId, bankId, payload) => {
+const updateBankAccount = async (hostelId, bankId, data) => {
   try {
     setLoading(true);
     setErrorMsg("");
@@ -1002,34 +1002,19 @@ export default function BankingProvider({ children }) {
 
     const res = await axios.put(
       `/v3/bank/${hostelId}/${bankId}`,
-      payload,
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+      data
     );
 
-    if (res?.status === 200 || res?.status === 201) {
-      await NewgetBankList(hostelId);
-
-      return {
-        success: true,
-        data: res.data,
-        message:
-          res?.data?.message || "Account Updated Successfully",
-      };
-    }
-
     return {
-      success: false,
-      message: res?.data?.message || "Failed to update account",
+      success: true,
+      message: res.data?.message || "Account Updated Successfully",
     };
-  } catch (error) {
-    console.log("UPDATE BANK STATUS =>", error?.response?.status);
-    console.log("UPDATE BANK ERROR =>", error?.response?.data);
+  } catch (e) {
+    console.log("UPDATE BANK ERROR =>", e?.response?.data);
 
-    const msg = getErrorMessage(error);
+    const msg =
+      e?.response?.data?.message || getErrorMessage(e);
+
     setErrorMsg(msg);
 
     return {
@@ -1040,7 +1025,6 @@ export default function BankingProvider({ children }) {
     setLoading(false);
   }
 };
-
 
 const deleteBankAccount = async (hostelId, bankId) => {
   try {
