@@ -38,7 +38,7 @@ export default function AddBookingScreen({ navigation, route }) {
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
   const { bankList, getBankListByHostel } = useContext(BankingContext);
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, bookCustomer } = useCustomer();
+  const { getBedsByHostelAndDate, bookCustomer } = useCustomer();
 
   const [showLeavePageScreen, setShowLeavePageScreen] = useState(false);
 

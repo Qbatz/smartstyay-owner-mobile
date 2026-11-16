@@ -49,8 +49,8 @@ const AddBookingNew = ({ navigation, route }) => {
 
     const { AddTenantDraft, UpdateTenantDraft, TenantCheckIn, SearchCustomer,
         handleGetDraftDetails, resetDraftDetails, draftDetails,
-        getCustomersByHostel, checkInCustomer, bookCustomer, getBedsByHostelAndDate,
-        changeBedCustomer, getCustomerDetails, UpdateAdditionalDraftDetails } = useCustomer();
+        getCustomersByHostel, bookCustomer, getBedsByHostelAndDate,
+        UpdateAdditionalDraftDetails } = useCustomer();
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
 

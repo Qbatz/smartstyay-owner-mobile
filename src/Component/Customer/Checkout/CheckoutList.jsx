@@ -7,8 +7,12 @@ import {
   Image,
   TouchableWithoutFeedback,
   Modal,
-  FlatList, Animated, PanResponder, Pressable, NativeModules, Linking
+  FlatList, Animated, PanResponder, Pressable, NativeModules, Linking,
+  ActivityIndicator
 } from "react-native";
+
+const PAGE_SIZE = 10;
+const SEARCH_DEBOUNCE_MS = 400;
 
 import Profile from "../../../Assets/Images/profile.png";
 import Dots from "../../../Assets/Images/3dots.png";
@@ -36,6 +40,14 @@ export default function CheckoutList({ searchText  }) {
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
   const [checkoutCustomer, setCheckoutCustomer] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const fetchingRef = useRef(false);
+  const onEndReachedDuringMomentum = useRef(true);
+  const requestIdRef = useRef(0);
+  const searchRef = useRef("");
   const [menuVisibleId, setMenuVisibleId] = useState(null);
   const [showCustomerModal, setShowCustomerModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -124,16 +136,92 @@ const isTabBarVisible = useRef(true);
 
 
 
+  // Debounced server-side search; also handles the initial load and hostel change.
+  const isFirstLoadRef = useRef(true);
   useEffect(() => {
-    if (activeHostelId) {
-      fetchCheckoutCustomers();
-    }
-  }, [activeHostelId]);
+    if (!activeHostelId) return;
 
-  const fetchCheckoutCustomers = async () => {
-    const data = await getCheckoutCustomersByHostel(activeHostelId);
-    setCheckoutCustomer(data?.checkoutCustomers || []);
-    console.log("Thara", data)
+    const query = searchText?.trim() || "";
+    searchRef.current = query;
+
+    if (isFirstLoadRef.current) {
+      isFirstLoadRef.current = false;
+      fetchCheckoutCustomers(1, false, true);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchCheckoutCustomers(1);
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeHostelId, searchText]);
+
+  const fetchCheckoutCustomers = async (
+    page = 1,
+    isRefresh = false,
+    showFullLoader = false
+  ) => {
+    const isFirstPage = page === 1;
+
+    // A new page-1 request (search/refresh) supersedes anything in flight;
+    // load-more requests must wait their turn.
+    if (!isFirstPage && fetchingRef.current) return;
+    fetchingRef.current = true;
+
+    const requestId = ++requestIdRef.current;
+    const name = searchRef.current;
+
+    if (!isFirstPage) setLoadingMore(true);
+    if (isRefresh) setRefreshing(true);
+
+    try {
+      const data = await getCheckoutCustomersByHostel(
+        activeHostelId,
+        name,
+        page,
+        PAGE_SIZE,
+        showFullLoader
+      );
+
+      // Ignore responses from outdated requests (e.g. user kept typing).
+      if (requestId !== requestIdRef.current) return;
+
+      const list = Array.isArray(data?.checkoutCustomers)
+        ? data.checkoutCustomers
+        : [];
+
+      setCheckoutCustomer((prev) => {
+        if (isFirstPage) return list;
+        const existing = new Set(prev.map((c) => c.customerId));
+        return [...prev, ...list.filter((c) => !existing.has(c.customerId))];
+      });
+      setCurrentPage(data?.currentPage || page);
+      setTotalPages(data?.totalPages || 1);
+    } finally {
+      if (requestId === requestIdRef.current) {
+        fetchingRef.current = false;
+        setLoadingMore(false);
+        setRefreshing(false);
+      }
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (
+      onEndReachedDuringMomentum.current ||
+      fetchingRef.current ||
+      currentPage >= totalPages
+    ) {
+      return;
+    }
+    onEndReachedDuringMomentum.current = true;
+    fetchCheckoutCustomers(currentPage + 1);
+  };
+
+  const handleRefresh = () => {
+    fetchCheckoutCustomers(1, true);
   };
 
   const openCustomerDetails = async (item) => {
@@ -146,15 +234,8 @@ const isTabBarVisible = useRef(true);
 
   };
 
-  const filteredCheckout = checkoutCustomer.filter((item) => {
-    const search = searchText?.trim().toLowerCase();
-    return (
-      item?.firstName?.toLowerCase().includes(search) ||
-      item?.mobile?.toString().includes(search) ||
-      item?.roomName?.toLowerCase().includes(search) ||
-      item?.bedName?.toLowerCase().includes(search)
-    );
-  });
+  // Filtering is done server-side via the `name` query param.
+  const filteredCheckout = checkoutCustomer;
 
 
 
@@ -357,6 +438,20 @@ const isTabBarVisible = useRef(true);
             showsVerticalScrollIndicator={false}
               // onScroll={handleScroll}
              scrollEventThrottle={16}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.5}
+            onMomentumScrollBegin={() => {
+              onEndReachedDuringMomentum.current = false;
+            }}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            ListFooterComponent={
+              loadingMore ? (
+                <View style={{ paddingVertical: 16 }}>
+                  <ActivityIndicator size="small" color="#1E45E1" />
+                </View>
+              ) : null
+            }
           />
         )}
 

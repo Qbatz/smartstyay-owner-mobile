@@ -47,7 +47,7 @@ export default function AddComplaint() {
 
   const { activeHostelId } = useContext(CommonContexts);
 
-  const { getCustomersByHostel } = useContext(CustomerContext)
+  const { retainerCustomerList } = useContext(CustomerContext)
 
   console.log("complainttype", complaintTypes);
 
@@ -296,20 +296,13 @@ export default function AddComplaint() {
   // }
 
   const fetchCustomers = async () => {
-    const res = await getCustomersByHostel(activeHostelId);
+    const res = await retainerCustomerList(activeHostelId, "COMPLAINTS");
 
-    const list = Array.isArray(res?.listCustomers)
-      ? res.listCustomers
-      : [];
-
-    const filtered = list.filter(
-      (u) =>
-        u.floorId &&
-        u.roomId &&
-        !blockedStatus.includes(u.currentStatus)
-    );
-
-    setCustomerOptions(filtered);
+    if (res?.success && Array.isArray(res?.data)) {
+      setCustomerOptions(res.data);
+    } else {
+      setCustomerOptions([]);
+    }
   };
 
 

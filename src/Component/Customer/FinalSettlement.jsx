@@ -36,7 +36,7 @@ import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 export default function FinalSettlement({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, getSettlementByCustomerId, submitSettlement } = useCustomer();
+  const { getSettlementByCustomerId, submitSettlement } = useCustomer();
 
   const [extraCharges, setExtraCharges] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);

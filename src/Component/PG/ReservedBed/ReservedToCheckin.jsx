@@ -22,7 +22,7 @@ export default function ReserveToCheckin({ route, navigation }) {
   const [openJoinPicker, setOpenJoinPicker] = useState(false);
   const { activeHostelId } = useContext(CommonContexts);
 
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, initializeCheckIn, bookedCheckInCustomer } = useCustomer();
+  const { initializeCheckIn, bookedCheckInCustomer } = useCustomer();
   const [joinDate, setJoinDate] = useState(dayjs());
   const [extraCharges, setExtraCharges] = useState([]);
   const [openDropdownId, setOpenDropdownId] = useState(null);

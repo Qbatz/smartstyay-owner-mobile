@@ -85,7 +85,7 @@ export default function BedDetailsSheet({
     // const [showSuccess, setShowSuccess] = useState(false);
     // const [message, setMessage] = useState("");
 
-    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, TenantCheckIn } = useCustomer();
+    const { getBedsByHostelAndDate } = useCustomer();
 
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedAmenity, setSelectedAmenity] = useState(null);

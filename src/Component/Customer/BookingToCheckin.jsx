@@ -49,8 +49,8 @@ export default function BookingCheckIn({ navigation, route }) {
     const [tab, setTab] = useState("long");
     const { activeHostelId } = useContext(CommonContexts);
     const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
-    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel,
-        initializeCheckIn, bookedCheckInCustomer,
+    const { getBedsByHostelAndDate,
+        initializeCheckIn,
         BookedTenantCheckIn } = useCustomer();
     const { getBillingConfig, billingRuleData } = UseSetting();
 

@@ -11,7 +11,8 @@ import {
   TouchableWithoutFeedback,
   Modal, Animated, BackHandler, PanResponder,
   NativeModules, Linking, Platform,
-  FlatList
+  FlatList,
+  ActivityIndicator
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -65,6 +66,7 @@ import FilterBottomSheet from "../MorePages/Reports/FilterBottomSheet";
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
+const PAGE_SIZE = 10;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60
 
 
@@ -81,7 +83,7 @@ export default function TenantsScreen({ route }) {
   const screenWidth = Dimensions.get("window").width;
   const { activeHostelId } = useContext(CommonContexts);
   const { getCustomersByHostel, loading, GetParticularCustomerDetails, DeleteTenantDraft } = useCustomer();
-  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+  const { PGDetails } = useContext(PGContext);
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
@@ -90,6 +92,11 @@ export default function TenantsScreen({ route }) {
   const detailDotsRef = useRef(null);
   const [showCheckout, setShowCheckout] = useState(false);
   const [customers, setCustomers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const isFetchingMore = useRef(false);
+  const lastFetchArgs = useRef({ status: [], month: "", sharing: [], search: "" });
   const [menuVisible, setMenuVisible] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
   const [reassignCustomer, setReassignCustomer] = useState(null);
@@ -215,7 +222,8 @@ export default function TenantsScreen({ route }) {
   useFocusEffect(
     useCallback(() => {
       if (activeHostelId) {
-        fetchCustomers();
+        // Search box is cleared on focus, so fetch without a search term
+        fetchCustomers(undefined, undefined, undefined, "");
       }
     }, [activeHostelId])
   );
@@ -283,22 +291,64 @@ export default function TenantsScreen({ route }) {
   const fetchCustomers = async (
     status = tenantStatusFilter,
     month = selectedMonth,
-    sharing = sharingTypeFilter
+    sharing = sharingTypeFilter,
+    search = searchText
   ) => {
     if (!activeHostelId) return;
 
+    const trimmedSearch = search?.trim() ?? "";
+
+    // Remember the filters so "load more" requests use the same ones
+    lastFetchArgs.current = { status, month, sharing, search: trimmedSearch };
+
     const data = await getCustomersByHostel(
       activeHostelId,
-      searchText,
+      trimmedSearch,
       status,
       month ? [month] : [],
-      sharing
+      sharing,
+      1,
+      PAGE_SIZE
     );
 
-    console.log("customers", customers);
-    
+    setCurrentPage(data?.currentPage ?? 1);
+    setTotalPages(data?.totalPages ?? 1);
 
     setCustomers(data || []);
+  };
+
+  const loadMoreCustomers = async () => {
+    if (!activeHostelId || isFetchingMore.current || currentPage >= totalPages) return;
+
+    isFetchingMore.current = true;
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+    const { status, month, sharing, search } = lastFetchArgs.current;
+
+    try {
+      const data = await getCustomersByHostel(
+        activeHostelId,
+        search,
+        status,
+        month ? [month] : [],
+        sharing,
+        nextPage,
+        PAGE_SIZE
+      );
+
+      const newList = data?.listCustomers ?? [];
+      setCurrentPage(data?.currentPage ?? nextPage);
+      if (data?.totalPages != null) setTotalPages(data.totalPages);
+
+      setCustomers(prev => ({
+        ...prev,
+        ...data,
+        listCustomers: [...(prev?.listCustomers ?? []), ...newList],
+      }));
+    } finally {
+      isFetchingMore.current = false;
+      setLoadingMore(false);
+    }
   };
 
   // const fetchCustomers = async () => {
@@ -1063,16 +1113,24 @@ export default function TenantsScreen({ route }) {
     }
   };
 
-  const filteredTenants = customers?.listCustomers?.filter((item) => {
-    const search = searchText.trim().toLowerCase();
+  // Search is done on the server; the list already contains only matching tenants
+  const filteredTenants = customers?.listCustomers;
 
-    return (
-      item?.fullName?.toLowerCase().includes(search) ||
-      item?.mobile?.toString().includes(search) ||
-      item?.roomName?.toLowerCase().includes(search) ||
-      item?.bedName?.toLowerCase().includes(search)
-    );
-  });
+  // Debounced server-side search for the Tenants tab
+  useEffect(() => {
+    if (activeTab !== "Tenants" || !activeHostelId) return;
+
+    const search = searchText.trim();
+    if (search === lastFetchArgs.current.search) return;
+
+    const timer = setTimeout(() => {
+      const { status, month, sharing } = lastFetchArgs.current;
+      fetchCustomers(status, month, sharing, search);
+    }, 500);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchText, activeTab, activeHostelId]);
 
   const appliedFilters = tenantStatusFilter?.length > 0 || sharingTypeFilter?.length > 0 ||
     !!selectedMonth;
@@ -1091,7 +1149,7 @@ export default function TenantsScreen({ route }) {
 
     setSearchText("");
 
-    await fetchCustomers([], "", []);
+    await fetchCustomers([], "", [], "");
   };
 
   // const getStatusColor = (status) => {
@@ -1174,7 +1232,7 @@ export default function TenantsScreen({ route }) {
         type={modalType}
       />
 
-      {loading && <Loader />}
+      {loading && !loadingMore && <Loader />}
 
       <SafeAreaView style={styles.container}>
 
@@ -1285,7 +1343,7 @@ export default function TenantsScreen({ route }) {
                   </View>
                 )} */}
 
-                {!loading && (customers?.listCustomers?.length ?? 0) === 0 && (
+                {!loading && (customers?.listCustomers?.length ?? 0) === 0 && searchText.trim() === "" && (
                   <View style={styles.emptyContainer}>
                     <Image source={EmptyState} style={styles.emptyImage} />
 
@@ -1482,9 +1540,8 @@ export default function TenantsScreen({ route }) {
 
 
                 {!loading &&
-                  (customers?.listCustomers?.length ?? 0) > 0 &&
                   searchText.trim() !== "" &&
-                  filteredTenants?.length === 0 && (
+                  (filteredTenants?.length ?? 0) === 0 && (
                     <View style={styles.emptyContainer}>
                       <Image source={EmptyState} style={styles.emptyImage} />
                       <Text style={styles.emptyText}>
@@ -1501,6 +1558,15 @@ export default function TenantsScreen({ route }) {
                     showsVerticalScrollIndicator={false}
                     contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 16, }}
                     scrollEventThrottle={16}
+                    onEndReached={() => {
+                      if (currentPage < totalPages) loadMoreCustomers();
+                    }}
+                    onEndReachedThreshold={0.5}
+                    ListFooterComponent={
+                      loadingMore ? (
+                        <ActivityIndicator style={{ marginVertical: 16 }} color="#1E45E1" />
+                      ) : null
+                    }
                     renderItem={({ item }) => (
                       <Swipeable
                         ref={(ref) => {

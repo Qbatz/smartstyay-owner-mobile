@@ -38,7 +38,7 @@ export default function CheckoutBottomSheet({
   const sheetY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
   const navigation = useNavigation();
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, initializeCheckout, confirmCheckout } = useCustomer();
+  const { getCustomersByHostel, initializeCheckout, confirmCheckout } = useCustomer();
   const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
   const [customers, setCustomers] = useState([]);
   const [checkoutDateDettail, setCheckoutDateDettail] = useState("")

@@ -36,7 +36,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
+  const { getBedsByHostelAndDate, changeBedCustomer, getCustomerDetails } = useCustomer();
 
   const isSubmitTriggeredRef = useRef(false);
   const [modalType, setModalType] = useState("success");
