@@ -1,0 +1,17 @@
+HTTP/1.1 200 OK
+X-Content-Type-Options: nosniff
+Surrogate-Control: no-store
+Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate
+Pragma: no-cache
+Expires: 0
+X-Metro-Files-Changed-Count: 0
+X-Metro-Delta-ID: 85c4613366df8b1c
+Content-Location: http://localhost:8081/index.bundle//&platform=android&dev=true&lazy=true&minify=false&app=com.qbatz.smartstay.dev
+Content-Type: application/javascript; charset=UTF-8
+Last-Modified: Fri, 13 Nov 2026 09:52:27 GMT
+Content-Length: 31406567
+Vary: Accept-Encoding
+Date: Fri, 13 Nov 2026 10:20:56 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

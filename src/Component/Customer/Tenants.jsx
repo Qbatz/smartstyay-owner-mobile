@@ -66,7 +66,7 @@ import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 const SHEET_HEIGHT = SCREEN_HEIGHT * 0.60
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 10;
 
 
 
