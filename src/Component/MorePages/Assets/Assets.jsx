@@ -116,6 +116,12 @@ export default function Assets({ navigation }) {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const assignmentStatus=selectedAsset?.assignmentStatus !=="Unassigned"
 
+  const assetsData = Array.isArray(assetList)
+  ? assetList
+  : Array.isArray(assetList?.assetsList)
+    ? assetList?.assetsList
+    : [];
+
   const handleAddAsset = () => {
     if (!activeHostelId) {
       setModalType("warning");
@@ -757,7 +763,7 @@ const handleAssignAsset = async () => {
         </View>
 
         {
-          !loading && assetList?.length > 0 && (
+          !loading && assetsData?.length > 0 && (
             <View style={styles.searchBox}>
               <Image source={SearchIcon} style={styles.searchIcon} />
               <TextInput
@@ -774,8 +780,8 @@ const handleAssignAsset = async () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 120 }}
         >
-          {!loading && assetList?.length > 0 ? (
-            assetList.map((item) => (
+          {!loading && assetsData?.length > 0 ? (
+            assetsData.map((item) => (
               <TouchableOpacity
                 key={item.assetId}
                 style={styles.card}
@@ -826,7 +832,7 @@ const handleAssignAsset = async () => {
 
 
         {
-          !loading && assetList?.length > 0 && canWriteAssets && (
+          !loading && assetsData?.length > 0 && canWriteAssets && (
             <TouchableOpacity
               style={[
                 styles.fab,
@@ -1384,7 +1390,7 @@ const handleAssignAsset = async () => {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 50 : 40 },
+  container: { flex: 1, backgroundColor: "#FFFFFF", paddingHorizontal: 20, paddingTop: Platform.OS === "ios" ? 60 : 55},
   header: { flexDirection: "row", alignItems: "center", marginBottom: 20 },
   backIcon: { width: 22, height: 22 },
   pageTitle: { fontSize: 20, fontFamily: "Gilroy-Bold", color: "#000", marginLeft: 15 },

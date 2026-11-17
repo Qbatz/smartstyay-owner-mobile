@@ -57,7 +57,7 @@ export default function AdditionalContactBottomSheet({
   const [formErr, setFormErr] = useState("");
 
   const [initialState, setInitialState] = useState(null);
-  const [isSubmitClicked, setIsSubmitClicked]=useState(false);
+  const [isSubmitClicked, setIsSubmitClicked] = useState(false);
 
   const relationshipOptions = [
     "Father",
@@ -262,7 +262,7 @@ export default function AdditionalContactBottomSheet({
       setFormErr("No Changes Detected");
       return;
     }
-    if(isSubmitClicked) return;
+    if (isSubmitClicked) return;
     setIsSubmitClicked(true)
 
     const payload = {
@@ -274,41 +274,41 @@ export default function AdditionalContactBottomSheet({
 
     console.log("payload", payload);
 
-    try{
-    const res = await AddAdditionalContacts(
-      activeHostelId,
-      ParticularcustomerDetails?.customerId,
-      payload
-    );
-
-    console.log("addContact",res)
-
-    if (res.success) {
-      setMessage("Saved Successfully");
-      setModalType("success");
-      setShowSuccess(true);
-
-      await GetParticularCustomerDetails(
-        ParticularcustomerDetails?.customerId
+    try {
+      const res = await AddAdditionalContacts(
+        activeHostelId,
+        ParticularcustomerDetails?.customerId,
+        payload
       );
 
-      setTimeout(() => {
-        setShowSuccess(false);
-        closeSheet();
-        setIsSubmitClicked(false)
-      }, 1200);
-    } else {
-      setMessage(res?.message || "Contact Add Failed");
-      setModalType("error");
-      setShowSuccess(true);
+      console.log("addContact", res)
 
-      setTimeout(() => {
-        setShowSuccess(false);
-        setIsSubmitClicked(false)
-      }, 1200);
+      if (res.success) {
+        setMessage("Saved Successfully");
+        setModalType("success");
+        setShowSuccess(true);
 
-    }
-    }catch(error){
+        await GetParticularCustomerDetails(
+          ParticularcustomerDetails?.customerId
+        );
+
+        setTimeout(() => {
+          setShowSuccess(false);
+          closeSheet();
+          setIsSubmitClicked(false)
+        }, 1200);
+      } else {
+        setMessage(res?.message || "Contact Add Failed");
+        setModalType("error");
+        setShowSuccess(true);
+
+        setTimeout(() => {
+          setShowSuccess(false);
+          setIsSubmitClicked(false)
+        }, 1200);
+
+      }
+    } catch (error) {
       console.log(error)
       setIsSubmitClicked(false);
     }
@@ -335,193 +335,194 @@ export default function AdditionalContactBottomSheet({
   return (
     <>
       <SuccessModal visible={showSuccess} message={message} type={modalType} />
-      <View style={styles.root}>
-      <TouchableOpacity style={styles.overlay} onPress={closeSheet} />
+      <View style={styles.root}
+        pointerEvents="box-none">
+        <TouchableOpacity style={styles.overlay} onPress={closeSheet} />
 
-      <Animated.View
-        {...panResponder.panHandlers}
-        style={[
-          styles.sheet,
-          {
-            transform: [{ translateY }],
-            paddingBottom: 20 + insets.bottom,
-          },
-        ]}
-      >
-        <View style={styles.dragIndicator} />
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.sheet,
+            {
+              transform: [{ translateY }],
+              paddingBottom: 20 + insets.bottom,
+            },
+          ]}
+        >
+          <View style={styles.dragIndicator} />
 
-        <Text style={styles.title}>Add Parent / Guardian</Text>
+          <Text style={styles.title}>Add Parent / Guardian</Text>
 
-        <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" >
+          <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" >
 
-          {/* Name */}
-          <Text style={styles.label}>Guardian Full Name <Text style={{ color: "red" }}>*</Text></Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter name"
-            value={fullName}
-            onChangeText={(t) => {
+            {/* Name */}
+            <Text style={styles.label}>Guardian Full Name <Text style={{ color: "red" }}>*</Text></Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter name"
+              value={fullName}
+              onChangeText={(t) => {
 
-              const cleaned = t.replace(/[^A-Za-z\s]/g, "");
+                const cleaned = t.replace(/[^A-Za-z\s]/g, "");
 
-              setFullName(cleaned);
-              setNameErr("")
-              setFormErr("")
-            }}
+                setFullName(cleaned);
+                setNameErr("")
+                setFormErr("")
+              }}
 
-          />
+            />
 
-          {nameErr ? <ErrorMessage message={nameErr} type="error" /> : null}
+            {nameErr ? <ErrorMessage message={nameErr} type="error" /> : null}
 
-          <Text style={styles.label}>Relationship </Text>
-          <TouchableOpacity
-            onPress={() => {
-              setShowRelationDropdown(!showRelationDropdown);
-              setShowOccupationDropdown(false);
-            }}
-          >
+            <Text style={styles.label}>Relationship </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setShowRelationDropdown(!showRelationDropdown);
+                setShowOccupationDropdown(false);
+              }}
+            >
+              <View style={styles.input}>
+                <TextInput
+                  placeholder="Select Relationship"
+                  value={relationship}
+                  editable={isRelationOther}
+                  onChangeText={(t) => {
+                    const cleaned = t.replace(/[^A-Za-z\s]/g, "")
+                      .replace(/\s+/g, " ");
+
+                    setRelationship(cleaned);
+                    setRelationErr("")
+                    setFormErr("");
+                  }}
+
+                  style={{ flex: 1 }}
+                />
+                <Image
+                  source={DownArrow}
+                  style={[
+                    styles.arrowIcon,
+                    showRelationDropdown && { transform: [{ rotate: "180deg" }] }
+                  ]}
+                />
+              </View>
+            </TouchableOpacity>
+
+            {relationErr ? <ErrorMessage message={relationErr} type="error" /> : null}
+
+            {showRelationDropdown && (
+              <View style={styles.dropdown}>
+                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                  {relationshipOptions.map((item) => (
+                    <TouchableOpacity
+                      key={item}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        if (item === "Other") {
+                          setIsRelationOther(true);
+                          setRelationship(""); // empty for typing
+                          setRelationErr("")
+                        } else {
+                          setIsRelationOther(false);
+                          setRelationship(item);
+                          setRelationErr("")
+                        }
+                        setShowRelationDropdown(false);
+                      }}
+                    >
+                      <Text>{item}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            <Text style={styles.label}>Guardian Occupation </Text>
+            <TouchableOpacity
+              onPress={() => {
+                setShowOccupationDropdown(!showOccupationDropdown);
+                setShowRelationDropdown(false);
+              }}
+            >
+              <View style={styles.input}>
+                <TextInput
+                  placeholder="Select Occupation"
+                  value={occupation}
+                  editable={isOccupationOther}
+                  onChangeText={(t) => {
+
+                    const cleaned = t.replace(/[^A-Za-z\s]/g, "")
+                      .replace(/\s+/g, " ");
+
+                    setOccupation(cleaned);
+                    // setOccupation(t);
+                    setOccupationErr("");
+                    setFormErr("");
+                  }}
+                  style={{ flex: 1 }}
+                />
+
+
+                <Image
+                  source={DownArrow}
+                  style={[
+                    styles.arrowIcon,
+                    showOccupationDropdown && { transform: [{ rotate: "180deg" }] }
+                  ]}
+                />
+
+              </View>
+            </TouchableOpacity>
+            {occupationErr ? <ErrorMessage message={occupationErr} type="error" /> : null}
+
+            {showOccupationDropdown && (
+              <View style={styles.dropdown}>
+                <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                  {occupationOptions.map((item) => (
+                    <TouchableOpacity
+                      key={item}
+                      style={styles.dropdownItem}
+                      onPress={() => {
+                        if (item === "Other") {
+                          setIsOccupationOther(true);
+                          setOccupation("");
+                          setOccupationErr("")
+                        } else {
+                          setIsOccupationOther(false);
+                          setOccupation(item);
+                          setOccupationErr("")
+                        }
+                        setShowOccupationDropdown(false);
+                      }}
+                    >
+                      <Text>{item}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+
+            {/* Mobile */}
+            <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
             <View style={styles.input}>
+              {/* Country Code */}
+              <Text style={{ marginRight: 8, fontSize: 14 }}>+91</Text>
+              <View style={styles.divider} />
+              {/* Mobile Input */}
               <TextInput
-                placeholder="Select Relationship"
-                value={relationship}
-                editable={isRelationOther}
+                placeholder="Enter Mobile Number"
+                keyboardType="number-pad"
+                maxLength={10}
+                value={mobile}
                 onChangeText={(t) => {
-                  const cleaned = t.replace(/[^A-Za-z\s]/g, "")
-                    .replace(/\s+/g, " ");
-
-                  setRelationship(cleaned);
-                  setRelationErr("")
+                  const validmobile = t.replace(/[^0-9]/g, "");
+                  setMobile(validmobile);
+                  setMobileErr("");
                   setFormErr("");
                 }}
-
                 style={{ flex: 1 }}
               />
-              <Image
-                source={DownArrow}
-                style={[
-                  styles.arrowIcon,
-                  showRelationDropdown && { transform: [{ rotate: "180deg" }] }
-                ]}
-              />
             </View>
-          </TouchableOpacity>
-
-          {relationErr ? <ErrorMessage message={relationErr} type="error" /> : null}
-
-          {showRelationDropdown && (
-            <View style={styles.dropdown}>
-              <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                {relationshipOptions.map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      if (item === "Other") {
-                        setIsRelationOther(true);
-                        setRelationship(""); // empty for typing
-                        setRelationErr("")
-                      } else {
-                        setIsRelationOther(false);
-                        setRelationship(item);
-                        setRelationErr("")
-                      }
-                      setShowRelationDropdown(false);
-                    }}
-                  >
-                    <Text>{item}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          <Text style={styles.label}>Guardian Occupation </Text>
-          <TouchableOpacity
-            onPress={() => {
-              setShowOccupationDropdown(!showOccupationDropdown);
-              setShowRelationDropdown(false);
-            }}
-          >
-            <View style={styles.input}>
-              <TextInput
-                placeholder="Select Occupation"
-                value={occupation}
-                editable={isOccupationOther}
-                onChangeText={(t) => {
-
-                  const cleaned = t.replace(/[^A-Za-z\s]/g, "")
-                    .replace(/\s+/g, " ");
-
-                  setOccupation(cleaned);
-                  // setOccupation(t);
-                  setOccupationErr("");
-                  setFormErr("");
-                }}
-                style={{ flex: 1 }}
-              />
-
-
-              <Image
-                source={DownArrow}
-                style={[
-                  styles.arrowIcon,
-                  showOccupationDropdown && { transform: [{ rotate: "180deg" }] }
-                ]}
-              />
-
-            </View>
-          </TouchableOpacity>
-          {occupationErr ? <ErrorMessage message={occupationErr} type="error" /> : null}
-
-          {showOccupationDropdown && (
-            <View style={styles.dropdown}>
-              <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                {occupationOptions.map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      if (item === "Other") {
-                        setIsOccupationOther(true);
-                        setOccupation("");
-                        setOccupationErr("")
-                      } else {
-                        setIsOccupationOther(false);
-                        setOccupation(item);
-                        setOccupationErr("")
-                      }
-                      setShowOccupationDropdown(false);
-                    }}
-                  >
-                    <Text>{item}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* Mobile */}
-          <Text style={styles.label}>Mobile Number <Text style={{ color: "red" }}>*</Text></Text>
-          <View style={styles.input}>
-  {/* Country Code */}
-  <Text style={{ marginRight: 8, fontSize: 14 }}>+91</Text>
-  <View style={styles.divider} />
-  {/* Mobile Input */}
-  <TextInput
-    placeholder="Enter Mobile Number"
-    keyboardType="number-pad"
-    maxLength={10}
-    value={mobile}
-    onChangeText={(t) => {
-      const validmobile = t.replace(/[^0-9]/g, "");
-      setMobile(validmobile);
-      setMobileErr("");
-      setFormErr("");
-    }}
-    style={{ flex: 1 }}
-  />
-</View>
-          {/* <TextInput
+            {/* <TextInput
             placeholder="Enter Mobile Number"
             keyboardType="number-pad"
             maxLength={10}
@@ -535,33 +536,38 @@ export default function AdditionalContactBottomSheet({
             style={styles.input}
           /> */}
 
-          {mobileErr ? <ErrorMessage message={mobileErr} type="error" /> : null}
-          {formErr ? <ErrorMessage message={formErr} type="error" /> : null}
+            {mobileErr ? <ErrorMessage message={mobileErr} type="error" /> : null}
+            {formErr ? <ErrorMessage message={formErr} type="error" /> : null}
 
-        </ScrollView>
+          </ScrollView>
 
-        {/* Buttons */}
-        <View style={styles.buttons}>
-          <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
-            <Text style={{ fontFamily: "Gilroy-Semibold" }}>Cancel</Text>
-          </TouchableOpacity>
+          {/* Buttons */}
+          <View style={styles.buttons}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={closeSheet}>
+              <Text style={{ fontFamily: "Gilroy-Semibold" }}>Cancel</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.addBtn} onPress={handleSave} disabled={isSubmitClicked}>
-            <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Add</Text>
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
+            <TouchableOpacity style={styles.addBtn} onPress={handleSave} disabled={isSubmitClicked}>
+              <Text style={{ color: "#fff", fontFamily: "Gilroy-Semibold" }}>Add</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
       </View>
     </>
   );
 }
 
 const styles = {
-  root: {
-          ...StyleSheet.absoluteFillObject,
-          zIndex: 9999,          // 🔥 VERY IMPORTANT
-          elevation: 9999,      // 🔥 Android
-      },
+   root: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 9999,
+    elevation: 9999,
+  },
+
   overlay: {
     position: "absolute",
     top: 0,
@@ -581,8 +587,21 @@ const styles = {
     borderTopRightRadius: 24,
     padding: 20,
     maxHeight: "85%",
-
+    elevation: 20,
   },
+
+  // sheet: {
+  //   position: "absolute",
+  //   bottom: 0,
+  //   left: 0,
+  //   right: 0,
+  //   backgroundColor: "#fff",
+  //   borderTopLeftRadius: 24,
+  //   borderTopRightRadius: 24,
+  //   padding: 20,
+  //   maxHeight: "85%",
+
+  // },
 
   dragIndicator: {
     width: 40,
@@ -666,9 +685,9 @@ const styles = {
     // tintColor: "#6B7280",
   },
   divider: {
-  width: 1,
-  height: 50,
-  backgroundColor: "#E5E7EB",
-  marginHorizontal: 10,
-},
+    width: 1,
+    height: 50,
+    backgroundColor: "#E5E7EB",
+    marginHorizontal: 10,
+  },
 };

@@ -1275,10 +1275,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     paddingHorizontal: 20,
-    paddingTop: 50,
+    paddingTop: 60,
   },
 
-  header: { flexDirection: "row", alignItems: "center", marginBottom: 5, marginTop: Platform.OS === "ios" ? 60 : 40, marginLeft: 20 },
+  header: { flexDirection: "row", alignItems: "center", marginBottom: 5, marginTop:  60, marginLeft: 20 },
   backIcon: { width: 22, height: 22, marginRight: 10 },
   headerTitle: { fontSize: 18, fontFamily: "Gilroy-Bold" },
   label: {
