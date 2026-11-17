@@ -23,9 +23,21 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import InputComponent from "../../MorePages/InputComponent"
+import BankIcon from "../../../Assets/Images/bankBlue.png";
+import CashIcon from "../../../Assets/Images/Cash_Icon.png";
+import CardIcon from "../../../Assets/Images/Cardorange.png";
 
 export default function NewBookingSheet({ visible, onClose, room, bed, selectedBed, onBedAdded }) {
-  const { getCustomersByHostel, deleteCustomer, loading, checkInCustomer, bookCustomer, getCustomerDetails } = useCustomer();
+  // const { getCustomersByHostel, deleteCustomer, loading, checkInCustomer, bookCustomer, getCustomerDetails } = useCustomer();
+  const {
+    getCustomersByHostel,
+    deleteCustomer,
+    loading,
+    checkInCustomer,
+    bookCustomer,
+    getCustomerDetails,
+    getBedsByHostelAndDate,
+  } = useCustomer();
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext);
   const translateY = useRef(new Animated.Value(500)).current;
@@ -173,19 +185,102 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
 
 
-  const fetchBankingList = async () => {
-    const data = await getBankListByHostel(activeHostelId);
-    setAccountList(data.data);
+  // const fetchBankingList = async () => {
+  //   const data = await getBankListByHostel(activeHostelId);
+  //   setAccountList(data.data);
+  // };
+
+  // useEffect(() => {
+  //   if (activeHostelId) {
+  //     fetchBankingList(activeHostelId);
+  //   }
+  // }, [activeHostelId]);
+
+  const loadBookingInitialize = async (date) => {
+    if (!activeHostelId || !date) return;
+
+    try {
+      const formattedDate = dayjs(date).format("DD-MM-YYYY");
+
+      const res = await getBedsByHostelAndDate(
+        activeHostelId,
+        formattedDate
+      );
+
+      console.log("NoticeToBooking Initialize Response:", res);
+
+      if (res?.success) {
+        const bankDetails = res?.data?.bankDetails || [];
+
+        const mappedAccounts = bankDetails.map((bank, index) => {
+          const accountType = String(bank?.accountType || "BANK")
+            .trim()
+            .toUpperCase()
+            .replace(/[\s-]+/g, "_");
+
+          const holderName = bank?.accountHolderName || "";
+          const displayName = bank?.displayName || "";
+          const bankName = bank?.bankName || "";
+
+          const subtitle = bank?.isBank
+            ? [bankName, displayName].filter(Boolean).join(" - ")
+            : [accountType, displayName].filter(Boolean).join(" - ");
+
+          return {
+            id: bank?.bankId || `account-${index}`,
+            bankId: bank?.bankId,
+            value: bank?.bankId,
+
+            displayName,
+            holderName,
+            accountHolderName: holderName,
+            bankName,
+
+            accountType,
+            iconType: accountType,
+
+            isCash: accountType === "CASH",
+            isUpi: accountType === "UPI",
+            isBank: bank?.isBank || false,
+
+            upiIcon: bank?.upiIcon || null,
+
+            title: holderName,
+            subLabel: subtitle,
+            badge: accountType,
+
+            data: bank,
+          };
+        });
+
+        setAccountList(mappedAccounts);
+
+        setAccountSelected((previous) => {
+          if (!previous) return null;
+
+          return (
+            mappedAccounts.find(
+              (item) => item.bankId === previous.bankId
+            ) || null
+          );
+        });
+      } else {
+        setAccountList([]);
+        setAccountSelected(null);
+      }
+    } catch (error) {
+      console.log("NoticeToBooking Initialize Error:", error);
+      setAccountList([]);
+      setAccountSelected(null);
+    }
   };
 
+
   useEffect(() => {
-    if (activeHostelId) {
-      fetchBankingList(activeHostelId);
-    }
-  }, [activeHostelId]);
+    if (!visible || !activeHostelId || !joiningDate) return;
 
-
-
+    loadBookingInitialize(joiningDate);
+  }, [visible, activeHostelId, joiningDate]);
 
 
   useEffect(() => {
@@ -221,15 +316,63 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
   // }, []);
 
   const paymentOptions = Array.isArray(AccountsList)
-    ? AccountsList.map((item) => ({
-      ...item,
-      value: String(item.bankingId),
-      displayName: item?.displayName || "",
-      holderName:
-        item?.holderName || item?.accountHolderName || "",
-      bankName: item?.bankName || "",
-    }))
+    ? AccountsList
     : [];
+
+
+  const getPaymentIcon = (item) => {
+    switch (item?.iconType) {
+      case "CASH":
+        return CashIcon;
+      case "CARD":
+        return CardIcon;
+      case "UPI":
+        return item?.upiIcon
+          ? { uri: item.upiIcon }
+          : BankIcon;
+      default:
+        return BankIcon;
+    }
+  };
+
+  const getPaymentIconBg = (type) => {
+    switch (type) {
+      case "CASH":
+        return styles.cashIconBg;
+      case "CARD":
+        return styles.cardIconBg;
+      case "UPI":
+        return styles.upiIconBg;
+      default:
+        return styles.bankIconBg;
+    }
+  };
+
+  const getPaymentBadgeBg = (type) => {
+    switch (type) {
+      case "CASH":
+        return styles.cashBadge;
+      case "CARD":
+        return styles.cardBadge;
+      case "UPI":
+        return styles.upiBadge;
+      default:
+        return styles.bankBadge;
+    }
+  };
+
+  const getPaymentBadgeText = (type) => {
+    switch (type) {
+      case "CASH":
+        return styles.cashText;
+      case "CARD":
+        return styles.cardText;
+      case "UPI":
+        return styles.upiText;
+      default:
+        return styles.bankText;
+    }
+  };
 
 
   const panResponder = PanResponder.create({
@@ -297,6 +440,8 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
 
   console.log("selectedBed", selectedBed)
+
+
   const handleBooking = async () => {
     if (!validateForm()) return;
 
@@ -310,7 +455,8 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
       bedId: selectedBed.bedId,
 
       customerId: BookingTenantsSelected.customerId || BookingTenantsSelected.id,
-      bankId: accountSelected.bankingId,
+      // bankId: accountSelected.bankingId,
+      bankId: accountSelected.bankId,
       referenceNumber: referenceNumber || "",
     };
 
@@ -378,7 +524,7 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
               keyboardShouldPersistTaps="always"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{
-                paddingBottom: keyboardHeight,
+                paddingBottom: keyboardHeight + 24,
               }}
             >
 
@@ -389,14 +535,14 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
               <View style={{ position: "relative" }}>
                 <TouchableOpacity
                   // style={styles.select}
-                   style={[
-                                    styles.select,
-                                    {
-                                        borderColor: BookingTenantsOpen ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: BookingTenantsOpen ? 1.5 : 1,
-                                    },
-                                   
-                                ]}
+                  style={[
+                    styles.select,
+                    {
+                      borderColor: BookingTenantsOpen ? "#0085FF" : "#D9D9D9",
+                      borderWidth: BookingTenantsOpen ? 1.5 : 1,
+                    },
+
+                  ]}
                   onPress={() => setBookingTenantsopen(!BookingTenantsOpen)}
                 >
                   <Text style={styles.selectText}>
@@ -443,14 +589,14 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                   setShowDatePicker(true)
                 }}
                 // style={styles.inputBox}
-                   style={[
-                                    styles.inputBox,
-                                    {
-                                        borderColor: showDatePicker ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: showDatePicker ? 1.5 : 1,
-                                    },
-                                   
-                                ]}
+                style={[
+                  styles.inputBox,
+                  {
+                    borderColor: showDatePicker ? "#0085FF" : "#D9D9D9",
+                    borderWidth: showDatePicker ? 1.5 : 1,
+                  },
+
+                ]}
               >
                 <Text style={{ color: bookingDate ? "#000" : "#999" }}>
                   {bookingDate ? bookingDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
@@ -515,14 +661,14 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                   setShowJoinDatePicker(true)
                 }}
                 // style={styles.inputBox}
-                                    style={[
-                                    styles.inputBox,
-                                    {
-                                        borderColor: showJoinDatePicker ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: showJoinDatePicker ? 1.5 : 1,
-                                    },
-                                   
-                                ]}
+                style={[
+                  styles.inputBox,
+                  {
+                    borderColor: showJoinDatePicker ? "#0085FF" : "#D9D9D9",
+                    borderWidth: showJoinDatePicker ? 1.5 : 1,
+                  },
+
+                ]}
               >
                 <Text style={{ color: joiningDate ? "#000" : "#999" }}>
                   {joiningDate ? joiningDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
@@ -553,71 +699,142 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                     }, 100);
                   }}
                   // style={styles.inputBox}
-                     style={[
-                                    styles.inputBox,
-                                    {
-                                        borderColor: accountOpen ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: accountOpen ? 1.5 : 1,
-                                    },
-                                   
-                                ]}
-                >
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.selectText} numberOfLines={1}>
-                      {accountSelected?.displayName || "Select Bank"}
-                    </Text>
+                  style={[
+                    styles.inputBox,
+                    {
+                      borderColor: accountOpen ? "#0085FF" : "#D9D9D9",
+                      borderWidth: accountOpen ? 1.5 : 1,
+                    },
 
-                    {accountSelected && (
-                      <Text
-                        style={{ fontSize: 12, color: "#777", marginTop: 3 }}
-                        numberOfLines={1}
-                      >
-                        {accountSelected?.holderName} - {accountSelected?.bankName}
+                  ]}
+                >
+                  <View style={styles.selectedPaymentContainer}>
+                    {accountSelected ? (
+                      <>
+                        <View
+                          style={[
+                            styles.paymentMethodIcon,
+                            getPaymentIconBg(accountSelected.iconType),
+                          ]}
+                        >
+                          <Image
+                            source={getPaymentIcon(accountSelected)}
+                            style={styles.paymentMethodIconImage}
+                            resizeMode="contain"
+                          />
+                        </View>
+
+                        <View style={styles.paymentMethodDetails}>
+                          <Text style={styles.paymentMethodName} numberOfLines={1}>
+                            {accountSelected.title}
+                          </Text>
+
+                          <Text style={styles.paymentMethodSubText} numberOfLines={1}>
+                            {accountSelected.subLabel}
+                          </Text>
+                        </View>
+
+                        <View
+                          style={[
+                            styles.paymentTypeBadge,
+                            getPaymentBadgeBg(accountSelected.iconType),
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.paymentTypeText,
+                              getPaymentBadgeText(accountSelected.iconType),
+                            ]}
+                          >
+                            {accountSelected.accountType}
+                          </Text>
+                        </View>
+                      </>
+                    ) : (
+                      <Text style={{ color: "#999", fontSize: 15 }}>
+                        Select Bank
                       </Text>
                     )}
                   </View>
+
                   <Image source={DownArrow} style={styles.arrow} />
                 </TouchableOpacity>
 
                 {bankIdError && <ErrorMessage message={bankIdError} type="error" />}
 
                 {accountOpen && (
-                  <View style={styles.dropdownMenu}>
+                  <View style={styles.paymentDropdownMenu}>
                     <ScrollView
-                      style={{ maxHeight: 180 }}
-                      nestedScrollEnabled={true}
+                      style={styles.paymentDropdownScroll}
+                      nestedScrollEnabled
                       keyboardShouldPersistTaps="always"
-                      showsVerticalScrollIndicator={true}
-                      scrollEnabled={true}
+                      showsVerticalScrollIndicator
                     >
-                      {paymentOptions?.map((v, i) => (
-                        <TouchableOpacity
-                          key={i}
-                          style={styles.option}
-                          onPress={() => {
-                            setAccountSelected(v);
-                            setAccountopen(false);
-                            setBankIdError("");
-                          }}
-                        >
-                          <View>
-                            <Text style={styles.optionText} numberOfLines={1}>
-                              {v.displayName}
-                            </Text>
+                      {paymentOptions?.map((item, index) => {
+                        const isSelected =
+                          accountSelected?.bankId === item?.bankId;
 
-                            <Text
-                              style={{
-                                fontSize: 12,
-                                color: "#777",
-                                marginTop: 3,
-                              }}
-                              numberOfLines={1}
+                        return (
+                          <TouchableOpacity
+                            key={item?.bankId || index}
+                            activeOpacity={0.7}
+                            style={[
+                              styles.paymentMethodRow,
+                              isSelected && styles.paymentMethodRowSelected,
+                            ]}
+                            onPress={() => {
+                              setAccountSelected(item);
+                              setAccountopen(false);
+                              setBankIdError("");
+                            }}
+                          >
+                            <View
+                              style={[
+                                styles.paymentMethodIcon,
+                                getPaymentIconBg(item.iconType),
+                              ]}
                             >
-                              {v.holderName} - {v.bankName}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      ))}
+                              <Image
+                                source={getPaymentIcon(item)}
+                                style={styles.paymentMethodIconImage}
+                                resizeMode="contain"
+                              />
+                            </View>
+
+                            <View style={styles.paymentMethodDetails}>
+                              <Text
+                                style={styles.paymentMethodName}
+                                numberOfLines={1}
+                              >
+                                {item.title}
+                              </Text>
+
+                              <Text
+                                style={styles.paymentMethodSubText}
+                                numberOfLines={1}
+                              >
+                                {item.subLabel}
+                              </Text>
+                            </View>
+
+                            <View
+                              style={[
+                                styles.paymentTypeBadge,
+                                getPaymentBadgeBg(item.iconType),
+                              ]}
+                            >
+                              <Text
+                                style={[
+                                  styles.paymentTypeText,
+                                  getPaymentBadgeText(item.iconType),
+                                ]}
+                              >
+                                {item.accountType}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
                     </ScrollView>
                   </View>
                 )}
@@ -934,5 +1151,163 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "700",
   },
+  paymentMethodIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  paymentMethodIconImage: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
+
+  selectedPaymentContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  paymentMethodDetails: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 8,
+  },
+
+  paymentMethodName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#202637",
+  },
+
+  paymentMethodSubText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#74809A",
+    marginTop: 4,
+  },
+
+  paymentTypeBadge: {
+    minWidth: 68,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  paymentTypeText: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
+
+  cashIconBg: { backgroundColor: "#D9F8E9" },
+  cardIconBg: { backgroundColor: "#FFF0D9" },
+  upiIconBg: { backgroundColor: "#F3E5FF" },
+  bankIconBg: { backgroundColor: "#DCE9FF" },
+
+  cashBadge: { backgroundColor: "#D5F7E7" },
+  cardBadge: { backgroundColor: "#FFF0D9" },
+  upiBadge: { backgroundColor: "#F3E5FF" },
+  bankBadge: { backgroundColor: "#D8E7FF" },
+
+  cashText: { color: "#009B42" },
+  cardText: { color: "#E84B00" },
+  upiText: { color: "#9C27F0" },
+  bankText: { color: "#2457E6" },
+  paymentDropdownMenu: {
+    position: "relative",
+    width: "100%",
+    marginTop: 6,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#D9DDE5",
+    borderRadius: 14,
+    overflow: "hidden",
+    zIndex: 10,
+    elevation: 5,
+  },
+
+  paymentDropdownScroll: {
+    maxHeight: 180,
+  },
+  footer: {
+  flexDirection: "row",
+  justifyContent: "flex-end",
+  alignItems: "center",
+  gap: 15,
+  marginTop: 15,
+  marginBottom: Platform.OS === "ios" ? 20 : 12,
+  paddingTop: 10,
+  backgroundColor: "#FFFFFF",
+},
+paymentMethodRow: {
+  flexDirection: "row",
+  alignItems: "center",
+  width: "100%",
+  paddingHorizontal: 12,
+  paddingVertical: 12,
+  gap: 10,
+  backgroundColor: "#FFFFFF",
+  borderBottomWidth: 1,
+  borderBottomColor: "#F0F0F0",
+},
+
+paymentMethodRowSelected: {
+  backgroundColor: "#F5F8FF",
+},
+
+paymentMethodIcon: {
+  width: 46,
+  height: 46,
+  borderRadius: 23,
+  alignItems: "center",
+  justifyContent: "center",
+  flexShrink: 0,
+},
+
+paymentMethodIconImage: {
+  width: 24,
+  height: 24,
+  resizeMode: "contain",
+},
+
+paymentMethodDetails: {
+  flex: 1,
+  minWidth: 0,
+  marginLeft: 2,
+},
+
+paymentMethodName: {
+  fontSize: 15,
+  fontFamily: "Gilroy-Semibold",
+  color: "#202637",
+},
+
+paymentMethodSubText: {
+  fontSize: 13,
+  fontFamily: "Gilroy-Medium",
+  color: "#74809A",
+  marginTop: 4,
+},
+
+paymentTypeBadge: {
+  minWidth: 75,
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 24,
+  alignItems: "center",
+  justifyContent: "center",
+  alignSelf: "center",
+  flexShrink: 0,
+},
+
+paymentTypeText: {
+  fontSize: 12,
+  fontFamily: "Gilroy-Semibold",
+},
 
 });

@@ -220,6 +220,15 @@ export default function CustomerOverviewScreen({ route, navigation }) {
     setShowKYCPendingSheet(true)
   }
 
+
+  const openAdditionalContact = () => {
+    console.log("Opening Additional Contact Sheet");
+    setShowContactSheet(true);
+  };
+
+  const closeAdditionalContact = () => {
+    setShowContactSheet(false);
+  };
   // const handleshowJobdetails = () => {
   //   setShowJobDetails(true)
   // }
@@ -852,7 +861,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
             handleEditMonthlyRent={handleEditMonthlyRent}
             handleEditAdvance={handleEditAdvance}
             handleShowAmenities={handleShowAmenities}
-            openAdditionalContact={() => setShowContactSheet(true)}
+            // openAdditionalContact={() => setShowContactSheet(true)}
+            openAdditionalContact={openAdditionalContact}
             handleshowKYCPendingSheet={handleshowKYCPendingSheet}
             handleJobdetails={handleshowJobdetails}
             handleVechileDetails={handleshowVechiledetails}
@@ -864,7 +874,7 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const handleCreateBill = () => {
     if (!canWriteInvoice) return;
     // navigation.navigate("CreateBills", { mode: "addBill", customerDetails })
-    navigation.navigate("CreateInvoice", { mode: "add", customerDetails  })
+    navigation.navigate("CreateInvoice", { mode: "add", customerDetails })
   }
 
   const handleCreateRetainer = () => {
@@ -1536,7 +1546,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           visible={showInactiveSheet}
           onClose={() => {
             fetchCustomerDetails()
-            setShowInactiveSheet(false)}}
+            setShowInactiveSheet(false)
+          }}
           selectedItem={selectedItem}
           onSuccess={handleCheckoutSuccess}
         // RedirectionSuccess = {handleRedirectTenant}
@@ -1626,14 +1637,14 @@ export default function CustomerOverviewScreen({ route, navigation }) {
           customerDetails={customerDetails}
         />
 
-        <AdditionalContactBottomSheet
+
+
+        {/* <AdditionalContactBottomSheet
           visible={showContactSheet}
           onClose={() => setShowContactSheet(false)}
-        // onSave={async (payload) => {
-        //   await saveAdditionalContact(activeHostelId, customerId, payload);
-        //   setShowContactSheet(false);
-        // }}
-        />
+      
+        /> */}
+
         <BillDetailsSheet
           visible={BillDetailshow}
           onClose={() => {
@@ -1674,21 +1685,26 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         onSuccess={fetchCustomerDetails}
       /> */}
 
-    <AddJobDetails
-  visible={showJobdetails}
-  onClose={() => setShowJobDetails(false)}
-  customerDetails={customerDetails}
-  onSuccess={fetchCustomerDetails}
-  selectedJob={jobModalData?.job || null}
-  selectedJobIndex={jobModalData?.index ?? null}
-  isEditMode={jobModalData?.isEdit || false}
-/>
+      <AddJobDetails
+        visible={showJobdetails}
+        onClose={() => setShowJobDetails(false)}
+        customerDetails={customerDetails}
+        onSuccess={fetchCustomerDetails}
+        selectedJob={jobModalData?.job || null}
+        selectedJobIndex={jobModalData?.index ?? null}
+        isEditMode={jobModalData?.isEdit || false}
+      />
 
       <AddVechileSheet
         visible={showVechiledetails}
         onClose={() => setShowVechileDetails(false)}
         customerDetails={customerDetails}
         onSuccess={fetchCustomerDetails}
+      />
+
+      <AdditionalContactBottomSheet
+        visible={showContactSheet}
+        onClose={closeAdditionalContact}
       />
     </>
   );
