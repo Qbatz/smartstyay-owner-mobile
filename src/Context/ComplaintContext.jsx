@@ -20,6 +20,10 @@ export default function ComplaintProvider({ children }) {
   const [complaintUpdates, setComplaintUpdates] = useState([]);
 
   const complaintRequestId = useRef(0);
+  const [complaintsLoadingMore, setComplaintsLoadingMore] = useState(false);
+  // Last filters used for page 1, reused when loading further pages.
+  const complaintFiltersRef = useRef({});
+  const complaintFetchingRef = useRef(false);
 
 
   const getErrorMessage = (err) => {
@@ -168,20 +172,33 @@ export default function ComplaintProvider({ children }) {
     filters = {},
     options = {}
   ) => {
+    const { showLoader = true, page = 1, size = 10 } = options;
+    const isFirstPage = page === 1;
+
+    // A page-1 request (initial load / search / filter / refresh) supersedes
+    // anything in flight; load-more requests are skipped while a fetch runs.
+    if (!isFirstPage && complaintFetchingRef.current) {
+      return { success: false };
+    }
+
     const requestId = ++complaintRequestId.current;
+    complaintFetchingRef.current = true;
 
-    const { showLoader = true } = options;
+    // Backward compatibility: string means customerName
+    const filterValues =
+      typeof filters === "string"
+        ? { customerName: filters }
+        : filters || {};
 
-    if (showLoader) setLoading(true);
+    if (isFirstPage) {
+      complaintFiltersRef.current = filterValues;
+      if (showLoader) setLoading(true);
+    } else {
+      setComplaintsLoadingMore(true);
+    }
 
     try {
       const axios = getAxios();
-
-      // Backward compatibility: string means customerName
-      const filterValues =
-        typeof filters === "string"
-          ? { customerName: filters }
-          : filters;
 
       // const params = {};
       const params = {
@@ -189,6 +206,8 @@ export default function ComplaintProvider({ children }) {
         status: filterValues?.status || "",
         startDate: filterValues?.startDate || "",
         endDate: filterValues?.endDate || "",
+        page,
+        size,
       };
 
       console.log("Complaint API params:", params);
@@ -208,18 +227,24 @@ export default function ComplaintProvider({ children }) {
       if (res.status === 200) {
         const data = res?.data || {};
 
-        setComplaintsList(
-          Array.isArray(data?.complaintsList)
-            ? data.complaintsList
-            : []
-        );
+        const list = Array.isArray(data?.complaintsList)
+          ? data.complaintsList
+          : [];
+
+        setComplaintsList((prev) => {
+          if (isFirstPage) return list;
+          const existing = new Set(prev.map((c) => c?.complaintId));
+          return [...prev, ...list.filter((c) => !existing.has(c?.complaintId))];
+        });
 
         setComplaintListOtherDetails({
           startDate: data?.startDate || null,
           endDate: data?.endDate || null,
           complaintCount: data?.complaintCount || 0,
-          filterOption : data?.filterOption
-        }); 
+          filterOption : data?.filterOption,
+          currentPage: Number(data?.currentPage) || page,
+          totalPages: Number(data?.totalPages) || 1,
+        });
 
         return { success: true, data };
       }
@@ -237,10 +262,31 @@ export default function ComplaintProvider({ children }) {
       return { success: false, data: {} };
 
     } finally {
-      if (showLoader && requestId === complaintRequestId.current) {
-        setLoading(false);
+      if (requestId === complaintRequestId.current) {
+        complaintFetchingRef.current = false;
+        if (isFirstPage) {
+          if (showLoader) setLoading(false);
+        } else {
+          setComplaintsLoadingMore(false);
+        }
       }
     }
+  };
+
+  // Fetches the next page of complaints using the last applied filters.
+  const LoadMoreComplaints = async (hostelId, size = 10) => {
+    const currentPage = Number(complaintListOtherDetails?.currentPage) || 1;
+    const totalPages = Number(complaintListOtherDetails?.totalPages) || 1;
+
+    if (!hostelId || complaintFetchingRef.current || currentPage >= totalPages) {
+      return { success: false };
+    }
+
+    return GetComplaintListDetails(hostelId, complaintFiltersRef.current, {
+      showLoader: false,
+      page: currentPage + 1,
+      size,
+    });
   };
 
 
@@ -497,6 +543,8 @@ export default function ComplaintProvider({ children }) {
         editComplaintType,
         deleteComplaintType,
         GetComplaintListDetails,
+        LoadMoreComplaints,
+        complaintsLoadingMore,
         AddComplaint,
         EditComplaint,
         deleteComplaint,

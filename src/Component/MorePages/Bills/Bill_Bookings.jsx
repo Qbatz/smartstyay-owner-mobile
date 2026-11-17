@@ -1,573 +1,82 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   View,
   Text,
   Image,
   TouchableOpacity,
   FlatList,
-  StyleSheet, TouchableWithoutFeedback,
-  Modal, Animated,
-  PanResponder,
-  BackHandler, TextInput, ScrollView, Dimensions, Platform
+  StyleSheet,
+  Animated,
+  ScrollView,
+  Platform,
+  Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useLayoutEffect } from "react";
-import DatePicker from "react-native-ui-datepicker";
-import dayjs from "dayjs";
+import LinearGradient from "react-native-linear-gradient";
 import { BillContext } from "../../../Context/BillsContext";
 import { CommonContexts } from "../../../Context/CommonContext";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-import SuccessModal from "../../../ToastFile/ToastPage";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 
-import ProfileImage from "../../../Assets/Images/Avatar.png";
 import FilterIcon from "../../../Assets/Images/filter.png";
-import DueIcon from "../../../Assets/Images/Due_Icon.png";
-import MoneyCheckIcon from "../../../Assets/Images/money_check.png";
-import PreviewIcon from "../../../Assets/Images/View_Icon.png";
-import WriteOffDueIcon from "../../../Assets/Images/writeoff_due_icon.png";
-import Dots from "../../../Assets/Images/3dots.png";
-import ArrowLeft from "../../../Assets/Images/Arrow_left.png";
 import Bills_Black_Icon from "../../../Assets/Images/Bills_Black_Icon.png";
-import EmptyFloor from "../../../Assets/Images/Empty_state.png"
-import CalendarIcon from "../../../Assets/Images/calendar.png";
-import CalendarBlueIcon from "../../../Assets/Images/calendar_blue.png";
-import Download from "../../../Assets/Images/download.png";
-import DownArrow from "../../../Assets/Images/direction-down.png";
-import Telegram from "../../../Assets/Images/telegram.png";
-import Payment from "../../../Assets/Images/payment.png";
+import EmptyFloor from "../../../Assets/Images/Empty_state.png";
 import AddIcon from "../../../Assets/Images/add-circle.png";
-import DeleteIcon from "../../../Assets/Images/trash.png"
-import EditIcon from "../../../Assets/Images/editIcon.png"
-import TickIcon from "../../../Assets/Images/tick-circle.png"
+import TickIcon from "../../../Assets/Images/tick-circle.png";
 import RupeeIcon from "../../../Assets/Images/Rupees.png";
-import GreenRupees from "../../../Assets/Images/RupeesBlue.png"
-import LinearGradient from "react-native-linear-gradient";
-import TickGreenIcon from "../../../Assets/Images/tickgreen.png"
-
+import TickGreenIcon from "../../../Assets/Images/tickgreen.png";
 
 const { width } = Dimensions.get("window");
-const CARD_WIDTH = width * 0.44
-const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFiltersheet, appliedFilters,
-  setAppliedFilters, }) => {
+const CARD_WIDTH = width * 0.44;
 
-  const { BillDetails, loading, GetAllBillDetails, GetInitializeRefundDetails,
-    UpdateTenantRecurringStatus, receiptsList, GetReceiptsList, DeleteReceipt, getReceiptPdfDetails, bookingBills, setBookingBills, GetAdvanceBookingBills } = useContext(BillContext);
-  const { activeHostelId, hostelList } = useContext(CommonContexts);
+const SCROLL_DELTA = 10;
+const HIDE_TAB_BAR_AFTER_Y = 50;
 
-  const {
-    canWriteModule: canWriteBooking,
-    canReadModule: canReadBooking,
-  } = useHasPermission("Booking");
+const keyExtractor = (item, index) =>
+  item?.invoiceId ? String(item.invoiceId) : String(index);
 
-  const { canUpdateModule: canUpdateInvoice } = useHasPermission("Bills");
+// ---------------------------------------------------------------------------
+// Presentational components (module level so their identity is stable across
+// renders — otherwise every re-render remounts them and causes flicker).
+// ---------------------------------------------------------------------------
 
-  console.log("advanceBills", bookingBills);
-
-  const dotsRefs = useRef({});
-  const navigation = useNavigation();
-
-  const lastScrollY = useRef(0);
-  const isTabBarVisible = useRef(true);
-
-
-
-  const handleScroll = (event) => {
-    const currentY = event.nativeEvent.contentOffset.y;
-    const diff = currentY - lastScrollY.current;
-
-    if (Math.abs(diff) < 10) return;
-
-    if (diff > 0 && currentY > 50) {
-      if (isTabBarVisible.current) {
-        setShowTabBar(false);
-        isTabBarVisible.current = false;
-      }
-    } else if (diff < 0) {
-      if (!isTabBarVisible.current) {
-        setShowTabBar(true);
-        isTabBarVisible.current = true;
-      }
-    }
-
-    lastScrollY.current = currentY;
-  };
-
-  const [stayType, setStayType] = useState("Long Stay");
-  const [openDropdown, setOpenDropdown] = useState(false);
-  const formatDate = (d) => dayjs(d).format("DD-MM-YYYY");
-
-  const [deleteReceipt, setDeleteReceipt] = useState(false)
-  const [showMenu, setShowMenu] = useState(false);
-  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-
-
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [modalType, setModalType] = useState("success");
-
-  const [showBillDetails, setShowBillDetails] = useState(false);
-  const [showFilter, setShowFilter] = useState(false);
-  const [selectedReceipt, setSelectedReceipt] = useState(null);
-
-
-  const [fromDate, setFromDate] = useState(dayjs());
-  const [toDate, setToDate] = useState(dayjs());
-  const [openFrom, setOpenFrom] = useState(false);
-  const [openTo, setOpenTo] = useState(false);
-  const [openUpward, setOpenUpward] = useState(false);
-
-  const detailsY = useRef(new Animated.Value(0)).current;
-  const detailsSheetY = useRef(new Animated.Value(0)).current;
-
-  const amountOptions = [
-    "Low to High (Lowest First)",
-    "High to Low (Highest First)",
-    "Newest First",
-    "Oldest First",
-  ];
-
-  const [amountSelected, setAmountSelected] = useState(amountOptions[0]);
-  const [amountDropdownVisible, setAmountDropdownVisible] = useState(false)
-
-  // const [appliedFilters, setAppliedFilters] = useState(null);
-
-  const hasActiveBookingFilter =
-    !!appliedFilters &&
-    (
-      appliedFilters?.startDate ||
-      appliedFilters?.endDate ||
-      appliedFilters?.status ||
-      appliedFilters?.period ||
-      appliedFilters?.floor ||
-      appliedFilters?.room ||
-      appliedFilters?.minAmount !== undefined ||
-      appliedFilters?.maxAmount !== undefined ||
-      (Array.isArray(appliedFilters?.type) && appliedFilters.type.length > 0)
-    );
-
-  // const Advancebookingbills = bookingBills?.advanceInvoiceList
-  console.log("bablana",hasActiveBookingFilter)
-  console.log(appliedFilters)
-
-  const Advancebookingbills = Array.isArray(bookingBills?.advanceInvoiceList)
-    ? bookingBills.advanceInvoiceList
-    : Array.isArray(bookingBills)
-      ? bookingBills
-      : [];
-
-  const hasBookings = Advancebookingbills.length > 0;
-
-  console.log("bookingBills", bookingBills);
-  console.log("Advancebookingbills", Advancebookingbills);
-  console.log("hasBookings", hasBookings);
-
-
-  console.log("bookingList", bookingBills)
-
-  dayjs.extend(customParseFormat);
-  console.log("BillDetails", BillDetails)
-
-  const formatApiDate = (date) =>
-    date
-      ? dayjs(date, "DD/MM/YYYY").format("DD MMM YYYY")
-      : "--";
-
-  const dummyData = [
-    {
-      transactionId: "1",
-      fullName: "Ajmal Muhammed",
-      initials: "AM",
-      invoiceNumber: "BK-001",
-      paidAt: "01/12/2025",
-      amount: 1500,
-    },
-    {
-      transactionId: "2",
-      fullName: "Mahadevan",
-      initials: "M",
-      invoiceNumber: "BK-426",
-      paidAt: "01/12/2025",
-      amount: 500,
-    },
-    {
-      transactionId: "3",
-      fullName: "Jobin",
-      initials: "J",
-      invoiceNumber: "BK-002",
-      paidAt: "01/12/2025",
-      amount: 1000,
-    },
-    {
-      transactionId: "4",
-      fullName: "Daniel Balaji M",
-      initials: "DB",
-      invoiceNumber: "BK-426",
-      paidAt: "01/12/2025",
-      amount: 500,
-    },
-    {
-      transactionId: "5",
-      fullName: "Muthuraja M",
-      initials: "M",
-      invoiceNumber: "BK-008",
-      paidAt: "01/12/2025",
-      amount: 500,
-    },
-    {
-      transactionId: "6",
-      fullName: "Albert",
-      initials: "A",
-      invoiceNumber: "BK-005",
-      paidAt: "01/06/2025",
-      amount: 2250,
-    },
-  ];
-
-
-
-
-
-  // useEffect(() => {
-  //   if (activeHostelId) {
-  //     GetAdvanceBookingBills(activeHostelId);
-  //   }
-  // }, [activeHostelId])
+const AnimatedNumber = memo(({ value, duration = 800 }) => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [displayValue, setDisplayValue] = useState(0);
 
   useEffect(() => {
-    if (activeHostelId && canReadBooking) {
-      GetAdvanceBookingBills(activeHostelId);
-    }
-    else {
-      setBookingBills([])
-    }
-  }, [activeHostelId, canReadBooking]);
+    animatedValue.setValue(0);
 
+    const listener = animatedValue.addListener(({ value: v }) => {
+      setDisplayValue(Math.floor(v));
+    });
 
+    const animation = Animated.timing(animatedValue, {
+      toValue: Number(value) || 0,
+      duration,
+      useNativeDriver: false,
+    });
+    animation.start();
 
-
-
-
-  useLayoutEffect(() => {
-    const backAction = () => {
-
-      if (showFilter) {
-        setShowFilter(false);
-        return true;
-      }
-
-      if (showBillDetails) {
-        setShowBillDetails(false);
-        return true;
-      }
-
-
-
-
-
-      return false;
+    return () => {
+      animation.stop();
+      animatedValue.removeListener(listener);
     };
+  }, [value, duration, animatedValue]);
 
-    const handler = BackHandler.addEventListener(
-      "hardwareBackPress",
-      backAction
-    );
+  return <Text>{displayValue}</Text>;
+});
 
-    return () => handler.remove();
-  }, [showBillDetails, showFilter]);
-
-  useEffect(() => {
-    const onBackPress = () => {
-      if (amountDropdownVisible) {
-        setAmountDropdownVisible(false);
-        return true;
-      }
-
-      if (openFrom) {
-        setOpenFrom(false);
-        return true;
-      }
-      if (openTo) {
-        setOpenTo(false);
-        return true;
-      }
-      if (showFilter) {
-        setShowFilter(false);
-        return true;
-      }
-
-
-
-
-      return false;
-    };
-
-    const sub = BackHandler.addEventListener("hardwareBackPress", onBackPress);
-    return () => sub.remove();
-  }, [showFilter, openFrom, openTo, amountDropdownVisible]);
-
-  const billDetailsPan = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-      onPanResponderMove: (_, g) => {
-        if (g.dy > 0) detailsSheetY.setValue(g.dy);
-      },
-      onPanResponderRelease: (_, g) => {
-        if (g.dy > 120) {
-          Animated.timing(detailsSheetY, {
-            toValue: 700,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            setShowBillDetails(false);
-            detailsSheetY.setValue(0);
-          });
-        } else {
-          Animated.spring(detailsSheetY, {
-            toValue: 0,
-            useNativeDriver: true,
-          }).start();
-        }
-      },
-    })
-  ).current;
-
-
-  const detailsfilter = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => g.dy > 5,
-      onPanResponderMove: (_, g) => {
-        if (g.dy > 0) detailsY.setValue(g.dy);
-      },
-      onPanResponderRelease: (_, g) => {
-        if (g.dy > 120) {
-          Animated.timing(detailsY, {
-            toValue: 700,
-            duration: 200,
-            useNativeDriver: true,
-          }).start(() => {
-            setShowFilter(false);
-            detailsY.setValue(0);
-          });
-        } else {
-          Animated.spring(detailsY, { toValue: 0, useNativeDriver: true }).start();
-        }
-      },
-    })
-  ).current;
-
-  const toggleAmountDropdown = () => {
-    setAmountDropdownVisible((v) => !v);
-  };
-
-  const handleBillDetails = () => {
-    setShowBillDetails(true)
-  }
-
-  const openMenu = (item, id) => {
-    const ref = dotsRefs.current[id];
-
-    if (!ref) return;
-
-    ref.measureInWindow((px, py, width, height) => {
-      setPopupPosition({ x: px, y: py });
-      setSelectedCustomer(item);
-      setShowMenu(true);
-    });
-  };
-
-  console.log('selected', selectedCustomer, activeHostelId,
-  );
-
-
-  // const handleShowReceiptPdf = async () => {
-  // navigation.navigate("ReceiptPdf")
-  //   const res = await getReceiptPdfDetails(
-  //       activeHostelId,
-  //       selectedReceipt?.transactionId
-  //     );
-  //     console.log("res", res);
-  // }
-
-
-  const handleCreateBill = () => {
-    navigation.navigate("CreateReceipt", { mode: "add" })
-  }
-
-  // const handleViewReceiptDetails = (item) => {
-  //       setSelectedReceipt(item);
-  //       setShowBillDetails(true);
-  //     }
-
-  const handleViewBookingDetails = (item) => {
-    console.log("item", item);
-
-    onBookingDetailsShow(item)
-  }
-
-  const handleResetBookingFilters = async () => {
-    setAppliedFilters(null);
-
-    if (!activeHostelId || !canReadBooking) return;
-
-    await GetAdvanceBookingBills(activeHostelId, {
-      page: 1,
-      size: 10,
-    });
-  };
-
-
-  const handleEditBill = () => {
-
-    navigation.navigate("CreateReceipt", {
-      mode: "edit",
-      // data: item,  
-    });
-    setShowMenu(false);
-  }
-
-
-  const handleDeleteReceipt = async () => {
-
-
-    const res = await DeleteReceipt({
-      hostelId: activeHostelId,
-      receiptId: selectedCustomer?.transactionId,
-    });
-
-
-
-    if (res.success) {
-
-      setModalType("success");
-      setModalMessage("Deleted Successfully");
-      setShowSuccessModal(true);
-      setDeleteReceipt(false)
-
-      setTimeout(() => setShowSuccessModal(false), 1500);
-    } else {
-      setModalType("warning");
-      setModalMessage(res?.message || "Something went wrong");
-      setShowSuccessModal(true);
-
-      setTimeout(() => setShowSuccessModal(false), 1500);
-    }
-  };
-
-
-
-  const toggleSwitch = (id) => {
-    setData((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, status: !item.status } : item
-      )
-    );
-  };
-
-  const EmptyReceiptState = () => (
-    <View style={styles.emptyContainer}>
-
-      <Image
-        source={EmptyFloor}
-        style={styles.emptyImage}
-        resizeMode="contain"
-      />
-
-      <Text style={styles.emptyText}>
-        {hasActiveBookingFilter
-          ? "No bookings found for the selected filter"
-          : "No Bookings Found"}
-      </Text>
-
-      {hasActiveBookingFilter && (
-        <TouchableOpacity
-          style={styles.emptyResetButton}
-          onPress={handleResetBookingFilters}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.emptyResetText}>
-            Reset
-          </Text>
-        </TouchableOpacity>
-      )}
-
-    </View>
-  );
-
-
-  const renderItem = ({ item }) => {
-    return (
-      <TouchableOpacity
-        style={styles.row}
-        activeOpacity={0.7}
-        onPress={() => handleViewBookingDetails(item)}
-      >
-
-        <View>
-          <View style={styles.avatarWrapper}>
-            {item?.profilePic ? (
-              <Image source={{ uri: item?.profilePic }} style={styles.avatar} />
-            ) : (
-              <View style={styles.initialCircle}>
-                <Text style={styles.initialText}>
-                  {item?.initials || item?.fullName?.slice(0, 2)?.toUpperCase()}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.tickWrapper}>
-              <Image source={TickIcon} style={styles.tickIcon} />
-            </View>
-          </View>
-        </View>
-
-
-
-        <View style={{ flex: 1, marginRight: 5 }}>
-          {/* <TouchableOpacity  > */}
-          <Text style={styles.name} numberOfLines={1}
-          >{item.fullName}</Text>
-          {/* </TouchableOpacity> */}
-
-          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 3 }}>
-
-
-            <Image
-              source={Bills_Black_Icon}
-              style={{ width: 12, height: 12, marginTop: 3, marginRight: 5 }}
-            />
-
-            <Text style={styles.bill}>{item?.invoiceNumber}</Text>
-          </View>
-        </View>
-
-        <View style={styles.rightSection}>
-
-
-          <Text style={{ fontWeight: "700" }}>
-            ₹ {item?.availableAmount}
-          </Text>
-
-          <Text style={styles.dateText}>
-            {item?.invoiceDate}
-            {/* {formatApiDate(item?.invoiceDate)} */}
-          </Text>
-        </View>
-      </TouchableOpacity>
-
-    );
-  };
-
-  const SummaryCard = ({
-    icon,
-    title,
-    value,
-    prefix,
-    suffix,
-    valueColor = "#111827",
-    linearcolor
-  }) => (
+const SummaryCard = memo(
+  ({ icon, title, value, prefix, suffix, valueColor = "#111827", linearcolor }) => (
     <LinearGradient
       colors={["#FFFFFF", linearcolor]}
       start={{ x: 0, y: 0 }}
@@ -576,666 +85,479 @@ const BillBookings = ({ setShowTabBar, onBookingDetailsShow, showRetainerFilters
     >
       <View style={styles.cardTopRow}>
         <View style={styles.cardContent}>
-          <Text style={styles.cardTitle}>
-            {title}
-          </Text>
+          <Text style={styles.cardTitle}>{title}</Text>
 
           <Text style={[styles.cardValue, { color: valueColor }]}>
             ₹ {prefix && <Text>{prefix}</Text>}
-
             <AnimatedNumber value={value} />
-
             {suffix && <Text>{suffix}</Text>}
           </Text>
         </View>
 
         <View style={styles.iconBox}>
-          <Image
-            source={icon}
-            style={styles.cardIcon}
-          />
+          <Image source={icon} style={styles.cardIcon} />
         </View>
       </View>
     </LinearGradient>
-  );
+  )
+);
 
-  const AnimatedNumber = ({ value, duration = 800 }) => {
-    const animatedValue = useRef(new Animated.Value(0)).current;
-    const [displayValue, setDisplayValue] = useState(0);
-
-    useEffect(() => {
-      animatedValue.setValue(0);
-
-      Animated.timing(animatedValue, {
-        toValue: Number(value) || 0,
-        duration,
-        useNativeDriver: false,
-      }).start();
-
-      const listener = animatedValue.addListener(({ value }) => {
-        setDisplayValue(Math.floor(value));
-      });
-
-      return () => {
-        animatedValue.removeListener(listener);
-      };
-    }, [value]);
-
-    return <Text>{displayValue}</Text>;
-  };
-
-
-
-
-  return (
-
-    <>
-
-      <SuccessModal
-        visible={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        message={modalMessage}
-        type={modalType}
-      />
-
-      <View style={styles.container}>
-
-
-        {/* <FlatList
-          data={Advancebookingbills}
-          renderItem={renderItem}
-          keyExtractor={(item, index) =>
-            item?.invoiceId
-              ? item.invoiceId.toString()
-              : index.toString()
-          }
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingTop: 0,
-            flexGrow: 1,
-            paddingBottom: 120,
-          }}
-          ListEmptyComponent={
-            !loading && <EmptyReceiptState />
-          }
-        /> */}
-
-        {!canReadBooking && !loading ? (
-          <View style={styles.emptyContainer}>
-            <Image
-              source={EmptyFloor}
-              style={styles.emptyImage}
-              resizeMode="contain"
-            />
-            <Text style={styles.emptyText}>
-              You don’t have permission to view bookings
+const BookingRow = memo(({ item, onPress }) => (
+  <TouchableOpacity
+    style={styles.row}
+    activeOpacity={0.7}
+    onPress={() => onPress(item)}
+  >
+    <View>
+      <View style={styles.avatarWrapper}>
+        {item?.profilePic ? (
+          <Image source={{ uri: item.profilePic }} style={styles.avatar} />
+        ) : (
+          <View style={styles.initialCircle}>
+            <Text style={styles.initialText}>
+              {item?.initials || item?.fullName?.slice(0, 2)?.toUpperCase()}
             </Text>
           </View>
-        ) : (
-          <>
-
-
-            <FlatList
-              data={Advancebookingbills}
-              renderItem={renderItem}
-              keyExtractor={(item, index) =>
-                item?.invoiceId
-                  ? item.invoiceId.toString()
-                  : index.toString()
-              }
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingTop: 0,
-                flexGrow: 1,
-                paddingBottom: 120,
-              }}
-              ListEmptyComponent={
-                !loading ? <EmptyReceiptState /> : null
-              }
-              onScroll={handleScroll}
-              ListHeaderComponent={() =>
-                hasBookings ? (
-                  <>
-
-                    {hasActiveBookingFilter && (
-                      <View style={styles.appliedFilterWrapper}>
-
-                        <ScrollView
-                          horizontal
-                          showsHorizontalScrollIndicator={false}
-                          contentContainerStyle={styles.appliedFilterScroll}
-                        >
-
-                          {appliedFilters?.startDate && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipText}>
-                                From : {appliedFilters.startDate}
-                              </Text>
-                            </View>
-                          )}
-
-                          {appliedFilters?.endDate && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipText}>
-                                To : {appliedFilters.endDate}
-                              </Text>
-                            </View>
-                          )}
-
-                          {appliedFilters?.status && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipText}>
-                                Status is : {appliedFilters.status}
-                              </Text>
-                            </View>
-                          )}
-
-                          {appliedFilters?.period && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipText}>
-                                Period is : {appliedFilters.period}
-                              </Text>
-                            </View>
-                          )}
-
-                          {appliedFilters?.floor && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipLabel}>Floor</Text>
-                              <Text style={styles.filterChipValue}>
-                                {appliedFilters?.floorName || appliedFilters?.floor}
-                              </Text>
-                            </View>
-                          )}
-
-                          {appliedFilters?.room && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipLabel}>Room</Text>
-                              <Text style={styles.filterChipValue}>
-                                {appliedFilters?.roomName || appliedFilters?.room}
-                              </Text>
-                            </View>
-                          )}
-
-                          {appliedFilters?.minAmount !== undefined && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipText}>
-                                Min Amount : ₹ {appliedFilters.minAmount}
-                              </Text>
-                            </View>
-                          )}
-
-                          {appliedFilters?.maxAmount !== undefined && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipText}>
-                                Max Amount : ₹ {appliedFilters.maxAmount}
-                              </Text>
-                            </View>
-                          )}
-
-                          {appliedFilters?.type && (
-                            <View style={styles.filterChip}>
-                              <Text style={styles.filterChipText}>
-                                Type : {appliedFilters.type}
-                              </Text>
-                            </View>
-                          )}
-
-                        </ScrollView>
-
-                        <TouchableOpacity
-                          onPress={handleResetBookingFilters}
-                          activeOpacity={0.7}
-                          style={styles.topResetButton}
-                        >
-                          <Text style={styles.topResetText}>Reset</Text>
-                        </TouchableOpacity>
-
-                      </View>
-                    )}
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        marginVertical: 8,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontSize: 13,
-                          fontFamily: "Gilroy-Medium",
-                          color: "#64748B",
-                        }}
-                      >
-                        Total Retainer Amount
-                      </Text>
-
-                      <Text
-                        style={{
-                          fontSize: 18,
-                          fontFamily: "Gilroy-Semibold",
-                        }}
-                      >
-                        ₹ {bookingBills?.retainerSummary?.totalRetainerAmount || 0}
-                      </Text>
-                    </View>
-
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={styles.cardRow}
-                    >
-                      <SummaryCard
-                        title="Booking"
-                        value={bookingBills?.retainerSummary?.totalBookingAmount || 0}
-                        icon={TickGreenIcon}
-                        valueColor="#00A651"
-                        linearcolor="#F4FFF7"
-                      />
-
-                      <SummaryCard
-                        title="Advance"
-                        value={bookingBills?.retainerSummary?.totalAdvanceAmount || 0}
-                        icon={RupeeIcon}
-                        linearcolor="#FFF4F4"
-                      />
-
-                      <SummaryCard
-                        title="Rent"
-                        value={bookingBills?.retainerSummary?.totalRentAmount || 0}
-                        icon={RupeeIcon}
-                        linearcolor="#FFF4F4"
-                      />
-
-                      <SummaryCard
-                        title="EB"
-                        value={bookingBills?.retainerSummary?.totalEbAmount || 0}
-                        icon={RupeeIcon}
-                        linearcolor="#FFF4F4"
-                      />
-
-                      <SummaryCard
-                        title="General"
-                        value={bookingBills?.retainerSummary?.otherAmount || 0}
-                        icon={RupeeIcon}
-                        linearcolor="#FFF4F4"
-                      />
-                    </ScrollView>
-                  </>
-                ) : null
-              }
-            />
-
-          </>
-
         )}
 
-
-        {!loading && hostelList?.length > 0 && (
-          <>
-
-
-            <TouchableOpacity
-              style={[
-                styles.addButton, !canWriteBooking && { opacity: 0.4 }
-
-              ]}
-              disabled={!canWriteBooking}
-              onPress={() => {
-                navigation.navigate("NewRetainerInvoiceSheet")
-              }}
-            >
-              <Image source={AddIcon}
-                style={{ width: 25, height: 25 }} />
-            </TouchableOpacity>
-          </>
-        )
-        }
-
-        {!loading && hasBookings && hostelList?.length > 0 && (
-          <TouchableOpacity
-            style={[styles.filterButton, !canReadBooking && { opacity: 0.4 }]}
-            disabled={!canReadBooking}
-            onPress={showRetainerFiltersheet}
-          >
-            <Image source={FilterIcon} style={{ width: 30, height: 30 }} />
-          </TouchableOpacity>
-        )}
-
-        {/*
-
-
-
-
-       
-
-
-        {showMenu && (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() => setShowMenu(false)}
-            style={styles.popupOverlay}
-          >
-            <View
-              style={[
-                styles.popupBox,
-                { top: popupPosition.y - 120, left: popupPosition.x - 180 },
-              ]}
-            >
-              <TouchableOpacity style={styles.popupRow}>
-                <Image source={Download} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Download</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.popupRow} onPress={handleEditBill}>
-                <Image source={EditIcon} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Edit</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.popupRow}
-                onPress={() => {
-                  setShowMenu(false)
-                  setDeleteReceipt(true)
-                }
-                }
-
-              >
-                <Image source={DeleteIcon} style={styles.popupIcon} />
-                <Text style={styles.popupText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
-        )}
-
-
-
-        {/* {showBillDetails && (
-          <View style={styles.sheetOverlay}>
-        
-            <TouchableWithoutFeedback onPress={() => setShowBillDetails(false)}>
-              <View style={{ flex: 1 }} />
-            </TouchableWithoutFeedback>
-        
-            <Animated.View
-              style={[
-                styles.transactionSheet,
-                { height: "78%", transform: [{ translateY: detailsSheetY }] }
-              ]}
-              {...billDetailsPan.panHandlers}
-            >
-              <View style={styles.sheetHandle} />
-        
-              
-        
-              <ScrollView showsVerticalScrollIndicator={false}>
-        
-          <View style={styles.billHeaderRow}>
-            <Text style={styles.billHeaderText}>Bill Details</Text>
-        
-        
-            <View style={{display:'flex', flexDirection:'row'}}>
-            <View style={styles.statusBadge}>
-                <Text style={styles.statusText}>Paid</Text>
-              </View>
-
-        
-            <TouchableOpacity>
-              <Image
-                source={Dots}
-                style={{ width: 28, height: 28,  }}
-              />
-            </TouchableOpacity>
-            </View>
-          </View>
-        
-          <View style={styles.userRow}>
-            <Image source={ProfileImage} style={styles.userImg} />
-        
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text style={styles.userName}>  {selectedReceipt?.fullName || "--"}</Text>
-        
-              <View style={{ flexDirection: "row", marginTop: 4 }}>
-                <View style={styles.invTypeBadge}>
-                  <Text style={styles.invTypeText}>Checkout Inv</Text>
-                </View>
-         
-                <Image source={Bills_Black_Icon} style={{   width: 12,
-            height: 12, marginTop:5 , marginRight:5
-          }} />
-                <Text style={styles.billNumber}>#1212121212</Text>
-              </View>
-            </View>
-          </View>
-
-        
-        
-          <View style={styles.twoColRow}>
-            <View style={styles.colItem}>
-              <Text style={styles.label}>Payment date</Text>
-              <View style={styles.rowAlign}>
-                <Image source={CalendarBlueIcon} style={styles.iconSmall} />
-                <Text style={styles.value}>  {formatApiDate(selectedReceipt?.paidAt)}</Text>
-              </View>
-            </View>
-        
-            <View style={styles.colItem}>
-              <Text style={styles.label}>Payment Mode</Text>
-              <View style={styles.rowAlign}>
-                <Image source={Payment} style={styles.iconSmall} />
-                <Text style={styles.value}> {selectedReceipt?.invoiceMode || "--"}</Text>
-              </View>
-            </View>
-          </View>
-
-           <View style={styles.twoColRow}>
-            <View style={styles.colItem}>
-              <Text style={styles.label}>Payment to</Text>
-              <View style={styles.rowAlign}>
-                    <Image source={Payment} style={{   width: 18,
-            height: 18, marginTop:5 , marginRight:5
-          }} />
-                <Text style={styles.amountValue}>  {selectedReceipt?.bankName || "--"}</Text>
-              </View>
-            </View>
-             </View>
-        
-          <View style={styles.twoColRow}>
-            <View style={styles.colItem}>
-              <Text style={styles.label}>Amount</Text>
-              <View style={styles.rowAlign}>
-                    <Image source={MoneyCheckIcon} style={{   width: 18,
-            height: 18, marginTop:5 , marginRight:5
-          }} />
-                <Text style={styles.amountValue}> ₹{selectedReceipt?.paidAmount ?? "--"}</Text>
-              </View>
-            </View>
-             <View style={styles.colItem}>
-              <Text style={styles.label}>Transaction Id</Text>
-              <View style={styles.rowAlign}>
-                    <Image source={Telegram} style={{   width: 18,
-            height: 18, marginTop:2 , marginRight:5
-          }} />
-                <Text style={styles.amountValue}>{selectedReceipt?.transactionNumber || "--"}</Text>
-              </View>
-            </View>
-        
-          
-          </View>
-        
-          <TouchableOpacity style={styles.previewBtn} onPress={handleShowReceiptPdf} >
-            <View style={{display:'flex', flexDirection:'row'}}>
-                       <Image source={PreviewIcon} style={{   width: 18,
-            height: 18, marginTop:3 , marginRight:12
-          }} />
-            <Text style={styles.previewText}>Preview</Text>
-            </View>
-          </TouchableOpacity>
-        
-        </ScrollView>
-        
-        
-            </Animated.View>
-          </View>
-        )} */}
-
-
-        {showFilter && (
-          <View style={styles.sheetOverlay}>
-            <TouchableWithoutFeedback onPress={() => setShowFilter(false)}>
-              <View style={{ flex: 1 }} />
-            </TouchableWithoutFeedback>
-
-            <Animated.View
-              style={[styles.transactionSheet, { transform: [{ translateY: detailsY }] }]}
-              {...detailsfilter.panHandlers}
-            >
-              <View style={styles.sheetHandle} />
-
-              <View style={styles.filterHeaderRow}>
-                <View style={{ flexDirection: "row", alignItems: "center" }}>
-                  <Image source={FilterIcon} style={{ width: 40, height: 40 }} />
-                  <Text style={styles.filterTitle}>  Filter by</Text>
-                </View>
-              </View>
-
-              <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-                <Text style={styles.label}>Date Range</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    setFromDate(dayjs());
-                    setToDate(dayjs());
-                    setAmountSelected(amountOptions[0]);
-                  }}
-                >
-                  <Text style={styles.resetTextSmall}>Reset</Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.dateRow}>
-                <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-                  <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-                  <Image source={CalendarIcon} style={styles.calIcon} />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-                  <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-                  <Image source={CalendarIcon} style={styles.calIcon} />
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.quickRow}>
-                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs()); setToDate(dayjs()); }}>
-                  <Text style={styles.quickText}>Today</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-                  <Text style={styles.quickText}>This Week</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.quickBtn} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-                  <Text style={styles.quickText}>This Month</Text>
-                </TouchableOpacity>
-              </View>
-
-              <Text style={[styles.label, { marginTop: 18 }]}>Type</Text>
-
-              <View
-                style={styles.selectWrapper}
-                onLayout={(event) => {
-                  const { y, height } = event.nativeEvent.layout;
-                  const screenHeight = Dimensions.get("window").height;
-                  const bottomSpace = screenHeight - (y + height);
-
-                  setOpenUpward(bottomSpace < 250);
-                }}
-              >
-                <TouchableOpacity style={styles.selectBox} onPress={toggleAmountDropdown}>
-                  <Text style={styles.selectedText}>{amountSelected}</Text>
-                  <Image source={DownArrow} style={styles.downArrow} />
-                </TouchableOpacity>
-
-                {amountDropdownVisible && (
-                  <View style={[styles.dropdownMenu, openUpward ? { bottom: 58 } : { top: 58 }]}>
-                    <ScrollView style={{ maxHeight: 160 }} nestedScrollEnabled showsVerticalScrollIndicator={true}>
-                      {amountOptions.map((opt) => (
-                        <TouchableOpacity key={opt} style={styles.option}
-                          onPress={() => {
-                            setAmountSelected(opt);
-                            setAmountDropdownVisible(false);
-                          }}
-                        >
-                          <Text style={styles.optionText}>{opt}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.bottomButtons}>
-                <TouchableOpacity style={styles.resetBtn}
-                  onPress={() => {
-                    setFromDate(dayjs());
-                    setToDate(dayjs());
-                    setAmountSelected(amountOptions[0]);
-                  }}
-                >
-                  <Text style={styles.resetBtnText}>Reset All</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.applyBtn} onPress={() => setShowFilter(false)}>
-                  <Text style={styles.applyBtnText}>Apply</Text>
-                </TouchableOpacity>
-              </View>
-            </Animated.View>
-          </View>
-        )}
-
-        {deleteReceipt && (
-          <Modal
-            transparent
-            animationType="fade"
-            visible={deleteReceipt}
-            onRequestClose={() => setDeleteReceipt(false)}
-          >
-            <View style={styles.deleteOverlay}>
-              <View style={styles.deleteBox}>
-
-                <Text style={styles.deleteTitle}>Delete Receipt?</Text>
-                <Text style={styles.deleteSub}>
-                  Are you sure you want to delete this Receipt?
-                </Text>
-
-                <View style={styles.deleteBtnRow}>
-                  <TouchableOpacity
-                    style={styles.cancelBtn}
-                    onPress={() => setDeleteReceipt(false)}
-                  >
-                    <Text style={styles.cancelText}>Cancel</Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.deleteBtn}
-                    onPress={() => handleDeleteReceipt()}
-                  >
-                    <Text style={styles.deleteBtnText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-
-              </View>
-            </View>
-          </Modal>
-        )}
-
+        <View style={styles.tickWrapper}>
+          <Image source={TickIcon} style={styles.tickIcon} />
+        </View>
       </View>
-    </>
+    </View>
+
+    <View style={styles.nameCol}>
+      <Text style={styles.name} numberOfLines={1}>
+        {item?.fullName}
+      </Text>
+
+      <View style={styles.billRow}>
+        <Image source={Bills_Black_Icon} style={styles.billIcon} />
+        <Text style={styles.bill}>{item?.invoiceNumber}</Text>
+      </View>
+    </View>
+
+    <View style={styles.rightSection}>
+      <Text style={styles.amountText}>₹ {item?.availableAmount}</Text>
+      <Text style={styles.dateText}>{item?.invoiceDate}</Text>
+    </View>
+  </TouchableOpacity>
+));
+
+const FilterChip = ({ text }) => (
+  <View style={styles.filterChip}>
+    <Text style={styles.filterChipText}>{text}</Text>
+  </View>
+);
+
+const LabeledFilterChip = ({ label, value }) => (
+  <View style={styles.filterChip}>
+    <Text style={styles.filterChipLabel}>{label}</Text>
+    <Text style={styles.filterChipValue}>{value}</Text>
+  </View>
+);
+
+const AppliedFiltersBar = memo(({ filters, onReset }) => (
+  <View style={styles.appliedFilterWrapper}>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.appliedFilterScroll}
+    >
+      {!!filters?.startDate && <FilterChip text={`From : ${filters.startDate}`} />}
+      {!!filters?.endDate && <FilterChip text={`To : ${filters.endDate}`} />}
+      {!!filters?.status && <FilterChip text={`Status is : ${filters.status}`} />}
+      {!!filters?.period && <FilterChip text={`Period is : ${filters.period}`} />}
+      {!!filters?.floor && (
+        <LabeledFilterChip label="Floor" value={filters?.floorName || filters?.floor} />
+      )}
+      {!!filters?.room && (
+        <LabeledFilterChip label="Room" value={filters?.roomName || filters?.room} />
+      )}
+      {filters?.minAmount !== undefined && (
+        <FilterChip text={`Min Amount : ₹ ${filters.minAmount}`} />
+      )}
+      {filters?.maxAmount !== undefined && (
+        <FilterChip text={`Max Amount : ₹ ${filters.maxAmount}`} />
+      )}
+      {!!filters?.type && <FilterChip text={`Type : ${filters.type}`} />}
+    </ScrollView>
+
+    <TouchableOpacity
+      onPress={onReset}
+      activeOpacity={0.7}
+      style={styles.topResetButton}
+    >
+      <Text style={styles.topResetText}>Reset</Text>
+    </TouchableOpacity>
+  </View>
+));
+
+const RetainerSummary = memo(({ summary }) => (
+  <>
+    <View style={styles.totalRow}>
+      <Text style={styles.totalLabel}>Total Retainer Amount</Text>
+      <Text style={styles.totalValue}>₹ {summary?.totalRetainerAmount || 0}</Text>
+    </View>
+
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.cardRow}
+    >
+      <SummaryCard
+        title="Booking"
+        value={summary?.totalBookingAmount || 0}
+        icon={TickGreenIcon}
+        valueColor="#00A651"
+        linearcolor="#F4FFF7"
+      />
+      <SummaryCard
+        title="Advance"
+        value={summary?.totalAdvanceAmount || 0}
+        icon={RupeeIcon}
+        linearcolor="#FFF4F4"
+      />
+      <SummaryCard
+        title="Rent"
+        value={summary?.totalRentAmount || 0}
+        icon={RupeeIcon}
+        linearcolor="#FFF4F4"
+      />
+      <SummaryCard
+        title="EB"
+        value={summary?.totalEbAmount || 0}
+        icon={RupeeIcon}
+        linearcolor="#FFF4F4"
+      />
+      <SummaryCard
+        title="General"
+        value={summary?.otherAmount || 0}
+        icon={RupeeIcon}
+        linearcolor="#FFF4F4"
+      />
+    </ScrollView>
+  </>
+));
+
+const EmptyBookingsState = ({ message, onReset }) => (
+  <View style={styles.emptyContainer}>
+    <Image source={EmptyFloor} style={styles.emptyImage} resizeMode="contain" />
+    <Text style={styles.emptyText}>{message}</Text>
+
+    {!!onReset && (
+      <TouchableOpacity
+        style={styles.emptyResetButton}
+        onPress={onReset}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.emptyResetText}>Reset</Text>
+      </TouchableOpacity>
+    )}
+  </View>
+);
+
+const LoadMoreFooter = () => (
+  <View style={styles.footerLoader}>
+    <ActivityIndicator size="small" color="#1E45E1" />
+  </View>
+);
+
+// ---------------------------------------------------------------------------
+// Screen
+// ---------------------------------------------------------------------------
+
+const BillBookings = ({
+  setShowTabBar,
+  onBookingDetailsShow,
+  showRetainerFiltersheet,
+  appliedFilters,
+  setAppliedFilters,
+}) => {
+  const {
+    loading,
+    bookingBills,
+    setBookingBills,
+    GetAdvanceBookingBills,
+    LoadMoreAdvanceBookingBills,
+    bookingLoadingMore,
+  } = useContext(BillContext);
+  const { activeHostelId, hostelList } = useContext(CommonContexts);
+
+  const { canWriteModule: canWriteBooking, canReadModule: canReadBooking } =
+    useHasPermission("Booking");
+
+  const navigation = useNavigation();
+
+  // Keep latest props/context functions in refs so callbacks below can stay
+  // stable (and memoized rows don't re-render) without going stale.
+  const latest = useRef({});
+  latest.current = {
+    setShowTabBar,
+    onBookingDetailsShow,
+    setAppliedFilters,
+    GetAdvanceBookingBills,
+    LoadMoreAdvanceBookingBills,
+    activeHostelId,
+    canReadBooking,
+    loading,
+    bookingLoadingMore,
+  };
+
+  const lastScrollY = useRef(0);
+  const isTabBarVisible = useRef(true);
+  const onEndReachedDuringMomentum = useRef(true);
+
+  // ----- Derived data -----
+
+  const bookings = useMemo(() => {
+    if (Array.isArray(bookingBills?.advanceInvoiceList)) {
+      return bookingBills.advanceInvoiceList;
+    }
+    return Array.isArray(bookingBills) ? bookingBills : [];
+  }, [bookingBills]);
+
+  const hasBookings = bookings.length > 0;
+  const retainerSummary = bookingBills?.retainerSummary;
+
+  const hasActiveBookingFilter = useMemo(
+    () =>
+      !!appliedFilters &&
+      !!(
+        appliedFilters.startDate ||
+        appliedFilters.endDate ||
+        appliedFilters.status ||
+        appliedFilters.period ||
+        appliedFilters.floor ||
+        appliedFilters.room ||
+        appliedFilters.minAmount !== undefined ||
+        appliedFilters.maxAmount !== undefined ||
+        (Array.isArray(appliedFilters.type) && appliedFilters.type.length > 0)
+      ),
+    [appliedFilters]
+  );
+
+  // ----- Data loading -----
+
+  useEffect(() => {
+    if (activeHostelId && canReadBooking) {
+      GetAdvanceBookingBills(activeHostelId);
+    } else {
+      setBookingBills([]);
+    }
+    // Context functions are recreated every render; only refetch on these.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeHostelId, canReadBooking]);
+
+  // ----- Handlers (stable identities) -----
+
+  const handleScroll = useCallback((event) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const diff = currentY - lastScrollY.current;
+
+    if (Math.abs(diff) < SCROLL_DELTA) return;
+
+    const { setShowTabBar: setTabBar } = latest.current;
+
+    if (diff > 0 && currentY > HIDE_TAB_BAR_AFTER_Y) {
+      if (isTabBarVisible.current) {
+        setTabBar?.(false);
+        isTabBarVisible.current = false;
+      }
+    } else if (diff < 0 && !isTabBarVisible.current) {
+      setTabBar?.(true);
+      isTabBarVisible.current = true;
+    }
+
+    lastScrollY.current = currentY;
+  }, []);
+
+  const handleMomentumScrollBegin = useCallback(() => {
+    onEndReachedDuringMomentum.current = false;
+  }, []);
+
+  const handleLoadMoreBookings = useCallback(() => {
+    const l = latest.current;
+    if (
+      onEndReachedDuringMomentum.current ||
+      !l.activeHostelId ||
+      !l.canReadBooking ||
+      l.loading ||
+      l.bookingLoadingMore
+    ) {
+      return;
+    }
+    onEndReachedDuringMomentum.current = true;
+    l.LoadMoreAdvanceBookingBills(l.activeHostelId);
+  }, []);
+
+  const handleViewBookingDetails = useCallback((item) => {
+    latest.current.onBookingDetailsShow?.(item);
+  }, []);
+
+  const handleResetBookingFilters = useCallback(async () => {
+    const l = latest.current;
+    l.setAppliedFilters?.(null);
+
+    if (!l.activeHostelId || !l.canReadBooking) return;
+
+    await l.GetAdvanceBookingBills(l.activeHostelId);
+  }, []);
+
+  const handleAddRetainer = useCallback(() => {
+    navigation.navigate("NewRetainerInvoiceSheet");
+  }, [navigation]);
+
+  const renderItem = useCallback(
+    ({ item }) => <BookingRow item={item} onPress={handleViewBookingDetails} />,
+    [handleViewBookingDetails]
+  );
+
+  // ----- List chrome -----
+
+  const listHeader = useMemo(
+    () =>
+      hasBookings ? (
+        <>
+          {hasActiveBookingFilter && (
+            <AppliedFiltersBar
+              filters={appliedFilters}
+              onReset={handleResetBookingFilters}
+            />
+          )}
+          <RetainerSummary summary={retainerSummary} />
+        </>
+      ) : null,
+    [
+      hasBookings,
+      hasActiveBookingFilter,
+      appliedFilters,
+      retainerSummary,
+      handleResetBookingFilters,
+    ]
+  );
+
+  const listEmpty = useMemo(
+    () =>
+      loading ? null : (
+        <EmptyBookingsState
+          message={
+            hasActiveBookingFilter
+              ? "No bookings found for the selected filter"
+              : "No Bookings Found"
+          }
+          onReset={hasActiveBookingFilter ? handleResetBookingFilters : undefined}
+        />
+      ),
+    [loading, hasActiveBookingFilter, handleResetBookingFilters]
+  );
+
+  const hasHostels = hostelList?.length > 0;
+
+  return (
+    <View style={styles.container}>
+      {!canReadBooking && !loading ? (
+        <EmptyBookingsState message="You don’t have permission to view bookings" />
+      ) : (
+        <FlatList
+          data={bookings}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.listContent}
+          ListHeaderComponent={listHeader}
+          ListEmptyComponent={listEmpty}
+          ListFooterComponent={bookingLoadingMore ? LoadMoreFooter : null}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          onEndReached={handleLoadMoreBookings}
+          onEndReachedThreshold={0.5}
+          onMomentumScrollBegin={handleMomentumScrollBegin}
+          initialNumToRender={10}
+          maxToRenderPerBatch={10}
+          windowSize={11}
+          removeClippedSubviews={Platform.OS === "android"}
+        />
+      )}
+
+      {!loading && hasHostels && (
+        <TouchableOpacity
+          style={[styles.addButton, !canWriteBooking && styles.disabled]}
+          disabled={!canWriteBooking}
+          onPress={handleAddRetainer}
+        >
+          <Image source={AddIcon} style={styles.addIcon} />
+        </TouchableOpacity>
+      )}
+
+      {!loading && hasBookings && hasHostels && (
+        <TouchableOpacity
+          style={[styles.filterButton, !canReadBooking && styles.disabled]}
+          disabled={!canReadBooking}
+          onPress={showRetainerFiltersheet}
+        >
+          <Image source={FilterIcon} style={styles.filterIcon} />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 };
 
 export default BillBookings;
 
 const styles = StyleSheet.create({
+  listContent: {
+    paddingTop: 0,
+    flexGrow: 1,
+    paddingBottom: 120,
+  },
+  nameCol: {
+    flex: 1,
+    marginRight: 5,
+  },
+  billRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 3,
+  },
+  billIcon: {
+    width: 12,
+    height: 12,
+    marginTop: 3,
+    marginRight: 5,
+  },
+  amountText: {
+    fontWeight: "700",
+  },
+  totalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginVertical: 8,
+  },
+  totalLabel: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#64748B",
+  },
+  totalValue: {
+    fontSize: 18,
+    fontFamily: "Gilroy-Semibold",
+  },
+  footerLoader: {
+    paddingVertical: 16,
+  },
+  addIcon: {
+    width: 25,
+    height: 25,
+  },
+  filterIcon: {
+    width: 30,
+    height: 30,
+  },
+  disabled: {
+    opacity: 0.4,
+  },
   container: {
     flex: 1,
     paddingHorizontal: 8,
@@ -1299,10 +621,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
 
-  optionText: {
-    fontSize: 14,
-    color: "#000",
-  },
 
 
   row: {
@@ -1544,7 +862,6 @@ const styles = StyleSheet.create({
 
   dateRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 8 },
   dateBox: { width: "48%", flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderWidth: 1, borderColor: "#ddd", padding: 12, borderRadius: 12 },
-  dateText: { color: "#111" },
   calIcon: { width: 20, height: 20 },
 
   selectWrapper: { position: "relative", width: "100%", marginTop: 8 },

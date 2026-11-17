@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useRef, useState } from "react";
 import { getAxios } from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 
@@ -22,6 +22,11 @@ export default function BillsProvider({ children }) {
   const [availablerecurringInvoices, setAvailableRecurringInvoices] = useState([]);
   const [onlyReceiptList, setOnlyReceiptList] = useState([])
   const [onlyBillList, setOnlyBillsList] = useState([])
+  const [bookingLoadingMore, setBookingLoadingMore] = useState(false);
+  // Last filters used for page 1, reused when loading further pages.
+  const bookingFiltersRef = useRef({});
+  const bookingRequestIdRef = useRef(0);
+  const bookingFetchingRef = useRef(false);
 
 
   const getErrorMessage = (error) =>
@@ -1262,8 +1267,23 @@ export default function BillsProvider({ children }) {
       };
     }
 
+    const isFirstPage = page === 1;
+
+    // A page-1 request (initial load / filter / refresh) supersedes anything
+    // in flight; load-more requests are skipped while another fetch runs.
+    if (!isFirstPage && bookingFetchingRef.current) {
+      return { success: false, message: "Fetch in progress" };
+    }
+    bookingFetchingRef.current = true;
+    const requestId = ++bookingRequestIdRef.current;
+
+    if (isFirstPage) {
+      bookingFiltersRef.current = filters || {};
+    }
+
     try {
-      setLoading(true);
+      if (isFirstPage) setLoading(true);
+      else setBookingLoadingMore(true);
       setErrorMsg("");
 
       const axios = getAxios();
@@ -1351,7 +1371,32 @@ export default function BillsProvider({ children }) {
       );
 
       if (res.status === 200) {
-        setBookingBills(res?.data || []);
+        // Ignore responses from outdated requests.
+        if (requestId !== bookingRequestIdRef.current) {
+          return { success: false, stale: true };
+        }
+
+        const data = res?.data || {};
+
+        setBookingBills((prev) => {
+          if (isFirstPage) return data;
+
+          const prevList = Array.isArray(prev?.advanceInvoiceList)
+            ? prev.advanceInvoiceList
+            : [];
+          const newList = Array.isArray(data?.advanceInvoiceList)
+            ? data.advanceInvoiceList
+            : [];
+          const existing = new Set(prevList.map((i) => i?.invoiceId));
+
+          return {
+            ...data,
+            advanceInvoiceList: [
+              ...prevList,
+              ...newList.filter((i) => !existing.has(i?.invoiceId)),
+            ],
+          };
+        });
 
         return {
           success: true,
@@ -1376,8 +1421,29 @@ export default function BillsProvider({ children }) {
         message: msg,
       };
     } finally {
-      setLoading(false);
+      if (requestId === bookingRequestIdRef.current) {
+        bookingFetchingRef.current = false;
+        setLoading(false);
+        setBookingLoadingMore(false);
+      }
     }
+  };
+
+  // Fetches the next page of advance/booking bills using the last applied filters.
+  const LoadMoreAdvanceBookingBills = async (hostelId, size = 10) => {
+    const currentPage = Number(bookingBills?.currentPage) || 1;
+    const totalPage = Number(bookingBills?.totalPage) || 1;
+
+    if (!hostelId || bookingFetchingRef.current || currentPage >= totalPage) {
+      return { success: false };
+    }
+
+    return GetAdvanceBookingBills(
+      hostelId,
+      bookingFiltersRef.current,
+      currentPage + 1,
+      size
+    );
   };
   const GetInitializeAdvanceRedeem = async ({ hostelId, advanceInvoiceId }) => {
     if (!hostelId || !advanceInvoiceId) {
@@ -2145,6 +2211,8 @@ export default function BillsProvider({ children }) {
         DeleteBillDiscount,
         GetBillDetailsById,
         GetAdvanceBookingBills,
+        LoadMoreAdvanceBookingBills,
+        bookingLoadingMore,
         GetInitializeAdvanceRedeem,
         ApplyAdvanceToInvoices,
         GetAdvanceCreditDetails,

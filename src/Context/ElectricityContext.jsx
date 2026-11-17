@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useRef } from "react";
 import {getAxios} from "../Config/AxiosConfig";
 
 export const ElectricityContext = createContext();
@@ -15,23 +15,75 @@ export default function ElectricityProvider({children}){
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [roomReadingLoadingMore, setRoomReadingLoadingMore] = useState(false);
+  const [roomReadingPagination, setRoomReadingPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    itemPerPage: 10,
+  });
+  const roomReadingRequestId = useRef(0);
+  const roomReadingFetchingRef = useRef(false);
 
     const getErrorMessage = (error) =>
     error?.response?.data?.message ||
     error?.response?.data ||
     "Something went wrong";
 
-    const GetEBRoomReading = async (hostelId) => {
+    // Readings with no entry yet come back with readingId 0, so roomId is
+    // needed alongside readingId to identify a row uniquely.
+    const getReadingKey = (r) => `${r?.roomId}-${r?.readingId}`;
+
+    const GetEBRoomReading = async (hostelId, options = {}) => {
+       const { page = 1, size = 10, showLoader = true } = options;
+       const isFirstPage = page === 1;
+
+       // Load-more requests are skipped while another fetch is running;
+       // a page-1 request (initial load / refresh after add/edit/reset) always runs.
+       if (!isFirstPage && roomReadingFetchingRef.current) {
+         return { success: false };
+       }
+
+       const requestId = ++roomReadingRequestId.current;
+       roomReadingFetchingRef.current = true;
+
+       if (isFirstPage) {
+         if (showLoader) setLoading(true);
+       } else {
+         setRoomReadingLoadingMore(true);
+       }
 
        try{
-           setLoading(true);
            const axios = getAxios();
-           const res = await axios.get(`/v2/electricity/${hostelId}`);
+           const res = await axios.get(`/v2/electricity/${hostelId}`, {
+             params: { page, size },
+           });
+
+           // Ignore responses superseded by a newer request.
+           if (requestId !== roomReadingRequestId.current) {
+             return { success: false };
+           }
+
             if (res.status === 200) {
-             setEBRoomReading(res?.data?.listReadings || []);
-             setHostelBased(res.data.isHostelBased)
-             setHostelELectricityDetails(res.data)
-             return { success: true, data: res?.data };
+             const data = res?.data || {};
+             const list = Array.isArray(data?.listReadings) ? data.listReadings : [];
+
+             setEBRoomReading((prev) => {
+               if (isFirstPage) return list;
+               const existing = new Set(prev.map(getReadingKey));
+               return [...prev, ...list.filter((r) => !existing.has(getReadingKey(r)))];
+             });
+
+             setRoomReadingPagination({
+               currentPage: Number(data?.currentPage) || page,
+               totalPages: Number(data?.totalPages) || 1,
+               itemPerPage: Number(data?.itemPerPage) || size,
+             });
+
+             if (isFirstPage) {
+               setHostelBased(data.isHostelBased)
+               setHostelELectricityDetails(data)
+             }
+             return { success: true, data };
             }
 
             return { success: false };
@@ -41,11 +93,29 @@ export default function ElectricityProvider({children}){
          const msg = getErrorMessage(error);
           setErrorMsg(msg);
           return { success: false, message: msg };
-       
+
        }
        finally{
-        setLoading(false)
+        if (requestId === roomReadingRequestId.current) {
+          roomReadingFetchingRef.current = false;
+          if (isFirstPage) {
+            if (showLoader) setLoading(false);
+          } else {
+            setRoomReadingLoadingMore(false);
+          }
+        }
        }
+    }
+
+    // Fetches the next page of room readings, if there is one.
+    const LoadMoreEBRoomReading = async (hostelId, size = 10) => {
+      const { currentPage, totalPages } = roomReadingPagination;
+
+      if (!hostelId || roomReadingFetchingRef.current || currentPage >= totalPages) {
+        return { success: false };
+      }
+
+      return GetEBRoomReading(hostelId, { page: currentPage + 1, size });
     }
 
     const GetEBTenantReading = async (hostelId) => {
@@ -261,6 +331,9 @@ const resetEBMeterReading=async(hostelId,payload)=>{
             error, 
             errorMsg,
             GetEBRoomReading,
+            LoadMoreEBRoomReading,
+            roomReadingLoadingMore,
+            roomReadingPagination,
             GetEBTenantReading,
             ParticularRoomReadingDetails,
             ParticularTenantReadingDetails,

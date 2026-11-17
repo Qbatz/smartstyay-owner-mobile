@@ -8,7 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
   Image, BackHandler, Animated, PanResponder,
-  ScrollView, Dimensions, Platform
+  ScrollView, Dimensions, Platform, ActivityIndicator
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
@@ -37,7 +37,8 @@ export default function Complaints({ route }) {
 
 
   const { loading, complaintsList, complaintListOtherDetails, GetComplaintListDetails,
-    complaintTypes, fetchComplaintTypes, getParticularComplaint } = useContext(ComplaintContext);
+    complaintTypes, fetchComplaintTypes, getParticularComplaint,
+    LoadMoreComplaints, complaintsLoadingMore } = useContext(ComplaintContext);
   const { activeHostelId } = useContext(CommonContexts);
   const { getUsersByHostel, } = UseSetting();
 
@@ -82,11 +83,42 @@ export default function Complaints({ route }) {
 
   const lastScrollY = useRef(0);
   const isTabBarVisible = useRef(true);
+  const onEndReachedDuringMomentum = useRef(true);
+
+  const handleLoadMoreComplaints = () => {
+    if (
+      onEndReachedDuringMomentum.current ||
+      !activeHostelId ||
+      loading ||
+      complaintsLoadingMore
+    ) {
+      return;
+    }
+    onEndReachedDuringMomentum.current = true;
+    LoadMoreComplaints(activeHostelId);
+  };
 
   const [appliedFilters, setAppliedFilters] = useState({
     status: "",
     startDate: null,
     endDate: null,
+  });
+
+  // Latest applied filters, read by the debounced search so typing keeps them
+  // without re-triggering the search effect when filters change.
+  const appliedFiltersRef = useRef(appliedFilters);
+  appliedFiltersRef.current = appliedFilters;
+
+  // Builds API params from the search text + filters (dates sent as DD/MM/YYYY).
+  const buildFilterParams = (name, filters = {}) => ({
+    customerName: (name || "").trim(),
+    ...(filters.status && { status: filters.status }),
+    ...(filters.startDate && {
+      startDate: dayjs(filters.startDate).format("DD/MM/YYYY"),
+    }),
+    ...(filters.endDate && {
+      endDate: dayjs(filters.endDate).format("DD/MM/YYYY"),
+    }),
   });
 
   const hasAppliedFilters = Boolean(
@@ -110,9 +142,7 @@ export default function Complaints({ route }) {
     const timeout = setTimeout(() => {
       GetComplaintListDetails(
         activeHostelId,
-        {
-          customerName: searchText,
-        },
+        buildFilterParams(searchText, appliedFiltersRef.current),
         {
           showLoader: !searchText.trim(),
         }
@@ -293,16 +323,7 @@ export default function Complaints({ route }) {
 
     setAppliedFilters(nextFilters);
 
-    const filterParams = {
-      customerName: searchText.trim(),
-      ...(status && { status }),
-      ...(startDate && {
-        startDate: dayjs(startDate).format("DD/MM/YYYY"),
-      }),
-      ...(endDate && {
-        endDate: dayjs(endDate).format("DD/MM/YYYY"),
-      }),
-    };
+    const filterParams = buildFilterParams(searchText, nextFilters);
 
     GetComplaintListDetails(
       activeHostelId,
@@ -326,9 +347,7 @@ export default function Complaints({ route }) {
 
     GetComplaintListDetails(
       activeHostelId,
-      {
-        customerName: searchText.trim(),
-      },
+      buildFilterParams(searchText),
       { showLoader: true }
     );
 
@@ -768,6 +787,18 @@ export default function Complaints({ route }) {
             contentContainerStyle={{ paddingBottom: 200 }}
             // onScroll={handleScroll}
             scrollEventThrottle={16}
+            onEndReached={handleLoadMoreComplaints}
+            onEndReachedThreshold={0.5}
+            onMomentumScrollBegin={() => {
+              onEndReachedDuringMomentum.current = false;
+            }}
+            ListFooterComponent={
+              complaintsLoadingMore ? (
+                <View style={{ paddingVertical: 16 }}>
+                  <ActivityIndicator size="small" color="#1E45E1" />
+                </View>
+              ) : null
+            }
           />)}
         {!loading && complaintsList?.length === 0 && (
           <View style={styles.centerContainer}>

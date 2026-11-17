@@ -7,7 +7,8 @@ import {
   TextInput,
   Image,
   ScrollView, Modal,
-  PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler , Keyboard
+  PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler , Keyboard,
+  FlatList, ActivityIndicator
 } from "react-native";
 import { StatusBar, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
@@ -49,7 +50,33 @@ export default function Electricity({ navigation }) {
             error, 
             errorMsg,
             GetEBRoomReading,
-            GetEBTenantReading , ParticularRoomReadingDetails ,AddRoomReading } = useContext(ElectricityContext);
+            GetEBTenantReading , ParticularRoomReadingDetails ,AddRoomReading,
+            LoadMoreEBRoomReading, roomReadingLoadingMore } = useContext(ElectricityContext);
+
+  // Prevents onEndReached from firing repeatedly before the user actually scrolls.
+  const onEndReachedDuringMomentum = useRef(true);
+
+  const handleLoadMoreReadings = () => {
+    if (
+      onEndReachedDuringMomentum.current ||
+      !activeHostelId ||
+      loading ||
+      roomReadingLoadingMore
+    ) {
+      return;
+    }
+    onEndReachedDuringMomentum.current = true;
+    LoadMoreEBRoomReading(activeHostelId);
+  };
+
+  // readingId is 0 for rooms without a reading, so combine it with roomId.
+  const readingKeyExtractor = (item) => `${item?.roomId}-${item?.readingId}`;
+
+  const renderReadingsFooter = roomReadingLoadingMore ? (
+    <View style={{ paddingVertical: 16 }}>
+      <ActivityIndicator size="small" color="#1E45E1" />
+    </View>
+  ) : null;
 
             console.log("EbRoomReading" , EbRoomReading);
             console.log("hostelElectricityDetails" , hostelElectricityDetails);
@@ -853,17 +880,20 @@ if (!canReadElectricity && !loading) {
 
    {activeTab === "reading" && hostelBased && (
       hostelElectricityDetails?.hostelReadings?.length > 0 ? (
-  <ScrollView  showsVerticalScrollIndicator={false}
-    contentContainerStyle={{
-    flexGrow: 1,
-    // justifyContent:
-    //   !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
-  }}>
-
-    <HostelHeaderCard data={{}} />
-
-    {EbRoomReading.map((item, index) => (
-      <View key={index} style={styles.roomRow}>
+  <FlatList
+    data={EbRoomReading}
+    keyExtractor={readingKeyExtractor}
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{ flexGrow: 1 }}
+    ListHeaderComponent={<HostelHeaderCard data={{}} />}
+    onEndReached={handleLoadMoreReadings}
+    onEndReachedThreshold={0.5}
+    onMomentumScrollBegin={() => {
+      onEndReachedDuringMomentum.current = false;
+    }}
+    ListFooterComponent={renderReadingsFooter}
+    renderItem={({ item }) => (
+      <View style={styles.roomRow}>
         <View style={styles.roomLeft}>
           <View style={styles.roomIcon}>
             <Image source={RoomIcon} style={{ width: 18, height: 18 }} />
@@ -890,8 +920,8 @@ if (!canReadElectricity && !loading) {
           </Text>
         </View>
       </View>
-    ))}
-  </ScrollView> ):
+    )}
+  /> ):
 
   (
     /* ✅ EMPTY STATE */
@@ -926,16 +956,33 @@ if (!canReadElectricity && !loading) {
 
 
 {activeTab === "reading" && !hostelBased && (
-  <ScrollView  showsVerticalScrollIndicator={false}
+  <FlatList
+    data={EbRoomReading}
+    keyExtractor={readingKeyExtractor}
+    showsVerticalScrollIndicator={false}
     contentContainerStyle={{
     flexGrow: 1,
     justifyContent:
       !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
-  }}>
-  {!loading && !hostelBased && EbRoomReading?.length > 0 && (
-  EbRoomReading.map((item, index) => (
+  }}
+    onEndReached={handleLoadMoreReadings}
+    onEndReachedThreshold={0.5}
+    onMomentumScrollBegin={() => {
+      onEndReachedDuringMomentum.current = false;
+    }}
+    ListFooterComponent={renderReadingsFooter}
+    ListEmptyComponent={
+      !loading ? (
+        <View style={styles.centerContainer}>
+          <Image source={EmptyState} style={styles.image} />
+          <Text style={styles.noFloorText}>
+            No Electricity Readings Found
+          </Text>
+        </View>
+      ) : null
+    }
+    renderItem={({ item }) => (
    <TouchableOpacity
-  key={index}
   style={styles.row}
   onPress={() => handleClickRoomDetails(item)}
   activeOpacity={0.7}
@@ -970,7 +1017,8 @@ if (!canReadElectricity && !loading) {
       </View>
 
     </TouchableOpacity>
-  ))
+    )}
+  />
 )}
 
   {/* {
@@ -988,23 +1036,6 @@ onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
       </TouchableOpacity>
        )
       } */}
-
-{!loading &&
-  (
-    (hostelBased && EbRoomReading.length === 0) ||
-    (!hostelBased && EbRoomReading?.length === 0)
-  ) && (
-    <View style={styles.centerContainer}>
-      <Image source={EmptyState} style={styles.image} />
-      <Text style={styles.noFloorText}>
-        No Electricity Readings Found
-      </Text>
-    </View>
-)}
-
-
-  </ScrollView>
-)}
 
    
       

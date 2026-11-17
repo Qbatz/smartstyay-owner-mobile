@@ -11,7 +11,8 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Dimensions,
-  PanResponder, Animated
+  PanResponder, Animated,
+  FlatList, ActivityIndicator
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import { Calendar } from "react-native-calendars";
@@ -41,7 +42,24 @@ import EmptyStateImage from "../../../Assets/Images/Empty_state.png"
 export default function Assets({ navigation }) {
 
   const { activeHostelId } = useContext(CommonContexts);
-  const { getAllAssets, assetList, loading, deleteAsset, assignAsset } = useContext(AssetContext);
+  const { getAllAssets, assetList, loading, deleteAsset, assignAsset,
+    loadMoreAssets, assetsLoadingMore } = useContext(AssetContext);
+
+  // Prevents onEndReached from firing repeatedly before the user actually scrolls.
+  const onEndReachedDuringMomentum = useRef(true);
+
+  const handleLoadMoreAssets = () => {
+    if (
+      onEndReachedDuringMomentum.current ||
+      !activeHostelId ||
+      loading ||
+      assetsLoadingMore
+    ) {
+      return;
+    }
+    onEndReachedDuringMomentum.current = true;
+    loadMoreAssets(activeHostelId);
+  };
   const { getAllFloorsByHostel, getAllRoomsByFloor, } = useFloor();
 
   const [floors, setFloors] = useState([]);
@@ -770,14 +788,14 @@ const handleAssignAsset = async () => {
           )}
 
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
-        >
-          {!loading && assetList?.length > 0 ? (
-            assetList.map((item) => (
+        {!loading && assetList?.length > 0 ? (
+          <FlatList
+            data={assetList}
+            keyExtractor={(item) => String(item.assetId)}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={item.assetId}
                 style={styles.card}
                 activeOpacity={0.8}
                 onPress={() => openDetails(item)}
@@ -802,12 +820,23 @@ const handleAssignAsset = async () => {
 
                 {/* <Image source={MenuDots} style={styles.dotsIcon} /> */}
               </TouchableOpacity>
-
-            ))
-          ) : (
-            !loading && <EmptyState />
-          )}
-        </ScrollView>
+            )}
+            onEndReached={handleLoadMoreAssets}
+            onEndReachedThreshold={0.5}
+            onMomentumScrollBegin={() => {
+              onEndReachedDuringMomentum.current = false;
+            }}
+            ListFooterComponent={
+              assetsLoadingMore ? (
+                <View style={{ paddingVertical: 16 }}>
+                  <ActivityIndicator size="small" color="#1E45E1" />
+                </View>
+              ) : null
+            }
+          />
+        ) : (
+          !loading && <EmptyState />
+        )}
 
         {/* {
           !loading && assetList?.length > 0 && canReadAssets && (
