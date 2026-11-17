@@ -16,6 +16,9 @@ import dayjs from "dayjs";
 import { useCustomer } from "../../../Context/CustomerContext";
 import CalendarImage from "../../../Assets/Images/calendar.png";
 import DownArrow from "../../../Assets/Images/direction-down.png";
+import BankIcon from "../../../Assets/Images/bankBlue.png";
+import CashIcon from "../../../Assets/Images/Cash_Icon.png";
+import CardIcon from "../../../Assets/Images/Cardorange.png";
 import { CommonContexts } from "../../../Context/CommonContext";
 import { useFloor } from "../../../Context/PayingGuestContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
@@ -131,6 +134,8 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
       const res = await initializeCancelBooking(customerId);
       if (res.success) {
         setBankDetails(res.data)
+        console.log("cancelbookres", res);
+
       }
     };
 
@@ -192,25 +197,110 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
   const refundBankOptions = (bankdetails?.listBanks || []).map(
     (bank, index) => {
-      const iconType =
-        bank?.type === "BANK" || bank?.bankName === "BANK"
-          ? "BANK"
-          : bank?.bankName === "CASH" || bank?.accountType === "CASH"
-            ? "CASH"
-            : "CARD";
+      const accountType = String(
+        bank?.accountType || bank?.type || "BANK"
+      ).toUpperCase();
+
+      const displayName = bank?.displayName || "";
+      const holderName =
+        bank?.accountHolderName || bank?.holderName || "";
+
+      let iconType = "BANK";
+
+      if (accountType === "CASH") {
+        iconType = "CASH";
+      } else if (
+        ["CARD", "DEBIT_CARD", "CREDIT_CARD"].includes(accountType)
+      ) {
+        iconType = "CARD";
+      } else if (accountType === "UPI") {
+        iconType = "UPI";
+      }
+
+      const title =
+        accountType === "CASH" ? displayName : holderName;
+
+      const subLabel =
+        accountType === "CASH" || accountType === "CARD"
+          ? `${accountType} - ${displayName}`
+          : `${bank?.bankName || accountType} - ${displayName}`;
 
       return {
         id: bank?.bankId || `account-${index}`,
         value: bank?.bankId,
-        displayName: bank?.displayName || "",
-        holderName:
-          bank?.holderName || bank?.accountHolderName || "",
+        bankId: bank?.bankId,
+        displayName,
+        holderName,
         bankName: bank?.bankName || "",
+        accountType,
         iconType,
-        type: bank?.accountType || bank?.bankName,
+        iconUrl: bank?.upiIcons,
+        title,
+        subLabel,
         data: bank,
       };
     }
+  );
+
+  const getRefundIcon = (item) => {
+    switch (item?.iconType) {
+      case "CASH":
+        return CashIcon;
+
+      case "CARD":
+        return CardIcon;
+
+      case "UPI":
+        return item?.iconUrl
+          ? { uri: item.iconUrl }
+          : BankIcon;
+
+      default:
+        return BankIcon;
+    }
+  };
+
+  const getRefundIconBg = (type) => {
+    switch (type) {
+      case "CASH":
+        return styles.refundCashIconBg;
+      case "CARD":
+        return styles.refundCardIconBg;
+      case "UPI":
+        return styles.refundUpiIconBg;
+      default:
+        return styles.refundBankIconBg;
+    }
+  };
+
+  const getRefundBadgeBg = (type) => {
+    switch (type) {
+      case "CASH":
+        return styles.refundCashBadge;
+      case "CARD":
+        return styles.refundCardBadge;
+      case "UPI":
+        return styles.refundUpiBadge;
+      default:
+        return styles.refundBankBadge;
+    }
+  };
+
+  const getRefundBadgeText = (type) => {
+    switch (type) {
+      case "CASH":
+        return styles.refundCashText;
+      case "CARD":
+        return styles.refundCardText;
+      case "UPI":
+        return styles.refundUpiText;
+      default:
+        return styles.refundBankText;
+    }
+  };
+
+  const selectedRefundAccount = refundBankOptions.find(
+    (item) => item.value === refundFrom
   );
 
 
@@ -366,13 +456,13 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
             <TouchableOpacity
               // style={styles.dateBox}
-                                    style={[
-                                    styles.dateBox,
-                                    {
-                                        borderColor: openJoinDatePic ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openJoinDatePic ? 1.5 : 1,
-                                    },
-                                ]}
+              style={[
+                styles.dateBox,
+                {
+                  borderColor: openJoinDatePic ? "#0085FF" : "#D9D9D9",
+                  borderWidth: openJoinDatePic ? 1.5 : 1,
+                },
+              ]}
               onPress={() => {
                 Keyboard.dismiss();      // ✅ close keyboard first
                 setTimeout(() => {
@@ -392,104 +482,173 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
             )}
 
             <View style={{ position: "relative" }}>
-
               <Text style={styles.label}>
                 Refund From <Text style={{ color: "red" }}>*</Text>
               </Text>
-              {/* INPUT */}
+
+              {/* Selected Account */}
               <TouchableOpacity
-                // style={styles.inputBox}
-                    style={[
-                                    styles.inputBox,
-                                    {
-                                        borderColor: showRefundFrom ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: showRefundFrom ? 1.5 : 1,
-                                    },
-                                ]}
+                activeOpacity={0.8}
+                style={[
+                  styles.refundSelectBox,
+                  {
+                    borderColor: showRefundFrom ? "#0085FF" : "#D9D9D9",
+                  },
+                ]}
                 onPress={() => {
                   setRefundFromError("");
-                  setShowRefundFrom(v => !v);
+                  setShowRefundFrom((prev) => !prev);
                 }}
               >
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 15 }} numberOfLines={1}>
-                    {refundFrom
-                      ? refundBankOptions.find(o => o.value === refundFrom)?.displayName
-                      : "Select bank"}
-                  </Text>
-
-                  {refundFrom ? (
-                    <Text
-                      style={{ fontSize: 12, color: "#777", marginTop: 3 }}
-                      numberOfLines={1}
+                {selectedRefundAccount ? (
+                  <View style={styles.refundSelectedContainer}>
+                    <View
+                      style={[
+                        styles.refundAccountIcon,
+                        getRefundIconBg(selectedRefundAccount.iconType),
+                      ]}
                     >
-                      {refundBankOptions.find(o => o.value === refundFrom)?.holderName}
-                      {" - "}
-                      {refundBankOptions.find(o => o.value === refundFrom)?.bankName}
-                    </Text>
-                  ) : null}
-                </View>
+                      <Image
+                        source={getRefundIcon(selectedRefundAccount)}
+                        style={styles.refundAccountIconImage}
+                        resizeMode="contain"
+                      />
+                    </View>
+
+                    <View style={styles.refundAccountDetails}>
+                      <Text
+                        style={styles.refundAccountName}
+                        numberOfLines={1}
+                      >
+                        {selectedRefundAccount.title}
+                      </Text>
+
+                      <Text
+                        style={styles.refundAccountSubText}
+                        numberOfLines={1}
+                      >
+                        {selectedRefundAccount.subLabel}
+                      </Text>
+                    </View>
+
+                    <View
+                      style={[
+                        styles.refundAccountBadge,
+                        getRefundBadgeBg(selectedRefundAccount.iconType),
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.refundAccountBadgeText,
+                          getRefundBadgeText(selectedRefundAccount.iconType),
+                        ]}
+                      >
+                        {selectedRefundAccount.accountType}
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <Text style={styles.refundPlaceholder}>
+                    Select bank
+                  </Text>
+                )}
 
                 <Image
                   source={DownArrow}
-                  style={{ width: 18, height: 18, tintColor: "#555" }}
+                  style={styles.refundArrow}
                 />
               </TouchableOpacity>
 
-              {/* DROPDOWN */}
+              {/* Dropdown Options */}
               {showRefundFrom && (
-                <View style={styles.transactiondropdown}>
+                <View style={styles.refundDropdown}>
                   <ScrollView
                     nestedScrollEnabled
-                    scrollEnabled={refundBankOptions.length > 3}
+                    keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
+                    style={{ maxHeight: 260 }}
                   >
-                    {refundBankOptions.map(opt => {
-                      const isSelected = refundFrom === opt.value;
+                    {refundBankOptions.length === 0 ? (
+                      <Text style={styles.expensesNoDataText}>
+                        No bank found
+                      </Text>
+                    ) : (
+                      refundBankOptions.map((item) => {
+                        const isSelected = refundFrom === item.value;
 
-                      return (
-                        <TouchableOpacity
-                          key={opt.value}
-                          style={[
-                            styles.dropdownRow,
-                            isSelected && styles.dropdownRowSelected,
-                          ]}
-                          onPress={() => {
-                            setRefundFrom(opt.value);
-                            setShowRefundFrom(false);
-                            setRefundFromError("");
-                          }}
-                        >
-                          <View>
-                            <Text
-                              style={
-                                isSelected
-                                  ? styles.dropdownTextSelected
-                                  : styles.dropdownText
-                              }
-                              numberOfLines={1}
+                        return (
+                          <TouchableOpacity
+                            key={String(item.bankId)}
+                            activeOpacity={0.7}
+                            style={[
+                              styles.refundOptionRow,
+                              isSelected && styles.refundOptionSelected,
+                            ]}
+                            onPress={() => {
+                              setRefundFrom(item.value);
+                              setShowRefundFrom(false);
+                              setRefundFromError("");
+                            }}
+                          >
+                            <View
+                              style={[
+                                styles.refundAccountIcon,
+                                getRefundIconBg(item.iconType),
+                              ]}
                             >
-                              {opt?.displayName}
-                            </Text>
+                              <Image
+                                source={getRefundIcon(item)}
+                                style={styles.refundAccountIconImage}
+                                resizeMode="contain"
+                              />
+                            </View>
 
-                            <Text
-                              style={{
-                                fontSize: 12,
-                                color: isSelected ? "#fff" : "#777",
-                                marginTop: 3,
-                              }}
-                              numberOfLines={1}
+                            <View style={styles.refundAccountDetails}>
+                              <Text
+                                style={styles.refundAccountName}
+                                numberOfLines={1}
+                              >
+                                {item.title}
+                              </Text>
+
+                              <Text
+                                style={styles.refundAccountSubText}
+                                numberOfLines={1}
+                              >
+                                {item.subLabel}
+                              </Text>
+                            </View>
+
+                            <View
+                              style={[
+                                styles.refundAccountBadge,
+                                getRefundBadgeBg(item.iconType),
+                              ]}
                             >
-                              {opt?.holderName} - {opt?.bankName}
-                            </Text>
-                          </View>
-                        </TouchableOpacity>
-                      );
-                    })}
+                              <Text
+                                style={[
+                                  styles.refundAccountBadgeText,
+                                  getRefundBadgeText(item.iconType),
+                                ]}
+                              >
+                                {item.accountType}
+                              </Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })
+                    )}
                   </ScrollView>
                 </View>
               )}
             </View>
+
+            {refundFromError && (
+              <ErrorMessage
+                message={refundFromError}
+                type="error"
+              />
+            )}
 
             {refundFromError && (
               <ErrorMessage message={refundFromError} type="error" />
@@ -819,4 +978,154 @@ const styles = StyleSheet.create({
 
 
   arrow: { fontSize: 18, color: "#555" },
+  refundSelectBox: {
+  minHeight: 76,
+  borderWidth: 1,
+  borderRadius: 12,
+  borderColor: "#D9D9D9",
+  paddingHorizontal: 14,
+  paddingVertical: 10,
+  backgroundColor: "#FFFFFF",
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "space-between",
+},
+
+refundPlaceholder: {
+  fontSize: 15,
+  color: "#777777",
+  fontFamily: "Gilroy-Regular",
+},
+
+refundSelectedContainer: {
+  flex: 1,
+  flexDirection: "row",
+  alignItems: "center",
+},
+
+refundAccountIcon: {
+  width: 46,
+  height: 46,
+  borderRadius: 25,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+refundAccountIconImage: {
+  width: 24,
+  height: 24,
+  resizeMode: "contain",
+},
+
+refundAccountDetails: {
+  flex: 1,
+  marginLeft: 12,
+  marginRight: 8,
+},
+
+refundAccountName: {
+  fontSize: 16,
+  fontFamily: "Gilroy-Semibold",
+  color: "#252525",
+},
+
+refundAccountSubText: {
+  fontSize: 13,
+  fontFamily: "Gilroy-Medium",
+  color: "#74809A",
+  marginTop: 4,
+},
+
+refundAccountBadge: {
+  minWidth: 68,
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 24,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+refundAccountBadgeText: {
+  fontSize: 12,
+  fontFamily: "Gilroy-Semibold",
+},
+
+refundCashIconBg: {
+  backgroundColor: "#D9F8E9",
+},
+refundCardIconBg: {
+  backgroundColor: "#FFF0D9",
+},
+refundUpiIconBg: {
+  backgroundColor: "#F3E5FF",
+},
+refundBankIconBg: {
+  backgroundColor: "#DCE9FF",
+},
+
+refundCashBadge: {
+  backgroundColor: "#D5F7E7",
+},
+refundCardBadge: {
+  backgroundColor: "#FFF0D9",
+},
+refundUpiBadge: {
+  backgroundColor: "#F3E5FF",
+},
+refundBankBadge: {
+  backgroundColor: "#D8E7FF",
+},
+
+refundCashText: {
+  color: "#009B42",
+},
+refundCardText: {
+  color: "#E84B00",
+},
+refundUpiText: {
+  color: "#9C27F0",
+},
+refundBankText: {
+  color: "#2457E6",
+},
+
+refundArrow: {
+  width: 18,
+  height: 18,
+  tintColor: "#555555",
+  marginLeft: 8,
+},
+
+refundDropdown: {
+  position: "absolute",
+  top: 78,
+  left: 0,
+  right: 0,
+  backgroundColor: "#FFFFFF",
+  borderWidth: 1,
+  borderColor: "#E0E3E8",
+  borderRadius: 14,
+  overflow: "hidden",
+  zIndex: 9999,
+  elevation: 20,
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.15,
+  shadowRadius: 8,
+},
+
+refundOptionRow: {
+  minHeight: 82,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  flexDirection: "row",
+  alignItems: "center",
+  backgroundColor: "#FFFFFF",
+  borderBottomWidth: 1,
+  borderBottomColor: "#EEF0F4",
+},
+
+refundOptionSelected: {
+  backgroundColor: "#F0F1F3",
+},
 });

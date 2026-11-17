@@ -24,6 +24,9 @@ import { CommonContexts } from "../../../Context/CommonContext";
 import { VendorContext } from "../../../Context/VendorContext";
 import { ExpensesContext } from "../../../Context/ExpensesContext";
 import { BankingContext } from "../../../Context/BankingContext";
+import CardIcon from "../../../Assets/Images/Cardorange.png";
+import BankIcon from "../../../Assets/Images/bankBlue.png";
+import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 
 
 
@@ -56,7 +59,7 @@ export default function Investment({
   const dueAmount = 0
 
   const [transactionId, setTransactionId] = useState("");
-  const [investorName,setInvestorName]=useState("")
+  const [investorName, setInvestorName] = useState("")
   const [paidAmount, setPaidAmount] = useState("");
   const [description, setDescription] = useState("");
 
@@ -99,11 +102,11 @@ export default function Investment({
 
     if (bank) {
       setSelectedMode({
+        ...bank,
         id: bank?.bankId,
         bankId: bank?.bankId,
-        displayName: bank?.displayName,
-        accountType: bank?.accountType,
-        accountHolderName: bank?.accountHolderName,
+        accountHolderName:
+          bank?.accountHolderName || bank?.accountHolder,
       });
 
       setErrors((prev) => ({
@@ -299,7 +302,68 @@ export default function Investment({
     }
   };
 
+const getInvestmentAccountDetails = () => {
+  const type = String(
+    selectedMode?.accountType || ""
+  ).toUpperCase();
 
+  const displayName = selectedMode?.displayName || "";
+  const holderName =
+    selectedMode?.accountHolderName ||
+    selectedMode?.accountHolder ||
+    selectedMode?.responsiblePerson ||
+    "";
+
+  let title = "";
+  let subtitle = "";
+
+  switch (type) {
+    case "CASH":
+      title = displayName || "Cash Account";
+      subtitle = `CASH - ${displayName || "Cash"}`;
+      break;
+
+    case "CARD":
+      title = holderName || displayName;
+      subtitle = `CARD - ${displayName}`;
+      break;
+
+    case "BANK":
+      title = holderName || displayName;
+      subtitle = `${selectedMode?.bankName || selectedMode?.linkedBank || "BANK"} - ${displayName || selectedMode?.bankAccountType || ""}`;
+      break;
+
+    default:
+      title = holderName || displayName || "Account";
+      subtitle = displayName;
+      break;
+  }
+
+  let icon = BankIcon;
+  let iconBackground = "#DCE9FF";
+
+  if (type === "CASH") {
+    icon = CashIcon;
+    iconBackground = "#D9F8E9";
+  } else if (
+    type === "CARD" ||
+    type === "DEBIT_CARD" ||
+    type === "CREDIT_CARD"
+  ) {
+    icon = CardIcon;
+    iconBackground = "#FFF0D9";
+  }
+
+  return {
+    type,
+    title,
+    subtitle,
+    icon,
+    iconBackground,
+  };
+};
+
+const investmentAccount = getInvestmentAccountDetails();
 
 
 
@@ -350,13 +414,13 @@ export default function Investment({
            
           </View> */}
           <TextInput
-          style={styles.inputBox}
-          placeholder="Enter Investor name"
-          keyboardType="name-phone-pad"
-          onChangeText={(text)=>{
-            const onlyLetters = text.replace(/[^a-zA-Z\s]/g, "");
-            setInvestorName(onlyLetters)
-          }}/>
+            style={styles.inputBox}
+            placeholder="Enter Investor name"
+            keyboardType="name-phone-pad"
+            onChangeText={(text) => {
+              const onlyLetters = text.replace(/[^a-zA-Z\s]/g, "");
+              setInvestorName(onlyLetters)
+            }} />
 
 
           <Text style={styles.label}>
@@ -439,34 +503,75 @@ export default function Investment({
 
 
 
-          <Text style={styles.label}>
-            Payment Method  <Text style={{ color: "red" }}>*</Text>
-          </Text>
+        <Text style={styles.label}>
+  Payment Method <Text style={{ color: "red" }}>*</Text>
+</Text>
 
+<View style={styles.investmentAccountCard}>
+  <View
+    style={[
+      styles.investmentAccountIcon,
+      {
+        backgroundColor: investmentAccount.iconBackground,
+      },
+    ]}
+  >
+    <Image
+      source={investmentAccount.icon}
+      style={styles.investmentAccountIconImage}
+      resizeMode="contain"
+    />
+  </View>
 
-          <TouchableOpacity
-            disabled
-            activeOpacity={1}
-            style={[
-              styles.expensesDropdownBox,
-              styles.disabledDropdown,
-            ]}
-          >
-            <View>
-              <Text style={styles.accountName}>
-                {selectedMode?.displayName || "-"}
-              </Text>
+  <View style={styles.investmentAccountDetails}>
+    <Text
+      style={styles.investmentAccountName}
+      numberOfLines={1}
+    >
+      {investmentAccount.title || "Account not selected"}
+    </Text>
 
-              <Text style={styles.accountType}>
-                {selectedMode?.accountType || "-"}
-              </Text>
-            </View>
+    <Text
+      style={styles.investmentAccountSubtitle}
+      numberOfLines={1}
+    >
+      {investmentAccount.subtitle || "-"}
+    </Text>
+  </View>
 
-            <Image
-              source={DownArrow}
-              style={styles.expensesArrowIcon}
-            />
-          </TouchableOpacity>
+  <View
+    style={[
+      styles.investmentAccountBadge,
+      investmentAccount.type === "CASH"
+        ? styles.investmentCashBadge
+        : investmentAccount.type === "CARD"
+        ? styles.investmentCardBadge
+        : styles.investmentBankBadge,
+    ]}
+  >
+    <Text
+      style={[
+        styles.investmentAccountBadgeText,
+        investmentAccount.type === "CASH"
+          ? styles.investmentCashText
+          : investmentAccount.type === "CARD"
+          ? styles.investmentCardText
+          : styles.investmentBankText,
+      ]}
+    >
+      {investmentAccount.type || "BANK"}
+    </Text>
+  </View>
+</View>
+
+{errors.paymentMethod && (
+  <View style={styles.errorWrapper}>
+    <ErrorMessage
+      message={errors.paymentMethod}
+      type="error"
+    />
+  </View>
+)}
 
 
           {modePaymentOpen && (
@@ -517,14 +622,14 @@ export default function Investment({
             </View>
           )}
 
-          <View style={styles.errorWrapper}>
+          {/* <View style={styles.errorWrapper}>
             {errors.paymentMethod && (
               <ErrorMessage
                 message={errors.paymentMethod}
                 type="error"
               />
             )}
-          </View>
+          </View> */}
 
 
           <Text style={styles.label}>
@@ -1089,5 +1194,88 @@ const styles = StyleSheet.create({
     fontFamily: "Gilroy-Regular",
     color: "#6B7280",
   },
+investmentAccountCard: {
+  flexDirection: "row",
+  alignItems: "center",
+  minHeight: 88,
+  marginHorizontal: 16,
+  marginTop: 6,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  borderWidth: 1,
+  borderColor: "#E0E3E8",
+  borderRadius: 14,
+  backgroundColor: "#F9FAFB",
+},
 
+investmentAccountIcon: {
+  width: 48,
+  height: 48,
+  borderRadius: 50,
+  justifyContent: "center",
+  alignItems: "center",
+  marginRight: 14,
+},
+
+investmentAccountIconImage: {
+  width: 25,
+  height: 25,
+  resizeMode: "contain",
+},
+
+investmentAccountDetails: {
+  flex: 1,
+  justifyContent: "center",
+  marginRight: 8,
+},
+
+investmentAccountName: {
+  fontSize: 16,
+  fontFamily: "Gilroy-Semibold",
+  color: "#252525",
+},
+
+investmentAccountSubtitle: {
+  fontSize: 13,
+  fontFamily: "Gilroy-Medium",
+  color: "#737B8C",
+  marginTop: 5,
+},
+
+investmentAccountBadge: {
+  paddingHorizontal: 13,
+  paddingVertical: 9,
+  borderRadius: 30,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+investmentAccountBadgeText: {
+  fontSize: 12,
+  fontFamily: "Gilroy-Semibold",
+},
+
+investmentCashBadge: {
+  backgroundColor: "#D9F8E9",
+},
+
+investmentCashText: {
+  color: "#008C3A",
+},
+
+investmentCardBadge: {
+  backgroundColor: "#FFEBD2",
+},
+
+investmentCardText: {
+  color: "#D94300",
+},
+
+investmentBankBadge: {
+  backgroundColor: "#DCE9FF",
+},
+
+investmentBankText: {
+  color: "#2457E6",
+},
 });
