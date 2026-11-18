@@ -8416,7 +8416,7 @@ export default function BillsDesign({ route }) {
             }}
 
             onClose={() => setStatusSheetOpen(false)}
-            isSingleSelect={true}
+            // isSingleSelect={true}
           />
 
 
@@ -8464,7 +8464,7 @@ export default function BillsDesign({ route }) {
             }}
 
             onClose={() => setTypeSheetOpen(false)}
-            isSingleSelect={true}
+            // isSingleSelect={true}
           />
 
 
@@ -8515,7 +8515,7 @@ export default function BillsDesign({ route }) {
             }}
 
             onClose={() => setModeSheetOpen(false)}
-            isSingleSelect={true}
+            // isSingleSelect={true}
           />
 
           {/* <FilterBottomSheet
