@@ -8,7 +8,8 @@ import {
     TextInput,
     FlatList,
     Platform,
-    Modal, PanResponder, Animated, TouchableWithoutFeedback, Dimensions, ScrollView, BackHandler
+    Modal, PanResponder, Animated, TouchableWithoutFeedback, Dimensions, ScrollView, BackHandler,
+    ActivityIndicator,
 } from "react-native";
 import { useFocusEffect } from '@react-navigation/native';
 import { CommonContexts } from "../../../Context/CommonContext";
@@ -121,7 +122,43 @@ export default function Vendors({ navigation }) {
     //     getVendorCategories,
     //   } = useContext(VendorContext);
 
-    const { vendorList, loading, getVendorList, deleteVendor, setVendorList } = useContext(CustomerContext);;
+    const { vendorList, loading, getVendorList, deleteVendor, setVendorList,
+        LoadMoreVendorList, vendorLoadingMore } = useContext(CustomerContext);;
+
+    // Pagination: load-more only after the user has dragged the list (a normal
+    // drag, no fling needed). FlatList fires onEndReached on first render when
+    // page 1 doesn't fill the screen; that call is remembered and run on the
+    // first drag (FlatList won't fire again for the same content height).
+    const userHasScrolledRef = useRef(false);
+    const pendingEndReachedRef = useRef(false);
+
+    useEffect(() => {
+        // Page 1 (re)loading: wait for a fresh drag again
+        if (loading) {
+            userHasScrolledRef.current = false;
+            pendingEndReachedRef.current = false;
+        }
+    }, [loading]);
+
+    // Duplicate / last-page calls are blocked inside LoadMoreVendorList.
+    const handleLoadMoreVendors = () => {
+        if (!activeHostelId || loading || vendorLoadingMore) return;
+
+        if (!userHasScrolledRef.current) {
+            pendingEndReachedRef.current = true;
+            return;
+        }
+
+        pendingEndReachedRef.current = false;
+        LoadMoreVendorList(activeHostelId);
+    };
+
+    const handleVendorScrollBeginDrag = () => {
+        userHasScrolledRef.current = true;
+        if (pendingEndReachedRef.current) {
+            handleLoadMoreVendors();
+        }
+    };
 
     const { activeHostelId } = useContext(CommonContexts)
 
@@ -234,7 +271,7 @@ export default function Vendors({ navigation }) {
     useFocusEffect(
         useCallback(() => {
             if (activeHostelId) {
-                getVendorList(activeHostelId);
+                getVendorList(activeHostelId, { page: 1, size: 10 });
             } else {
                 setVendorList([])
             }
@@ -1194,9 +1231,20 @@ export default function Vendors({ navigation }) {
 
                                     <FlatList
                                         style={{ flex: 1 }}
+                                        showsVerticalScrollIndicator={false}
                                         data={filteredVendors || []}
                                         keyExtractor={(item) => item?.id.toString()}
                                         renderItem={renderVendor}
+                                        onScrollBeginDrag={handleVendorScrollBeginDrag}
+                                        onEndReached={handleLoadMoreVendors}
+                                        onEndReachedThreshold={0.5}
+                                        ListFooterComponent={
+                                            vendorLoadingMore ? (
+                                                <View style={{ paddingVertical: 16 }}>
+                                                    <ActivityIndicator size="small" color="#1E45E1" />
+                                                </View>
+                                            ) : null
+                                        }
                                         contentContainerStyle={{
                                             paddingHorizontal: 16,
                                             paddingBottom: 200,

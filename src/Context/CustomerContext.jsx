@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useRef } from "react";
 import { getAxios } from "../Config/AxiosConfig";
 import { retriveData } from "../Utils/Storage";
 import { AutoLogout } from "../Component/AutoLogout"
@@ -12,6 +12,13 @@ export const CustomerProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("")
   const [vendorList, setVendorList] = useState([]);
+  // Vendor list pagination (only when a size is passed; size 0 = full list)
+  const [vendorLoadingMore, setVendorLoadingMore] = useState(false);
+  const vendorFiltersRef = useRef({});
+  const vendorPageRef = useRef(1);
+  const vendorHasMoreRef = useRef(false);
+  const vendorFetchingRef = useRef(false);
+  const vendorRequestIdRef = useRef(0);
   const [draftDetails, setDraftDetails] = useState(null);
   const [ReAssignStatusCode, setReAssignStatusCode] = useState(0)
   const loginContext = useContext(LoginContexts)
@@ -895,8 +902,26 @@ export const CustomerProvider = ({ children }) => {
 
 
   const getVendorList = async (hostelId, filters = {}) => {
-    setLoading(true);
-    setVendorList([]);
+    const page = Number(filters?.page) || 1;
+    const size = Number(filters?.size) || 0;
+    const isLoadMore = page > 1;
+
+    // Load-more is skipped while another fetch runs; page 1 always runs.
+    if (isLoadMore && vendorFetchingRef.current) {
+      return { success: false };
+    }
+    vendorFetchingRef.current = true;
+    const requestId = ++vendorRequestIdRef.current;
+
+    if (isLoadMore) {
+      setVendorLoadingMore(true);
+    } else {
+      vendorFiltersRef.current = filters || {};
+      vendorPageRef.current = 1;
+      vendorHasMoreRef.current = false;
+      setLoading(true);
+      setVendorList([]);
+    }
 
     try {
       const axios = getAxios();
@@ -959,8 +984,48 @@ export const CustomerProvider = ({ children }) => {
 
       const res = await axios.get(url);
 
+      // Ignore responses superseded by a newer request.
+      if (requestId !== vendorRequestIdRef.current) {
+        return { success: false };
+      }
+
       if (res.status === 200) {
-        setVendorList(res.data || []);
+        const data = res?.data || {};
+        const list = Array.isArray(data?.vendors) ? data.vendors : [];
+
+        if (size > 0) {
+          // API may send pagination top-level or nested, as totalPages or
+          // totalPage. Without it: a full page means there may be more.
+          const pagination = data?.pagination || data?.paginationSummary || data;
+          const respPage = Number(pagination?.currentPage) || page;
+          const respTotalPages = Number(
+            pagination?.totalPages ?? pagination?.totalPage
+          );
+
+          if (!isLoadMore || list.length > 0) {
+            vendorPageRef.current = respPage;
+          }
+          vendorHasMoreRef.current =
+            Number.isFinite(respTotalPages) && respTotalPages > 0
+              ? respPage < respTotalPages
+              : list.length >= size;
+        } else {
+          // size 0 returns the full list: nothing more to load
+          vendorHasMoreRef.current = false;
+        }
+
+        if (isLoadMore) {
+          setVendorList((prev) => {
+            const prevList = Array.isArray(prev?.vendors) ? prev.vendors : [];
+            const existing = new Set(prevList.map((v) => v?.id));
+            return {
+              ...data,
+              vendors: [...prevList, ...list.filter((v) => !existing.has(v?.id))],
+            };
+          });
+        } else {
+          setVendorList(res.data || []);
+        }
 
         return {
           success: true,
@@ -984,8 +1049,33 @@ export const CustomerProvider = ({ children }) => {
         message: getErrorMessage(err),
       };
     } finally {
-      setLoading(false);
+      if (requestId === vendorRequestIdRef.current) {
+        vendorFetchingRef.current = false;
+        if (isLoadMore) {
+          setVendorLoadingMore(false);
+        } else {
+          setLoading(false);
+        }
+      }
     }
+  };
+
+  // Loads the next vendor page with the last search / filter (paged lists only).
+  const LoadMoreVendorList = async (hostelId) => {
+    const { size } = vendorFiltersRef.current || {};
+    if (
+      !hostelId ||
+      vendorFetchingRef.current ||
+      !vendorHasMoreRef.current ||
+      !(Number(size) > 0)
+    ) {
+      return { success: false };
+    }
+
+    return getVendorList(hostelId, {
+      ...vendorFiltersRef.current,
+      page: vendorPageRef.current + 1,
+    });
   };
 
   const deleteVendor = async (vendorId, hostelId) => {
@@ -2744,7 +2834,7 @@ export const CustomerProvider = ({ children }) => {
         bookCustomer, cancelCheckout, getSettlementByCustomerId, submitSettlement, initializeCheckout, confirmCheckout,
         initializeCheckIn, bookedCheckInCustomer, initializeCancelBooking, cancelBooking, getCheckoutCustomersByHostel, editBasicDetails, editJoiningDate, editRentalAmount, editAdvanceAmount, assignAmenitiesForTenant, initializeCancelCheckout,
         addVendor, updateVendor, vendorList, setVendorList,
-        getVendorList, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
+        getVendorList, LoadMoreVendorList, vendorLoadingMore, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,
         handleGetDraftDetails, resetDraftDetails, BookedTenantCheckIn, UpdateAdditionalDraftDetails, UpdateJobDetails, retainerCustomerList, createPaymentMethod, cancelUpcomingRent, DeleteTenantDraft,
         retainerList, retainerBankList, customersList, RequestKYCAgain

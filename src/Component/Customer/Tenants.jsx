@@ -1525,9 +1525,7 @@ export default function TenantsScreen({ route }) {
                     </ScrollView>
                   {/* )
                 } */}
-  {console.log("abilash",tempFilterStatus)}
-   {console.log("abiash",tempFilterSharing)}
-   {console.log("seetha",tempFilterMonth)}
+ 
                 {(appliedFilters || tempFilterStatus.length>0 ||  tempFilterSharing.length >0 || !!tempFilterMonth) && filteredTenants?.length >0
                 // (tenantStatusFilter.length > 0  || sharingTypeFilter?.length > 0 || tempFilterStatus.length>0 
                 // || tempFilterSharing.length >0 || tempFilterMonth || selectedMonth)
@@ -1574,6 +1572,9 @@ export default function TenantsScreen({ route }) {
                             swipeRefs.current[item.customerId] = ref;
                           }
                         }}
+                        // Swipe actions render behind the row, so the row needs an opaque
+                        // background or the call icon shows through on every row.
+                        childrenContainerStyle={{ backgroundColor: "#fff" }}
                         onSwipeableWillOpen={() => closePrevious(item.customerId)}
                         onSwipeableWillClose={() => {
                           if (openedRow.current === item.customerId) {
