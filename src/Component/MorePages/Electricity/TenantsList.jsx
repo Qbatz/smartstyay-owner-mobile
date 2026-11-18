@@ -1,6 +1,6 @@
 // TenantsList.js
 import React, { useState,useRef,useEffect , useContext } from "react";
-import { View, Text, StyleSheet, Image, ScrollView,TouchableOpacity} from "react-native";
+import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import ProfileIcon from "../../../Assets/Images/profile.png";
 import RoomIcon from "../../../Assets/Images/Room_Icon.png";
 import BedIcon from "../../../Assets/Images/Bed_Icon.png"
@@ -25,7 +25,46 @@ export default function TenantsList() {
             GetEBRoomReading,
             GetEBTenantReading,
             ParticularRoomReadingDetails,
-            ParticularTenantReadingDetails } = useContext(ElectricityContext);
+            ParticularTenantReadingDetails,
+            LoadMoreEBTenantReading,
+            tenantReadingLoadingMore } = useContext(ElectricityContext);
+
+  const readingList = Array.isArray(EbTenantReading?.readingList)
+    ? EbTenantReading.readingList
+    : [];
+
+  
+  const userHasScrolledRef = useRef(false);
+  const pendingEndReachedRef = useRef(false);
+
+  useEffect(() => {
+    // Page 1 (re)loading: wait for a fresh drag again
+    if (loading) {
+      userHasScrolledRef.current = false;
+      pendingEndReachedRef.current = false;
+    }
+  }, [loading]);
+
+  // Duplicate / last-page calls are blocked inside LoadMoreEBTenantReading.
+  const handleLoadMoreTenantReadings = () => {
+    if (!activeHostelId || loading || tenantReadingLoadingMore) return;
+    if (readingList.length === 0) return;
+
+    if (!userHasScrolledRef.current) {
+      pendingEndReachedRef.current = true;
+      return;
+    }
+
+    pendingEndReachedRef.current = false;
+    LoadMoreEBTenantReading(activeHostelId);
+  };
+
+  const handleScrollBeginDrag = () => {
+    userHasScrolledRef.current = true;
+    if (pendingEndReachedRef.current) {
+      handleLoadMoreTenantReadings();
+    }
+  };
 
 //    useEffect(() => {
 //   if (activeHostelId) {
@@ -43,6 +82,7 @@ export default function TenantsList() {
   //   { name: "David", floor: "Ground Floor", room: "002", bed: "02", amount: "420", month: "August" },
   // ];
 
+  console.log("tenantReading",EbTenantReading)
   const handleCustomerReading = (item) => {
     console.log("item", item);
     
@@ -63,17 +103,21 @@ export default function TenantsList() {
 
     <>
        {/* { loading && <Loader />} */}
-   <ScrollView 
+   <FlatList
+    data={loading ? [] : readingList}
+    keyExtractor={(item, index) => `${item?.customerId ?? "reading"}-${index}`}
     showsVerticalScrollIndicator={false}
     contentContainerStyle={{
     flexGrow: 1,
     justifyContent:
-      !loading && EbTenantReading?.length === 0 ? "center" : "flex-start",
-  }}>
-      {!loading && EbTenantReading && EbTenantReading?.length > 0 &&  EbTenantReading?.map((item, index) => (
-        
+      !loading && readingList.length === 0 ? "center" : "flex-start",
+      paddingBottom:30,
+  }}
+    onScrollBeginDrag={handleScrollBeginDrag}
+    onEndReached={handleLoadMoreTenantReadings}
+    onEndReachedThreshold={0.5}
+    renderItem={({ item }) => (
         <TouchableOpacity
-          key={index}
           style={styles.row}
           onPress={()=> handleCustomerReading(item)}
         >
@@ -120,20 +164,25 @@ export default function TenantsList() {
           </View>
 
         </TouchableOpacity>
-
-      ))}
-
-      {( 
-         !loading && EbTenantReading && EbTenantReading.length === 0 &&
+    )}
+    ListEmptyComponent={
+      !loading ? (
             <View style={styles.centerContainer}>
               <Image source={EmptyState} style={styles.image} />
               <Text style={styles.noFloorText}>No Tenant Readings are there!</Text>
       
               
             </View>
-          )}
-
-    </ScrollView>
+      ) : null
+    }
+    ListFooterComponent={
+      tenantReadingLoadingMore ? (
+        <View style={{ paddingVertical: 16 }}>
+          <ActivityIndicator size="small" color="#1E45E1" />
+        </View>
+      ) : null
+    }
+   />
       </>
   );
 }

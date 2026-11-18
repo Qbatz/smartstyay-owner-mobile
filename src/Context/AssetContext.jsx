@@ -16,6 +16,10 @@ export const AssetProvider = ({ children }) => {
   });
   const assetRequestId = useRef(0);
   const assetFetchingRef = useRef(false);
+  // Page tracking from each response (refs, so load-more never reads stale
+  // state or depends on the response's pagination key names).
+  const assetPageRef = useRef(1);
+  const assetHasMoreRef = useRef(false);
 
   const getErrorMessage = (err) =>
     err?.response?.data?.message ||
@@ -37,6 +41,8 @@ export const AssetProvider = ({ children }) => {
     assetFetchingRef.current = true;
 
     if (isFirstPage) {
+      assetPageRef.current = 1;
+      assetHasMoreRef.current = false;
       if (showLoader) setLoading(true);
     } else {
       setAssetsLoadingMore(true);
@@ -56,7 +62,24 @@ export const AssetProvider = ({ children }) => {
 
       if (res.status === 200) {
         const data = res?.data || {};
+        console.log("AssestAllDetails",data)
         const list = Array.isArray(data?.assetsList) ? data.assetsList : [];
+
+        // API may send pagination top-level or nested, as totalPages or
+        // totalPage. Without it: a full page means there may be more.
+        const pagination = data?.pagination || data?.paginationSummary || data;
+        const respPage = Number(pagination?.currentPage) || page;
+        const respTotalPages = Number(
+          pagination?.totalPages ?? pagination?.totalPage
+        );
+
+        if (isFirstPage || list.length > 0) {
+          assetPageRef.current = respPage;
+        }
+        assetHasMoreRef.current =
+          Number.isFinite(respTotalPages) && respTotalPages > 0
+            ? respPage < respTotalPages
+            : list.length >= size;
 
         setAssetList((prev) => {
           if (isFirstPage) return list;
@@ -65,8 +88,11 @@ export const AssetProvider = ({ children }) => {
         });
 
         setAssetPagination({
-          currentPage: Number(data?.currentPage) || page,
-          totalPages: Number(data?.totalPages) || 1,
+          currentPage: assetPageRef.current,
+          totalPages:
+            Number.isFinite(respTotalPages) && respTotalPages > 0
+              ? respTotalPages
+              : 1,
           itemPerPage: Number(data?.itemPerPage) || size,
         });
 
@@ -92,13 +118,15 @@ export const AssetProvider = ({ children }) => {
 
   // Fetches the next page of assets, if there is one.
   const loadMoreAssets = async (hostelId, size = 10) => {
-    const { currentPage, totalPages } = assetPagination;
-
-    if (!hostelId || assetFetchingRef.current || currentPage >= totalPages) {
+    if (!hostelId || assetFetchingRef.current || !assetHasMoreRef.current) {
       return { success: false };
     }
 
-    return getAllAssets(hostelId, { page: currentPage + 1, size });
+    return getAllAssets(hostelId, {
+      page: assetPageRef.current + 1,
+      size,
+      showLoader: false,
+    });
   };
 
   const addAsset = async (payload) => {

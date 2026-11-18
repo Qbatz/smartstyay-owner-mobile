@@ -45,20 +45,41 @@ export default function Assets({ navigation }) {
   const { getAllAssets, assetList, loading, deleteAsset, assignAsset,
     loadMoreAssets, assetsLoadingMore } = useContext(AssetContext);
 
-  // Prevents onEndReached from firing repeatedly before the user actually scrolls.
-  const onEndReachedDuringMomentum = useRef(true);
+  // FlatList fires onEndReached on first render when page 1 doesn't fill the
+  // screen, which chained through every page without any scrolling. So
+  // load-more only runs after the user has dragged the list (a normal drag,
+  // no fling needed).
+  // FlatList fires onEndReached only once per content height, so a call that
+  // was skipped (user hadn't dragged yet) is remembered and run on the first drag.
+  const userHasScrolledRef = useRef(false);
+  const pendingEndReachedRef = useRef(false);
 
+  useEffect(() => {
+    // Page 1 (re)loading: wait for a fresh drag again
+    if (loading) {
+      userHasScrolledRef.current = false;
+      pendingEndReachedRef.current = false;
+    }
+  }, [loading]);
+
+  // Duplicate / last-page calls are blocked inside loadMoreAssets.
   const handleLoadMoreAssets = () => {
-    if (
-      onEndReachedDuringMomentum.current ||
-      !activeHostelId ||
-      loading ||
-      assetsLoadingMore
-    ) {
+    if (!activeHostelId || loading || assetsLoadingMore) return;
+
+    if (!userHasScrolledRef.current) {
+      pendingEndReachedRef.current = true;
       return;
     }
-    onEndReachedDuringMomentum.current = true;
+
+    pendingEndReachedRef.current = false;
     loadMoreAssets(activeHostelId);
+  };
+
+  const handleScrollBeginDrag = () => {
+    userHasScrolledRef.current = true;
+    if (pendingEndReachedRef.current) {
+      handleLoadMoreAssets();
+    }
   };
   const { getAllFloorsByHostel, getAllRoomsByFloor, } = useFloor();
 
@@ -827,11 +848,9 @@ const handleAssignAsset = async () => {
                 {/* <Image source={MenuDots} style={styles.dotsIcon} /> */}
               </TouchableOpacity>
             )}
+            onScrollBeginDrag={handleScrollBeginDrag}
             onEndReached={handleLoadMoreAssets}
             onEndReachedThreshold={0.5}
-            onMomentumScrollBegin={() => {
-              onEndReachedDuringMomentum.current = false;
-            }}
             ListFooterComponent={
               assetsLoadingMore ? (
                 <View style={{ paddingVertical: 16 }}>

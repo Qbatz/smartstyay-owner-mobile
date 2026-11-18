@@ -45,7 +45,9 @@ export default function CheckoutList({ searchText  }) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const fetchingRef = useRef(false);
-  const onEndReachedDuringMomentum = useRef(true);
+  // Page tracking from each response (refs, so load-more never reads stale state)
+  const pageRef = useRef(1);
+  const hasMoreRef = useRef(false);
   const requestIdRef = useRef(0);
   const searchRef = useRef("");
   const [menuVisibleId, setMenuVisibleId] = useState(null);
@@ -185,6 +187,8 @@ const isTabBarVisible = useRef(true);
         showFullLoader
       );
 
+      console.log("CheckoutListDetail",data)
+
       // Ignore responses from outdated requests (e.g. user kept typing).
       if (requestId !== requestIdRef.current) return;
 
@@ -192,13 +196,25 @@ const isTabBarVisible = useRef(true);
         ? data.checkoutCustomers
         : [];
 
+      // API may send pagination top-level or nested, as totalPages or totalPage.
+      // Without it: a full page means there may be more.
+      const pagination = data?.pagination || data?.paginationSummary || data;
+      const respPage = Number(pagination?.currentPage) || page;
+      const respTotalPages = Number(pagination?.totalPages ?? pagination?.totalPage);
+
+      if (isFirstPage || list.length > 0) pageRef.current = respPage;
+      hasMoreRef.current =
+        Number.isFinite(respTotalPages) && respTotalPages > 0
+          ? respPage < respTotalPages
+          : list.length >= PAGE_SIZE;
+
       setCheckoutCustomer((prev) => {
         if (isFirstPage) return list;
         const existing = new Set(prev.map((c) => c.customerId));
         return [...prev, ...list.filter((c) => !existing.has(c.customerId))];
       });
-      setCurrentPage(data?.currentPage || page);
-      setTotalPages(data?.totalPages || 1);
+      setCurrentPage(pageRef.current);
+      setTotalPages(Number.isFinite(respTotalPages) && respTotalPages > 0 ? respTotalPages : 1);
     } finally {
       if (requestId === requestIdRef.current) {
         fetchingRef.current = false;
@@ -208,16 +224,19 @@ const isTabBarVisible = useRef(true);
     }
   };
 
+  // No momentum gate: it only reset on a fling, so normal drags (and lists too
+  // short to scroll) never loaded the next page. fetchingRef blocks duplicates.
   const handleLoadMore = () => {
     if (
-      onEndReachedDuringMomentum.current ||
+      !activeHostelId ||
+      loading ||
       fetchingRef.current ||
-      currentPage >= totalPages
+      !hasMoreRef.current ||
+      checkoutCustomer.length === 0
     ) {
       return;
     }
-    onEndReachedDuringMomentum.current = true;
-    fetchCheckoutCustomers(currentPage + 1);
+    fetchCheckoutCustomers(pageRef.current + 1);
   };
 
   const handleRefresh = () => {
@@ -316,6 +335,8 @@ const isTabBarVisible = useRef(true);
      const isValidImageUrl = (url) => {
     return typeof url === "string" && /^https?:\/\//i.test(url.trim());
   };
+
+  console.log("CheckoutList",filteredCheckout)
 
     return (
       <>
@@ -440,9 +461,6 @@ const isTabBarVisible = useRef(true);
              scrollEventThrottle={16}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.5}
-            onMomentumScrollBegin={() => {
-              onEndReachedDuringMomentum.current = false;
-            }}
             refreshing={refreshing}
             onRefresh={handleRefresh}
             ListFooterComponent={

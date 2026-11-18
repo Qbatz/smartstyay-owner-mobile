@@ -53,20 +53,40 @@ export default function Electricity({ navigation }) {
             GetEBTenantReading , ParticularRoomReadingDetails ,AddRoomReading,
             LoadMoreEBRoomReading, roomReadingLoadingMore } = useContext(ElectricityContext);
 
-  // Prevents onEndReached from firing repeatedly before the user actually scrolls.
-  const onEndReachedDuringMomentum = useRef(true);
+  // Load-more only after the user has dragged the list (a normal drag, no fling
+  // needed): FlatList fires onEndReached on first render when page 1 doesn't
+  // fill the screen, which would chain through every page without scrolling.
+  // FlatList fires onEndReached only once per content height, so a call skipped
+  // before the first drag is remembered and run when the drag starts.
+  const userHasScrolledRef = useRef(false);
+  const pendingEndReachedRef = useRef(false);
 
+  useEffect(() => {
+    // Page 1 (re)loading: wait for a fresh drag again
+    if (loading) {
+      userHasScrolledRef.current = false;
+      pendingEndReachedRef.current = false;
+    }
+  }, [loading]);
+
+  // Duplicate / last-page calls are blocked inside LoadMoreEBRoomReading.
   const handleLoadMoreReadings = () => {
-    if (
-      onEndReachedDuringMomentum.current ||
-      !activeHostelId ||
-      loading ||
-      roomReadingLoadingMore
-    ) {
+    if (!activeHostelId || loading || roomReadingLoadingMore) return;
+
+    if (!userHasScrolledRef.current) {
+      pendingEndReachedRef.current = true;
       return;
     }
-    onEndReachedDuringMomentum.current = true;
+
+    pendingEndReachedRef.current = false;
     LoadMoreEBRoomReading(activeHostelId);
+  };
+
+  const handleReadingsScrollBeginDrag = () => {
+    userHasScrolledRef.current = true;
+    if (pendingEndReachedRef.current) {
+      handleLoadMoreReadings();
+    }
   };
 
   // readingId is 0 for rooms without a reading, so combine it with roomId.
@@ -888,9 +908,7 @@ if (!canReadElectricity && !loading) {
     ListHeaderComponent={<HostelHeaderCard data={{}} />}
     onEndReached={handleLoadMoreReadings}
     onEndReachedThreshold={0.5}
-    onMomentumScrollBegin={() => {
-      onEndReachedDuringMomentum.current = false;
-    }}
+    onScrollBeginDrag={handleReadingsScrollBeginDrag}
     ListFooterComponent={renderReadingsFooter}
     renderItem={({ item }) => (
       <View style={styles.roomRow}>
@@ -967,9 +985,7 @@ if (!canReadElectricity && !loading) {
   }}
     onEndReached={handleLoadMoreReadings}
     onEndReachedThreshold={0.5}
-    onMomentumScrollBegin={() => {
-      onEndReachedDuringMomentum.current = false;
-    }}
+    onScrollBeginDrag={handleReadingsScrollBeginDrag}
     ListFooterComponent={renderReadingsFooter}
     ListEmptyComponent={
       !loading ? (

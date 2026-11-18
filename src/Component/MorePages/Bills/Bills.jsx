@@ -3633,28 +3633,28 @@ export default function BillsDesign({ route }) {
                       showsVerticalScrollIndicator={false}
                       onScroll={handleScroll}
                       keyExtractor={(item) => item.invoiceId?.toString()}
-                      onMomentumScrollBegin={() => {
-                        onEndReachedCalledDuringMomentum.current = false;
-                      }}
-
+                      // No momentum gate here: it only reset on a fling, so normal
+                      // drags to the bottom were ignored until a "hard push".
+                      // isFetchingBills ref already blocks duplicate requests.
                       onEndReached={() => {
                         if (
-                          !onEndReachedCalledDuringMomentum.current &&
                           !isFetchingBills.current &&
                           hasMoreBills &&
                           !refreshing
                         ) {
-                          // Correct assignment: lock further callbacks during momentum.
-                          onEndReachedCalledDuringMomentum.current = true;
-
                           onEndReachedBillList(billsPage + 1);
                         }
                       }}
 
-                      onEndReachedThreshold={0.4}
+                      onEndReachedThreshold={0.5}
 
+                      // Padding keeps the loader above the floating buttons / tab bar
                       ListFooterComponent={
-                        refreshing ? <ActivityIndicator size="small" color="blue" /> : null
+                        refreshing ? (
+                          <View style={{ paddingTop: 16, paddingBottom: 100 }}>
+                            <ActivityIndicator size="small" color="#1E45E1" />
+                          </View>
+                        ) : null
                       }
 
                       ListHeaderComponent={

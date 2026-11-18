@@ -306,7 +306,6 @@ const BillBookings = ({
 
   const lastScrollY = useRef(0);
   const isTabBarVisible = useRef(true);
-  const onEndReachedDuringMomentum = useRef(true);
 
   // ----- Derived data -----
 
@@ -372,14 +371,12 @@ const BillBookings = ({
     lastScrollY.current = currentY;
   }, []);
 
-  const handleMomentumScrollBegin = useCallback(() => {
-    onEndReachedDuringMomentum.current = false;
-  }, []);
-
+  // No momentum gate: it only reset on a fling, so normal drags (and lists too
+  // short to scroll) never triggered load-more. Duplicate / last-page calls are
+  // blocked inside LoadMoreAdvanceBookingBills.
   const handleLoadMoreBookings = useCallback(() => {
     const l = latest.current;
     if (
-      onEndReachedDuringMomentum.current ||
       !l.activeHostelId ||
       !l.canReadBooking ||
       l.loading ||
@@ -387,7 +384,6 @@ const BillBookings = ({
     ) {
       return;
     }
-    onEndReachedDuringMomentum.current = true;
     l.LoadMoreAdvanceBookingBills(l.activeHostelId);
   }, []);
 
@@ -464,7 +460,10 @@ const BillBookings = ({
           renderItem={renderItem}
           keyExtractor={keyExtractor}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            hasBookings && styles.listContentWithFab,
+          ]}
           ListHeaderComponent={listHeader}
           ListEmptyComponent={listEmpty}
           ListFooterComponent={bookingLoadingMore ? LoadMoreFooter : null}
@@ -472,7 +471,6 @@ const BillBookings = ({
           scrollEventThrottle={16}
           onEndReached={handleLoadMoreBookings}
           onEndReachedThreshold={0.5}
-          onMomentumScrollBegin={handleMomentumScrollBegin}
           initialNumToRender={10}
           maxToRenderPerBatch={10}
           windowSize={11}
@@ -510,6 +508,11 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     flexGrow: 1,
     paddingBottom: 120,
+  },
+  // Clears the floating filter (top edge at bottom 124 + 50) and add buttons,
+  // so the last row's amount/date can scroll above them.
+  listContentWithFab: {
+    paddingBottom: 190,
   },
   nameCol: {
     flex: 1,

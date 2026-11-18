@@ -24,6 +24,10 @@ export default function ComplaintProvider({ children }) {
   // Last filters used for page 1, reused when loading further pages.
   const complaintFiltersRef = useRef({});
   const complaintFetchingRef = useRef(false);
+  // Page tracking from each response (refs, so load-more never reads stale
+  // state or depends on the response's pagination key names).
+  const complaintPageRef = useRef(1);
+  const complaintHasMoreRef = useRef(false);
 
 
   const getErrorMessage = (err) => {
@@ -192,6 +196,8 @@ export default function ComplaintProvider({ children }) {
 
     if (isFirstPage) {
       complaintFiltersRef.current = filterValues;
+      complaintPageRef.current = 1;
+      complaintHasMoreRef.current = false;
       if (showLoader) setLoading(true);
     } else {
       setComplaintsLoadingMore(true);
@@ -231,6 +237,22 @@ export default function ComplaintProvider({ children }) {
           ? data.complaintsList
           : [];
 
+        // API may send pagination top-level or nested, as totalPages or
+        // totalPage. Without it: a full page means there may be more.
+        const pagination = data?.pagination || data?.paginationSummary || data;
+        const respPage = Number(pagination?.currentPage) || page;
+        const respTotalPages = Number(
+          pagination?.totalPages ?? pagination?.totalPage
+        );
+
+        if (isFirstPage || list.length > 0) {
+          complaintPageRef.current = respPage;
+        }
+        complaintHasMoreRef.current =
+          Number.isFinite(respTotalPages) && respTotalPages > 0
+            ? respPage < respTotalPages
+            : list.length >= size;
+
         setComplaintsList((prev) => {
           if (isFirstPage) return list;
           const existing = new Set(prev.map((c) => c?.complaintId));
@@ -242,8 +264,11 @@ export default function ComplaintProvider({ children }) {
           endDate: data?.endDate || null,
           complaintCount: data?.complaintCount || 0,
           filterOption : data?.filterOption,
-          currentPage: Number(data?.currentPage) || page,
-          totalPages: Number(data?.totalPages) || 1,
+          currentPage: complaintPageRef.current,
+          totalPages:
+            Number.isFinite(respTotalPages) && respTotalPages > 0
+              ? respTotalPages
+              : 1,
         });
 
         return { success: true, data };
@@ -275,16 +300,13 @@ export default function ComplaintProvider({ children }) {
 
   // Fetches the next page of complaints using the last applied filters.
   const LoadMoreComplaints = async (hostelId, size = 10) => {
-    const currentPage = Number(complaintListOtherDetails?.currentPage) || 1;
-    const totalPages = Number(complaintListOtherDetails?.totalPages) || 1;
-
-    if (!hostelId || complaintFetchingRef.current || currentPage >= totalPages) {
+    if (!hostelId || complaintFetchingRef.current || !complaintHasMoreRef.current) {
       return { success: false };
     }
 
     return GetComplaintListDetails(hostelId, complaintFiltersRef.current, {
       showLoader: false,
-      page: currentPage + 1,
+      page: complaintPageRef.current + 1,
       size,
     });
   };

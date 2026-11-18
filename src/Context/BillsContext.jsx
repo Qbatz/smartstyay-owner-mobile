@@ -27,6 +27,10 @@ export default function BillsProvider({ children }) {
   const bookingFiltersRef = useRef({});
   const bookingRequestIdRef = useRef(0);
   const bookingFetchingRef = useRef(false);
+  // Page tracking from each response (refs, so load-more never reads stale
+  // state or depends on the response's pagination key names).
+  const bookingPageRef = useRef(1);
+  const bookingHasMoreRef = useRef(false);
 
 
   const getErrorMessage = (error) =>
@@ -1279,6 +1283,8 @@ export default function BillsProvider({ children }) {
 
     if (isFirstPage) {
       bookingFiltersRef.current = filters || {};
+      bookingPageRef.current = 1;
+      bookingHasMoreRef.current = false;
     }
 
     try {
@@ -1377,6 +1383,25 @@ export default function BillsProvider({ children }) {
         }
 
         const data = res?.data || {};
+        const pageItems = Array.isArray(data?.advanceInvoiceList)
+          ? data.advanceInvoiceList
+          : [];
+
+        // API may send pagination top-level or nested, as totalPages or
+        // totalPage. Without it: a full page means there may be more.
+        const pagination = data?.pagination || data?.paginationSummary || data;
+        const respPage = Number(pagination?.currentPage) || page;
+        const respTotalPages = Number(
+          pagination?.totalPages ?? pagination?.totalPage
+        );
+
+        if (isFirstPage || pageItems.length > 0) {
+          bookingPageRef.current = respPage;
+        }
+        bookingHasMoreRef.current =
+          Number.isFinite(respTotalPages) && respTotalPages > 0
+            ? respPage < respTotalPages
+            : pageItems.length >= size;
 
         setBookingBills((prev) => {
           if (isFirstPage) return data;
@@ -1431,17 +1456,14 @@ export default function BillsProvider({ children }) {
 
   // Fetches the next page of advance/booking bills using the last applied filters.
   const LoadMoreAdvanceBookingBills = async (hostelId, size = 10) => {
-    const currentPage = Number(bookingBills?.currentPage) || 1;
-    const totalPage = Number(bookingBills?.totalPage) || 1;
-
-    if (!hostelId || bookingFetchingRef.current || currentPage >= totalPage) {
+    if (!hostelId || bookingFetchingRef.current || !bookingHasMoreRef.current) {
       return { success: false };
     }
 
     return GetAdvanceBookingBills(
       hostelId,
       bookingFiltersRef.current,
-      currentPage + 1,
+      bookingPageRef.current + 1,
       size
     );
   };

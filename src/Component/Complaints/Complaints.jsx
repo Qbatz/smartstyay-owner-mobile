@@ -83,18 +83,17 @@ export default function Complaints({ route }) {
 
   const lastScrollY = useRef(0);
   const isTabBarVisible = useRef(true);
-  const onEndReachedDuringMomentum = useRef(true);
-
+  // No momentum gate: it only reset on a fling, so normal drags (and lists too
+  // short to scroll) never loaded the next page. Duplicate / last-page calls
+  // are blocked inside LoadMoreComplaints.
   const handleLoadMoreComplaints = () => {
     if (
-      onEndReachedDuringMomentum.current ||
       !activeHostelId ||
       loading ||
       complaintsLoadingMore
     ) {
       return;
     }
-    onEndReachedDuringMomentum.current = true;
     LoadMoreComplaints(activeHostelId);
   };
 
@@ -789,9 +788,6 @@ export default function Complaints({ route }) {
             scrollEventThrottle={16}
             onEndReached={handleLoadMoreComplaints}
             onEndReachedThreshold={0.5}
-            onMomentumScrollBegin={() => {
-              onEndReachedDuringMomentum.current = false;
-            }}
             ListFooterComponent={
               complaintsLoadingMore ? (
                 <View style={{ paddingVertical: 16 }}>
