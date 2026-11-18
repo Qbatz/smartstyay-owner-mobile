@@ -460,6 +460,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gilroy-Semibold',
     color: '#18181B',
     marginBottom: 6,
+    marginTop:6
   },
 
   required: {
@@ -472,12 +473,13 @@ const styles = StyleSheet.create({
     borderColor: '#DEDEDE',
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
-    paddingVertical: 8,
+    // paddingVertical: 8,
     paddingLeft: 12,
     paddingRight: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom:6,
     elevation: 4,
     shadowColor: '#000000',
     shadowOffset: {

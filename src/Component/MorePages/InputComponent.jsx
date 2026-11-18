@@ -310,7 +310,7 @@ const InputComponent = ({
 // ---------------- STYLES ----------------
 
 const styles = StyleSheet.create({
-wrapper: {
+    wrapper: {
         width: "100%",
     },
 
@@ -318,10 +318,10 @@ wrapper: {
         fontSize: 14,
         // color: "#55555F",
         marginBottom: 8,
-       fontFamily: "Gilroy-Semibold",
+        fontFamily: "Gilroy-Semibold",
         marginTop: 10
     },
-   
+
 
     required: {
         color: "#FF3333",
@@ -334,8 +334,10 @@ wrapper: {
         borderRadius: 12,
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 16,
+        paddingLeft: 12,
+        paddingRight: 10,
         backgroundColor: "#FFFFFF",
+        marginBottom: 6,
 
         shadowColor: "#000000",
         shadowOffset: {
