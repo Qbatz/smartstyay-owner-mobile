@@ -30,6 +30,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 import InputComponent from "../MorePages/InputComponent"
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
 
 
 export default function AddBookingScreen({ navigation, route }) {
@@ -306,7 +308,7 @@ export default function AddBookingScreen({ navigation, route }) {
             isBank: bank?.isBank || false,
 
             upiIcon: bank?.upiIcon || null,
-   ...paymentLabel,
+            ...paymentLabel,
             // label: `${displayName} - ${holderName} - ${bankName}`,
             label: `${paymentLabel.title} - ${paymentLabel.subtitle}`,
 
@@ -369,7 +371,7 @@ export default function AddBookingScreen({ navigation, route }) {
       valid = false;
     }
     if (!selectedBed) {
-      setBedError("Please select Room");
+      setBedError("Please select Bed");
       valid = false;
     }
 
@@ -557,13 +559,13 @@ export default function AddBookingScreen({ navigation, route }) {
             style={{ flex: 1, backgroundColor: "#fff" }}
           >
 
-            <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
+            {/* <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
 
             <TouchableOpacity
               ref={bookingDateRef}
               onPress={() => {
-                Keyboard.dismiss();           // ✅ CLOSE KEYBOARD
-                setTimeout(() => {            // ✅ wait keyboard animation
+                Keyboard.dismiss();         
+                setTimeout(() => {          
                   bookingDateRef.current.measureInWindow((x, y, width, height) => {
                     setDatePickerTop(y + height + 8);
                     setShowDatePicker(true);
@@ -571,7 +573,7 @@ export default function AddBookingScreen({ navigation, route }) {
                 }, 150);
               }}
 
-              // style={styles.inputBox}
+           
               style={[
                 styles.inputBox,
                 {
@@ -590,7 +592,38 @@ export default function AddBookingScreen({ navigation, route }) {
                 style={styles.icon}
               />
             </TouchableOpacity>
-            {bookingDateError && <ErrorMessage message={bookingDateError} type="error" />}
+            {bookingDateError && <ErrorMessage message={bookingDateError} type="error" />} */}
+
+
+            <DatePickerComponent
+              label="Booking Date"
+              required
+              selectedDate={
+                bookingDate
+                  ? bookingDate.format("YYYY-MM-DD")
+                  : null
+              }
+              placeholder="DD/MM/YYYY"
+              displayFormat="DD/MM/YYYY"
+              maxDate={dayjs().format("YYYY-MM-DD")}
+              error={bookingDateError}
+              onSelect={(date) => {
+                const selected = dayjs(date);
+
+                setBookingDate(selected);
+                setBookingDateError("");
+
+                // Joining date should not be before booking date
+                if (
+                  joiningDate &&
+                  joiningDate.isBefore(selected, "day")
+                ) {
+                  setJoiningDate(selected);
+                  setJoiningDateError("");
+                }
+              }}
+            />
+
 
             <Text style={styles.label}>Booking Amount <Text style={styles.star}>*</Text></Text>
 
@@ -622,16 +655,13 @@ export default function AddBookingScreen({ navigation, route }) {
 
 
             {BookingAmountError && <ErrorMessage message={BookingAmountError} type="error" />}
-
+            {/* 
             <Text style={styles.label}>Joining Date (Tentative) <Text style={{ color: "red" }}>*</Text></Text>
-            {/* <TouchableOpacity
-            onPress={() => setShowJoinDatePicker(true)}
-            style={styles.inputBox}
-          > */}
+        
             <TouchableOpacity
               ref={joiningDateRef}
               onPress={() => {
-                Keyboard.dismiss();           // ✅ CLOSE KEYBOARD
+                Keyboard.dismiss();          
                 setTimeout(() => {
                   joiningDateRef.current.measureInWindow((x, y, width, height) => {
                     setDatePickerTop(y + height + 8);
@@ -640,7 +670,7 @@ export default function AddBookingScreen({ navigation, route }) {
                 }, 150);
               }}
 
-              // style={styles.inputBox}
+          
               style={[
                 styles.inputBox,
                 {
@@ -661,12 +691,51 @@ export default function AddBookingScreen({ navigation, route }) {
                 style={styles.icon}
               />
             </TouchableOpacity>
-            {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />}
-            <Text style={styles.label}>Floor <Text style={styles.star}>*</Text></Text>
+            {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />} */}
+
+
+
+            <DatePickerComponent
+              label="Joining Date (Tentative)"
+              required
+              selectedDate={
+                joiningDate
+                  ? joiningDate.format("YYYY-MM-DD")
+                  : null
+              }
+              placeholder="DD/MM/YYYY"
+              displayFormat="DD/MM/YYYY"
+              minDate={
+                bookingDate
+                  ? bookingDate.format("YYYY-MM-DD")
+                  : "2100-01-01"
+              }
+              disabled={!bookingDate}
+              error={joiningDateError}
+              onSelect={(date) => {
+                if (!bookingDate) return;
+
+                const selected = dayjs(date);
+
+                // Validate joining date
+                if (selected.isBefore(bookingDate, "day")) {
+                  setJoiningDateError(
+                    "Joining date cannot be before booking date"
+                  );
+                  return;
+                }
+
+                setJoiningDate(selected);
+                setJoiningDateError("");
+              }}
+            />
+
+
+
+            {/* <Text style={styles.label}>Floor <Text style={styles.star}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                // style={styles.select}
                 style={[
                   styles.select,
                   {
@@ -674,7 +743,6 @@ export default function AddBookingScreen({ navigation, route }) {
                     borderWidth: floorOpen ? 1.5 : 1,
                   },
                 ]}
-                // onPress={() => setFloorOpen(!floorOpen)}
                 onPress={() => {
                   setFloorOpen(!floorOpen);
                   setRoomOpen(false);
@@ -723,13 +791,53 @@ export default function AddBookingScreen({ navigation, route }) {
                 </View>
               )}
             </View>
-            {floorError && <ErrorMessage message={floorError} type="error" />}
 
-            <Text style={styles.label}>Room <Text style={styles.star}>*</Text></Text>
+
+            {floorError && <ErrorMessage message={floorError} type="error" />} */}
+
+
+            <DropdownComponent
+              label="Floor"
+              required
+              placeholder="Select a Floor"
+              options={floors.map((floor) => ({
+                label: floor.name,
+                value: floor.id,
+              }))}
+              value={selectedFloor?.id || null}
+              onChange={(value) => {
+                const floor = floors.find(
+                  (item) => String(item.id) === String(value)
+                );
+
+                setSelectedFloor(floor || null);
+                setSelectedRoom(null);
+                setSelectedBed(null);
+
+                setRooms([]);
+                setBeds([]);
+
+                setFloorError("");
+                setRoomError("");
+                setBedError("");
+
+                if (floor) {
+                  loadRooms(floor.id);
+                }
+              }}
+              error={!!floorError}
+              emptyText="No Floors Available"
+            />
+
+            {floorError && (
+              <ErrorMessage message={floorError} type="error" />
+            )}
+
+
+            {/* <Text style={styles.label}>Room <Text style={styles.star}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                // style={styles.select}
                 style={[
                   styles.select,
                   {
@@ -737,7 +845,6 @@ export default function AddBookingScreen({ navigation, route }) {
                     borderWidth: roomOpen ? 1.5 : 1,
                   },
                 ]}
-                // onPress={() => setRoomOpen(!roomOpen)}
                 onPress={() => {
                   setFloorOpen(false);
                   setRoomOpen(!roomOpen);
@@ -745,7 +852,6 @@ export default function AddBookingScreen({ navigation, route }) {
                   setAccountopen(false);
                 }}
                 activeOpacity={0.9}
-              // disabled={!rooms.length}
               >
                 <Text style={styles.selectText}>
                   {selectedRoom ? selectedRoom.name : "Select a Room"}
@@ -777,7 +883,6 @@ export default function AddBookingScreen({ navigation, route }) {
                             setRoomError("");
                           }}
                         >
-                          {/* <Text style={styles.optionText}>{r.name}</Text> */}
                           <View
                             style={{
                               flexDirection: "row",
@@ -809,18 +914,43 @@ export default function AddBookingScreen({ navigation, route }) {
                 </View>
               )}
             </View>
+            {roomError && <ErrorMessage message={roomError} type="error" />} */}
+
+
+            <DropdownComponent
+              label="Room"
+              required
+              placeholder="Select a Room"
+              options={rooms.map((room) => ({
+                label: `${room.name} - ${room.sharingType || ""}`,
+                value: room.id,
+              }))}
+              value={selectedRoom?.id || null}
+              disabled={!selectedFloor}
+              onChange={(value) => {
+                const room = rooms.find(
+                  (item) => String(item.id) === String(value)
+                );
+
+                setSelectedRoom(room || null);
+                setSelectedBed(null);
+                setRoomError("");
+                setBedError("");
+              }}
+              error={!!roomError}
+              emptyText="No Rooms Available"
+            />
+
+            {roomError && (
+              <ErrorMessage message={roomError} type="error" />
+            )}
 
 
 
-
-
-
-            {roomError && <ErrorMessage message={roomError} type="error" />}
-            <Text style={styles.label}>Bed <Text style={styles.star}>*</Text></Text>
+            {/* <Text style={styles.label}>Bed <Text style={styles.star}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                // style={styles.select}
                 style={[
                   styles.select,
                   {
@@ -828,7 +958,6 @@ export default function AddBookingScreen({ navigation, route }) {
                     borderWidth: bedOpen ? 1.5 : 1,
                   },
                 ]}
-                // onPress={() => setBedOpen(!bedOpen)}
                 onPress={() => {
                   setFloorOpen(false);
                   setRoomOpen(false);
@@ -836,7 +965,6 @@ export default function AddBookingScreen({ navigation, route }) {
                   setAccountopen(false);
                 }}
                 activeOpacity={0.9}
-              // disabled={!filteredBeds.length}
               >
                 <Text style={styles.selectText}>
                   {selectedBed ? selectedBed.bedName : "Select a Bed"}
@@ -882,7 +1010,45 @@ export default function AddBookingScreen({ navigation, route }) {
                 message={selectedBed.errorMessage}
                 type="error"
               />
+            )} */}
+
+
+            <DropdownComponent
+              label="Bed"
+              required
+              placeholder="Select a Bed"
+              options={filteredBeds?.map((bed) => ({
+                label: bed.bedName,
+                value: bed.bedId,
+              }))}
+              value={selectedBed?.bedId || null}
+              disabled={!selectedRoom}
+              onChange={(value) => {
+                const bed = filteredBeds?.find(
+                  (item) => String(item?.bedId) === String(value)
+                );
+
+                setSelectedBed(bed || null);
+                setBedError("");
+              }}
+              error={!!bedError}
+              emptyText="No Beds Available"
+            />
+
+            {bedError && (
+              <ErrorMessage
+                message={bedError}
+                type="error"
+              />
             )}
+
+            {selectedBed?.shouldShowError && (
+              <ErrorMessage
+                message={selectedBed.errorMessage}
+                type="error"
+              />
+            )}
+
 
 
             <Text style={styles.label}>
@@ -1178,11 +1344,11 @@ export default function AddBookingScreen({ navigation, route }) {
                         ].filter(Boolean).join(" - ")}
                       </Text> */}
 
-                      <Text style={styles.paymentMethodName}  numberOfLines={1}>
+                      <Text style={styles.paymentMethodName} numberOfLines={1}>
                         {payment.title}
                       </Text>
 
-                      <Text style={styles.paymentMethodSubText}  numberOfLines={1}>
+                      <Text style={styles.paymentMethodSubText} numberOfLines={1}>
                         {payment.subtitle}
                       </Text>
                     </View>
