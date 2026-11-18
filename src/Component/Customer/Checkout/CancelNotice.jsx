@@ -26,7 +26,7 @@ import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 export default function CancelNotice({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts);
-  const { getCustomersByHostel, loading, moveToNoticePeriod, cancelCheckout, initializeCancelCheckout, getCustomerDetails } = useCustomer();
+  const { cancelCheckout, initializeCancelCheckout, getCustomerDetails } = useCustomer();
   const [openDate, setOpenDate] = useState(false);
   const [checkInDate, setCheckInDate] = useState();
   const [modalType, setModalType] = useState("success");

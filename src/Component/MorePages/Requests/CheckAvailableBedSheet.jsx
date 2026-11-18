@@ -57,7 +57,7 @@ export default function CheckAvailableBedDetailsSheet({
     const translateY = useRef(new Animated.Value(SHEET_HEIGHT)).current;
     const keyboardOffset = useRef(new Animated.Value(0)).current;
 
-    const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, TenantCheckIn } = useCustomer();
+    const { getBedsByHostelAndDate,} = useCustomer();
 
     const [showDropdown, setShowDropdown] = useState(false);
     const [selectedAmenity, setSelectedAmenity] = useState(null);

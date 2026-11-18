@@ -76,7 +76,9 @@ export const CustomerProvider = ({ children }) => {
     name = "",
     type = [],
     period = [],
-    sharingType = []
+    sharingType = [],
+    page,
+    size = 10
   ) => {
     try {
       setLoading(true);
@@ -93,6 +95,7 @@ export const CustomerProvider = ({ children }) => {
             ...(type?.length > 0 && { type }),
             ...(period?.length > 0 && { period }),
             ...(sharingType?.length > 0 && { sharingType }),
+            ...(page != null && { page, size }),
           },
           headers: {
             Authorization: `Bearer ${token}`,
@@ -789,9 +792,15 @@ export const CustomerProvider = ({ children }) => {
     }
   };
 
-  const getCheckoutCustomersByHostel = async (hostelId, name = "") => {
+  const getCheckoutCustomersByHostel = async (
+    hostelId,
+    name = "",
+    page = 1,
+    size = 10,
+    showLoader = true
+  ) => {
     try {
-      setLoading(true);
+      if (showLoader) setLoading(true);
       setErrorMsg("");
 
       const token = await retriveData("token");
@@ -800,6 +809,8 @@ export const CustomerProvider = ({ children }) => {
         `/v2/customers/checkout/${hostelId}`,
         {
           params: {
+            page,
+            size,
             ...(name && { name }),
           },
           headers: {
@@ -2434,6 +2445,8 @@ export const CustomerProvider = ({ children }) => {
       };
     }
   };
+
+  
 
   const UpdateJobDetails = async (hostelId, customerId, payload) => {
     if (!hostelId || !customerId) {

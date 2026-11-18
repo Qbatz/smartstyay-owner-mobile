@@ -57,7 +57,7 @@ export default function ConfirmReassignSheet({
   const reasonRef = useRef(null);
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails } = useCustomer();
+  const {changeBedCustomer, getCustomerDetails } = useCustomer();
 
  
   useEffect(() => {

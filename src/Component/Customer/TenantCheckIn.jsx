@@ -36,7 +36,7 @@ export default function TenantCheckIn({ navigation, route }) {
   const [tab, setTab] = useState("long");
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor, getAllBedsByRoom } = useFloor();
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel } = useCustomer();
+  const { getBedsByHostelAndDate, checkInCustomer } = useCustomer();
 
   const [floors, setFloors] = useState([]);
   const [floorOpen, setFloorOpen] = useState(false);

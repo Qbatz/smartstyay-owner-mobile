@@ -7,7 +7,8 @@ import {
   TextInput,
   Image,
   ScrollView, Modal,
-  PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler , Keyboard
+  PanResponder,Animated,TouchableWithoutFeedback,Dimensions,BackHandler , Keyboard,
+  FlatList, ActivityIndicator
 } from "react-native";
 import { StatusBar, Platform } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
@@ -49,7 +50,53 @@ export default function Electricity({ navigation }) {
             error, 
             errorMsg,
             GetEBRoomReading,
-            GetEBTenantReading , ParticularRoomReadingDetails ,AddRoomReading } = useContext(ElectricityContext);
+            GetEBTenantReading , ParticularRoomReadingDetails ,AddRoomReading,
+            LoadMoreEBRoomReading, roomReadingLoadingMore } = useContext(ElectricityContext);
+
+  // Load-more only after the user has dragged the list (a normal drag, no fling
+  // needed): FlatList fires onEndReached on first render when page 1 doesn't
+  // fill the screen, which would chain through every page without scrolling.
+  // FlatList fires onEndReached only once per content height, so a call skipped
+  // before the first drag is remembered and run when the drag starts.
+  const userHasScrolledRef = useRef(false);
+  const pendingEndReachedRef = useRef(false);
+
+  useEffect(() => {
+    // Page 1 (re)loading: wait for a fresh drag again
+    if (loading) {
+      userHasScrolledRef.current = false;
+      pendingEndReachedRef.current = false;
+    }
+  }, [loading]);
+
+  // Duplicate / last-page calls are blocked inside LoadMoreEBRoomReading.
+  const handleLoadMoreReadings = () => {
+    if (!activeHostelId || loading || roomReadingLoadingMore) return;
+
+    if (!userHasScrolledRef.current) {
+      pendingEndReachedRef.current = true;
+      return;
+    }
+
+    pendingEndReachedRef.current = false;
+    LoadMoreEBRoomReading(activeHostelId);
+  };
+
+  const handleReadingsScrollBeginDrag = () => {
+    userHasScrolledRef.current = true;
+    if (pendingEndReachedRef.current) {
+      handleLoadMoreReadings();
+    }
+  };
+
+  // readingId is 0 for rooms without a reading, so combine it with roomId.
+  const readingKeyExtractor = (item) => `${item?.roomId}-${item?.readingId}`;
+
+  const renderReadingsFooter = roomReadingLoadingMore ? (
+    <View style={{ paddingVertical: 16 }}>
+      <ActivityIndicator size="small" color="#1E45E1" />
+    </View>
+  ) : null;
 
             console.log("EbRoomReading" , EbRoomReading);
             console.log("hostelElectricityDetails" , hostelElectricityDetails);
@@ -853,17 +900,18 @@ if (!canReadElectricity && !loading) {
 
    {activeTab === "reading" && hostelBased && (
       hostelElectricityDetails?.hostelReadings?.length > 0 ? (
-  <ScrollView  showsVerticalScrollIndicator={false}
-    contentContainerStyle={{
-    flexGrow: 1,
-    // justifyContent:
-    //   !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
-  }}>
-
-    <HostelHeaderCard data={{}} />
-
-    {EbRoomReading.map((item, index) => (
-      <View key={index} style={styles.roomRow}>
+  <FlatList
+    data={EbRoomReading}
+    keyExtractor={readingKeyExtractor}
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={{ flexGrow: 1 }}
+    ListHeaderComponent={<HostelHeaderCard data={{}} />}
+    onEndReached={handleLoadMoreReadings}
+    onEndReachedThreshold={0.5}
+    onScrollBeginDrag={handleReadingsScrollBeginDrag}
+    ListFooterComponent={renderReadingsFooter}
+    renderItem={({ item }) => (
+      <View style={styles.roomRow}>
         <View style={styles.roomLeft}>
           <View style={styles.roomIcon}>
             <Image source={RoomIcon} style={{ width: 18, height: 18 }} />
@@ -890,8 +938,8 @@ if (!canReadElectricity && !loading) {
           </Text>
         </View>
       </View>
-    ))}
-  </ScrollView> ):
+    )}
+  /> ):
 
   (
     /* ✅ EMPTY STATE */
@@ -926,16 +974,31 @@ if (!canReadElectricity && !loading) {
 
 
 {activeTab === "reading" && !hostelBased && (
-  <ScrollView  showsVerticalScrollIndicator={false}
+  <FlatList
+    data={EbRoomReading}
+    keyExtractor={readingKeyExtractor}
+    showsVerticalScrollIndicator={false}
     contentContainerStyle={{
     flexGrow: 1,
     justifyContent:
       !loading && EbRoomReading?.length === 0 ? "center" : "flex-start",
-  }}>
-  {!loading && !hostelBased && EbRoomReading?.length > 0 && (
-  EbRoomReading.map((item, index) => (
+  }}
+    onEndReached={handleLoadMoreReadings}
+    onEndReachedThreshold={0.5}
+    onScrollBeginDrag={handleReadingsScrollBeginDrag}
+    ListFooterComponent={renderReadingsFooter}
+    ListEmptyComponent={
+      !loading ? (
+        <View style={styles.centerContainer}>
+          <Image source={EmptyState} style={styles.image} />
+          <Text style={styles.noFloorText}>
+            No Electricity Readings Found
+          </Text>
+        </View>
+      ) : null
+    }
+    renderItem={({ item }) => (
    <TouchableOpacity
-  key={index}
   style={styles.row}
   onPress={() => handleClickRoomDetails(item)}
   activeOpacity={0.7}
@@ -970,7 +1033,8 @@ if (!canReadElectricity && !loading) {
       </View>
 
     </TouchableOpacity>
-  ))
+    )}
+  />
 )}
 
   {/* {
@@ -988,23 +1052,6 @@ onPress={() => setShowFilter(true)} accessibilityLabel="Open filters">
       </TouchableOpacity>
        )
       } */}
-
-{!loading &&
-  (
-    (hostelBased && EbRoomReading.length === 0) ||
-    (!hostelBased && EbRoomReading?.length === 0)
-  ) && (
-    <View style={styles.centerContainer}>
-      <Image source={EmptyState} style={styles.image} />
-      <Text style={styles.noFloorText}>
-        No Electricity Readings Found
-      </Text>
-    </View>
-)}
-
-
-  </ScrollView>
-)}
 
    
       

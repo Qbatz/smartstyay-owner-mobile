@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useRef } from "react";
 import { getAxios } from "../Config/AxiosConfig";
 
 export const AssetContext = createContext();
@@ -8,6 +8,18 @@ export const AssetProvider = ({ children }) => {
    const [intializeassetvalues, setIntializeAssetValues] = useState(null);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [assetsLoadingMore, setAssetsLoadingMore] = useState(false);
+  const [assetPagination, setAssetPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    itemPerPage: 10,
+  });
+  const assetRequestId = useRef(0);
+  const assetFetchingRef = useRef(false);
+  // Page tracking from each response (refs, so load-more never reads stale
+  // state or depends on the response's pagination key names).
+  const assetPageRef = useRef(1);
+  const assetHasMoreRef = useRef(false);
 
   const getErrorMessage = (err) =>
     err?.response?.data?.message ||
@@ -15,17 +27,76 @@ export const AssetProvider = ({ children }) => {
     "Something went wrong";
 
 
-  const getAllAssets = async (hostelId) => {
-    setLoading(true);
+  const getAllAssets = async (hostelId, options = {}) => {
+    const { page = 1, size = 10, showLoader = true } = options;
+    const isFirstPage = page === 1;
+
+    // Load-more requests are skipped while another fetch is running;
+    // a page-1 request (initial load / refresh after add/edit/delete) always runs.
+    if (!isFirstPage && assetFetchingRef.current) {
+      return { success: false };
+    }
+
+    const requestId = ++assetRequestId.current;
+    assetFetchingRef.current = true;
+
+    if (isFirstPage) {
+      assetPageRef.current = 1;
+      assetHasMoreRef.current = false;
+      if (showLoader) setLoading(true);
+    } else {
+      setAssetsLoadingMore(true);
+    }
     setErrorMsg("");
 
     try {
       const axios = getAxios();
-      const res = await axios.get(`/v2/assets/${hostelId}`);
+      const res = await axios.get(`/v2/assets/${hostelId}`, {
+        params: { page, size },
+      });
+
+      // Ignore responses superseded by a newer request.
+      if (requestId !== assetRequestId.current) {
+        return { success: false };
+      }
 
       if (res.status === 200) {
-        setAssetList(res.data || []);
-        return { success: true, data: res.data };
+        const data = res?.data || {};
+        console.log("AssestAllDetails",data)
+        const list = Array.isArray(data?.assetsList) ? data.assetsList : [];
+
+        // API may send pagination top-level or nested, as totalPages or
+        // totalPage. Without it: a full page means there may be more.
+        const pagination = data?.pagination || data?.paginationSummary || data;
+        const respPage = Number(pagination?.currentPage) || page;
+        const respTotalPages = Number(
+          pagination?.totalPages ?? pagination?.totalPage
+        );
+
+        if (isFirstPage || list.length > 0) {
+          assetPageRef.current = respPage;
+        }
+        assetHasMoreRef.current =
+          Number.isFinite(respTotalPages) && respTotalPages > 0
+            ? respPage < respTotalPages
+            : list.length >= size;
+
+        setAssetList((prev) => {
+          if (isFirstPage) return list;
+          const existing = new Set(prev.map((a) => a?.assetId));
+          return [...prev, ...list.filter((a) => !existing.has(a?.assetId))];
+        });
+
+        setAssetPagination({
+          currentPage: assetPageRef.current,
+          totalPages:
+            Number.isFinite(respTotalPages) && respTotalPages > 0
+              ? respTotalPages
+              : 1,
+          itemPerPage: Number(data?.itemPerPage) || size,
+        });
+
+        return { success: true, data };
       }
 
       return { success: false };
@@ -34,8 +105,28 @@ export const AssetProvider = ({ children }) => {
       setErrorMsg(getErrorMessage(err));
       return { success: false, message: getErrorMessage(err) };
     } finally {
-      setLoading(false);
+      if (requestId === assetRequestId.current) {
+        assetFetchingRef.current = false;
+        if (isFirstPage) {
+          if (showLoader) setLoading(false);
+        } else {
+          setAssetsLoadingMore(false);
+        }
+      }
     }
+  };
+
+  // Fetches the next page of assets, if there is one.
+  const loadMoreAssets = async (hostelId, size = 10) => {
+    if (!hostelId || assetFetchingRef.current || !assetHasMoreRef.current) {
+      return { success: false };
+    }
+
+    return getAllAssets(hostelId, {
+      page: assetPageRef.current + 1,
+      size,
+      showLoader: false,
+    });
   };
 
   const addAsset = async (payload) => {
@@ -236,6 +327,9 @@ export const AssetProvider = ({ children }) => {
         loading,
         errorMsg,
         getAllAssets,
+        loadMoreAssets,
+        assetsLoadingMore,
+        assetPagination,
         addAsset,
         handleUpdateAsset,
         deleteAsset,

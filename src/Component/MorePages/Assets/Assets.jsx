@@ -11,7 +11,8 @@ import {
   TouchableWithoutFeedback,
   Platform,
   Dimensions,
-  PanResponder, Animated
+  PanResponder, Animated,
+  FlatList, ActivityIndicator
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import { Calendar } from "react-native-calendars";
@@ -41,7 +42,45 @@ import EmptyStateImage from "../../../Assets/Images/Empty_state.png"
 export default function Assets({ navigation }) {
 
   const { activeHostelId } = useContext(CommonContexts);
-  const { getAllAssets, assetList, loading, deleteAsset, assignAsset } = useContext(AssetContext);
+  const { getAllAssets, assetList, loading, deleteAsset, assignAsset,
+    loadMoreAssets, assetsLoadingMore } = useContext(AssetContext);
+
+  // FlatList fires onEndReached on first render when page 1 doesn't fill the
+  // screen, which chained through every page without any scrolling. So
+  // load-more only runs after the user has dragged the list (a normal drag,
+  // no fling needed).
+  // FlatList fires onEndReached only once per content height, so a call that
+  // was skipped (user hadn't dragged yet) is remembered and run on the first drag.
+  const userHasScrolledRef = useRef(false);
+  const pendingEndReachedRef = useRef(false);
+
+  useEffect(() => {
+    // Page 1 (re)loading: wait for a fresh drag again
+    if (loading) {
+      userHasScrolledRef.current = false;
+      pendingEndReachedRef.current = false;
+    }
+  }, [loading]);
+
+  // Duplicate / last-page calls are blocked inside loadMoreAssets.
+  const handleLoadMoreAssets = () => {
+    if (!activeHostelId || loading || assetsLoadingMore) return;
+
+    if (!userHasScrolledRef.current) {
+      pendingEndReachedRef.current = true;
+      return;
+    }
+
+    pendingEndReachedRef.current = false;
+    loadMoreAssets(activeHostelId);
+  };
+
+  const handleScrollBeginDrag = () => {
+    userHasScrolledRef.current = true;
+    if (pendingEndReachedRef.current) {
+      handleLoadMoreAssets();
+    }
+  };
   const { getAllFloorsByHostel, getAllRoomsByFloor, } = useFloor();
 
   const [floors, setFloors] = useState([]);
@@ -776,14 +815,14 @@ const handleAssignAsset = async () => {
           )}
 
 
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 120 }}
-        >
-          {!loading && assetsData?.length > 0 ? (
-            assetsData.map((item) => (
+        {!loading && assetList?.length > 0 ? (
+          <FlatList
+            data={assetList}
+            keyExtractor={(item) => String(item.assetId)}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 120 }}
+            renderItem={({ item }) => (
               <TouchableOpacity
-                key={item.assetId}
                 style={styles.card}
                 activeOpacity={0.8}
                 onPress={() => openDetails(item)}
@@ -808,12 +847,21 @@ const handleAssignAsset = async () => {
 
                 {/* <Image source={MenuDots} style={styles.dotsIcon} /> */}
               </TouchableOpacity>
-
-            ))
-          ) : (
-            !loading && <EmptyState />
-          )}
-        </ScrollView>
+            )}
+            onScrollBeginDrag={handleScrollBeginDrag}
+            onEndReached={handleLoadMoreAssets}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={
+              assetsLoadingMore ? (
+                <View style={{ paddingVertical: 16 }}>
+                  <ActivityIndicator size="small" color="#1E45E1" />
+                </View>
+              ) : null
+            }
+          />
+        ) : (
+          !loading && <EmptyState />
+        )}
 
         {/* {
           !loading && assetList?.length > 0 && canReadAssets && (

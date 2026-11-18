@@ -78,11 +78,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-  const { BillDetails, GetAllBillDetails,
-    RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError
-    , GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt,
-    downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
-  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, loading, DeleteTenantDraft } = useCustomer();
+  const {  getBillsPdfDetails } = useContext(BillContext);
+  const { getCustomersByHostel, getCustomerDetails, editBasicDetails, loading, DeleteTenantDraft } = useCustomer();
   console.log("customer", customer, customerId)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails, setCustomerDetails] = useState("")
