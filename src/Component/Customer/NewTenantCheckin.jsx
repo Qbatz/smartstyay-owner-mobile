@@ -9,7 +9,7 @@ import {
     TextInput,
     Platform,
     KeyboardAvoidingView,
-    Image, TouchableWithoutFeedback, Keyboard, BackHandler, Dimensions
+    Image, TouchableWithoutFeedback, Keyboard, BackHandler, Dimensions, Pressable
 } from 'react-native';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import DatePicker from "react-native-ui-datepicker";
@@ -40,7 +40,8 @@ import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 import CloseIcon from "../../Assets/Images/remove.png";
 import AddRentIcon from "../../Assets/Images/directionbottom.png";
 import InputComponent from "../MorePages/InputComponent"
-
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
 
 
 export default function NewTenantCheckIn({ navigation, route }) {
@@ -151,21 +152,66 @@ export default function NewTenantCheckIn({ navigation, route }) {
         }
     };
 
+    // const loadRoomsByFloor = async (floorId) => {
+    //     if (!floorId) return
+
+    //     try {
+    //         const res = await getAllRoomsByFloor(floorId);
+
+    //         if (res?.success && Array.isArray(res?.data)) {
+    //             setRooms(res?.data)
+    //         } else {
+    //             setRooms([])
+    //         }
+    //     } catch (e) {
+    //         setRooms([])
+    //     }
+    // }
+
+
     const loadRoomsByFloor = async (floorId) => {
-        if (!floorId) return
+        if (!floorId) return [];
 
         try {
             const res = await getAllRoomsByFloor(floorId);
 
             if (res?.success && Array.isArray(res?.data)) {
-                setRooms(res?.data)
-            } else {
-                setRooms([])
+                setRooms(res.data);
+                return res.data;
             }
-        } catch (e) {
-            setRooms([])
+
+            setRooms([]);
+            return [];
+        } catch (error) {
+            console.log("Load rooms error:", error);
+            setRooms([]);
+            return [];
         }
-    }
+    };
+
+
+
+    const getFloorId = (item) =>
+        item?.id ?? item?.floorId ?? item?._id;
+
+    const getRoomId = (item) =>
+        item?.id ?? item?.roomId ?? item?._id;
+
+    const floorOptions = (floors || []).map((item) => ({
+        label: item?.name ?? item?.floorName,
+        value: getFloorId(item),
+    }));
+
+    const roomOptions = (rooms || []).map((item) => ({
+        label: item?.name ?? item?.roomName,
+        value: getRoomId(item),
+    }));
+
+    console.log("rooms", rooms);
+
+
+
+
 
 
 
@@ -267,7 +313,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
 
         if (res.success) {
-            setBeds(res?.data?.listBeds);
+            setBeds(res?.data?.listBeds || []);
         } else {
             setBeds([]);
         }
@@ -720,6 +766,45 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
 
 
+
+
+    const filteredBeds = React.useMemo(() => {
+        const selectedFloorId = getFloorId(floorSelected);
+        const selectedRoomId = getRoomId(roomSelected);
+
+        if (selectedFloorId == null || selectedRoomId == null) return [];
+
+        return (Array.isArray(beds) ? beds : []).filter((bed) => {
+            const sameFloor = String(bed?.floorId) === String(selectedFloorId);
+            const sameRoom = String(bed?.roomId) === String(selectedRoomId);
+            const isAvailable = ["VACANT", "NOTICE"].includes(
+                String(bed?.currentStatus || "").trim().toUpperCase()
+            );
+            return sameFloor && sameRoom && isAvailable;
+        });
+    }, [beds, floorSelected, roomSelected]);
+
+    const bedOptions = React.useMemo(() => {
+        const list = filteredBeds.map((item) => ({
+            label: item?.bedName,
+            value: item?.bedId,
+        }));
+
+
+        if (
+            bedSelected?.bedId != null &&
+            !list.some((o) => String(o.value) === String(bedSelected.bedId))
+        ) {
+            list.push({
+                label: bedSelected.bedName,
+                value: bedSelected.bedId,
+            });
+        }
+
+        return list;
+    }, [filteredBeds, bedSelected]);
+
+
     console.log("beds", beds);
 
 
@@ -735,16 +820,16 @@ export default function NewTenantCheckIn({ navigation, route }) {
         setOpenDropdown((prev) => (prev === type ? null : type));
     };
 
-    const filteredBeds = React.useMemo(() => {
-        if (!floorSelected || !roomSelected) return [];
+    // const filteredBeds = React.useMemo(() => {
+    //     if (!floorSelected || !roomSelected) return [];
 
-        return beds.filter(
-            (bed) =>
-                bed?.floorId === floorSelected?.id &&
-                bed?.roomId === roomSelected?.id &&
-                ["VACANT", "NOTICE"].includes(bed.currentStatus)
-        );
-    }, [beds, floorSelected, roomSelected]);
+    //     return beds.filter(
+    //         (bed) =>
+    //             bed?.floorId === floorSelected?.id &&
+    //             bed?.roomId === roomSelected?.id &&
+    //             ["VACANT", "NOTICE"].includes(bed.currentStatus)
+    //     );
+    // }, [beds, floorSelected, roomSelected]);
 
     const isRoomDisabled = !floorSelected;
     const isBedDisabled = !floorSelected || !roomSelected;
@@ -776,6 +861,34 @@ export default function NewTenantCheckIn({ navigation, route }) {
         setOneTimePaymentCharges(prev => prev.filter(i => i.id !== id));
 
     };
+
+    const NonRefundableRow = ({ item, onChange, onRemove }) => (
+        <View style={styles.rowWrapper}>
+            <View style={styles.inputRow}>
+                <View style={{ flex: 1 }}>
+                    <DropdownComponent
+                        value={item.type}
+                        onChange={(val) => onChange({ ...item, type: val })}
+                        placeholder="Select..."
+                        style={styles.dropdown}
+                    />
+                </View>
+
+                <InputComponent
+                    type="numberOnly"
+                    value={item.amount}
+                    onChangeText={(val) => onChange({ ...item, amount: val })}
+                    placeholder="Enter amount"
+                    disabled={!item.type}
+                    flex={1}
+                />
+            </View>
+
+            <Pressable style={styles.removeBtn} onPress={onRemove} hitSlop={8}>
+                <Text style={styles.removeText}>✕</Text>
+            </Pressable>
+        </View>
+    );
 
     const validateOneTimeCharges = () => {
         let valid = true;
@@ -849,6 +962,9 @@ export default function NewTenantCheckIn({ navigation, route }) {
         const amount = Number(item.amount || 0);
         return total + amount;
     }, 0);
+
+
+
 
     const resetCheckInState = () => {
         setCheckinRentalAmount("");
@@ -1283,18 +1399,17 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
 
 
-                                <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
+                                {/* <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
                                 <View ref={checkinDateRef} collapsable={false}>
                                     <TouchableOpacity
-                                        // style={styles.dateBox}
-                                         style={[
-                                    styles.dateBox,
-                                    {
-                                        borderColor: showCalendar ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: showCalendar ? 1.5 : 1,
-                                    },
-                                ]}
+                                        style={[
+                                            styles.dateBox,
+                                            {
+                                                borderColor: showCalendar ? "#0085FF" : "#D9D9D9",
+                                                borderWidth: showCalendar ? 1.5 : 1,
+                                            },
+                                        ]}
                                         onPress={() => {
                                             Keyboard.dismiss();
                                             setOpenDropdownId(null);
@@ -1323,7 +1438,30 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                 {checkJoinDateError && (
                                     <ErrorMessage message={checkJoinDateError} type="error" />
-                                )}
+                                )} */}
+
+
+                                <DatePickerComponent
+                                    label="Joining Date"
+                                    required
+                                    selectedDate={
+                                        checkJoiningDate
+                                            ? dayjs(checkJoiningDate).format("YYYY-MM-DD")
+                                            : null
+                                    }
+                                    placeholder="DD-MM-YYYY"
+                                    displayFormat="DD-MM-YYYY"
+                                    maxDate={dayjs().format("YYYY-MM-DD")}
+                                    error={checkJoinDateError}
+                                    onSelect={(date) => {
+                                        setcheckJoiningDate(date);
+                                        setCheckJoinDateError("");
+
+                                        // Existing useEffect automatically loads available beds
+                                        // when checkJoiningDate changes.
+                                    }}
+                                />
+
 
 
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
@@ -1363,19 +1501,17 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                 </View>
 
 
-                                <Text style={styles.label}> Floor <Text style={{ color: "red" }}>*</Text></Text>
+                                {/* <Text style={styles.label}> Floor <Text style={{ color: "red" }}>*</Text></Text>
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
-                                        // style={[styles.select,]}
-                                               style={[
-                                    styles.select,
-                                    {
-                                        borderColor: openDropdown === "floor" ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openDropdown === "floor" ? 1.5 : 1,
-                                    },
-                                ]}
-                                        // disabled={isFloorDisabled}
+                                        style={[
+                                            styles.select,
+                                            {
+                                                borderColor: openDropdown === "floor" ? "#0085FF" : "#D9D9D9",
+                                                borderWidth: openDropdown === "floor" ? 1.5 : 1,
+                                            },
+                                        ]}
                                         onPress={() => toggleDropdown("floor")}
                                     >
                                         <Text style={styles.selectText}>
@@ -1395,7 +1531,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                             )}
                                             <ScrollView
                                                 style={{ maxHeight: 160 }}
-                                                nestedScrollEnabled={true}          // ✅ Android fix
+                                                nestedScrollEnabled={true}          
                                                 keyboardShouldPersistTaps="handled"
                                                 showsVerticalScrollIndicator={false}
                                             >
@@ -1415,18 +1551,6 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                             await loadRoomsByFloor(f.id);
 
                                                         }}
-                                                    // setFloorSelected(f);
-                                                    // setOpenDropdown(null);
-
-                                                    // setRoomSelected(null);
-                                                    // setBedSelected(null);
-                                                    // setRooms([]);
-
-
-                                                    // loadRoomsByFloor(f?.id);
-                                                    // loadRooms(f?.id);
-
-
 
                                                     >
                                                         <Text style={styles.optionText}>{f?.name}</Text>
@@ -1438,20 +1562,55 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                 </View>
                                 {floorError && (
                                     <ErrorMessage message={floorError} type="error" />
+                                )} */}
+
+
+                                <DropdownComponent
+                                    label="Floor"
+                                    required
+                                    placeholder="Select a Floor"
+                                    options={floorOptions}
+                                    value={floorSelected?.id || null}
+                                    error={floorError}
+                                    onChange={async (value) => {
+                                        const selected = floors.find(
+                                            (item) => String(getFloorId(item)) === String(value)
+                                        );
+
+                                        if (!selected) return;
+
+                                        setFloorSelected(selected);
+                                        setFloorError("");
+
+                                        setRoomSelected(null);
+                                        setBedSelected(null);
+                                        setRooms([]);
+                                        setBedError("");
+                                        setSelectedBedDetails(null);
+
+                                        setCheckinRentalAmount("");
+                                        setRentalError("");
+
+                                        await loadRoomsByFloor(getFloorId(selected));
+                                    }}
+                                />
+
+                                {floorError && (
+                                    <ErrorMessage message={floorError} type="error" />
                                 )}
-                                <Text style={styles.label}> Room <Text style={{ color: "red" }}>*</Text></Text>
+
+                                {/* <Text style={styles.label}> Room <Text style={{ color: "red" }}>*</Text></Text>
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
-                                        // style={[styles.select, isRoomDisabled && styles.disabledSelect]}
-                                                     style={[
-                                    styles.select,
-                                    {
-                                        borderColor: openDropdown === "room" ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openDropdown === "room" ? 1.5 : 1,
-                                    },
-                                    isRoomDisabled && styles.disabledSelect
-                                ]}
+                                        style={[
+                                            styles.select,
+                                            {
+                                                borderColor: openDropdown === "room" ? "#0085FF" : "#D9D9D9",
+                                                borderWidth: openDropdown === "room" ? 1.5 : 1,
+                                            },
+                                            isRoomDisabled && styles.disabledSelect
+                                        ]}
                                         disabled={isRoomDisabled}
                                         onPress={() => toggleDropdown("room")}
                                     >
@@ -1474,7 +1633,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                             <ScrollView
                                                 style={{ maxHeight: 160 }}
-                                                nestedScrollEnabled={true}          // ✅ Android fix
+                                                nestedScrollEnabled={true}        
                                                 keyboardShouldPersistTaps="handled"
                                                 showsVerticalScrollIndicator={false}
                                             >
@@ -1512,20 +1671,53 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                 </View>
                                 {roomError && (
                                     <ErrorMessage message={roomError} type="error" />
+                                )} */}
+
+
+                                <DropdownComponent
+                                    label="Room"
+                                    required
+                                    placeholder="Select a Room"
+                                    options={roomOptions}
+                                    value={roomSelected?.id || null}
+                                    disabled={!floorSelected}
+                                    error={roomError}
+                                    emptyText="No room available"
+                                    onChange={async (value) => {
+                                        const selected = rooms.find(
+                                            (item) => String(getRoomId(item)) === String(value)
+                                        );
+
+                                        if (!selected) return;
+
+                                        setRoomSelected(selected);
+                                        setRoomError("");
+
+                                        setBedSelected(null);
+                                        setSelectedBedDetails(null);
+                                        setBedError("");
+
+                                        setCheckinRentalAmount("");
+                                        setRentalError("");
+                                    }}
+                                />
+                                {roomError && (
+                                    <ErrorMessage message={roomError} type="error" />
                                 )}
-                                <Text style={styles.label}> Bed <Text style={{ color: "red" }}>*</Text></Text>
+
+
+                                {/* <Text style={styles.label}> Bed <Text style={{ color: "red" }}>*</Text></Text>
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
-                                                       style={[
-                                    styles.select,
-                                    {
-                                        borderColor: openDropdown === "bed" ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openDropdown === "bed" ? 1.5 : 1,
-                                    },
-                                    isBedDisabled && styles.disabledSelect
-                                ]}
-                                        // style={[styles.select, isBedDisabled && styles.disabledSelect]}
+                                        style={[
+                                            styles.select,
+                                            {
+                                                borderColor: openDropdown === "bed" ? "#0085FF" : "#D9D9D9",
+                                                borderWidth: openDropdown === "bed" ? 1.5 : 1,
+                                            },
+                                            isBedDisabled && styles.disabledSelect
+                                        ]}
                                         disabled={isBedDisabled}
                                         onPress={() => toggleDropdown("bed")}
                                     >
@@ -1587,6 +1779,35 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                     )}
 
                                 </View>
+                                {bedError && (
+                                    <ErrorMessage message={bedError} type="error" />
+                                )} */}
+
+                                <DropdownComponent
+                                    label="Bed"
+                                    required
+                                    placeholder="Select a Bed"
+                                    options={bedOptions}
+                                    value={bedSelected?.bedId != null ? String(bedSelected.bedId) : null}
+                                    disabled={!floorSelected || !roomSelected}
+                                    error={bedError}
+                                    emptyText="No bed available"
+                                    onChange={(value) => {
+                                        const selected = filteredBeds.find(
+                                            (item) => String(item.bedId) === String(value)
+                                        );
+                                        if (!selected) return;
+
+                                        setBedSelected(selected);
+                                        setSelectedBedDetails(selected);
+                                        setBedError("");
+
+                                        if (!sameAsCurrent) {
+                                            setCheckinRentalAmount(String(selected.rentAmount || ""));
+                                            setRentalError("");
+                                        }
+                                    }}
+                                />
                                 {bedError && (
                                     <ErrorMessage message={bedError} type="error" />
                                 )}
@@ -1715,10 +1936,9 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                 </Text>
                                             </View>
 
-                                            {extraCharges.map((item) => (
+                                            {/* {extraCharges.map((item) => (
                                                 <View key={item.id} style={styles.figmaRowWrapper}>
 
-                                                    {/* CLOSE BTN */}
                                                     <TouchableOpacity
                                                         onPress={() => removeCharge(item.id, item.type)}
                                                         style={styles.figmaCloseBtn}
@@ -1763,27 +1983,13 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                                     updateTitle(item.id, onlyLetters);
                                                                 }}
                                                             />
-                                                            // <InputComponent
-                                                            //     ref={(r) => { inputRefs.current[`reason-${item.id}`] = r }}
-                                                            //     type="name"
-                                                            //     placeholder="Enter reason"
-                                                            //     value={item.title}
-                                                            //     onChangeText={(t) => {
-                                                            //         const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                                                            //         updateTitle(item.id, onlyLetters);
-                                                            //     }}
-                                                            //     onFocus={() => {
-                                                            //         setOpenDropdownId(null);
-                                                            //         scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
-                                                            //     }}
-                                                            // />
+                                                          
                                                         ) : (
                                                             <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
                                                                 <Text>Maintenance</Text>
                                                             </View>
                                                         )}
 
-                                                        {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
                                                         {item.type === "" ? (
                                                             <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
                                                                 <Text style={{ color: "#999" }}>Enter amount</Text>
@@ -1821,38 +2027,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                                                                 }
                                                             />
-                                                
-                                                            // <InputComponent
-                                                            //     ref={(r) => {
-                                                            //         inputRefs.current[`amount-${item.id}`] = r;
-                                                            //     }}
-                                                            //     onFocus={() => {
-                                                            //         setOpenDropdownId(null);
-                                                            //         scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
-                                                            //     }}
-                                                            //     type="number"
-                                                            //     placeholder="Enter amount"
-                                                            //     keyboardType="numeric"
-                                                            //     value={item.amount}
-                                                            //     onChangeText={(t) => {
 
-                                                            //         let cleaned = t.replace(/[^0-9.]/g, "");
-
-                                                            //         const parts = cleaned.split(".");
-
-                                                            //         if (parts.length > 2) {
-                                                            //             cleaned = parts[0] + "." + parts[1];
-                                                            //         }
-
-                                                            //         if (parts[1]?.length > 2) {
-                                                            //             cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                                                            //         }
-
-                                                            //         updateAmount(item.id, cleaned)
-                                                            //     }
-
-                                                            //     }
-                                                            // />
+                                                       
                                                         )}
 
                                                     </View>
@@ -1889,7 +2065,73 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                     )}
 
                                                 </View>
-                                            ))}
+                                            ))} */}
+
+                                            {extraCharges.map((item) => {
+                                                const typeOptions = TYPE_OPTIONS
+                                                    .filter((t) => !(t === "Maintenance" && maintenanceAlreadyUsed))
+                                                    .map((t) => ({ label: t, value: t }));
+
+                                                return (
+                                                    <View key={item.id} style={styles.rowWrapper}>
+                                                        <View style={styles.inputRow}>
+
+                                                            <View style={{ flex: 1 }}>
+                                                                {item.type === "" ? (
+                                                                    <DropdownComponent
+                                                                        placeholder="Select..."
+                                                                        options={typeOptions}
+                                                                        value={null}
+                                                                        error={item.typeError}
+                                                                        onChange={(val) => selectType(item.id, val)}
+                                                                    />
+                                                                ) : item.type === "Others" ? (
+                                                                    <InputComponent
+                                                                        type="name"
+                                                                        value={item.title}
+                                                                        placeholder="Enter reason"
+                                                                        onChangeText={(t) => updateTitle(item.id, t)}
+                                                                        error={!!item.titleError}
+                                                                    />
+                                                                ) : (
+                                                                    <InputComponent
+                                                                        type="name"
+                                                                        value="Maintenance"
+                                                                        disabled
+                                                                        inputStyle={{ color: "#24242B" }}
+                                                                        onChangeText={() => { }}
+                                                                    />
+                                                                )}
+                                                            </View>
+
+                                                            <InputComponent
+                                                                type="numberOnly"
+                                                                value={item.amount}
+                                                                placeholder="Enter amount"
+                                                                disabled={!item.type}
+                                                                onChangeText={(t) => updateAmount(item.id, t)}
+                                                                error={!!item.amountError}
+                                                                flex={1}
+                                                            />
+                                                        </View>
+
+                                                        <Pressable
+                                                            style={styles.removeBtn}
+                                                            onPress={() => removeCharge(item.id)}
+                                                            hitSlop={8}
+                                                        >
+                                                            <Image source={Delete} style={styles.figmaCloseText} />
+                                                        </Pressable>
+
+                                                        {item.titleError ? (
+                                                            <ErrorMessage message={item.titleError} type="error" />
+                                                        ) : null}
+                                                        {item.amountError ? (
+                                                            <ErrorMessage message={item.amountError} type="error" />
+                                                        ) : null}
+                                                    </View>
+                                                );
+                                            })}
 
                                             <TouchableOpacity
                                                 // style={styles.addNewButton}
@@ -2052,57 +2294,8 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                 {!isCustomRentSaved ? (
 
                                                     <>
-                                                        {/* <View style={styles.amountRow}>
 
-                                                            <TextInput
-                                                                style={styles.amountInput}
-                                                                placeholder="₹ 0.00"
-                                                                keyboardType="numeric"
-                                                                value={customRentAmount}
-                                                                onChangeText={(text) => {
-                                                                    setCustomRentAmount(
-                                                                        text.replace(/[^0-9]/g, "")
-                                                                    );
-                                                                    setCustomRentError("");
-                                                                }}
-                                                            />
-
-                                                            <TouchableOpacity
-                                                                style={styles.setBtn}
-                                                                onPress={() => {
-
-                                                                    if (!customRentAmount) {
-                                                                        setCustomRentError(
-                                                                            "Please enter custom rent amount"
-                                                                        );
-                                                                        return;
-                                                                    }
-
-                                                                    if (Number(customRentAmount) <= 0) {
-                                                                        setCustomRentError(
-                                                                            "Amount should be greater than zero"
-                                                                        );
-                                                                        return;
-                                                                    }
-
-
-
-                                                                    setSavedCustomRent(customRentAmount);
-
-                                                                    setIsCustomRentSaved(true);
-
-                                                                    setShowCustomRentEditor(false);
-
-                                                                    setCustomRentError("");
-                                                                }}
-                                                            >
-                                                                <Text style={styles.setBtnText}>
-                                                                    ✓ Set
-                                                                </Text>
-                                                            </TouchableOpacity>
-
-                                                        </View> */}
-
+                                                        {/* 
                                                         <View style={styles.amountInputWrapper}>
 
                                                             <TextInput
@@ -2112,7 +2305,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                                 keyboardType="numeric"
                                                                 value={customRentAmount}
                                                                 onChangeText={(text) => {
-                                                                   
+
 
                                                                     setCustomRentAmount(sanitizeAmount(text));
                                                                     setCustomRentError("");
@@ -2148,7 +2341,48 @@ export default function NewTenantCheckIn({ navigation, route }) {
                                                                 </Text>
                                                             </TouchableOpacity>
 
-                                                        </View>
+                                                        </View> */}
+
+
+
+                                                        <InputComponent
+                                                            type="numberOnly"
+                                                            value={customRentAmount}
+                                                            onChangeText={(text) => {
+
+
+                                                                setCustomRentAmount(sanitizeAmount(text));
+                                                                setCustomRentError("");
+                                                            }}
+                                                            placeholder="Enter Rent Amount"
+                                                            rightIcon={
+                                                                <View style={styles.setButton}>
+                                                                    <Text style={styles.setButtonText}>✓ Set</Text>
+                                                                </View>
+                                                            }
+                                                            // onRightIconPress={handleSetRent}
+                                                            onRightIconPress={() => {
+
+                                                                if (!customRentAmount) {
+                                                                    setCustomRentError(
+                                                                        "Please enter custom rent amount"
+                                                                    );
+                                                                    return;
+                                                                }
+
+                                                                if (Number(customRentAmount) <= 0) {
+                                                                    setCustomRentError(
+                                                                        "Amount should be greater than zero"
+                                                                    );
+                                                                    return;
+                                                                }
+
+                                                                setSavedCustomRent(customRentAmount);
+                                                                setIsCustomRentSaved(true);
+                                                                setShowCustomRentEditor(false);
+                                                                setCustomRentError("");
+                                                            }}
+                                                        />
 
                                                         {customRentError ? (
                                                             <ErrorMessage message={customRentError} />
@@ -2526,7 +2760,7 @@ export default function NewTenantCheckIn({ navigation, route }) {
                 }}
             />
 
-            <BedDetailsSheet
+            {/* <BedDetailsSheet
                 visible={showBedSheet}
                 joiningDate={checkJoiningDate}
                 onClose={() => setShowBedSheet(false)}
@@ -2535,26 +2769,21 @@ export default function NewTenantCheckIn({ navigation, route }) {
 
                     setSelectedBedDetails(data);
 
-                    // Floor dropdown update
                     const floor = floors.find(f => f.id === data.floorId);
                     if (floor) {
                         setFloorSelected(floor);
                     }
 
-                    // Load rooms for selected floor
                     loadRoomsByFloor(data.floorId).then(async () => {
 
-                        // Room dropdown update
                         const room = {
                             id: data.roomId,
                             name: data.roomName,
                         };
                         setRoomSelected(room);
 
-                        // Load beds for selected room
                         await getAllBedsByRoom(data.roomId);
 
-                        // Bed dropdown update
                         setBedSelected({
                             bedId: data.bedId,
                             bedName: data.bedName,
@@ -2566,9 +2795,68 @@ export default function NewTenantCheckIn({ navigation, route }) {
                         setBedError("");
                         setRentalError("");
 
-                        // Rent auto fill
                         setCheckinRentalAmount(String(data?.rentAmount));
                     });
+                }}
+            /> */}
+
+            <BedDetailsSheet
+                visible={showBedSheet}
+                joiningDate={checkJoiningDate}
+                onClose={() => setShowBedSheet(false)}
+                onSelect={async (data) => {
+                    const selectedBedId = data?.bedId ?? data?.id;
+                    const floorId = data?.floorId ?? data?.floor?.id;
+                    const roomId = data?.roomId ?? data?.room?.id;
+
+                    if (!floorId || !roomId || !selectedBedId) {
+                        console.log("Invalid selected bed data:", data);
+                        return;
+                    }
+
+                    // 1. Floor
+                    const floor =
+                        floors.find((f) => String(getFloorId(f)) === String(floorId)) ||
+                        { id: floorId, name: data.floorName || "" };
+                    setFloorSelected(floor);
+
+                    // 2. Rooms
+                    const roomList = await loadRoomsByFloor(floorId);
+                    const room =
+                        roomList?.find((r) => String(getRoomId(r)) === String(roomId)) ||
+                        { id: roomId, name: data.roomName || "" };
+                    setRoomSelected(room);
+
+                    // 3. Bed object (floorId / roomId MUST be present for filter)
+                    const bedData = {
+                        ...data,
+                        bedId: selectedBedId,
+                        floorId,
+                        roomId,
+                        bedName: data.bedName || data.name || "",
+                        rentAmount: data.rentAmount ?? data.rent ?? 0,
+                        currentStatus: data.currentStatus || "VACANT",
+                    };
+
+                    setBedSelected(bedData);
+                    setSelectedBedDetails(bedData);
+
+                    // 4. Make sure dropdown has this option
+                    setBeds((prev) => {
+                        const list = Array.isArray(prev) ? prev : [];
+                        return [
+                            ...list.filter((b) => String(b.bedId) !== String(selectedBedId)),
+                            bedData,
+                        ];
+                    });
+
+                    if (!sameAsCurrent) setCheckinRentalAmount(String(bedData.rentAmount));
+
+                    setFloorError("");
+                    setRoomError("");
+                    setBedError("");
+                    setRentalError("");
+                    setShowBedSheet(false);
                 }}
             />
 
@@ -3412,4 +3700,48 @@ const styles = StyleSheet.create({
         lineHeight: 20,
         marginBottom: 30,
     },
+    setButton: {
+        backgroundColor: "#EAF0FF",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 10,
+    },
+    setButtonText: {
+        color: "#165DFF",
+        fontSize: 14,
+        fontFamily: "Gilroy-SemiBold",
+    },
+    rowWrapper: {
+        position: "relative",
+        marginBottom: 6,
+    },
+    inputRow: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 12,
+        width: "100%",
+    },
+    dropdown: {
+        height: 48,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: "#DEDEDE",
+        backgroundColor: "#FFFFFF",
+        paddingHorizontal: 12,
+        justifyContent: "center",
+        marginBottom: 6, // InputComponent-oda marginBottom match aaganum
+    },
+    removeBtn: {
+        position: "absolute",
+        top: -10,
+        right: -6,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: "#E0E0E0",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1,
+    },
+    removeText: { fontSize: 13, color: "#FFFFFF" },
 });
