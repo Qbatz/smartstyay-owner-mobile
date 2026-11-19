@@ -34,6 +34,10 @@ import { UseSetting } from "../../Context/SettingContext";
 import CloseIcon from "../../Assets/Images/remove.png";
 import AddRentIcon from "../../Assets/Images/directionbottom.png";
 import InputComponent from "../MorePages/InputComponent"
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
+import Tabcomponent from "../MorePages/TabComponent"
+
 
 
 export default function BookingCheckIn({ navigation, route }) {
@@ -104,6 +108,8 @@ export default function BookingCheckIn({ navigation, route }) {
 
     const [availableBeds, setAvailableBeds] = useState([]);
 
+    const [joiningDateError, setJoiningDateError] = useState("");
+
     console.log("bookingDetails", bookingDetails)
 
     useEffect(() => {
@@ -146,24 +152,35 @@ export default function BookingCheckIn({ navigation, route }) {
             console.log("initCheckIn", res)
             if (res?.success) {
                 setBookingDetails(res.data);
-                if (res?.data?.bedName === null) {
-                    setBookingDetailsError("Bed is Unavailable")
 
+                if (!res.data?.bedName) {
+                    setBookingDetailsError("Bed is Unavailable");
+
+                    // Clear old booking bed selection
+                    setSelectedFloor(null);
+                    setSelectedRoom(null);
+                    setSelectedBed(null);
+
+                    setRooms([]);
+                    setRentalAmount("");
+                    setRentError("");
+
+                    // Load available floors and beds
                     await loadBeds(joiningDate);
-                    // setSelectedFloor(null);
-                    // setSelectedRoom(null);
-                    // setSelectedBed(null);
+                } else {
+                    setBookingDetailsError("");
                 }
-            }
-            else {
-
-                setBookingDetailsError(res?.message);
-
-                await loadBeds(joiningDate);
+            } else {
+                setBookingDetailsError(res?.message || "Bed is Unavailable");
 
                 setSelectedFloor(null);
                 setSelectedRoom(null);
-                // setSelectedBed(null);
+                setSelectedBed(null);
+
+                setRooms([]);
+                setRentalAmount("");
+
+                await loadBeds(joiningDate);
             }
         };
 
@@ -201,25 +218,26 @@ export default function BookingCheckIn({ navigation, route }) {
 
             setBeds(list);
 
-            // Floor options
-            const floorList = [
-                ...new Map(
-                    list.map(item => [
-                        item.floorId,
-                        {
-                            id: item.floorId,
-                            name: item.floorName,
-                        },
-                    ])
-                ).values(),
-            ];
+            // const floorList = [
+            //     ...new Map(
+            //         list.map(item => [
+            //             item.floorId,
+            //             {
+            //                 id: item.floorId,
+            //                 name: item.floorName,
+            //             },
+            //         ])
+            //     ).values(),
+            // ];
 
-            setFloors(floorList);
+            // setFloors(floorList);
 
         } else {
             setBeds([]);
         }
     };
+
+
 
 
 
@@ -354,19 +372,200 @@ export default function BookingCheckIn({ navigation, route }) {
     //     item.currentStatus === "VACANT"
     // );
 
-    const filteredBeds = beds.filter((item) => {
-        const sameFloor =
-            String(item.floorId) === String(selectedFloor?.id);
+    // const filteredBeds = beds.filter((item) => {
+    //     const sameFloor =
+    //         String(item.floorId) === String(selectedFloor?.id);
 
-        const sameRoom =
-            String(item.roomId) === String(selectedRoom?.id);
+    //     const sameRoom =
+    //         String(item.roomId) === String(selectedRoom?.id);
 
-        const status = String(item.currentStatus || "")
-            .trim()
-            .toUpperCase();
+    //     const status = String(item.currentStatus || "")
+    //         .trim()
+    //         .toUpperCase();
 
-        return sameFloor && sameRoom && status === "VACANT";
-    });
+    //     return sameFloor && sameRoom && status === "VACANT";
+    // });
+
+    const getFloorId = (item) =>
+        item?.id ?? item?.floorId ?? item?._id;
+
+    const getRoomId = (item) =>
+        item?.id ?? item?.roomId ?? item?._id;
+
+
+
+    // PG Booking selection
+    useEffect(() => {
+        if (!isPGBooking || !PGselectedBed) return;
+
+        setSelectedFloor({
+            id: PGselectedBed.floorId,
+            name: PGselectedBed.floorName,
+        });
+
+        setSelectedRoom({
+            id: PGselectedBed.roomId,
+            name: PGselectedBed.roomName,
+        });
+
+        setSelectedBed({
+            bedId: PGselectedBed.bedId,
+            bedName: PGselectedBed.bedName,
+        });
+
+    }, [isPGBooking, PGselectedBed]);
+
+
+    // Dashboard / Normal Booking selection
+    useEffect(() => {
+        if (isPGBooking || !bookingDetails?.bedId) return;
+
+        const floorId = bookingDetails.floorId;
+        const roomId = bookingDetails.roomId;
+        const bedId = bookingDetails.bedId;
+
+        if (!floorId || !roomId || !bedId) return;
+
+        // 1. Set Floor
+        const floor =
+            floors.find(
+                item => String(getFloorId(item)) === String(floorId)
+            ) || {
+                id: floorId,
+                name: bookingDetails.floorName || bookingDetails.floor || "",
+            };
+
+        setSelectedFloor(floor);
+
+        // 2. Prepare Room list
+        const roomList = [
+            ...new Map(
+                beds
+                    .filter(
+                        item => String(item.floorId) === String(floorId)
+                    )
+                    .map(item => [
+                        item.roomId,
+                        {
+                            id: item.roomId,
+                            name: item.roomName,
+                        },
+                    ])
+            ).values(),
+        ];
+
+        // 3. Set Room
+        const room =
+            roomList.find(
+                item => String(item.id) === String(roomId)
+            ) || {
+                id: roomId,
+                name: bookingDetails.roomName || bookingDetails.room || "",
+            };
+
+        const finalRoomList = roomList.some(
+            item => String(item.id) === String(roomId)
+        )
+            ? roomList
+            : [...roomList, room];
+
+        setRooms(finalRoomList);
+        setSelectedRoom(room);
+
+        // 4. Set Bed
+        const bed =
+            beds.find(
+                item => String(item.bedId) === String(bedId)
+            ) || {
+                bedId,
+                bedName: bookingDetails.bedName,
+            };
+
+        setSelectedBed(bed);
+
+        // 5. Set Rent
+        setRentalAmount(
+            String(bookingDetails.rent ?? "")
+        );
+
+    }, [bookingDetails, floors, beds, isPGBooking]);
+
+
+    const floorOptions = React.useMemo(() => {
+        const list = (floors || []).map(item => ({
+            label: item?.name ?? item?.floorName,
+            value: getFloorId(item),
+        }));
+
+        // Keep the booked floor visible even if it isn't in available beds
+        if (
+            selectedFloor &&
+            !list.some(o => String(o.value) === String(getFloorId(selectedFloor)))
+        ) {
+            list.push({
+                label: selectedFloor.name,
+                value: getFloorId(selectedFloor),
+            });
+        }
+
+        return list;
+    }, [floors, selectedFloor]);
+
+    const roomOptions = React.useMemo(() => {
+        const list = (rooms || []).map(item => ({
+            label: item?.name ?? item?.roomName,
+            value: getRoomId(item),
+        }));
+
+        if (
+            selectedRoom &&
+            !list.some(o => String(o.value) === String(getRoomId(selectedRoom)))
+        ) {
+            list.push({
+                label: selectedRoom.name,
+                value: getRoomId(selectedRoom),
+            });
+        }
+
+        return list;
+    }, [rooms, selectedRoom]);
+
+
+
+    const filteredBeds = React.useMemo(() => {
+        return (beds || []).filter(item => {
+            const sameFloor =
+                String(item.floorId) === String(getFloorId(selectedFloor));
+
+            const sameRoom =
+                String(item.roomId) === String(getRoomId(selectedRoom));
+
+            return (
+                sameFloor &&
+                sameRoom &&
+                String(item.currentStatus || "").toUpperCase() === "VACANT"
+            );
+        });
+    }, [beds, selectedFloor, selectedRoom]);
+
+    const bedOptions = React.useMemo(() => {
+        const list = filteredBeds.map(item => ({
+            label: item.bedName,
+            value: item.bedId,
+        }));
+
+        if (
+            selectedBed?.bedId &&
+            !list.some(o => String(o.value) === String(selectedBed.bedId))
+        ) {
+            list.push({
+                label: selectedBed.bedName,
+                value: selectedBed.bedId,
+            });
+        }
+
+        return list;
+    }, [filteredBeds, selectedBed]);
 
     const maintenanceAlreadyUsed = extraCharges.some(c => c.type === "Maintenance");
 
@@ -426,49 +625,51 @@ export default function BookingCheckIn({ navigation, route }) {
     // }, [customer]);
 
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        if (isPGBooking) {
+    //     if (isPGBooking) {
 
-            setSelectedFloor({
-                id: PGselectedBed.floorId,
-                name: PGselectedBed.floorName,
-            });
+    //         setSelectedFloor({
+    //             id: PGselectedBed.floorId,
+    //             name: PGselectedBed.floorName,
+    //         });
 
-            setSelectedRoom({
-                id: PGselectedBed.roomId,
-                name: PGselectedBed.roomName,
-            });
+    //         setSelectedRoom({
+    //             id: PGselectedBed.roomId,
+    //             name: PGselectedBed.roomName,
+    //         });
 
-            setSelectedBed({
-                bedId: PGselectedBed.bedId,
-                bedName: PGselectedBed.bedName,
-            });
+    //         setSelectedBed({
+    //             bedId: PGselectedBed.bedId,
+    //             bedName: PGselectedBed.bedName,
+    //         });
 
-            return;
-        }
+    //         return;
+    //     }
 
-        if (customer) {
-            setSelectedFloor({
-                id: customer.floorId,
-                name: customer.floorName || customer?.bookingInfo?.bookedFloor,
-            });
-
-
-            setSelectedRoom({
-                id: customer.roomId,
-                name: customer.roomName || customer?.bookingInfo?.bookedRoom,
-            });
+    //     if (customer) {
+    //         setSelectedFloor({
+    //             id: customer.floorId,
+    //             name: customer.floorName || customer?.bookingInfo?.bookedFloor,
+    //         });
 
 
-            setSelectedBed({
-                bedId: customer.bedId,
-                bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
-            });
+    //         setSelectedRoom({
+    //             id: customer.roomId,
+    //             name: customer.roomName || customer?.bookingInfo?.bookedRoom,
+    //         });
 
-        }
 
-    }, [customer, selectedBedReserv, PGselectedBed]);
+    //         setSelectedBed({
+    //             bedId: customer.bedId,
+    //             bedName: customer.bedName || customer?.bookingInfo?.bookedBed,
+    //         });
+
+    //     }
+
+    // }, [customer, selectedBedReserv, PGselectedBed]);
+
+
 
 
 
@@ -623,43 +824,173 @@ export default function BookingCheckIn({ navigation, route }) {
         );
     };
 
-    const bookedAtDate = dayjs(bookingDetails?.bookedDate, "DD/MM/YYYY");
-    const today = dayjs();
+
     dayjs.extend(customParseFormat);
-    const isDisabledJoiningDate = (date) => {
-        if (!date) return false;
 
-        if (date.isBefore(bookedAtDate, "day")) return true;
+    const parseBookingDate = (value) => {
+        if (!value) return null;
 
-        if (date.isAfter(today, "day")) return true;
+        const parsed = dayjs(
+            value,
+            ["DD/MM/YYYY", "DD-MM-YYYY", "YYYY-MM-DD"],
+            true
+        );
+
+        if (parsed.isValid()) return parsed;
+
+        const fallback = dayjs(value);
+
+        return fallback.isValid() ? fallback : null;
+    };
+
+    const parsedBookingDate = parseBookingDate(bookingDate);
+
+    const bookingDateValue = parsedBookingDate
+        ? parsedBookingDate.format("YYYY-MM-DD")
+        : "";
+
+    const todayDate = dayjs().format("YYYY-MM-DD");
+
+    // Joining date validation
+    const isDisabledJoiningDate = (dateString) => {
+        if (!dateString) return true;
+
+        const selectedDate = dayjs(dateString);
+
+        if (!selectedDate.isValid()) return true;
+
+        // Before booking date
+        if (
+            bookingDateValue &&
+            selectedDate.isBefore(dayjs(bookingDateValue), "day")
+        ) {
+            return true;
+        }
+
+        // Future dates are not allowed
+        if (selectedDate.isAfter(dayjs(todayDate), "day")) {
+            return true;
+        }
 
         return false;
     };
 
-    const joiningMarkedDates = {};
+    // const bookedAtDate = dayjs(bookingDetails?.bookedDate, "DD/MM/YYYY");
+    // const today = dayjs();
+    // dayjs.extend(customParseFormat);
+    // const isDisabledJoiningDate = (date) => {
+    //     if (!date) return false;
 
-    for (let i = -365; i <= 365; i++) {
-        const d = dayjs().add(i, "day");
-        const key = d.format("YYYY-MM-DD");
+    //     if (date.isBefore(bookedAtDate, "day")) return true;
 
-        if (isDisabledJoiningDate(d)) {
-            joiningMarkedDates[key] = {
-                disabled: true,
-                disableTouchEvent: true,
-                customStyles: {
-                    container: {
-                        backgroundColor: "#F3F4F6",
-                        opacity: 0.4,
-                        borderRadius: 8,
-                    },
-                    text: {
-                        color: "#9CA3AF",
-                    },
-                },
-            };
-        }
-    }
+    //     if (date.isAfter(today, "day")) return true;
 
+    //     return false;
+    // };
+
+    // const joiningMarkedDates = {};
+
+    // for (let i = -365; i <= 365; i++) {
+    //     const d = dayjs().add(i, "day");
+    //     const key = d.format("YYYY-MM-DD");
+
+    //     if (isDisabledJoiningDate(d)) {
+    //         joiningMarkedDates[key] = {
+    //             disabled: true,
+    //             disableTouchEvent: true,
+    //             customStyles: {
+    //                 container: {
+    //                     backgroundColor: "#F3F4F6",
+    //                     opacity: 0.4,
+    //                     borderRadius: 8,
+    //                 },
+    //                 text: {
+    //                     color: "#9CA3AF",
+    //                 },
+    //             },
+    //         };
+    //     }
+    // }
+
+
+    const handleFloorChange = (value) => {
+        const selected = floors.find(
+            item => String(getFloorId(item)) === String(value)
+        );
+
+        if (!selected) return;
+
+        setSelectedFloor(selected);
+        setFloorError("");
+
+        // Reset dependent fields
+        setSelectedRoom(null);
+        setSelectedBed(null);
+        setRooms([]);
+        setRoomError("");
+        setBedError("");
+
+        setSelectedBedDetails(null);
+        setRentalAmount("");
+        setRentError("");
+
+        const roomList = [
+            ...new Map(
+                beds
+                    .filter(item =>
+                        String(item.floorId) === String(getFloorId(selected))
+                    )
+                    .map(item => [
+                        item.roomId,
+                        {
+                            id: item.roomId,
+                            name: item.roomName,
+                        },
+                    ])
+            ).values(),
+        ];
+
+        setRooms(roomList);
+    };
+
+    const handleRoomChange = (value) => {
+        const selected = rooms.find(
+            item => String(getRoomId(item)) === String(value)
+        );
+
+        if (!selected) return;
+
+        setSelectedRoom(selected);
+        setRoomError("");
+
+        setSelectedBed(null);
+        setBedError("");
+        setSelectedBedDetails(null);
+
+        setRentalAmount("");
+        setRentError("");
+    };
+
+    const handleBedChange = (value) => {
+        const selected = filteredBeds.find(
+            item => String(item.bedId) === String(value)
+        );
+
+        if (!selected) return;
+
+        setSelectedBed(selected);
+        setBedError("");
+        setBookingDetailsError("");
+
+        setSelectedBedDetails(selected);
+
+        // Update selected bed rent
+        setRentalAmount(
+            String(selected.rentAmount ?? "")
+        );
+
+        setRentError("");
+    };
 
 
 
@@ -677,6 +1008,21 @@ export default function BookingCheckIn({ navigation, route }) {
         setBedError("");
         setAdvanceError("");
         setRentError("");
+        setJoiningDateError("");
+
+        if (!joiningDate) {
+            setJoiningDateError("Please select Joining Date");
+            valid = false;
+        } else if (
+            isDisabledJoiningDate(
+                dayjs(joiningDate).format("YYYY-MM-DD")
+            )
+        ) {
+            setJoiningDateError("Please select a valid Joining Date");
+            valid = false;
+        }
+
+
 
         if (!selectedFloor) {
             setFloorError("Please Select a Floor");
@@ -896,7 +1242,15 @@ export default function BookingCheckIn({ navigation, route }) {
     //     isDashboardCheckIn ||
     //     (!!bookingDetails?.bedName && !isBedUnavailable);
 
-    const isBedUnavailable = bookingDetailsError === "Bed is Unavailable";
+    // const isBedUnavailable = bookingDetailsError === "Bed is Unavailable";
+
+    // const isStayDetailsDisabled =
+    //     !isBedUnavailable &&
+    //     (isDashboardCheckIn || !!bookingDetails?.bedName);
+
+    const isBedUnavailable =
+        bookingDetailsError?.toLowerCase().includes("bed is unavailable") ||
+        (!!bookingDetails && !bookingDetails?.bedName);
 
     const isStayDetailsDisabled =
         !isBedUnavailable &&
@@ -926,7 +1280,7 @@ export default function BookingCheckIn({ navigation, route }) {
                         <Text style={styles.headerTitle}>Tenant Check-In</Text>
                     </View>
 
-                    <View style={styles.segmentRow}>
+                    {/* <View style={styles.segmentRow}>
                         <TouchableOpacity
                             style={[styles.segment, tab === "long" && styles.segmentActive]}
                             onPress={() => setTab("long")}
@@ -954,7 +1308,47 @@ export default function BookingCheckIn({ navigation, route }) {
                                 Short Stay
                             </Text>
                         </TouchableOpacity>
-                    </View>
+                    </View> */}
+
+
+
+                    <Tabcomponent
+                        options={[
+                            { label: "Long Stay", value: "long" },
+                            { label: "Short Stay", value: "short" },
+                        ]}
+                        value={tab}
+                        onChange={setTab}
+                        variant="pill"
+                        widthMode="fill"
+
+                        height={34}
+                        borderRadius={20}
+
+                        activeColor="#FFFFFF"
+                        backgroundColor="#F3F4F6"
+                        activeTextColor="#18181B"
+                        inactiveTextColor="#71717A"
+
+                        containerStyle={{
+                            marginHorizontal: 16,
+                            marginTop: 10,
+                            marginBottom: 10,
+                            padding: 5,
+                            borderRadius: 50,
+                        }}
+
+                        textStyle={{
+                            fontSize: 15,
+                            fontFamily: "Gilroy-Medium",
+                        }}
+
+                        selectedTextStyle={{
+                            fontFamily: "Gilroy-Semibold",
+                        }}
+                    />
+
+
 
                     {/* <ScrollView
   style={styles.container}
@@ -1000,15 +1394,10 @@ export default function BookingCheckIn({ navigation, route }) {
                                     </View>
                                 </View>
 
-                                <Text style={styles.label}>Booking Date</Text>
+                                {/* <Text style={styles.label}>Booking Date</Text>
 
                                 <TouchableOpacity
-                                    // style={styles.dateBox}
-                                    // style={[
-                                    //     styles.dateBox,
-                                    //     bookingDetails?.bookedDate && { backgroundColor: "#F3F4F6" }
-                                    // ]}
-                                    // disabled={!!bookingDetails?.bookedDate}
+                                  
                                     style={[
                                         styles.dateBox,
                                         (bookingDate) && {
@@ -1018,7 +1407,6 @@ export default function BookingCheckIn({ navigation, route }) {
                                     disabled={!!(bookingDate)}
                                 >
                                     <Text style={styles.placeholder}>
-                                        {/* {bookingDetails?.bookedDate} */}
                                         {bookingDate || "DD-MM-YYYY"}
                                     </Text>
                                     <Image source={CalendarImg} style={styles.calendarIcon} />
@@ -1027,21 +1415,66 @@ export default function BookingCheckIn({ navigation, route }) {
                                 <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
 
                                 <TouchableOpacity
-                                    // style={styles.dateBox}
-                                      style={[
-                                    styles.dateBox,
-                                    {
-                                        borderColor: openDatePicker ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openDatePicker ? 1.5 : 1,
-                                    },
-                                ]}
+                                    style={[
+                                        styles.dateBox,
+                                        {
+                                            borderColor: openDatePicker ? "#0085FF" : "#D9D9D9",
+                                            borderWidth: openDatePicker ? 1.5 : 1,
+                                        },
+                                    ]}
                                     onPress={() => setOpenDatePicker(true)}
                                 >
                                     <Text style={styles.placeholder}>
                                         {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
                                     </Text>
                                     <Image source={CalendarImg} style={styles.calendarIcon} />
-                                </TouchableOpacity>
+                                </TouchableOpacity> */}
+
+                                {/* BOOKING DATE */}
+                                <DatePickerComponent
+                                    label="Booking Date"
+                                    selectedDate={bookingDateValue || null}
+                                    placeholder="DD-MM-YYYY"
+                                    displayFormat="DD-MM-YYYY"
+                                    disabled={true}
+                                    iconSource={CalendarImg}
+                                />
+
+                                {/* JOINING DATE */}
+                                <DatePickerComponent
+                                    label="Joining Date"
+                                    required={true}
+                                    selectedDate={
+                                        joiningDate
+                                            ? dayjs(joiningDate).format("YYYY-MM-DD")
+                                            : null
+                                    }
+                                    placeholder="DD-MM-YYYY"
+                                    displayFormat="DD-MM-YYYY"
+                                    minDate={bookingDateValue || undefined}
+                                    maxDate={todayDate}
+                                    isDateDisabled={isDisabledJoiningDate}
+                                    error={joiningDateError}
+                                    iconSource={CalendarImg}
+                                    onSelect={(date) => {
+                                        const selectedDate = dayjs(date);
+
+                                        if (isDisabledJoiningDate(date)) {
+                                            setJoiningDateError(
+                                                "Please select a valid joining date"
+                                            );
+                                            return;
+                                        }
+
+                                        setJoiningDate(selectedDate.toDate());
+                                        setJoiningDateError("");
+
+                                        // Clear previous bed selection errors if required
+                                        setFloorError("");
+                                        setRoomError("");
+                                        setBedError("");
+                                    }}
+                                />
 
 
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
@@ -1063,20 +1496,17 @@ export default function BookingCheckIn({ navigation, route }) {
 
 
 
-                                <Text style={styles.label}>Floor</Text>
+                                {/* <Text style={styles.label}>Floor</Text>
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
-                                        // style={[
-                                        //     styles.select,
-                                        // ]}
+                                       
                                         style={[
                                             styles.select,
                                             isStayDetailsDisabled && styles.disabledSelect,
                                         ]}
                                         onPress={() => setFloorOpen(!floorOpen)}
                                         disabled={isStayDetailsDisabled}
-                                    // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
                                             {selectedFloor?.name || "Select a Floor"}
@@ -1133,9 +1563,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                 <View style={{ position: "relative" }}>
                                     <TouchableOpacity
-                                        // style={[
-                                        //     styles.select,
-                                        // ]}
+                                       
                                         style={[
                                             styles.select,
                                             isStayDetailsDisabled && styles.disabledSelect,
@@ -1146,7 +1574,6 @@ export default function BookingCheckIn({ navigation, route }) {
                                                 setRoomOpen(!roomOpen);
                                             }
                                         }}
-                                    // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
                                             {selectedRoom?.name || "Select a Room"}
@@ -1191,7 +1618,6 @@ export default function BookingCheckIn({ navigation, route }) {
                                                 setBedOpen(!bedOpen);
                                             }
                                         }}
-                                    // disabled={!!customer}
                                     >
                                         <Text style={styles.selectText}>
                                             {selectedBed?.bedName || "Select a Bed"}
@@ -1203,21 +1629,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                     {bedOpen && filteredBeds.length > 0 && (
                                         <View style={styles.dropdownMenu}>
                                             <ScrollView style={{ maxHeight: 160 }}>
-                                                {/* {filteredBeds.map((b) => (
-                                                    <TouchableOpacity
-                                                        key={b.bedId}
-                                                        style={styles.option}
-                                                        onPress={() => {
-                                                            setSelectedBed(b);
-                                                            setBedOpen(false);
-
-                                                        }}
-                                                    >
-                                                        <Text style={styles.optionText}>
-                                                            {b.bedName}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                ))} */}
+                                                
                                                 {filteredBeds.map(item => (
                                                     <TouchableOpacity
                                                         key={item.bedId}
@@ -1234,10 +1646,52 @@ export default function BookingCheckIn({ navigation, route }) {
                                             </ScrollView>
                                         </View>
                                     )}
-                                </View>
-                                {bedError && (
+                                </View> */}
+
+                                {/* FLOOR */}
+                                <DropdownComponent
+                                    label="Floor"
+                                    required
+                                    placeholder="Select a Floor"
+                                    options={floorOptions}
+                                    value={selectedFloor ? getFloorId(selectedFloor) : null}
+                                    disabled={isStayDetailsDisabled}
+                                    error={floorError}
+                                    emptyText="No floor available"
+                                    onChange={handleFloorChange}
+                                />
+
+                                {/* ROOM */}
+                                <DropdownComponent
+                                    label="Room"
+                                    required
+                                    placeholder="Select a Room"
+                                    options={roomOptions}
+                                    value={selectedRoom ? getRoomId(selectedRoom) : null}
+                                    disabled={isStayDetailsDisabled || !selectedFloor}
+                                    error={roomError}
+                                    emptyText="No room available"
+                                    onChange={handleRoomChange}
+                                />
+
+                                {/* BED */}
+                                <DropdownComponent
+                                    label="Bed"
+                                    required
+                                    placeholder="Select a Bed"
+                                    options={bedOptions}
+                                    value={selectedBed?.bedId ?? null}
+                                    disabled={isStayDetailsDisabled || !selectedRoom}
+                                    error={bedError}
+                                    emptyText="No bed available"
+                                    onChange={handleBedChange}
+                                />
+
+
+
+                                {/* {bedError && (
                                     <ErrorMessage message={bedError} type="error" />
-                                )}
+                                )} */}
 
                                 {bookingDetailsError && (
                                     <ErrorMessage message={bookingDetailsError} type="error" style={{ alignSelf: "center" }} />
@@ -1359,10 +1813,9 @@ export default function BookingCheckIn({ navigation, route }) {
                                                 </Text>
                                             </View>
 
-                                            {extraCharges.map((item) => (
+                                            {/* {extraCharges.map((item) => (
                                                 <View key={item.id} style={styles.figmaRowWrapper}>
 
-                                                    {/* CLOSE BTN */}
                                                     <TouchableOpacity
                                                         onPress={() => removeCharge(item.id, item.type)}
                                                         style={styles.figmaCloseBtn}
@@ -1393,7 +1846,6 @@ export default function BookingCheckIn({ navigation, route }) {
                                                                 style={styles.figmaLeftBox}
                                                                 placeholder="Enter reason"
                                                                 value={item.title}
-                                                                // onChangeText={(t) => updateTitle(item.id, t)}
                                                                 onChangeText={(t) => {
                                                                     const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
                                                                     updateTitle(item.id, onlyLetters);
@@ -1405,7 +1857,6 @@ export default function BookingCheckIn({ navigation, route }) {
                                                             </View>
                                                         )}
 
-                                                        {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
                                                         {item.type === "" ? (
                                                             <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
                                                                 <Text style={{ color: "#999" }}>Enter amount</Text>
@@ -1468,8 +1919,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                             ))}
 
                                             <TouchableOpacity
-                                                // style={styles.addNewButton}
-                                                // onPress={addCharge}
+                                               
                                                 disabled={refuseAdvanceAmount}
                                                 style={[
                                                     styles.addNewButton,
@@ -1487,7 +1937,120 @@ export default function BookingCheckIn({ navigation, route }) {
                                                         Add
                                                     </Text>
                                                 </View>
+                                            </TouchableOpacity> */}
+
+
+                                            {extraCharges.map((item) => {
+                                                const typeOptions = TYPE_OPTIONS
+                                                    .filter(
+                                                        (t) =>
+                                                            !(t === "Maintenance" && maintenanceAlreadyUsed)
+                                                    )
+                                                    .map((t) => ({
+                                                        label: t,
+                                                        value: t,
+                                                    }));
+
+                                                return (
+                                                    <View key={item.id} style={styles.rowWrapper}>
+                                                        <View style={styles.inputRow}>
+
+                                                            {/* Dropdown / Reason Input */}
+                                                            <View style={{ flex: 1 }}>
+                                                                {item.type === "" ? (
+                                                                    <DropdownComponent
+                                                                        placeholder="Select..."
+                                                                        options={typeOptions}
+                                                                        value={null}
+                                                                        error={item.typeError}
+                                                                        onChange={(val) =>
+                                                                            selectType(item.id, val)
+                                                                        }
+                                                                    />
+                                                                ) : item.type === "Others" ? (
+                                                                    <InputComponent
+                                                                        type="name"
+                                                                        value={item.title}
+                                                                        placeholder="Enter reason"
+                                                                        onChangeText={(text) =>
+                                                                            updateTitle(item.id, text)
+                                                                        }
+                                                                        error={!!item.titleError}
+                                                                    />
+                                                                ) : (
+                                                                    <InputComponent
+                                                                        type="name"
+                                                                        value="Maintenance"
+                                                                        disabled
+                                                                        inputStyle={{ color: "#24242B" }}
+                                                                        onChangeText={() => { }}
+                                                                    />
+                                                                )}
+                                                            </View>
+
+                                                            {/* Amount Input */}
+                                                            <InputComponent
+                                                                type="numberOnly"
+                                                                value={item.amount}
+                                                                placeholder="Enter amount"
+                                                                disabled={!item.type}
+                                                                onChangeText={(text) =>
+                                                                    updateAmount(item.id, text)
+                                                                }
+                                                                error={!!item.amountError}
+                                                                flex={1}
+                                                            />
+                                                        </View>
+
+                                                        {/* Remove Button */}
+                                                        <TouchableOpacity
+                                                            style={styles.removeBtn}
+                                                            onPress={() => removeCharge(item.id)}
+                                                            hitSlop={8}
+                                                        >
+                                                            <Image
+                                                                source={Delete}
+                                                                style={styles.figmaCloseText}
+                                                            />
+                                                        </TouchableOpacity>
+
+                                                        {item.titleError ? (
+                                                            <ErrorMessage
+                                                                message={item.titleError}
+                                                                type="error"
+                                                            />
+                                                        ) : null}
+
+                                                        {item.amountError ? (
+                                                            <ErrorMessage
+                                                                message={item.amountError}
+                                                                type="error"
+                                                            />
+                                                        ) : null}
+                                                    </View>
+                                                );
+                                            })}
+
+                                            {/* Add Button */}
+                                            <TouchableOpacity
+                                                disabled={refuseAdvanceAmount}
+                                                style={[
+                                                    styles.addNewButton,
+                                                    refuseAdvanceAmount && { opacity: 0.5 },
+                                                ]}
+                                                onPress={addCharge}
+                                            >
+                                                <View style={styles.addNewContent}>
+                                                    <View style={styles.plusCircle}>
+                                                        <Text style={styles.plusText}>+</Text>
+                                                    </View>
+
+                                                    <Text style={styles.addNewText}>
+                                                        Add
+                                                    </Text>
+                                                </View>
                                             </TouchableOpacity>
+
 
 
 
@@ -1541,7 +2104,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                             setRentalAmount(sanitizeAmount(text));
                                             setRentError("");
                                         }}
-                                        // style={styles.input}
+                                    // style={styles.input}
                                     />
 
                                 </View>
@@ -1627,8 +2190,47 @@ export default function BookingCheckIn({ navigation, route }) {
 
                                                             <>
 
+                                                                <InputComponent
+                                                                    type="numberOnly"
+                                                                    value={customRentAmount}
+                                                                    onChangeText={(text) => {
+                                                                        setCustomRentAmount(sanitizeAmount(text));
+                                                                        setCustomRentError("");
+                                                                    }}
+                                                                    placeholder="Enter Rent Amount"
+                                                                    rightIcon={
+                                                                        <View style={styles.setButton}>
+                                                                            <Text style={styles.setButtonText}>✓ Set</Text>
+                                                                        </View>
+                                                                    }
+                                                                    onRightIconPress={() => {
+                                                                        if (!customRentAmount) {
+                                                                            setCustomRentError(
+                                                                                "Please enter custom rent amount"
+                                                                            );
+                                                                            return;
+                                                                        }
 
-                                                                <View style={styles.amountInputWrapper}>
+                                                                        if (Number(customRentAmount) <= 0) {
+                                                                            setCustomRentError(
+                                                                                "Amount should be greater than zero"
+                                                                            );
+                                                                            return;
+                                                                        }
+
+                                                                        setSavedCustomRent(customRentAmount);
+                                                                        setIsCustomRentSaved(true);
+                                                                        setShowCustomRentEditor(false);
+                                                                        setCustomRentError("");
+                                                                    }}
+                                                                />
+
+                                                                {customRentError ? (
+                                                                    <ErrorMessage message={customRentError} />
+                                                                ) : null}
+
+
+                                                                {/* <View style={styles.amountInputWrapper}>
 
                                                                     <TextInput
                                                                         style={styles.customRentInput}
@@ -1638,9 +2240,7 @@ export default function BookingCheckIn({ navigation, route }) {
                                                                         value={customRentAmount}
                                                                         onChangeText={(text) => {
                                                                             setCustomRentAmount(sanitizeAmount(text));
-                                                                            // setCustomRentAmount(
-                                                                            //     text.replace(/[^0-9]/g, "")
-                                                                            // );
+                                                                          
                                                                             setCustomRentError("");
                                                                         }}
                                                                     />
@@ -1674,11 +2274,11 @@ export default function BookingCheckIn({ navigation, route }) {
                                                                         </Text>
                                                                     </TouchableOpacity>
 
-                                                                </View>
+                                                                </View> */}
 
-                                                                {customRentError ? (
+                                                                {/* {customRentError ? (
                                                                     <ErrorMessage message={customRentError} />
-                                                                ) : null}
+                                                                ) : null} */}
                                                             </>
 
                                                         ) : (
@@ -2077,7 +2677,7 @@ export default function BookingCheckIn({ navigation, route }) {
                 }}
             />
 
-            {openDatePicker && (
+            {/* {openDatePicker && (
                 <View style={styles.sheetOverlay}>
                     <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
                         <View style={{ flex: 1 }} />
@@ -2088,14 +2688,7 @@ export default function BookingCheckIn({ navigation, route }) {
                             markingType="custom"
                             markedDates={joiningMarkedDates}
                             current={dayjs(joiningDate).format("YYYY-MM-DD")}
-                            // onDayPress={(day) => {
-                            //     const selected = dayjs(day.dateString);
-
-                            //     if (isDisabledJoiningDate(selected)) return;
-
-                            //     setJoiningDate(day.dateString);
-                            //     // setCheckJoinDateError("");
-                            // }}
+                           
                             onDayPress={(day) => {
                                 const selected = dayjs(day.dateString);
 
@@ -2116,7 +2709,7 @@ export default function BookingCheckIn({ navigation, route }) {
 
                     </View>
                 </View>
-            )}
+            )} */}
         </>
     );
 }
@@ -2129,7 +2722,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
         paddingHorizontal: 16,
         // paddingTop: 32,
-        paddingTop: Platform.OS === "ios" ? 10 : 40
+        paddingTop: Platform.OS === "ios" ? 0 : 60
     },
 
     backBtn: { padding: 6, marginRight: 8 },
@@ -2254,7 +2847,7 @@ const styles = StyleSheet.create({
         gap: 10,
         padding: 16,
         backgroundColor: "#fff",
-
+       marginBottom:15
 
     },
 
@@ -2791,5 +3384,46 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontFamily: "Gilroy-Semibold",
     },
+
+    setButton: {
+        backgroundColor: "#EAF0FF",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 10,
+    },
+
+    setButtonText: {
+        color: "#165DFF",
+        fontSize: 14,
+        fontFamily: "Gilroy-SemiBold",
+    },
+
+    rowWrapper: {
+        position: "relative",
+        marginBottom: 6,
+        marginTop: 18,
+    },
+
+    inputRow: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 12,
+        width: "100%",
+    },
+
+    removeBtn: {
+        position: "absolute",
+        top: -10,
+        right: -6,
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        backgroundColor: "#E0E0E0",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1,
+    },
+
+
 
 });

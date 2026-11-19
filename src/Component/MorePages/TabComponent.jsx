@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 
+
 const TabComponent = ({
   options = [],
   value,
@@ -25,16 +26,20 @@ const TabComponent = ({
   selectedTabStyle,
   selectedTextStyle,
 
+  // Default colors
   activeColor = '#FFFFFF',
-  backgroundColor = '#F4F4F5',
+  backgroundColor = '#F3F4F6',
   activeTextColor = '#18181B',
   inactiveTextColor = '#71717A',
   disabledTextColor = '#C4C4CC',
   indicatorColor = '#0085FF',
 
-  height = 48,
-  borderRadius = 30,
+  // Default dimensions
+  height = 34,
+  borderRadius = 20,
+
 }) => {
+
 
   const isUnderline = variant === 'underline';
   const isFill = widthMode === 'fill';
