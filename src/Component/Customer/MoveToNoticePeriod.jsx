@@ -17,6 +17,9 @@ import { useCustomer } from "../../Context/CustomerContext";
 import ErrorMessage from "../ErrorMessagr/Errormessagestyle";
 import SuccessModal from "../../ToastFile/ToastPage";
 import { useFloor } from "../../Context/PayingGuestContext";
+import InputComponent from "../MorePages/InputComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
+
 import customParseFormat from "dayjs/plugin/customParseFormat";
 dayjs.extend(customParseFormat);
 export default function MoveNoticeSheet({
@@ -40,7 +43,7 @@ export default function MoveNoticeSheet({
   const [openCheckoutPicker, setOpenCheckoutPicker] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const { activeHostelId } = useContext(CommonContexts);
-  const {  moveToNoticePeriod } = useCustomer();
+  const { moveToNoticePeriod } = useCustomer();
   const { getAllBedsByRoom } = useFloor();
 
   const [reason, setReason] = useState("");
@@ -445,9 +448,8 @@ export default function MoveNoticeSheet({
 
 
 
-            <Text style={styles.label}>Request Date <Text style={{ color: "red" }}>*</Text></Text>
+            {/* <Text style={styles.label}>Request Date <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
-              // style={styles.inputBox}
                 style={[
                                     styles.inputBox,
                                     {
@@ -464,21 +466,41 @@ export default function MoveNoticeSheet({
               <Image source={CalendarIcon} style={styles.calendarIcon} />
             </TouchableOpacity>
             {reqDateError && (
-              <ErrorMessage message={reqDateError} type="error" />
-            )}
+              <ErrorM
+              
+              essage message={reqDateError} type="error" />
+            )} */}
+
+            <DatePickerComponent
+              label="Request Date"
+              required
+              selectedDate={reqDate}
+              onSelect={(date) => {
+                setReqDate(date);
+                setReqDateError("");
+              }}
+              minDate={
+                joiningDate
+                  ? joiningDate.format("YYYY-MM-DD")
+                  : undefined
+              }
+              maxDate={dayjs().format("YYYY-MM-DD")}
+              placeholder="DD/MM/YYYY"
+              displayFormat="DD/MM/YYYY"
+              error={reqDateError}
+            />
 
 
-            <Text style={styles.label}>Check-Out Date  <Text style={{ color: "red" }}>*</Text></Text>
+            {/* <Text style={styles.label}>Check-Out Date  <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
-              // style={styles.inputBox}
-                style={[
-                                    styles.inputBox,
-                                    {
-                                        borderColor: openCheckoutPicker  ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openCheckoutPicker ? 1.5 : 1,
-                                    },
-                                 
-                                ]}
+              style={[
+                styles.inputBox,
+                {
+                  borderColor: openCheckoutPicker ? "#0085FF" : "#D9D9D9",
+                  borderWidth: openCheckoutPicker ? 1.5 : 1,
+                },
+
+              ]}
               onPress={() => setOpenCheckoutPicker(true)}
             >
               <Text style={styles.textInput}>
@@ -488,18 +510,47 @@ export default function MoveNoticeSheet({
             </TouchableOpacity>
             {outDateError && (
               <ErrorMessage message={outDateError} type="error" />
-            )}
+            )} */}
 
-            <Text style={styles.label}>Reason (Comments)</Text>
-            
-            {/* <TextInput
+            <DatePickerComponent
+              label="Check-Out Date"
+              required
+              selectedDate={outDate}
+              onSelect={(date) => {
+                setOutDate(date);
+                setOutDateError("");
+              }}
+              minDate={
+                reqDate
+                  ? dayjs(reqDate).format("YYYY-MM-DD")
+                  : undefined
+              }
+              placeholder="DD/MM/YYYY"
+              displayFormat="DD/MM/YYYY"
+              error={outDateError}
+            />
+
+
+
+            {/* <Text style={styles.label}>Reason (Comments)</Text>
+
+          
+            <TextInput
               ref={reasonRef}
-              style={styles.textArea}
+              style={[
+                styles.textArea,
+                {
+                  borderColor: reasonFocused ? "#0085FF" : "#ccc",
+                  borderWidth: reasonFocused ? 1.5 : 1,
+                },
+              ]}
               value={reason}
               onChangeText={setReason}
               placeholder="Enter Reason"
               multiline
               onFocus={() => {
+                setReasonFocused(true);
+
                 setTimeout(() => {
                   reasonRef.current?.measureLayout(
                     scrollRef.current,
@@ -513,39 +564,30 @@ export default function MoveNoticeSheet({
                   );
                 }, 200);
               }}
-
+              onBlur={() => setReasonFocused(false)}
             /> */}
-            <TextInput
-  ref={reasonRef}
-  style={[
-    styles.textArea,
-    {
-      borderColor: reasonFocused ? "#0085FF" : "#ccc",
-      borderWidth: reasonFocused ? 1.5 : 1,
-    },
-  ]}
-  value={reason}
-  onChangeText={setReason}
-  placeholder="Enter Reason"
-  multiline
-  onFocus={() => {
-    setReasonFocused(true);
 
-    setTimeout(() => {
-      reasonRef.current?.measureLayout(
-        scrollRef.current,
-        (x, y) => {
-          scrollRef.current?.scrollTo({
-            y: y - 20,
-            animated: true,
-          });
-        },
-        () => {}
-      );
-    }, 200);
-  }}
-  onBlur={() => setReasonFocused(false)}
-/>
+            <InputComponent
+              label="Reason (Comments)"
+              type="description"
+              value={reason}
+              onChangeText={setReason}
+              placeholder="Enter Reason"
+              multiline
+              inputHeight={130}
+              containerStyle={{
+                marginTop: 12,
+              }}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollToEnd({
+                    animated: true,
+                  });
+                }, 200);
+              }}
+            />
+
+
 
           </ScrollView>
 
