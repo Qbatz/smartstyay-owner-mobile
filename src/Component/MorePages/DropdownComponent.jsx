@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
 
   trigger: {
     height: 48,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#DEDEDE',
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
@@ -602,6 +602,7 @@ const styles = StyleSheet.create({
 
   errorBorder: {
     borderColor: '#EF4444',
+    borderWidth:1.5
   },
   searchTrigger: {
     backgroundColor: '#FFFFFF',

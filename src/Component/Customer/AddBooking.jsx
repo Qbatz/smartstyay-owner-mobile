@@ -318,23 +318,35 @@ export default function AddBookingScreen({ navigation, route }) {
       );
 
 
-      setBeds(res?.data?.listBeds);
+      const newBeds = res?.data?.listBeds || [];
+      setBeds(newBeds);
+
+      setSelectedBed((prev) =>
+        prev && newBeds.some((b) => String(b.bedId) === String(prev.bedId))
+          ? prev
+          : null
+      );
       console.log("Beds.......?????", beds)
     } else {
       setBeds([]);
     }
   };
 
-  const filteredBeds = beds?.filter(bed => {
+  const getFloorId = (item) => item?.id ?? item?.floorId ?? item?._id;
+  const getRoomId = (item) => item?.id ?? item?.roomId ?? item?._id;
+
+  const filteredBeds = (Array.isArray(beds) ? beds : []).filter((bed) => {
     if (!selectedFloor || !selectedRoom) return false;
 
-    return (
-      bed.floorId === selectedFloor.id &&
-      bed.roomId === selectedRoom.id &&
-      // bed.currentStatus === "VACANT"
-      (bed?.currentStatus === "VACANT" ||
-        bed?.currentStatus === "NOTICE")
+    const sameFloor =
+      String(bed?.floorId) === String(getFloorId(selectedFloor));
+    const sameRoom =
+      String(bed?.roomId) === String(getRoomId(selectedRoom));
+    const isAvailable = ["VACANT", "NOTICE"].includes(
+      String(bed?.currentStatus || "").trim().toUpperCase()
     );
+
+    return sameFloor && sameRoom && isAvailable;
   });
   console.log("filteredBeds", filteredBeds)
 
@@ -1017,17 +1029,16 @@ export default function AddBookingScreen({ navigation, route }) {
               label="Bed"
               required
               placeholder="Select a Bed"
-              options={filteredBeds?.map((bed) => ({
+              options={filteredBeds.map((bed) => ({
                 label: bed.bedName,
-                value: bed.bedId,
+                value: String(bed.bedId),
               }))}
-              value={selectedBed?.bedId || null}
+              value={selectedBed?.bedId != null ? String(selectedBed.bedId) : null}
               disabled={!selectedRoom}
               onChange={(value) => {
-                const bed = filteredBeds?.find(
-                  (item) => String(item?.bedId) === String(value)
+                const bed = filteredBeds.find(
+                  (item) => String(item.bedId) === String(value)
                 );
-
                 setSelectedBed(bed || null);
                 setBedError("");
               }}
