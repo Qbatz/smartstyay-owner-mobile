@@ -16,6 +16,9 @@ import { Calendar } from "react-native-calendars";
 import Loader from "../Loader/Loader";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 import InputComponent from "../MorePages/InputComponent"
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
+
 
 
 export default function AddTenant() {
@@ -386,13 +389,24 @@ export default function AddTenant() {
 
         const payloads = {
 
+            // customerInfo: {
+            //     firstName: basicDetails.firstName,
+            //     mobileNumber: basicDetails.mobile,
+            //     type: 1,
+
+            //     lastName: basicDetails.lastName || "",
+            //     emailId: basicDetails.email || "",
+            // },
+
             customerInfo: {
                 firstName: basicDetails.firstName,
                 mobileNumber: basicDetails.mobile,
                 type: 1,
-
                 lastName: basicDetails.lastName || "",
                 emailId: basicDetails.email || "",
+                ...(walkinDate && {
+                    walkinDate: dayjs(walkinDate).format("DD-MM-YYYY"),
+                }),
             },
         };
         if (hasAnyAddress) {
@@ -802,34 +816,25 @@ export default function AddTenant() {
                                 <Image source={require("../../Assets/Images/calendar.png")} style={{ width: 18, height: 18 }} />
                             </TouchableOpacity> */}
 
-                            <Text style={[styles.label, { marginTop: 12 }]}>
-                                Walkin Date
-                            </Text>
-                            <TouchableOpacity
-                                style={[
-                                    styles.dateBox,
-                                    {
-                                        borderColor: showCalendar ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: showCalendar ? 1.5 : 1,
-                                    },
-                                ]}
-                                onPress={() => {
-                                    Keyboard.dismiss();
-                                    setShowCalendar(true);
-                                }}
-                                activeOpacity={0.7}
-                            >
-                                <Text style={styles.placeholder}>
-                                    {walkinDate
-                                        ? dayjs(walkinDate).format("DD-MM-YYYY")
-                                        : "DD-MM-YYYY"}
-                                </Text>
-
-                                <Image
-                                    source={require("../../Assets/Images/calendar.png")}
-                                    style={{ width: 20, height: 20 }}
+                            <View style={{ marginTop: 12 }}>
+                                <DatePickerComponent
+                                    label="Walkin Date"
+                                    selectedDate={walkinDate}
+                                    onSelect={(date) => setWalkinDate(date)}
+                                    maxDate={dayjs().format("YYYY-MM-DD")}
+                                    placeholder="DD-MM-YYYY"
+                                    displayFormat="DD-MM-YYYY"
+                                    inputStyle={{
+                                        height: 50,
+                                        borderRadius: 8,
+                                        borderWidth: 1,
+                                        borderColor: "#D9D9D9",
+                                        elevation: 1,
+                                        shadowOpacity: 0.06,
+                                    }}
+                                // iconSource={require("../../Assets/Images/calendar.png")} 
                                 />
-                            </TouchableOpacity>
+                            </View>
                         </View>
 
 
