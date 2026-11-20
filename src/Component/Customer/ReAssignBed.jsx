@@ -25,6 +25,10 @@ import { Calendar } from "react-native-calendars";
 import RoomIcon from "../../Assets/Images/Room_Icon.png"
 import BedIcon from "../../Assets/Images/Bed_Icon.png"
 import InputComponent from "../MorePages/InputComponent"
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
+
+
 
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
@@ -73,6 +77,9 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
   const [currentBedName, setCurrentBedName] = useState("")
   const [reAssignBedDate, setReAssignBedDate] = useState("")
   const [customerDetails, setCustomerDetails] = useState(null);
+
+  // const [beds, setBeds] = useState([]); 
+  const [filteredBeds, setFilteredBeds] = useState([])
 
   console.log(customer)
 
@@ -325,6 +332,9 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
     }
   };
 
+  console.log("floors", floors);
+
+
 
   const loadRoomsByFloor = async (floorId) => {
     if (!floorId) return;
@@ -347,11 +357,13 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
       loadFloors();
     }
   }, [visible, activeHostelId]);
+
+
+
   const loadBedsByDate = async (selectedDate) => {
     if (!activeHostelId || !selectedDate) return;
 
     const formattedDate = dayjs(selectedDate).format("DD-MM-YYYY");
-
 
     try {
       const res = await getBedsByHostelAndDate(
@@ -360,32 +372,44 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
       );
 
       if (res?.success) {
-        setBeds(res.data.listBeds || []);
+        const availableBeds = res?.data?.listBeds || [];
 
+        setBeds(availableBeds);
       } else {
         setBeds([]);
       }
-    } catch (err) {
-
+    } catch (error) {
+      console.log("Load Beds Error:", error);
       setBeds([]);
     }
   };
 
 
-  console.log(beds)
-  console.log(roomSelected)
+  console.log("beds", beds)
+  console.log("roomSelected", roomSelected)
 
-  const filteredBeds = beds.filter(bed => {
-    if (!floorSelected || !roomSelected) return false;
+  const filteredBedList = React.useMemo(() => {
+    if (!floorSelected?.id || !roomSelected?.id) {
+      return [];
+    }
 
-    return (
-      bed.floorId === floorSelected.id &&
-      bed.roomId === roomSelected.id &&
-      (bed.currentStatus === "VACANT") || (bed.currentStatus == "NOTICE")
-    );
+    return beds.filter((bed) => {
+      const isSameFloor =
+        String(bed.floorId) === String(floorSelected.id);
 
-  });
-  console.log(filteredBeds)
+      const isSameRoom =
+        String(bed.roomId) === String(roomSelected.id);
+
+      const isAvailable = ["VACANT", "NOTICE"].includes(
+        String(bed.currentStatus || "").toUpperCase()
+      );
+
+      return isSameFloor && isSameRoom && isAvailable;
+    });
+  }, [beds, floorSelected, roomSelected]);
+
+
+  console.log("filteredBeds", filteredBeds)
 
 
   const handleSubmit = async () => {
@@ -525,7 +549,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
         </View>
       )} */}
-      {openDatePicker && (
+      {/* {openDatePicker && (
         <View style={styles.datePickerOverlay}>
           <TouchableWithoutFeedback onPress={() => setOpenDatePicker(false)}>
             <View style={styles.overlayTouch} />
@@ -535,13 +559,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             <Calendar
               markingType="custom"
               markedDates={markedDates}
-              // current={
-              //   date
-              //     ? dayjs(date).format("YYYY-MM-DD")
-              //     : minDate
-              //       ? minDate.format("YYYY-MM-DD")
-              //       : dayjs().format("YYYY-MM-DD")
-              // }
+              
               current={
                 date
                   ? dayjs(date).format("YYYY-MM-DD")
@@ -568,7 +586,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             />
           </View>
         </View>
-      )}
+      )} */}
 
 
       <Animated.View
@@ -638,42 +656,12 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                 {customerDetails?.hostelInfo?.monthlyRent ? `₹ ${customerDetails?.hostelInfo?.monthlyRent}` : "N/A"}</Text>
             </View>
 
-            {/* <Text style={styles.label}>Current Floor</Text>
-            <View style={styles.inputBox}>
-              <TextInput
-                placeholder="Enter Floor"
-                keyboardType="numeric"
-                value={currentFloorName}
-
-                style={{ flex: 1 }}
-              />
-            </View>
-
-            <Text style={styles.label}>Current Room</Text>
-            <View style={styles.inputBox}>
-              <TextInput
-                placeholder="Enter Room"
-                keyboardType="numeric"
-                value={currentRoomName}
-
-                style={{ flex: 1 }}
-              />
-            </View>
-            <Text style={styles.label}>Current Bed</Text>
-            <View style={styles.inputBox}>
-              <TextInput
-                placeholder="Enter Bed"
-                keyboardType="numeric"
-                value={currentBedName}
-
-                style={{ flex: 1 }}
-              />
-            </View> */}
 
 
-            <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
+
+            {/* <Text style={styles.label}>Date <Text style={{ color: "red" }}>*</Text></Text>
             <TouchableOpacity
-              // style={styles.inputBoxdate}
+           
                     style={[
                                     styles.inputBoxdate,
                                     {
@@ -688,27 +676,54 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
               </Text>
 
               <Image source={CalendorIcon} style={styles.downIcon} />
-            </TouchableOpacity>
-            {dateError && (
+            </TouchableOpacity> */}
+
+            <DatePickerComponent
+              label="Date"
+              required
+              selectedDate={date}
+              onSelect={(selectedDate) => {
+                setDate(selectedDate);
+                setDateError("");
+
+                setRooms([]);
+                setBeds([]);
+
+                setFloorSelected(null);
+                setRoomSelected(null);
+                setBedSelected(null);
+
+                loadBedsByDate(selectedDate);
+              }}
+              minDate={
+                compareDate
+                  ? compareDate.format("YYYY-MM-DD")
+                  : undefined
+              }
+              maxDate={today.format("YYYY-MM-DD")}
+              placeholder="DD/MM/YYYY"
+              displayFormat="DD/MM/YYYY"
+              error={dateError}
+            />
+            {/* {dateError && (
               <ErrorMessage message={dateError} type="error" />
-            )}
+            )} */}
 
 
 
 
-            <Text style={styles.label}>New Floor <Text style={{ color: "red" }}>*</Text></Text>
+            {/* <Text style={styles.label}>New Floor <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                // style={[styles.select, isFloorDisabled && styles.disabledSelect]}
-                   style={[
-                                    styles.select,
-                                    {
-                                        borderColor: openDropdown === "floor" ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openDropdown === "floor" ? 1.5 : 1,
-                                    },
-                                    isFloorDisabled && styles.disabledSelect
-                                ]}
+                style={[
+                  styles.select,
+                  {
+                    borderColor: openDropdown === "floor" ? "#0085FF" : "#D9D9D9",
+                    borderWidth: openDropdown === "floor" ? 1.5 : 1,
+                  },
+                  isFloorDisabled && styles.disabledSelect
+                ]}
                 disabled={isFloorDisabled}
                 onPress={() => toggleDropdown("floor")}
               >
@@ -729,7 +744,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                   )}
                   <ScrollView
                     style={{ maxHeight: 160 }}
-                    nestedScrollEnabled={true}          // ✅ Android fix
+                    nestedScrollEnabled={true}       
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                   >
@@ -758,23 +773,63 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                   </ScrollView>
                 </View>
               )}
-            </View>
-            {floorError && (
+            </View> */}
+
+            <DropdownComponent
+              label="New Floor"
+              required
+              placeholder="Select a Floor"
+              options={floors.map(f => ({
+                label: f.name,
+                value: f.id,
+              }))}
+              value={floorSelected?.id ?? null}
+              disabled={isFloorDisabled}
+              error={!!floorError}
+              onChange={(selectedId) => {
+                const selectedFloor = floors.find(
+                  f => String(f.id) === String(selectedId)
+                );
+
+                setFloorSelected(selectedFloor || null);
+                setFloorError("");
+
+                // Clear dependent selections
+                setRoomSelected(null);
+                setBedSelected(null);
+
+                setRooms([]);
+
+                setAmount("");
+                setRentError("");
+
+                if (selectedFloor) {
+                  loadRoomsByFloor(selectedFloor.id);
+                }
+              }}
+            />
+
+            {floorError ? (
               <ErrorMessage message={floorError} type="error" />
-            )}
-            <Text style={styles.label}>New Room <Text style={{ color: "red" }}>*</Text></Text>
+            ) : null}
+            {/* {floorError && (
+              <ErrorMessage message={floorError} type="error" />
+            )} */}
+
+
+
+            {/* <Text style={styles.label}>New Room <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                // style={[styles.select, isRoomDisabled && styles.disabledSelect]}
-                                   style={[
-                                    styles.select,
-                                    {
-                                        borderColor: openDropdown === "room" ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openDropdown === "room" ? 1.5 : 1,
-                                    },
-                                    isRoomDisabled && styles.disabledSelect
-                                ]}
+                style={[
+                  styles.select,
+                  {
+                    borderColor: openDropdown === "room" ? "#0085FF" : "#D9D9D9",
+                    borderWidth: openDropdown === "room" ? 1.5 : 1,
+                  },
+                  isRoomDisabled && styles.disabledSelect
+                ]}
                 disabled={isRoomDisabled}
                 onPress={() => toggleDropdown("room")}
               >
@@ -797,7 +852,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
                   <ScrollView
                     style={{ maxHeight: 160 }}
-                    nestedScrollEnabled={true}          // ✅ Android fix
+                    nestedScrollEnabled={true}         
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                   >
@@ -827,23 +882,56 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                 </View>
               )}
 
-            </View>
-            {roomError && (
+            </View> */}
+
+            <DropdownComponent
+              label="New Room"
+              required
+              placeholder="Select a Room"
+              options={rooms.map(r => ({
+                label: r.name,
+                value: r.id,
+              }))}
+              value={roomSelected?.id ?? null}
+              disabled={isRoomDisabled}
+              error={!!roomError}
+              emptyText="No room available"
+              onChange={(selectedId) => {
+                const selectedRoom = rooms.find(
+                  r => String(r.id) === String(selectedId)
+                );
+
+                setRoomSelected(selectedRoom || null);
+                setRoomError("");
+
+                // Clear selected bed only
+                setBedSelected(null);
+
+                setAmount("");
+                setRentError("");
+              }}
+            />
+
+            {roomError ? (
               <ErrorMessage message={roomError} type="error" />
-            )}
-            <Text style={styles.label}>New Bed <Text style={{ color: "red" }}>*</Text></Text>
+            ) : null}
+            {/* {roomError && (
+              <ErrorMessage message={roomError} type="error" />
+            )} */}
+
+
+            {/* <Text style={styles.label}>New Bed <Text style={{ color: "red" }}>*</Text></Text>
 
             <View style={{ position: "relative" }}>
               <TouchableOpacity
-                // style={[styles.select, isBedDisabled && styles.disabledSelect]}
-                                                   style={[
-                                    styles.select,
-                                    {
-                                        borderColor: openDropdown === "bed" ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: openDropdown === "bed" ? 1.5 : 1,
-                                    },
-                                    isBedDisabled && styles.disabledSelect
-                                ]}
+                style={[
+                  styles.select,
+                  {
+                    borderColor: openDropdown === "bed" ? "#0085FF" : "#D9D9D9",
+                    borderWidth: openDropdown === "bed" ? 1.5 : 1,
+                  },
+                  isBedDisabled && styles.disabledSelect
+                ]}
                 disabled={isBedDisabled}
                 onPress={() => toggleDropdown("bed")}
               >
@@ -866,7 +954,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
                   <ScrollView
                     style={{ maxHeight: 160 }}
-                    nestedScrollEnabled={true}          // ✅ Android fix
+                    nestedScrollEnabled={true}       
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                   >
@@ -907,8 +995,40 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
             </View>
             {bedError && (
               <ErrorMessage message={bedError} type="error" />
-            )}
+            )} */}
 
+            <DropdownComponent
+              label="New Bed"
+              required
+              placeholder="Select a Bed"
+              options={filteredBedList.map(b => ({
+                label: b.bedName,
+                value: b.bedId,
+              }))}
+              value={bedSelected?.bedId ?? null}
+              disabled={isBedDisabled}
+              error={!!bedError}
+              emptyText="No bed available"
+              onChange={(selectedId) => {
+                const selectedBed = filteredBedList.find(
+                  b => String(b.bedId) === String(selectedId)
+                );
+
+                if (!selectedBed) return;
+
+                setBedSelected(selectedBed);
+                setBedError("");
+
+                if (!sameAsCurrent) {
+                  setAmount(String(selectedBed.rentAmount || ""));
+                  setRentError("");
+                }
+              }}
+            />
+
+            {bedError ? (
+              <ErrorMessage message={bedError} type="error" />
+            ) : null}
 
 
             <View style={styles.rentHeader}>
@@ -991,7 +1111,7 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
 
             <Text style={styles.label}>Reason </Text>
             {/* <View style={styles.textArea}> */}
-              {/* <TextInput
+            {/* <TextInput
                 multiline
                 value={reason}
                 onChangeText={setReason}
@@ -1004,19 +1124,19 @@ export default function ReassignBedSheet({ visible, onClose, customer, onSuccess
                 }}
               /> */}
 
-              <InputComponent
-                multiline={true}
-                type="text"
-                placeholder="Enter Comments"
-                keyboardType="numeric"
-                value={reason}
-                onChangeText={setReason}
-                 onFocus={() => {
-                  setTimeout(() => {
-                    scrollRef.current?.scrollToEnd({ animated: true });
-                  }, 200);
-                }}
-              />
+            <InputComponent
+              multiline={true}
+              type="text"
+              placeholder="Enter Comments"
+              keyboardType="numeric"
+              value={reason}
+              onChangeText={setReason}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollToEnd({ animated: true });
+                }, 200);
+              }}
+            />
             {/* </View> */}
 
             <View style={styles.buttonRow}>
