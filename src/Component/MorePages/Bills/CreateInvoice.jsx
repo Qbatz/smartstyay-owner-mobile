@@ -22,7 +22,11 @@ import Profile from "../../../Assets/Images/profile.png";
 import ActiveIcon from "../../../Assets/Images/switch_hostel.png";
 import EditConfigure from "../../../Assets/Images/Edit_Configure.png"
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
 import InputComponent from "../InputComponent"
+import DropdownComponent from "../DropdownComponent";
+import DatePickerComponent from "../DatePickerComponent";
 
 const CreateInvoice = ({ }) => {
 
@@ -814,6 +818,11 @@ const CreateInvoice = ({ }) => {
         }
     }, [totalRetainerAmount]);
 
+    const tenantOptions = (availabletenantList || []).map((t) => ({
+        label: t?.fullName,
+        value: t?.customerId,
+    }));
+
     const filterList = availabletenantList?.filter((i) => i.fullName.toLowerCase().includes(stateQuery.toLowerCase())).sort((a, b) => {
         const aStart = a.fullName.toLowerCase().startsWith(stateQuery.toLowerCase());
         const bStart = b.fullName.toLowerCase().startsWith(stateQuery.toLowerCase());
@@ -1265,104 +1274,51 @@ const CreateInvoice = ({ }) => {
 
 
 
-                        <Text style={styles.tntNameTxt}>
-                            Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                        <View style={styles.tenantRow}>
+                            <View style={{ flex: 1 }}>
+                                <DropdownComponent
+                                    label="Tenant Name"
+                                    required
+                                    placeholder="Add or Search Tenant"
+                                    options={tenantOptions}
+                                    value={selectedTenant?.customerId || null}
+                                    disabled={isTenantLocked}
+                                    searchable
+                                    searchPlaceholder="Search Tenant..."
+                                    emptyText="No Tenants Found"
+                                    error={!!errors.name}
+                                    containerStyle={styles.tenantDropdown}
+                                    onChange={(value) => {
+                                        const tenant = availabletenantList.find(
+                                            (t) => String(t.customerId) === String(value)
+                                        );
+                                        if (!tenant) return;
 
-                        <View style={[styles.container, isTenantLocked && { backgroundColor: "#F3F4F6" }]}>
-                            <ValidatedInput
-                                type="name"
-                                inputType="text"
-                                placeholder="Add or Search Tenant"
-                                style={styles.input}
-                                value={showTenantName ? stateQuery || selectedName : selectedName}
-                                placeholderTextColor="#B5B5B5"
-                                editable={!isTenantLocked}
-                                onPressIn={() => {
-                                    if (isTenantLocked) return;
-                                    setShowTenantName(!showTenantName)
-                                    setErrors(prev => ({ ...prev, name: "" }))
-                                }}
-                                onChangeText={(value) => {
-                                    if (isTenantLocked) return;
-                                    setStateQuery(value)
-                                    setErrors(prev => ({ ...prev, name: "" }))
-                                    setReceivedFrom("")
-                                    setSelectedName("")
-                                }}
-                            />
+                                        setTransactionId("");
+                                        setPaidDate("");
+                                        setItems([{ ...emptyItem, isExisting: false }]);
+                                        setDiscount("");
+                                        setDiscountType("amount");
+                                        setDiscountError("");
+                                        setErrors({});
 
-                            <TouchableOpacity onPress={() => {
-                                if (isTenantLocked) return;
-                                setShowTenantName(!showTenantName)
-                                setErrors(prev => ({ ...prev, name: "" }))
-                            }}
-                                style={styles.arrowContainer}
-                                disabled={isTenantLocked}
-                            >
-                                <Image
-                                    source={DownArrow}
-                                    style={styles.arrow}
-                                    resizeMode="contain"
+                                        setSelectedName(tenant.fullName);
+                                        setSelectedTenant(tenant);
+                                        setReceivedFrom("");
+                                    }}
                                 />
-                            </TouchableOpacity>
+                            </View>
 
-                            <TouchableOpacity style={styles.searchButton}>
+                            <View style={styles.tenantSearchButton}>
                                 <Image
                                     source={SearchIcon}
                                     style={styles.searchIcon}
                                     resizeMode="contain"
                                 />
-                            </TouchableOpacity>
+                            </View>
                         </View>
 
-                        {errors.name && <ErrorMessage message={errors.name} type="error" />}
-
-
-                        {showTenantName && (
-                            <>
-                                <TouchableWithoutFeedback onPress={() => {
-                                    setShowTenantName(false)
-                                    setStateQuery("")
-                                }}>
-                                    <View style={styles.dropdownOverlay} />
-                                </TouchableWithoutFeedback>
-                                <View style={styles.dropdownMenu}>
-                                    <ScrollView keyboardShouldPersistTaps="always"
-                                        nestedScrollEnabled={true}
-                                        showsVerticalScrollIndicator={true}>
-                                        {filterList.map((i, index) => (
-                                            <TouchableOpacity key={index}
-                                                style={{ paddingVertical: 8, paddingHorizontal: 14 }}
-                                                onPress={() => {
-                                                    setTransactionId("");
-                                                    setPaidDate("");
-                                                    setItems([
-                                                        {
-                                                            ...emptyItem,
-                                                            isExisting: false,
-                                                        },
-                                                    ]);
-                                                    setDiscount("");
-                                                    setDiscountType("amount");
-                                                    setDiscountError("");
-                                                    setErrors({});
-
-
-                                                    setSelectedName(i.fullName)
-                                                    setSelectedTenant(i)
-                                                    setStateQuery("");
-                                                    setShowTenantName(false)
-                                                    setReceivedFrom("")
-                                                }}>
-                                                <Text>{i.fullName}</Text>
-                                            </TouchableOpacity>
-
-                                        ))}
-                                    </ScrollView>
-                                </View>
-                            </>
-
-                        )}
+                        {errors.name ? <ErrorMessage message={errors.name} type="error" /> : null}
 
 
                         <Text style={{ fontSize: 12, fontFamily: 'Gilroy-Medium', marginTop: 12, lineHeight: 16 }}
@@ -1517,8 +1473,8 @@ const CreateInvoice = ({ }) => {
 
                             inputType="text"
                             value={transactionId}
-
-                            editable={!isEditMode}
+                            disabled={isEditMode}
+                            // editable={!isEditMode}
                             onFocus={() => {
                                 if (!isEditMode) {
                                     scrollToField(transactionRef);
@@ -1528,46 +1484,25 @@ const CreateInvoice = ({ }) => {
                             onChangeText={setTransactionId}
                         />
 
-                        <Text style={styles.headerTxt}>Invoice Date <Text style={{ color: "red" }}>*</Text></Text>
-                        <TouchableOpacity
-                            // style={[styles.inputBox, { marginTop: 10 }]}
-                            // onPress={() => {
-                            //     setOpenPaidDate(true);
-                            //     setErrors(prev => ({ ...prev, paidDate: "" }));
-                            // }}
-
+                        <DatePickerComponent
+                            label="Invoice Date"
+                            required
+                            selectedDate={paidDate ? dayjs(paidDate).format("YYYY-MM-DD") : null}
+                            placeholder="Select Invoice Date"
+                            displayFormat="DD/MM/YYYY"
+                            minDate={
+                                selectedTenant?.joiningDate
+                                    ? dayjs(selectedTenant.joiningDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+                                    : undefined
+                            }
+                            maxDate={dayjs().format("YYYY-MM-DD")}
                             disabled={isEditMode}
-                            style={[
-                                styles.inputBox,
-                                {
-                                    marginTop: 10,
-                                    backgroundColor: isEditMode ? "#F3F4F6" : "#FFFFFF",
-                                }
-                            ]}
-                            onPress={() => {
-                                if (isEditMode) return;
-
-                                setOpenPaidDate(true);
-                                setErrors(prev => ({
-                                    ...prev,
-                                    paidDate: ""
-                                }));
+                            error={errors.paidDate}
+                            onSelect={(date) => {
+                                setPaidDate(dayjs(date).toDate());
+                                setErrors((prev) => ({ ...prev, paidDate: "" }));
                             }}
-                        >
-                            <Text
-                                style={{
-                                    color: paidDate ? "#111827" : "#B5B5B5",
-                                    fontSize: 14,
-                                    fontFamily: "Gilroy-Medium",
-                                }}
-                            >
-                                {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "Select Invoice Date"}
-                            </Text>
-                            <Image
-                                source={CalendarIcon}
-                                style={{ width: 20, height: 20, tintColor: "#555" }}
-                            />
-                        </TouchableOpacity>
+                        />
 
                         {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error" />}
 
@@ -1614,171 +1549,59 @@ const CreateInvoice = ({ }) => {
                                     )}
                                 </View>
 
-                                <Text style={styles.itemdetailTxt}>Detail</Text>
-
+                                {/* <Text style={styles.itemdetailTxt}>Detail</Text> */}
                                 {item.itemDetail === "Other" ? (
-                                    <View style={styles.otherItemInputRow}>
-                                        {/* <ValidatedInput
+                                    <>
+                                        <Text style={styles.itemdetailTxt}>Detail</Text>
+                                        <InputComponent
                                             type="description"
-                                            inputType="text"
-                                            style={styles.otherItemInput}
                                             value={item.am_name || ""}
                                             placeholder="Enter Item Name"
-                                            placeholderTextColor="#A0A0A0"
-                                            autoFocus
-                                            onChangeText={value => {
+                                            disabled={isEditMode && item?.isExisting}
+                                            error={!!errors[`itemDetail_${index}`]}
+                                            onChangeText={(value) => {
+                                                if (isEditMode && item?.isExisting) return;
                                                 handleChange(index, "am_name", value);
-                                                setErrors(prev => ({
-                                                    ...prev,
-                                                    [`itemDetail_${index}`]: "",
-                                                }));
+                                                setErrors((prev) => ({ ...prev, [`itemDetail_${index}`]: "" }));
                                             }}
-                                        /> */}
-
-                                        <ValidatedInput
-                                            type="description"
-                                            inputType="text"
-                                            style={[
-                                                styles.otherItemInput,
-                                                isEditMode &&
-                                                item?.isExisting && {
-                                                    backgroundColor: "#F3F4F6",
-                                                }
-                                            ]}
-                                            value={item.am_name || ""}
-                                            placeholder="Enter Item Name"
-                                            placeholderTextColor="#A0A0A0"
-                                            editable={
-                                                !(isEditMode && item?.isExisting)
+                                            rightIcon={
+                                                !(isEditMode && item?.isExisting) ? (
+                                                    <Text style={styles.closeIcon}>×</Text>
+                                                ) : null
                                             }
-                                            onChangeText={value => {
-
-                                                if (isEditMode && item?.isExisting) {
-                                                    return;
-                                                }
-
-                                                handleChange(index, "am_name", value);
-
-                                                setErrors(prev => ({
-                                                    ...prev,
-                                                    [`itemDetail_${index}`]: "",
-                                                }));
-                                            }}
-                                        />
-                                        {(!isEditMode || !item?.isExisting) && (
-                                            <TouchableOpacity
-                                                onPress={() => {
-                                                    handleChange(index, "itemDetail", "");
-                                                    handleChange(index, "am_name", "");
-
-                                                    setErrors(prev => ({
-                                                        ...prev,
-                                                        [`itemDetail_${index}`]: "",
-                                                    }));
-                                                }}
-                                                style={styles.otherClearButton}
-                                            >
-                                                <Text style={styles.closeIcon}>×</Text>
-                                            </TouchableOpacity>
-                                        )}
-                                        {/* <TouchableOpacity
-                                            onPress={() => {
+                                            onRightIconPress={() => {
                                                 handleChange(index, "itemDetail", "");
                                                 handleChange(index, "am_name", "");
-                                                setErrors(prev => ({
-                                                    ...prev,
-                                                    [`itemDetail_${index}`]: "",
-                                                }));
+                                                setErrors((prev) => ({ ...prev, [`itemDetail_${index}`]: "" }));
                                             }}
-                                            style={styles.otherClearButton}
-                                        >
-                                            <Text style={styles.closeIcon}>×</Text>
-                                        </TouchableOpacity> */}
-                                    </View>
-                                ) : (
-                                    <>
-                                        {/* <TouchableOpacity
-                                            onPress={() => {
-                                                setOpenDetailIndex(
-                                                    openDetailIndex === index ? null : index
-                                                );
-                                                setOpenRetainerType(false);
-                                                setErrors(prev => ({
-                                                    ...prev,
-                                                    [`itemDetail_${index}`]: "",
-                                                }));
-                                            }}
-                                            style={styles.retainTypeBox}
-                                        > */}
-                                        <TouchableOpacity
-                                            disabled={
-                                                isEditMode &&
-                                                item?.isExisting
-                                            }
-                                            onPress={() => {
-                                                if (isEditMode && item?.isExisting) {
-                                                    return;
-                                                }
-
-                                                setOpenDetailIndex(
-                                                    openDetailIndex === index ? null : index
-                                                );
-
-                                                setOpenRetainerType(false);
-
-                                                setErrors(prev => ({
-                                                    ...prev,
-                                                    [`itemDetail_${index}`]: "",
-                                                }));
-                                            }}
-                                            style={[
-                                                styles.retainTypeBox,
-
-                                                isEditMode &&
-                                                item?.isExisting && {
-                                                    backgroundColor: "#F3F4F6",
-                                                }
-                                            ]}
-                                        >
-                                            <Text
-                                                style={[
-                                                    styles.detailValueText,
-                                                    !item.itemDetail && styles.detailPlaceholder,
-                                                ]}
-                                            >
-                                                {item.itemDetail || "Select Detail"}
-                                            </Text>
-
-                                            <Image
-                                                source={DownArrow}
-                                                style={styles.detailArrow}
-                                            />
-                                        </TouchableOpacity>
-
-                                        {openDetailIndex === index && (
-                                            <View style={styles.detailDropdownMenu}>
-                                                {getDetailOptions(index).map(option => (
-                                                    <TouchableOpacity
-                                                        key={option}
-                                                        onPress={() => handleDetailChange(index, option)}
-                                                        style={styles.detailOption}
-                                                    >
-                                                        <Text style={styles.detailOptionText}>
-                                                            {option}
-                                                        </Text>
-                                                    </TouchableOpacity>
-                                                ))}
-                                            </View>
-                                        )}
+                                        />
                                     </>
+                                ) : (
+                                    (() => {
+                                        const opts = getDetailOptions(index);
+                                        // edit mode-la existing value (Room Rent) options-la illana add pannu
+                                        if (item.itemDetail && !opts.includes(item.itemDetail)) {
+                                            opts.unshift(item.itemDetail);
+                                        }
+
+                                        return (
+                                            <DropdownComponent
+                                                label="Detail"
+                                                placeholder="Select Detail"
+                                                options={opts.map((o) => ({ label: o, value: o }))}
+                                                value={item.itemDetail || null}
+                                                disabled={isEditMode && item?.isExisting}
+                                                error={!!errors[`itemDetail_${index}`]}
+                                                emptyText="No options available"
+                                                onChange={(val) => handleDetailChange(index, val)}
+                                            />
+                                        );
+                                    })()
                                 )}
 
-                                {errors[`itemDetail_${index}`] && (
-                                    <ErrorMessage
-                                        message={errors[`itemDetail_${index}`]}
-                                        type="error"
-                                    />
-                                )}
+                                {errors[`itemDetail_${index}`] ? (
+                                    <ErrorMessage message={errors[`itemDetail_${index}`]} type="error" />
+                                ) : null}
 
                                 {/* <ValidatedInput
                                     type="description"
@@ -1920,34 +1743,12 @@ const CreateInvoice = ({ }) => {
                                     </View>
 
 
-                                    <ValidatedInput
+                                    {/* <ValidatedInput
                                         type="numberOnly"
                                         inputType="numeric"
                                         value={discount}
                                         editable={!isEditMode}
-                                        // onChangeText={(value) => {
-                                        //     if (isEditMode) return;
-                                        //     const validationError = validateDiscount(
-                                        //         value,
-                                        //         discountType
-                                        //     );
-
-                                        //     if (validationError) {
-                                        //         setDiscountError(validationError);
-                                        //         setErrors(prev => ({
-                                        //             ...prev,
-                                        //             discount: "",
-                                        //         }));
-                                        //         return;
-                                        //     }
-
-                                        //     setDiscount(value);
-                                        //     setDiscountError("");
-                                        //     setErrors(prev => ({
-                                        //         ...prev,
-                                        //         discount: "",
-                                        //     }));
-                                        // }}
+                                       
 
                                         onChangeText={(value) => {
                                             if (isEditMode) return;
@@ -1967,12 +1768,28 @@ const CreateInvoice = ({ }) => {
                                             }));
                                         }}
                                         placeholder={discountType === "percentage" ? "0" : "₹ 0.00"}
-                                        // style={styles.discountInput}
                                         style={[
                                             styles.discountInput,
                                             isEditMode && styles.discountInputDisabled,
                                         ]}
-                                    />
+                                    /> */}
+
+                                    <View style={{ width: 150 }}>
+                                        <InputComponent
+                                            type="numberOnly"
+                                            keyboardType="numeric"
+                                            value={discount}
+                                            disabled={isEditMode}
+                                            placeholder={discountType === "percentage" ? "0" : "₹ 0.00"}
+                                            error={!!(discountError || errors.discount)}
+                                            onChangeText={(value) => {
+                                                if (isEditMode) return;
+                                                setDiscount(value);
+                                                setDiscountError(validateDiscount(value, discountType));
+                                                setErrors((prev) => ({ ...prev, discount: "" }));
+                                            }}
+                                        />
+                                    </View>
                                 </View>
                                 {(discountError || errors.discount) && (
                                     <ErrorMessage
@@ -2002,13 +1819,12 @@ const CreateInvoice = ({ }) => {
 
 
 
-                        <Text style={styles.dscptTxt}>Terms and Conditions</Text>
+                        {/* <Text style={styles.dscptTxt}>Terms and Conditions</Text>
 
                         <ValidatedInput
                             ref={descriptionRef}
                             type="description"
                             inputType="text"
-                            // style={styles.dscpBox}
                             style={[
                                 styles.dscpBox,
                                 isEditMode && styles.discountInputDisabled,
@@ -2017,6 +1833,18 @@ const CreateInvoice = ({ }) => {
                             placeholderTextColor="#A0A0A0"
                             value={description}
                             editable={!isEditMode}
+                            onFocus={() => handleInputFocus(descriptionRef)}
+                            onChangeText={handleDescriptionChange}
+                        /> */}
+
+                        <Text style={styles.dscptTxt}>Terms and Conditions</Text>
+                        <InputComponent
+                            ref={descriptionRef}
+                            type="description"
+                            multiline
+                            value={description}
+                            disabled={isEditMode}
+                            placeholder="Enter terms and condition for this invoice"
                             onFocus={() => handleInputFocus(descriptionRef)}
                             onChangeText={handleDescriptionChange}
                         />
@@ -2703,6 +2531,24 @@ const styles = StyleSheet.create({
         backgroundColor: "#F3F4F6",
         color: "#9CA3AF",
     },
+    tenantRow: {
+  flexDirection: "row",
+  alignItems: "flex-end",
+},
+tenantDropdown: {
+  width: "100%",
+},
+tenantSearchButton: {
+  width: 48,
+  height: 48,
+  marginBottom: 6,         
+  marginLeft: -10,
+  backgroundColor: "#2952FF",
+  borderTopRightRadius: 16,
+  borderBottomRightRadius: 16,
+  justifyContent: "center",
+  alignItems: "center",
+},
 })
 
 
