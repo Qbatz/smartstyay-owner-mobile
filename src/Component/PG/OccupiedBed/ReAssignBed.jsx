@@ -382,7 +382,7 @@ export default function ReassignBedScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", paddingTop: 20 },
+  container: { flex: 1, backgroundColor: "#fff", paddingTop: 40 },
 
   headerBack: { padding: 20 },
   headerText: { fontSize: 16, fontWeight: "500",marginLeft:3 },
