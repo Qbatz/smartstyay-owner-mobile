@@ -30,6 +30,10 @@ import { Switch } from "react-native";
 import LeavePageScreen from "../../ToastFile/LeavePageScreen";
 import { UseSetting } from "../../Context/SettingContext";
 import InputComponent from "../MorePages/InputComponent"
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
+
+
 
 
 export default function AssignTenant({ navigation, route }) {
@@ -394,6 +398,21 @@ export default function AssignTenant({ navigation, route }) {
   const checkinDateRef = useRef(null);
 
   const TYPE_OPTIONS = ["Maintenance", "Others"];
+
+  const tenantOptions = CheckinTenants?.map((item) => ({
+    label: item.fullName,
+    value: item.customerId,
+  }));
+
+  const stayTypeOptions = StayType?.map((item) => ({
+    label: item,
+    value: item,
+  }));
+
+  const chargeTypeOptions = TYPE_OPTIONS?.map((item) => ({
+    label: item,
+    value: item,
+  }));
 
 
   const addCharge = () => {
@@ -1369,139 +1388,56 @@ export default function AssignTenant({ navigation, route }) {
 
             {activeTab === "Booking" && (
               <>
-                <Text style={styles.label}>Tenant <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>
+                  Tenant <Text style={{ color: "red" }}>*</Text>
+                </Text>
 
-                <View style={{ position: "relative" }}>
+                <DropdownComponent
+                  options={tenantOptions}
+                  value={CheckinTenantSelected?.customerId || ""}
+                  placeholder="Select Tenant"
+                  onChange={(value) => {
+                    const selected = CheckinTenants.find(
+                      (item) => item.customerId === value
+                    );
 
-                  <TouchableOpacity
-                    style={styles.select}
-                    onPress={() => setCheckinTenantsopen(!checkinTenantsOpen)}
-                    activeOpacity={0.9}
-                  >
-                    <Text style={styles.selectText}>
-                      {CheckinTenantSelected?.fullName || "Select Tenant"}
-
-                    </Text>
-                    <Image source={DownArrow} style={styles.arrow} />
-                  </TouchableOpacity>
-
-                  {tenentsError && (
-                    <ErrorMessage message={tenentsError} type="error" />
-                  )}
-                  {/* {checkinTenantsOpen && (
-  <View style={styles.dropdownMenuone}>
-    <ScrollView
-      nestedScrollEnabled={true}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      style={{ maxHeight: 200 }}
-    >
-      {CheckinTenants.map((v, index) => (
-        <TouchableOpacity
-          key={index}
-          style={styles.option}
-          onPress={() => {
-            setCheckinTenantSelected(v);
-            setCheckinTenantsopen(false);
-            setTenantsError("");
-          }}
-        >
-          <Text style={styles.optionText}>{v.fullName}</Text>
-        </TouchableOpacity>
-      ))}
-    </ScrollView>
-  </View>
-)} */}
-                  {checkinTenantsOpen && (
-                    <View style={styles.dropdownMenuone}>
-                      <ScrollView
-                        nestedScrollEnabled
-                        keyboardShouldPersistTaps="handled"
-                        showsVerticalScrollIndicator
-                        style={{ maxHeight: 160 }}
-                        contentContainerStyle={{ paddingBottom: 5 }}
-                      >
-
-                        {CheckinTenants.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={[styles.option, CheckinTenantSelected?.customerId === v.customerId && { backgroundColor: "#E6F0FF" }]}
-                            onPress={() => {
-                              setCheckinTenantSelected(v);
-                              setCheckinTenantsopen(false);
-                              setTenantsError("");
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v.fullName}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
-
-
-                  {/* {checkinTenantsOpen && (
-                    <View style={styles.dropdownMenuone}>
-                      <ScrollView style={{ maxHeight: 160 }}>
-                        {CheckinTenants && CheckinTenants?.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={styles.option}
-                            onPress={() => {
-                              setCheckinTenantSelected(v);
-                              setCheckinTenantsopen(false);
-                              setTenantsError("")
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v.fullName}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )} */}
-                </View>
-
-                <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
-                <View ref={bookingDateRef} collapsable={false}>
-                  <TouchableOpacity
-                    style={styles.dateBox}
-                    onPress={() => {
-                      Keyboard.dismiss();   // 🔥 keyboard close
-                      setOpenDropdownId(null);
-                      setCheckinTenantsopen(false);
-
-                      setTimeout(() => {
-                        bookingDateRef.current.measureInWindow((x, y, w, h) => {
-                          setDatePickerTop(getSafeCalendarTop(y, h));
-                          setActiveDateField("booking");
-                          setShowCalendar(true);
-                        });
-                      }, 150); // 🔥 keyboard animation wait
-                    }}
-
-                  >
-                    <Text style={styles.placeholder}>
-                      {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                    </Text>
-                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-                  </TouchableOpacity>
-                </View>
-
-                {bookingDateError && (
-                  <ErrorMessage message={bookingDateError} type="error" />
-                )}
-                <Text style={styles.label}>Booking Amount <Text style={{ color: "red" }}>*</Text></Text>
-                {/* <TextInput
-                  style={styles.input}
-                  placeholder="Enter Amount"
-                  keyboardType="numeric"
-                  value={bookingAmount}
-                  onChangeText={(text) => {
-                    const onlyNum = text.replace(/[^0-9]/g, "");
-                    setBookingAmount(onlyNum);
-                    setBookingAmountError("");
+                    setCheckinTenantSelected(selected || null);
+                    setTenantsError("");
                   }}
-                /> */}
+                  emptyText="No Tenants Available"
+                  error={!!tenentsError}
+                />
+
+                {tenentsError ? (
+                  <ErrorMessage message={tenentsError} type="error" />
+                ) : null}
+
+                <Text style={styles.label}>
+                  Booking Date <Text style={{ color: "red" }}>*</Text>
+                </Text>
+
+                <DatePickerComponent
+                  selectedDate={purchaseDate || null}
+                  placeholder="DD-MM-YYYY"
+                  displayFormat="DD-MM-YYYY"
+                  maxDate={dayjs().format("YYYY-MM-DD")}
+                  onSelect={(date) => {
+                    setPurchaseDate(date);
+                    setBookingDateError("");
+
+                    setJoiningDate(null);
+                    setJoiningDateError("");
+                  }}
+                  error={!!bookingDateError}
+                />
+
+                {bookingDateError ? (
+                  <ErrorMessage message={bookingDateError} type="error" />
+                ) : null}
+
+
+
+                <Text style={styles.label}>Booking Amount <Text style={{ color: "red" }}>*</Text></Text>
 
                 <InputComponent
                   type="number"
@@ -1519,34 +1455,38 @@ export default function AssignTenant({ navigation, route }) {
                 {bookingAmountError && (
                   <ErrorMessage message={bookingAmountError} type="error" />
                 )}
-                <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-                <View ref={joiningDateRef} collapsable={false}>
-                  <TouchableOpacity
-                    style={styles.dateBox}
-                    onPress={() => {
-                      Keyboard.dismiss();        // 🔥 keyboard close
-                      setOpenDropdownId(null);
-                      setCheckinTenantsopen(false);
+                <Text style={styles.label}>
+                  Joining Date <Text style={{ color: "red" }}>*</Text>
+                </Text>
 
-                      setTimeout(() => {
-                        joiningDateRef.current.measureInWindow((x, y, w, h) => {
-                          setDatePickerTop(getSafeCalendarTop(y, h));
-                          setActiveDateField("joining");
-                          setShowCalendar(true);
-                        });
-                      }, 150);                  // 🔥 wait for keyboard animation
-                    }}
-                  >
-                    <Text style={styles.placeholder}>
-                      {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                    </Text>
-                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-                  </TouchableOpacity>
-                </View>
+                <DatePickerComponent
+                  selectedDate={joiningDate || null}
+                  placeholder="DD-MM-YYYY"
+                  displayFormat="DD-MM-YYYY"
+                  minDate={
+                    purchaseDate
+                      ? dayjs(purchaseDate).format("YYYY-MM-DD")
+                      : undefined
+                  }
+                  disabled={!purchaseDate}
+                  onSelect={(date) => {
+                    if (!purchaseDate) return;
 
-                {joiningDateError && (
+                    if (
+                      dayjs(date).isBefore(dayjs(purchaseDate), "day")
+                    ) {
+                      return;
+                    }
+
+                    setJoiningDate(date);
+                    setJoiningDateError("");
+                  }}
+                  error={!!joiningDateError}
+                />
+
+                {joiningDateError ? (
                   <ErrorMessage message={joiningDateError} type="error" />
-                )}
+                ) : null}
                 <Text style={styles.label}>
                   Mode Of Transaction{" "}
                   <Text style={{ color: "red" }}>*</Text>
@@ -1680,71 +1620,31 @@ export default function AssignTenant({ navigation, route }) {
 
             {activeTab === "CheckIn" && (
               <>
-                <Text style={styles.label}>Tenant <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>
+                  Tenant <Text style={{ color: "red" }}>*</Text>
+                </Text>
 
-                <View style={{ position: "relative" }}>
+                <DropdownComponent
+                  options={tenantOptions}
+                  value={CheckinTenantSelected?.customerId || ""}
+                  placeholder="Select Tenant"
+                  onChange={(value) => {
+                    const selected = CheckinTenants.find(
+                      (item) => item.customerId === value
+                    );
 
-                  <TouchableOpacity
-                    style={styles.select}
-                    onPress={() => setCheckinTenantsopen(!checkinTenantsOpen)}
-                    activeOpacity={0.9}
-                  >
-                    <Text style={styles.selectText}>
-                      {CheckinTenantSelected?.fullName || "Select Tenant"}
+                    setCheckinTenantSelected(selected || null);
+                    setTenantsError("");
+                  }}
+                  emptyText="No Tenants Available"
+                  error={!!tenentsError}
+                />
 
-                    </Text>
-                    <Image source={DownArrow} style={styles.arrow} />
-                  </TouchableOpacity>
+                {tenentsError ? (
+                  <ErrorMessage message={tenentsError} type="error" />
+                ) : null}
 
-                  {tenentsError && (
-                    <ErrorMessage message={tenentsError} type="error" />
-                  )}
-                  {checkinTenantsOpen && (
-                    <View style={styles.dropdownMenuone}>
-                      <ScrollView
-                        nestedScrollEnabled
-                        keyboardShouldPersistTaps="handled"
-                        showsVerticalScrollIndicator
-                        style={{ maxHeight: 160 }}
-                        contentContainerStyle={{ paddingBottom: 5 }}
-                      >
-                        {CheckinTenants.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={[styles.option, CheckinTenantSelected?.customerId === v.customerId && { backgroundColor: "#E6F0FF" }]}
-                            onPress={() => {
-                              setCheckinTenantSelected(v);
-                              setCheckinTenantsopen(false);
-                              setTenantsError("");
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v.fullName}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
 
-                  {/* {checkinTenantsOpen && (
-                    <View style={styles.dropdownMenuone}>
-                      <ScrollView style={{ maxHeight: 160 }}>
-                        {CheckinTenants.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={styles.option}
-                            onPress={() => {
-                              setCheckinTenantSelected(v);
-                              setCheckinTenantsopen(false);
-                              setTenantsError("")
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v.fullName}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )} */}
-                </View>
 
 
 
@@ -1752,74 +1652,55 @@ export default function AssignTenant({ navigation, route }) {
                 <Text style={styles.label}>
                   Stay Type <Text style={{ color: "red" }}>*</Text>
                 </Text>
-                <View style={{ position: "relative" }}>
-                  <TouchableOpacity
-                    style={styles.select}
-                    onPress={() => setStayTypeOpen(!StayTypeOpen)}
-                    activeOpacity={0.9}
-                  >
-                    <Text style={styles.selectText}>{StayTypeSelected}</Text>
-                    <Image source={DownArrow} style={styles.arrow} />
-                  </TouchableOpacity>
 
-                  {stayTypeError && (
-                    <ErrorMessage message={stayTypeError} type="error" />
-                  )}
+                <DropdownComponent
+                  options={stayTypeOptions}
+                  value={
+                    StayTypeSelected === "Stay Type"
+                      ? ""
+                      : StayTypeSelected
+                  }
+                  placeholder="Stay Type"
+                  onChange={(value) => {
+                    setStayTypeSelected(value);
+                    setStayTypeOpen(false);
+                    setStayTypeError("");
+                  }}
+                  error={!!stayTypeError}
+                />
 
-                  {StayTypeOpen && (
-                    <View style={styles.dropdownMenuone}>
-                      <ScrollView style={{ maxHeight: 160 }}>
-                        {StayType.map((v, index) => (
-                          <TouchableOpacity
-                            key={index}
-                            style={styles.option}
-                            onPress={() => {
-                              setStayTypeSelected(v);
-                              setStayTypeOpen(false);
-                              setStayTypeError(""); // 🔥 clear error
-                            }}
-                          >
-                            <Text style={styles.optionText}>{v}</Text>
-                          </TouchableOpacity>
-                        ))}
-                      </ScrollView>
-                    </View>
-                  )}
-                </View>
+                {stayTypeError ? (
+                  <ErrorMessage message={stayTypeError} type="error" />
+                ) : null}
 
 
-                <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
+                <Text style={styles.label}>
+                  Joining Date <Text style={{ color: "red" }}>*</Text>
+                </Text>
 
-                <View ref={checkinDateRef} collapsable={false}>
-                  <TouchableOpacity
-                    style={styles.dateBox}
-                    onPress={() => {
-                      Keyboard.dismiss();        // 🔥 close keyboard
-                      setOpenDropdownId(null);
-                      setCheckinTenantsopen(false);
+                <DatePickerComponent
+                  selectedDate={
+                    checkJoiningDate
+                      ? dayjs(checkJoiningDate).format("YYYY-MM-DD")
+                      : null
+                  }
+                  placeholder="DD-MM-YYYY"
+                  displayFormat="DD-MM-YYYY"
+                  maxDate={dayjs().format("YYYY-MM-DD")}
+                  onSelect={(date) => {
+                    const selected = dayjs(date);
 
-                      setTimeout(() => {
-                        checkinDateRef.current.measureInWindow((x, y, w, h) => {
-                          setDatePickerTop(getSafeCalendarTop(y, h));
-                          setActiveDateField("checkin");
-                          setShowCalendar(true);
-                        });
-                      }, 150);
-                    }}
+                    if (selected.isAfter(dayjs(), "day")) return;
 
-                  >
-                    <Text style={styles.placeholder}>
-                      {checkJoiningDate
-                        ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
-                        : "DD-MM-YYYY"}
-                    </Text>
-                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-                  </TouchableOpacity>
-                </View>
+                    setcheckJoiningDate(date);
+                    setCheckJoinDateError("");
+                  }}
+                  error={!!checkJoinDateError}
+                />
 
-                {checkJoinDateError && (
+                {checkJoinDateError ? (
                   <ErrorMessage message={checkJoinDateError} type="error" />
-                )}
+                ) : null}
 
 
 
@@ -1996,7 +1877,6 @@ export default function AssignTenant({ navigation, route }) {
                       {extraCharges.map((item) => (
                         <View key={item.id} style={styles.figmaRowWrapper}>
 
-                          {/* CLOSE BTN */}
                           <TouchableOpacity
                             onPress={() => removeCharge(item.id, item.type)}
                             style={styles.figmaCloseBtn}
@@ -2008,68 +1888,47 @@ export default function AssignTenant({ navigation, route }) {
                             />
                           </TouchableOpacity>
 
-
                           <View style={styles.figmaRow}>
 
+                            <View style={{ flex: 1 }}>
+                              {item.type === "Others" ? (
+                                <InputComponent
+                                  type="text"
+                                  value={item.title}
+                                  placeholder="Enter reason"
+                                  onChangeText={(text) => {
+                                    const onlyLetters = text.replace(/[^a-zA-Z\s]/g, "");
+                                    updateTitle(item.id, onlyLetters);
+                                  }}
+                                />
+                              ) : (
+                                <DropdownComponent
+                                  options={chargeTypeOptions.map((option) => ({
+                                    ...option,
+                                    disabled:
+                                      option.value === "Maintenance" &&
+                                      maintenanceAlreadyUsed &&
+                                      item.type !== "Maintenance",
+                                  }))}
+                                  value={item.type}
+                                  placeholder="Select..."
+                                  onChange={(value) => {
+                                    selectType(item.id, value);
+                                  }}
+                                />
+                              )}
+                            </View>
 
-                            {item.type === "" ? (
-                              <TouchableOpacity
-                                style={styles.figmaLeftBox}
-                                onPress={() =>
-                                  setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                                }
-                              >
-                                <Text style={{ color: "#777" }}>Select...</Text>
-                                <Image source={DownArrow} style={styles.arrow} />
-                              </TouchableOpacity>
-                            ) : item.type === "Others" ? (
-                              <TextInput
-                                ref={(r) => {
-                                  inputRefs.current[`reason-${item.id}`] = r;
-                                }}
-                                style={styles.figmaLeftBox}
-                                placeholder="Enter reason"
-
-                                value={item.title}
-                                onFocus={() => {
-                                  setOpenDropdownId(null);
-                                  scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
-                                }}
-
-                                // onChangeText={(t) => updateTitle(item.id, t)}
-                                onChangeText={(t) => {
-                                  const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                                  updateTitle(item.id, onlyLetters);
-                                }}
-                              />
-                            ) : (
-                              <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
-                                <Text>Maintenance</Text>
-                              </View>
-                            )}
-
-                            {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
-                            {item.type === "" ? (
-                              <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                                <Text style={{ color: "#999" }}>Enter amount</Text>
-                              </View>
-                            ) : (
-                              <TextInput
-                                ref={(r) => {
-                                  inputRefs.current[`amount-${item.id}`] = r;
-                                }}
-                                style={styles.figmaRightBox}
+                            <View style={{ flex: 1 }}>
+                              <InputComponent
+                                type="number"
+                                value={item.amount}
                                 placeholder="Enter amount"
                                 keyboardType="numeric"
-                                value={item.amount}
-                                onFocus={() => {
-                                  setOpenDropdownId(null);
-                                  scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
-                                }}
-
-                                onChangeText={(t) => {
-
-                                  let cleaned = t.replace(/[^0-9.]/g, "");
+                                editable={!!item.type}
+                                disabled={!item.type}
+                                onChangeText={(text) => {
+                                  let cleaned = text.replace(/[^0-9.]/g, "");
 
                                   const parts = cleaned.split(".");
 
@@ -2081,12 +1940,11 @@ export default function AssignTenant({ navigation, route }) {
                                     cleaned = parts[0] + "." + parts[1].slice(0, 2);
                                   }
 
-                                  updateAmount(item.id, cleaned)
-                                }
-
-                                }
+                                  updateAmount(item.id, cleaned);
+                                }}
+                                error={!!item.amountError}
                               />
-                            )}
+                            </View>
 
                           </View>
 
@@ -2123,6 +1981,7 @@ export default function AssignTenant({ navigation, route }) {
 
                         </View>
                       ))}
+
                       <TouchableOpacity
                         // style={styles.addNewButton}
                         // onPress={addCharge}
@@ -2239,38 +2098,32 @@ export default function AssignTenant({ navigation, route }) {
 
                           <>
 
-
                             <View style={styles.amountInputWrapper}>
-
-                              <TextInput
-                                style={styles.customRentInput}
-                                placeholder="₹ 0.00"
-                                placeholderTextColor="#9CA3AF"
-                                keyboardType="numeric"
-                                value={customRentAmount}
-                                onChangeText={(text) => {
-                                  setCustomRentAmount(
-                                    text.replace(/[^0-9]/g, "")
-                                  );
-                                  setCustomRentError("");
-                                }}
-                              />
+                              <View style={{ flex: 1 }}>
+                                <InputComponent
+                                  type="number"
+                                  value={customRentAmount}
+                                  placeholder="₹ 0.00"
+                                  keyboardType="numeric"
+                                  onChangeText={(text) => {
+                                    const onlyNum = text.replace(/[^0-9]/g, "");
+                                    setCustomRentAmount(onlyNum);
+                                    setCustomRentError("");
+                                  }}
+                                  error={!!customRentError}
+                                />
+                              </View>
 
                               <TouchableOpacity
                                 style={styles.setBtnInside}
                                 onPress={() => {
-
                                   if (!customRentAmount) {
-                                    setCustomRentError(
-                                      "Please enter custom rent amount"
-                                    );
+                                    setCustomRentError("Please enter custom rent amount");
                                     return;
                                   }
 
                                   if (Number(customRentAmount) <= 0) {
-                                    setCustomRentError(
-                                      "Amount should be greater than zero"
-                                    );
+                                    setCustomRentError("Amount should be greater than zero");
                                     return;
                                   }
 
@@ -2280,15 +2133,12 @@ export default function AssignTenant({ navigation, route }) {
                                   setCustomRentError("");
                                 }}
                               >
-                                <Text style={styles.setBtnText}>
-                                  ✓ Set
-                                </Text>
+                                <Text style={styles.setBtnText}>✓ Set</Text>
                               </TouchableOpacity>
-
                             </View>
 
                             {customRentError ? (
-                              <ErrorMessage message={customRentError} />
+                              <ErrorMessage message={customRentError} type="error" />
                             ) : null}
                           </>
 
@@ -2566,53 +2416,53 @@ export default function AssignTenant({ navigation, route }) {
                 showsVerticalScrollIndicator={true}
                 persistentScrollbar={true}
               >
-               {transactionOptions?.length > 0 ? (
-  transactionOptions.map((payment, index) => {
-    const isSelected =
-      accountSelected?.bankId === payment?.bankId;
+                {transactionOptions?.length > 0 ? (
+                  transactionOptions.map((payment, index) => {
+                    const isSelected =
+                      accountSelected?.bankId === payment?.bankId;
 
-    return (
-      <TouchableOpacity
-        key={`${payment?.bankId}-${index}`}
-        activeOpacity={0.7}
-        style={[
-          styles.paymentMethodRow,
-          isSelected && styles.paymentMethodRowSelected,
-        ]}
-        onPress={() => {
-          setAccountSelected(payment);
-          setAccountopen(false);
-          setBankError("");
-        }}
-      >
-        <PaymentMethodIcon payment={payment} />
+                    return (
+                      <TouchableOpacity
+                        key={`${payment?.bankId}-${index}`}
+                        activeOpacity={0.7}
+                        style={[
+                          styles.paymentMethodRow,
+                          isSelected && styles.paymentMethodRowSelected,
+                        ]}
+                        onPress={() => {
+                          setAccountSelected(payment);
+                          setAccountopen(false);
+                          setBankError("");
+                        }}
+                      >
+                        <PaymentMethodIcon payment={payment} />
 
-        <View style={styles.paymentMethodDetails}>
-          <Text
-            style={styles.paymentMethodName}
-            numberOfLines={1}
-          >
-            {payment?.title}
-          </Text>
+                        <View style={styles.paymentMethodDetails}>
+                          <Text
+                            style={styles.paymentMethodName}
+                            numberOfLines={1}
+                          >
+                            {payment?.title}
+                          </Text>
 
-          <Text
-            style={styles.paymentMethodSubText}
-            numberOfLines={1}
-          >
-            {payment?.subtitle}
-          </Text>
-        </View>
+                          <Text
+                            style={styles.paymentMethodSubText}
+                            numberOfLines={1}
+                          >
+                            {payment?.subtitle}
+                          </Text>
+                        </View>
 
-        <PaymentTypeBadge type={payment?.accountType} />
+                        <PaymentTypeBadge type={payment?.accountType} />
 
-      </TouchableOpacity>
-    );
-  })
-) : (
-  <Text style={styles.noPaymentText}>
-    No payment methods available
-  </Text>
-)}
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  <Text style={styles.noPaymentText}>
+                    No payment methods available
+                  </Text>
+                )}
               </ScrollView>
             </View>
           </>
@@ -2758,7 +2608,7 @@ export default function AssignTenant({ navigation, route }) {
 
         )}
 
-      </View>
+      </View >
 
       <LeavePageScreen
         visible={showLeavePageScreen}
@@ -3038,6 +2888,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    gap: 6
   },
 
   figmaLeftBox: {
@@ -3378,10 +3229,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
 
+
   amountInputWrapper: {
     marginTop: 20,
     height: 52,
-    borderWidth: 1,
+    // borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 12,
     backgroundColor: "#fff",
@@ -3631,72 +3483,72 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   cashIconBg: {
-  backgroundColor: "#DDFBE8",
-},
+    backgroundColor: "#DDFBE8",
+  },
 
-cardIconBg: {
-  backgroundColor: "#FFF0D9",
-},
+  cardIconBg: {
+    backgroundColor: "#FFF0D9",
+  },
 
-upiIconBg: {
-  backgroundColor: "#F3E5FF",
-},
+  upiIconBg: {
+    backgroundColor: "#F3E5FF",
+  },
 
-bankIconBg: {
-  backgroundColor: "#DCE8FF",
-},
+  bankIconBg: {
+    backgroundColor: "#DCE8FF",
+  },
 
-cashBadge: {
-  backgroundColor: "#DDFBE8",
-},
+  cashBadge: {
+    backgroundColor: "#DDFBE8",
+  },
 
-cardBadge: {
-  backgroundColor: "#FFF0D9",
-},
+  cardBadge: {
+    backgroundColor: "#FFF0D9",
+  },
 
-upiBadge: {
-  backgroundColor: "#F3E5FF",
-},
+  upiBadge: {
+    backgroundColor: "#F3E5FF",
+  },
 
-bankBadge: {
-  backgroundColor: "#DCE8FF",
-},
+  bankBadge: {
+    backgroundColor: "#DCE8FF",
+  },
 
-cashText: {
-  color: "#07883C",
-},
+  cashText: {
+    color: "#07883C",
+  },
 
-cardText: {
-  color: "#E34B00",
-},
+  cardText: {
+    color: "#E34B00",
+  },
 
-upiText: {
-  color: "#9224E8",
-},
+  upiText: {
+    color: "#9224E8",
+  },
 
-bankText: {
-  color: "#2457E6",
-},
+  bankText: {
+    color: "#2457E6",
+  },
 
-cardGlyph: {
-  width: 23,
-  height: 17,
-  borderWidth: 1.5,
-  borderColor: "#FF9800",
-  borderRadius: 4,
-  justifyContent: "center",
-  paddingHorizontal: 3,
-},
+  cardGlyph: {
+    width: 23,
+    height: 17,
+    borderWidth: 1.5,
+    borderColor: "#FF9800",
+    borderRadius: 4,
+    justifyContent: "center",
+    paddingHorizontal: 3,
+  },
 
-cardGlyphLine: {
-  height: 2,
-  backgroundColor: "#FF9800",
-  marginBottom: 4,
-},
+  cardGlyphLine: {
+    height: 2,
+    backgroundColor: "#FF9800",
+    marginBottom: 4,
+  },
 
-cardGlyphSmallLine: {
-  width: 7,
-  height: 2,
-  backgroundColor: "#FF9800",
-},
+  cardGlyphSmallLine: {
+    width: 7,
+    height: 2,
+    backgroundColor: "#FF9800",
+  },
 });
