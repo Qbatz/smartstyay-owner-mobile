@@ -23,6 +23,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import { Calendar } from "react-native-calendars";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import InputComponent from "../../MorePages/InputComponent"
+import DropdownComponent from "../../MorePages/DropdownComponent";
+import DatePickerComponent from "../../MorePages/DatePickerComponent";
 import BankIcon from "../../../Assets/Images/bankBlue.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 import CardIcon from "../../../Assets/Images/Cardorange.png";
@@ -315,6 +317,12 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
   //   };
   // }, []);
 
+
+  const tenantOptions = BookingTenants?.map((tenant) => ({
+    label: tenant?.fullName,
+    value: tenant?.customerId || tenant?.id,
+  }));
+
   const paymentOptions = Array.isArray(AccountsList)
     ? AccountsList
     : [];
@@ -532,81 +540,71 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
                 Select Tenant <Text style={{ color: "red" }}>*</Text>
               </Text>
 
-              <View style={{ position: "relative" }}>
-                <TouchableOpacity
-                  // style={styles.select}
-                  style={[
-                    styles.select,
-                    {
-                      borderColor: BookingTenantsOpen ? "#0085FF" : "#D9D9D9",
-                      borderWidth: BookingTenantsOpen ? 1.5 : 1,
-                    },
+              <DropdownComponent
+                options={tenantOptions}
+                value={
+                  BookingTenantsSelected?.customerId ||
+                  BookingTenantsSelected?.id ||
+                  null
+                }
+                placeholder="Select Tenant"
+                onChange={(value) => {
+                  const selectedTenant = BookingTenants.find(
+                    (tenant) =>
+                      String(tenant.customerId || tenant.id) === String(value)
+                  );
 
-                  ]}
-                  onPress={() => setBookingTenantsopen(!BookingTenantsOpen)}
-                >
-                  <Text style={styles.selectText}>
-                    {BookingTenantsSelected?.fullName || "Select Tenant"}
-                  </Text>
-                  <Image source={DownArrow} style={styles.arrow} />
-                </TouchableOpacity>
-
-                {tenentsError && <ErrorMessage message={tenentsError} type="error" />}
-
-                {BookingTenantsOpen && (
-                  <View style={styles.dropdownMenu}>
-                    <ScrollView
-                      style={{ maxHeight: 160 }}
-                      nestedScrollEnabled={true}   // ✅ Android
-                      keyboardShouldPersistTaps="handled"
-                      showsVerticalScrollIndicator={false}
-                    >
-                      {BookingTenants.map((v, i) => (
-                        <TouchableOpacity
-                          key={i}
-                          style={styles.option}
-                          onPress={() => {
-                            setBookTenantsSelected(v);
-                            setBookingTenantsopen(false);
-                            setTenantsError("");
-                          }}
-                        >
-                          <Text style={styles.optionText}>{v.fullName}</Text>
-                        </TouchableOpacity>
-                      ))}
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
-
-              {/* Booking Date */}
-              <Text style={styles.label}>
-                Booking Date <Text style={{ color: "red" }}>*</Text>
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  Keyboard.dismiss()
-                  setShowDatePicker(true)
+                  setBookTenantsSelected(selectedTenant || null);
+                  setTenantsError("");
                 }}
-                // style={styles.inputBox}
-                style={[
-                  styles.inputBox,
-                  {
-                    borderColor: showDatePicker ? "#0085FF" : "#D9D9D9",
-                    borderWidth: showDatePicker ? 1.5 : 1,
-                  },
+                error={!!tenentsError}
+              />
 
-                ]}
-              >
-                <Text style={{ color: bookingDate ? "#000" : "#999" }}>
-                  {bookingDate ? bookingDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
-                </Text>
-                <Image
-                  source={require("../../../Assets/Images/calendar.png")}
-                  style={styles.icon}
-                />
-              </TouchableOpacity>
-              {bookingDateError && <ErrorMessage message={bookingDateError} type="error" />}
+              {tenentsError ? (
+                <ErrorMessage message={tenentsError} type="error" />
+              ) : null}
+
+
+
+              <DatePickerComponent
+                label="Booking Date"
+                required
+                selectedDate={
+                  bookingDate ? bookingDate.format("YYYY-MM-DD") : null
+                }
+                placeholder="DD/MM/YYYY"
+                displayFormat="DD/MM/YYYY"
+                minDate={
+                  minBookingDate
+                    ? minBookingDate.format("YYYY-MM-DD")
+                    : undefined
+                }
+                maxDate={today.format("YYYY-MM-DD")}
+                onSelect={(date) => {
+                  const selected = dayjs(date, "YYYY-MM-DD");
+
+                  if (minBookingDate && selected.isBefore(minBookingDate, "day")) {
+                    return;
+                  }
+
+                  if (selected.isAfter(today, "day")) {
+                    return;
+                  }
+
+                  setBookingDate(selected);
+                  setBookingDateError("");
+
+                  // Joining date should not be before booking date
+                  if (joiningDate && joiningDate.isBefore(selected, "day")) {
+                    setJoiningDate(selected);
+                  }
+                }}
+                // error={!!bookingDateError}
+              />
+
+              {bookingDateError ? (
+                <ErrorMessage message={bookingDateError} type="error" />
+              ) : null}
 
               {/* Booking Amount */}
               <Text style={styles.label}>
@@ -651,34 +649,38 @@ export default function NewBookingSheet({ visible, onClose, room, bed, selectedB
 
               {BookingAmountError && <ErrorMessage message={BookingAmountError} type="error" />}
 
-              {/* Joining Date */}
-              <Text style={styles.label}>
-                Joining Date <Text style={{ color: "red" }}>*</Text>
-              </Text>
-              <TouchableOpacity
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setShowJoinDatePicker(true)
-                }}
-                // style={styles.inputBox}
-                style={[
-                  styles.inputBox,
-                  {
-                    borderColor: showJoinDatePicker ? "#0085FF" : "#D9D9D9",
-                    borderWidth: showJoinDatePicker ? 1.5 : 1,
-                  },
+              <DatePickerComponent
+                label="Joining Date"
+                required
+                selectedDate={
+                  joiningDate ? joiningDate.format("YYYY-MM-DD") : null
+                }
+                placeholder="DD/MM/YYYY"
+                displayFormat="DD/MM/YYYY"
+                minDate={
+                  bookingDate
+                    ? bookingDate.format("YYYY-MM-DD")
+                    : undefined
+                }
+                disabled={!bookingDate}
+                onSelect={(date) => {
+                  if (!bookingDate) return;
 
-                ]}
-              >
-                <Text style={{ color: joiningDate ? "#000" : "#999" }}>
-                  {joiningDate ? joiningDate.format("DD/MM/YYYY") : "DD/MM/YYYY"}
-                </Text>
-                <Image
-                  source={require("../../../Assets/Images/calendar.png")}
-                  style={styles.icon}
-                />
-              </TouchableOpacity>
-              {joiningDateError && <ErrorMessage message={joiningDateError} type="error" />}
+                  const selected = dayjs(date, "YYYY-MM-DD");
+
+                  if (selected.isBefore(bookingDate, "day")) {
+                    return;
+                  }
+
+                  setJoiningDate(selected);
+                  setJoiningDateError("");
+                }}
+                // error={!!joiningDateError}
+              />
+
+              {joiningDateError ? (
+                <ErrorMessage message={joiningDateError} type="error" />
+              ) : null}
 
               {/* Account */}
               <Text style={styles.label}>
@@ -1235,79 +1237,79 @@ const styles = StyleSheet.create({
     maxHeight: 180,
   },
   footer: {
-  flexDirection: "row",
-  justifyContent: "flex-end",
-  alignItems: "center",
-  gap: 15,
-  marginTop: 15,
-  marginBottom: Platform.OS === "ios" ? 20 : 12,
-  paddingTop: 10,
-  backgroundColor: "#FFFFFF",
-},
-paymentMethodRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  width: "100%",
-  paddingHorizontal: 12,
-  paddingVertical: 12,
-  gap: 10,
-  backgroundColor: "#FFFFFF",
-  borderBottomWidth: 1,
-  borderBottomColor: "#F0F0F0",
-},
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: 15,
+    marginTop: 15,
+    marginBottom: Platform.OS === "ios" ? 20 : 12,
+    paddingTop: 10,
+    backgroundColor: "#FFFFFF",
+  },
+  paymentMethodRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    gap: 10,
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
 
-paymentMethodRowSelected: {
-  backgroundColor: "#F5F8FF",
-},
+  paymentMethodRowSelected: {
+    backgroundColor: "#F5F8FF",
+  },
 
-paymentMethodIcon: {
-  width: 46,
-  height: 46,
-  borderRadius: 23,
-  alignItems: "center",
-  justifyContent: "center",
-  flexShrink: 0,
-},
+  paymentMethodIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
 
-paymentMethodIconImage: {
-  width: 24,
-  height: 24,
-  resizeMode: "contain",
-},
+  paymentMethodIconImage: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
 
-paymentMethodDetails: {
-  flex: 1,
-  minWidth: 0,
-  marginLeft: 2,
-},
+  paymentMethodDetails: {
+    flex: 1,
+    minWidth: 0,
+    marginLeft: 2,
+  },
 
-paymentMethodName: {
-  fontSize: 15,
-  fontFamily: "Gilroy-Semibold",
-  color: "#202637",
-},
+  paymentMethodName: {
+    fontSize: 15,
+    fontFamily: "Gilroy-Semibold",
+    color: "#202637",
+  },
 
-paymentMethodSubText: {
-  fontSize: 13,
-  fontFamily: "Gilroy-Medium",
-  color: "#74809A",
-  marginTop: 4,
-},
+  paymentMethodSubText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#74809A",
+    marginTop: 4,
+  },
 
-paymentTypeBadge: {
-  minWidth: 75,
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  borderRadius: 24,
-  alignItems: "center",
-  justifyContent: "center",
-  alignSelf: "center",
-  flexShrink: 0,
-},
+  paymentTypeBadge: {
+    minWidth: 75,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    flexShrink: 0,
+  },
 
-paymentTypeText: {
-  fontSize: 12,
-  fontFamily: "Gilroy-Semibold",
-},
+  paymentTypeText: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
 
 });
