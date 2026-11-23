@@ -7,7 +7,7 @@ import {
   Animated,
   StyleSheet,
   TouchableWithoutFeedback,
-  TextInput, Keyboard, PanResponder, KeyboardAvoidingView,ScrollView
+  TextInput, Keyboard, PanResponder, KeyboardAvoidingView, ScrollView
 } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
@@ -28,7 +28,7 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import minMax from "dayjs/plugin/minMax";
 dayjs.extend(minMax);
 import InputComponent from "../../MorePages/InputComponent"
-
+import DatePickerComponent from "../../MorePages/DatePickerComponent";
 
 export default function ConfirmReassignSheet({
   visible,
@@ -53,37 +53,39 @@ export default function ConfirmReassignSheet({
   const [rentError, setRentError] = useState("")
   const [customerdetails, setCustomerDetails] = useState(null)
 
- const scrollRef = useRef(null);
+
+
+  const scrollRef = useRef(null);
   const reasonRef = useRef(null);
   const { activeHostelId } = useContext(CommonContexts);
   const { getAllFloorsByHostel, getAllRoomsByFloor } = useFloor();
-  const {changeBedCustomer, getCustomerDetails } = useCustomer();
+  const { changeBedCustomer, getCustomerDetails } = useCustomer();
 
- 
+
   useEffect(() => {
     if (sameAsCurrent) {
       setRentAmount(String(selectedBed?.rentAmount || ""));
     }
   }, [sameAsCurrent]);
 
- 
- useEffect(() => {
-  const fetchCustomerDetails = async () => {
-    const tenantId = selectedBed?.currentTenantInfo?.[0]?.tenetId;
 
-    if (!tenantId || !activeHostelId) return;
+  useEffect(() => {
+    const fetchCustomerDetails = async () => {
+      const tenantId = selectedBed?.currentTenantInfo?.[0]?.tenetId;
 
-    const res = await getCustomerDetails(tenantId);
+      if (!tenantId || !activeHostelId) return;
 
-    if (res?.success) {
-      setCustomerDetails(res?.data);
-    }
-  };
+      const res = await getCustomerDetails(tenantId);
 
-  fetchCustomerDetails();
-}, [selectedBed, activeHostelId]);
+      if (res?.success) {
+        setCustomerDetails(res?.data);
+      }
+    };
 
-console.log("customerdetails", customerdetails);
+    fetchCustomerDetails();
+  }, [selectedBed, activeHostelId]);
+
+  console.log("customerdetails", customerdetails);
 
 
   const today = dayjs().startOf("day");
@@ -91,152 +93,158 @@ console.log("customerdetails", customerdetails);
 
   const joiningDateRaw = selectedBed?.currentTenantInfo?.[0]?.joiningDate;
 
-const joiningDate = joiningDateRaw
-  ? dayjs(joiningDateRaw, ["DD/MM/YYYY", "DD-MM-YYYY", "YYYY-MM-DD"])
-  : null;
+  const joiningDate = joiningDateRaw
+    ? dayjs(joiningDateRaw, ["DD/MM/YYYY", "DD-MM-YYYY", "YYYY-MM-DD"])
+    : null;
 
- const bedHistory = customerdetails?.bedHistory || [];
+  const bedHistory = customerdetails?.bedHistory || [];
   console.log("bedhistory", bedHistory);
 
   const invoices = customerdetails?.invoiceResponseList || [];
 
-const lastBillDate =
-  invoices.length > 0
-    ? dayjs(
+  const lastBillDate =
+    invoices.length > 0
+      ? dayjs(
         invoices[invoices.length - 1].invoiceGeneratedDate,
         ["DD/MM/YYYY", "DD-MM-YYYY"]
       )
-    : null;
-  
+      : null;
 
-let latestBedChangeDate = null;
 
-if (bedHistory.length > 0) {
-  const lastRecord = bedHistory[bedHistory.length - 1];
+  let latestBedChangeDate = null;
 
-  if (lastRecord.endDate === "Till date") {
-    latestBedChangeDate = dayjs(
-      lastRecord.startDate,
-      ["DD/MM/YYYY", "DD-MM-YYYY"]
-    );
-  } else {
-    const validDates = bedHistory
-      .filter(b => b.startDate)
-      .map(b =>
-        dayjs(b.startDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
+  if (bedHistory.length > 0) {
+    const lastRecord = bedHistory[bedHistory.length - 1];
+
+    if (lastRecord.endDate === "Till date") {
+      latestBedChangeDate = dayjs(
+        lastRecord.startDate,
+        ["DD/MM/YYYY", "DD-MM-YYYY"]
       );
+    } else {
+      const validDates = bedHistory
+        .filter(b => b.startDate)
+        .map(b =>
+          dayjs(b.startDate, ["DD/MM/YYYY", "DD-MM-YYYY"])
+        );
 
-    if (validDates.length > 0) {
-      latestBedChangeDate = dayjs.max(validDates);
+      if (validDates.length > 0) {
+        latestBedChangeDate = dayjs.max(validDates);
+      }
     }
   }
-}
 
-const joinedThisMonth =
-  joiningDate &&
-  joiningDate.month() === today.month() &&
-  joiningDate.year() === today.year();
+  const joinedThisMonth =
+    joiningDate &&
+    joiningDate.month() === today.month() &&
+    joiningDate.year() === today.year();
 
-let compareDate;
+  let compareDate;
 
-if (joinedThisMonth) {
-  compareDate = latestBedChangeDate || joiningDate;
-} else {
-  compareDate =
-    latestBedChangeDate || lastBillDate || joiningDate;
-}
+  if (joinedThisMonth) {
+    compareDate = latestBedChangeDate || joiningDate;
+  } else {
+    compareDate =
+      latestBedChangeDate || lastBillDate || joiningDate;
+  }
 
-// const compareDate = latestBedChangeDate || joiningDate;
+  // const compareDate = latestBedChangeDate || joiningDate;
 
+  const minSelectableDate =
+    compareDate && compareDate.isValid()
+      ? compareDate.format("YYYY-MM-DD")
+      : undefined;
 
-
-
-const isDateDisabled = (date) => {
-  if (!date) return false;
-
-  const d = dayjs(date);
-
-  // ❌ future block
-  if (d.isAfter(today, "day")) return true;
-
-  // ❌ before latest bed change OR joining date
-  if (compareDate && d.isBefore(compareDate, "day")) return true;
-
-  return false;
-};
-
-// const isDateDisabled = (date) => {
-//   if (!date) return false;
-
-//   const d = dayjs(date);
-
-//   if (joiningDate && d.isBefore(joiningDate, "day")) return true;
+  const maxSelectableDate = today.format("YYYY-MM-DD");
 
 
-//   if (d.isAfter(today, "day")) return true;
 
-//   return false;
-// };
+  const isDateDisabled = (date) => {
+    if (!date) return false;
+
+    const d = dayjs(date);
+
+    // ❌ future block
+    if (d.isAfter(today, "day")) return true;
+
+    // ❌ before latest bed change OR joining date
+    if (compareDate && d.isBefore(compareDate, "day")) return true;
+
+    return false;
+  };
+
+  // const isDateDisabled = (date) => {
+  //   if (!date) return false;
+
+  //   const d = dayjs(date);
+
+  //   if (joiningDate && d.isBefore(joiningDate, "day")) return true;
 
 
-const markedDates = {};
+  //   if (d.isAfter(today, "day")) return true;
 
-for (let i = -180; i <= 180; i++) {
-  const d = dayjs().add(i, "day");
-  const key = d.format("YYYY-MM-DD");
+  //   return false;
+  // };
 
-  if (isDateDisabled(d)) {
-    markedDates[key] = {
-      disabled: true,
-      disableTouchEvent: true,
-      customStyles: {
-        container: {
-          backgroundColor: "#F3F4F6",
-          opacity: 0.4,
-          borderRadius: 8,
+
+  const markedDates = {};
+
+  for (let i = -180; i <= 180; i++) {
+    const d = dayjs().add(i, "day");
+    const key = d.format("YYYY-MM-DD");
+
+    if (isDateDisabled(d)) {
+      markedDates[key] = {
+        disabled: true,
+        disableTouchEvent: true,
+        customStyles: {
+          container: {
+            backgroundColor: "#F3F4F6",
+            opacity: 0.4,
+            borderRadius: 8,
+          },
+          text: {
+            color: "#9CA3AF",
+          },
         },
-        text: {
-          color: "#9CA3AF",
-        },
-      },
+      };
+    }
+  }
+
+  // selected highlight
+  if (selectedDate) {
+    markedDates[dayjs(selectedDate).format("YYYY-MM-DD")] = {
+      selected: true,
+      selectedColor: "#1E45E1",
     };
   }
-}
+  // const keyboardHeight = useRef(new Animated.Value(0)).current;
 
-// selected highlight
-if (selectedDate) {
-  markedDates[dayjs(selectedDate).format("YYYY-MM-DD")] = {
-    selected: true,
-    selectedColor: "#1E45E1",
-  };
-}
-// const keyboardHeight = useRef(new Animated.Value(0)).current;
+  // useEffect(() => {
+  //   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
+  //     Animated.timing(keyboardHeight, {
+  //       toValue: e.endCoordinates.height,
+  //       duration: 250,
+  //       useNativeDriver: false,
+  //     }).start();
+  //   });
 
-// useEffect(() => {
-//   const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
-//     Animated.timing(keyboardHeight, {
-//       toValue: e.endCoordinates.height,
-//       duration: 250,
-//       useNativeDriver: false,
-//     }).start();
-//   });
+  //   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
+  //     Animated.timing(keyboardHeight, {
+  //       toValue: 0,
+  //       duration: 250,
+  //       useNativeDriver: false,
+  //     }).start();
+  //   });
 
-//   const hideSub = Keyboard.addListener("keyboardDidHide", () => {
-//     Animated.timing(keyboardHeight, {
-//       toValue: 0,
-//       duration: 250,
-//       useNativeDriver: false,
-//     }).start();
-//   });
+  //   return () => {
+  //     showSub.remove();
+  //     hideSub.remove();
+  //   };
+  // }, []);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
-//   return () => {
-//     showSub.remove();
-//     hideSub.remove();
-//   };
-// }, []);
-const [keyboardHeight, setKeyboardHeight] = useState(0);
-
-useEffect(() => {
+  useEffect(() => {
     const showSub = Keyboard.addListener("keyboardDidShow", (e) => {
       Animated.timing(translateY, {
         toValue: -e.endCoordinates.height + 60,
@@ -259,59 +267,59 @@ useEffect(() => {
     };
   }, []);
 
-// useEffect(() => {
-//   const show = Keyboard.addListener("keyboardDidShow", (e) => {
-//     setKeyboardHeight(e.endCoordinates.height);
-//   });
+  // useEffect(() => {
+  //   const show = Keyboard.addListener("keyboardDidShow", (e) => {
+  //     setKeyboardHeight(e.endCoordinates.height);
+  //   });
 
-//   const hide = Keyboard.addListener("keyboardDidHide", () => {
-//     setKeyboardHeight(0);
-//   });
+  //   const hide = Keyboard.addListener("keyboardDidHide", () => {
+  //     setKeyboardHeight(0);
+  //   });
 
-//   return () => {
-//     show.remove();
-//     hide.remove();
-//   };
-// }, []);
+  //   return () => {
+  //     show.remove();
+  //     hide.remove();
+  //   };
+  // }, []);
 
 
-// const [keyboardOpen, setKeyboardOpen] = useState(false);
+  // const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-// useEffect(() => {
-//   const show = Keyboard.addListener("keyboardDidShow", () =>
-//     setKeyboardOpen(true)
-//   );
-//   const hide = Keyboard.addListener("keyboardDidHide", () =>
-//     setKeyboardOpen(false)
-//   );
+  // useEffect(() => {
+  //   const show = Keyboard.addListener("keyboardDidShow", () =>
+  //     setKeyboardOpen(true)
+  //   );
+  //   const hide = Keyboard.addListener("keyboardDidHide", () =>
+  //     setKeyboardOpen(false)
+  //   );
 
-//   return () => {
-//     show.remove();
-//     hide.remove();
-//   };
-// }, []);
+  //   return () => {
+  //     show.remove();
+  //     hide.remove();
+  //   };
+  // }, []);
 
   useEffect(() => {
-  Animated.timing(translateY, {
-  toValue: visible ? 0 : 500,
-  duration: 250,
-  useNativeDriver: true,
-}).start();
+    Animated.timing(translateY, {
+      toValue: visible ? 0 : 500,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
 
   }, [visible])
 
-  
 
-useEffect(() => {
-  if (visible) {
-    setSelectedDate(null);
-    setRentAmount("");
-    setSameAsCurrent(false);
-    setReason("");
-    setDateError("");
-    setRentError("");
-  }
-}, [visible]);
+
+  useEffect(() => {
+    if (visible) {
+      setSelectedDate(null);
+      setRentAmount("");
+      setSameAsCurrent(false);
+      setReason("");
+      setDateError("");
+      setRentError("");
+    }
+  }, [visible]);
 
 
 
@@ -323,10 +331,10 @@ useEffect(() => {
     onPanResponderRelease: (_, g) => {
       if (g.dy > 150) onClose();
       else
-      Animated.spring(translateY, {
-  toValue: 0,
-  useNativeDriver: true,
-}).start();
+        Animated.spring(translateY, {
+          toValue: 0,
+          useNativeDriver: true,
+        }).start();
 
     },
   });
@@ -360,7 +368,7 @@ useEffect(() => {
       joiningDate: dayjs(selectedDate).format("DD-MM-YYYY"),
       reason: reason || "Bed reassigned",
     };
-   
+
 
     const res = await changeBedCustomer(
       activeHostelId,
@@ -386,13 +394,13 @@ useEffect(() => {
 
     } else {
       // alert(res.message || "Change bed failed");
-       setModalType("error");
+      setModalType("error");
       setMessage(res?.message || "Change bed failed");
       setShowSuccess(true);
 
       setTimeout(() => {
         setShowSuccess(false);
-       
+
       }, 800);
     }
   };
@@ -406,141 +414,153 @@ useEffect(() => {
         type={modalType}
 
       />
-     <View
-  style={styles.overlay}
+      <View
+        style={styles.overlay}
 
->
+      >
         <TouchableWithoutFeedback onPress={onClose}>
           <View style={{ flex: 1 }} />
         </TouchableWithoutFeedback>
 
 
- <Animated.View
-           {...panResponder.panHandlers}
- style={[
-  styles.sheet,
-  {
-    transform: [{ translateY }],
-  },
-]}
+        <Animated.View
+          {...panResponder.panHandlers}
+          style={[
+            styles.sheet,
+            {
+              transform: [{ translateY }],
+            },
+          ]}
 
-         >
+        >
           <View style={styles.handle} />
- <ScrollView
-  ref={scrollRef}
-  showsVerticalScrollIndicator={false}
-  keyboardShouldPersistTaps="handled"
-  keyboardDismissMode="on-drag"
-  contentContainerStyle={{
-    paddingBottom:  20,
-    flexGrow: 1,
-  }}
->
-
-          <Text style={styles.title}>Confirm Change Bed</Text>
-
-
-          <Text style={styles.sectionLabel1}>Current Bed</Text>
-          <View style={styles.row}>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center'}}>
-              <Image source={FloorIcon} style={styles.icon} />
-              <Text style={styles.valueText}>{selectedBed.floorName}</Text>
-            </View>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center',}}>
-              <Image source={RoomIcon} style={styles.icon} />
-              <Text style={styles.valueText}>{selectedBed.roomName}</Text>
-            </View>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center'}}>
-              <Image source={BedIcon} style={{height:17, width:13,   marginRight: 5,
-    tintColor: "#1E45E1",}} />
-              <Text style={styles.valueText}>{selectedBed.bedName}</Text>
-            </View>
-          </View>
-
-          <View style={styles.swapWrapper}>
-            <Image source={SwapIcon} style={styles.swapIcon} />
-          </View>
-
-
-          <Text style={styles.sectionLabel1}>New Bed</Text>
-          <View style={styles.row1}>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center' }}>
-              <Image source={FloorIcon} style={styles.icon} />
-              <Text style={styles.valueText}>{selectedNewBed.bed.floorName}</Text>
-            </View>
-
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center' }}>
-              <Image source={RoomIcon} style={styles.icon} />
-              <Text style={styles.valueText}>{selectedNewBed.bed.roomName}</Text></View>
-            <View style={{ display: 'flex', flexDirection: 'row', flex: 1,alignItems:'center' }}>
-              <Image source={BedIcon} style={{height:17, width:13,   marginRight: 5,
-    tintColor: "#1E45E1",}}/>
-              <Text style={styles.valueText}>{selectedNewBed.bed.bedName}</Text></View>
-          </View>
-
-
-          <Text style={styles.sectionLabel}>Date <Text style={{color:"red"}}>*</Text></Text>
-          <TouchableOpacity
-            // onPress={() => setShowDatePicker(true)}
-            onPress={() => {
-  Keyboard.dismiss();          
-  setTimeout(() => {
-    setShowDatePicker(true);  
-  }, 150);
-}}
-                                style={[
-                                    styles.inputBoxDate,
-                                    {
-                                        borderColor: showDatePicker  ? "#0085FF" : "#D9D9D9",
-                                        borderWidth: showDatePicker ? 1.5 : 1,
-                                    },
-                                 
-                                ]}
+          <ScrollView
+            ref={scrollRef}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            contentContainerStyle={{
+              paddingBottom: 20,
+              flexGrow: 1,
+            }}
           >
-            <Text style={{ color: selectedDate ? "#000" : "#999" ,fontFamily: "Gilroy-Regular" }}>
-              {selectedDate
-                ? dayjs(selectedDate).format("DD/MM/YYYY")
-                : "Select Date"}
-            </Text>
 
-            <Image source={CalendarImg} style={styles.icon} />
-          </TouchableOpacity>
-          {dateError && (
-            <ErrorMessage message={dateError} type="error" />
-          )}
+            <Text style={styles.title}>Confirm Change Bed</Text>
 
 
-          <View style={styles.rentHeaderRow}>
-            <Text style={styles.sectionLabel}>New Rent Amount  <Text style={{color:"red"}}>*</Text></Text>
+            <Text style={styles.sectionLabel1}>Current Bed</Text>
+            <View style={styles.row}>
+              <View style={{ display: 'flex', flexDirection: 'row', flex: 1, alignItems: 'center' }}>
+                <Image source={FloorIcon} style={styles.icon} />
+                <Text style={styles.valueText}>{selectedBed.floorName}</Text>
+              </View>
+              <View style={{ display: 'flex', flexDirection: 'row', flex: 1, alignItems: 'center', }}>
+                <Image source={RoomIcon} style={styles.icon} />
+                <Text style={styles.valueText}>{selectedBed.roomName}</Text>
+              </View>
+              <View style={{ display: 'flex', flexDirection: 'row', flex: 1, alignItems: 'center' }}>
+                <Image source={BedIcon} style={{
+                  height: 17, width: 13, marginRight: 5,
+                  tintColor: "#1E45E1",
+                }} />
+                <Text style={styles.valueText}>{selectedBed.bedName}</Text>
+              </View>
+            </View>
 
-            <TouchableOpacity
-              style={styles.checkboxRow}
-              onPress={() => {
-                setSameAsCurrent((prev) => {
-                  const next = !prev;
+            <View style={styles.swapWrapper}>
+              <Image source={SwapIcon} style={styles.swapIcon} />
+            </View>
 
-                  if (next) {
 
-                    setRentAmount(String(selectedBed?.rentAmount || ""));
-                  } else {
-
-                    setRentAmount("");
-                  }
-
-                  setRentError("");
-                  return next;
-                });
-              }}
-            >
-              <View style={[styles.checkbox, sameAsCurrent && styles.checkboxActive]}>
-                {sameAsCurrent && <Text style={styles.tick}>✓</Text>}
+            <Text style={styles.sectionLabel1}>New Bed</Text>
+            <View style={styles.row1}>
+              <View style={{ display: 'flex', flexDirection: 'row', flex: 1, alignItems: 'center' }}>
+                <Image source={FloorIcon} style={styles.icon} />
+                <Text style={styles.valueText}>{selectedNewBed.bed.floorName}</Text>
               </View>
 
-              <Text style={styles.checkboxLabel}>Same as Current</Text>
-            </TouchableOpacity>
+              <View style={{ display: 'flex', flexDirection: 'row', flex: 1, alignItems: 'center' }}>
+                <Image source={RoomIcon} style={styles.icon} />
+                <Text style={styles.valueText}>{selectedNewBed.bed.roomName}</Text></View>
+              <View style={{ display: 'flex', flexDirection: 'row', flex: 1, alignItems: 'center' }}>
+                <Image source={BedIcon} style={{
+                  height: 17, width: 13, marginRight: 5,
+                  tintColor: "#1E45E1",
+                }} />
+                <Text style={styles.valueText}>{selectedNewBed.bed.bedName}</Text></View>
+            </View>
 
-          </View>
-         
+
+            <Text style={styles.sectionLabel}>
+              Date <Text style={{ color: "red" }}>*</Text>
+            </Text>
+
+            <DatePickerComponent
+              selectedDate={
+                selectedDate
+                  ? dayjs(selectedDate).format("YYYY-MM-DD")
+                  : null
+              }
+              placeholder="Select Date"
+              displayFormat="DD/MM/YYYY"
+              minDate={minSelectableDate}
+              maxDate={maxSelectableDate}
+              onSelect={(date) => {
+                const selected = dayjs(date);
+
+                if (!selected.isValid()) return;
+
+                if (selected.isAfter(today, "day")) return;
+
+                if (
+                  compareDate &&
+                  selected.isBefore(compareDate, "day")
+                ) {
+                  return;
+                }
+
+                setSelectedDate(selected);
+                setDateError("");
+              }}
+              error={!!dateError}
+            />
+
+            {dateError ? (
+              <ErrorMessage message={dateError} type="error" />
+            ) : null}
+
+
+            <View style={styles.rentHeaderRow}>
+              <Text style={styles.sectionLabel}>New Rent Amount  <Text style={{ color: "red" }}>*</Text></Text>
+
+              <TouchableOpacity
+                style={styles.checkboxRow}
+                onPress={() => {
+                  setSameAsCurrent((prev) => {
+                    const next = !prev;
+
+                    if (next) {
+
+                      setRentAmount(String(selectedBed?.rentAmount || ""));
+                    } else {
+
+                      setRentAmount("");
+                    }
+
+                    setRentError("");
+                    return next;
+                  });
+                }}
+              >
+                <View style={[styles.checkbox, sameAsCurrent && styles.checkboxActive]}>
+                  {sameAsCurrent && <Text style={styles.tick}>✓</Text>}
+                </View>
+
+                <Text style={styles.checkboxLabel}>Same as Current</Text>
+              </TouchableOpacity>
+
+            </View>
+
             {/* <View style={styles.inputBox} >
               <TextInput
                 style={styles.inputField}
@@ -558,102 +578,44 @@ useEffect(() => {
 
             </View> */}
 
-               <InputComponent
-                          placeholder="Enter Amount"
-                value={rentAmount}
-                onChangeText={(t) => {
-                  const cleaned = t.replace(/[^0-9]/g, "");
-                  setRentAmount(cleaned);
-                  // setRentAmount(text);
-                  setRentError("");
-                }}
-                placeholderTextColor="#999"
-                keyboardType="numeric"
-                             error={!!rentError}
-            
-                        />
+            <InputComponent
+              placeholder="Enter Amount"
+              value={rentAmount}
+              onChangeText={(t) => {
+                const cleaned = t.replace(/[^0-9]/g, "");
+                setRentAmount(cleaned);
+                // setRentAmount(text);
+                setRentError("");
+              }}
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              error={!!rentError}
+
+            />
             {rentError && (
               <ErrorMessage message={rentError} type="error" />
             )}
-         
-          <View style={styles.footer}>
-            <TouchableOpacity onPress={onClose}>
-              <Text style={styles.cancel}>Cancel</Text>
-            </TouchableOpacity>
+
+            <View style={styles.footer}>
+              <TouchableOpacity onPress={onClose}>
+                <Text style={styles.cancel}>Cancel</Text>
+              </TouchableOpacity>
 
 
 
-            <TouchableOpacity style={styles.assignBtn} onPress={handleSubmitReassign}>
-              <View style={styles.assignRow}>
-                <Image source={Assign} style={styles.assignIcon} />
-                <Text style={styles.assignText}>Assign</Text>
-              </View>
-            </TouchableOpacity>
+              <TouchableOpacity style={styles.assignBtn} onPress={handleSubmitReassign}>
+                <View style={styles.assignRow}>
+                  <Image source={Assign} style={styles.assignIcon} />
+                  <Text style={styles.assignText}>Assign</Text>
+                </View>
+              </TouchableOpacity>
 
-          </View>
+            </View>
           </ScrollView>
         </Animated.View>
-      
+
       </View>
-      {showDatePicker && (
-        <View style={styles.datePickerOverlay}>
-          <TouchableWithoutFeedback
-            onPress={() => setShowDatePicker(false)}
-          >
-            <View style={{ flex: 1 }} />
-          </TouchableWithoutFeedback>
 
-          <View style={styles.datePickerBox}>
-            {/* <Calendar
-              current={today}
-              maxDate={today}
-              onDayPress={(day) => {
-                setSelectedDate(dayjs(day.dateString, "YYYY-MM-DD"));
-                setShowDatePicker(false);
-                setDateError("")
-              }}
-              markedDates={
-                selectedDate
-                  ? {
-                    [dayjs(selectedDate).format("YYYY-MM-DD")]: {
-                      selected: true,
-                      selectedColor: "#1E45E1",
-                    },
-                  }
-                  : {}
-              }
-              theme={{
-                todayTextColor: "#1E45E1",
-                selectedDayBackgroundColor: "#1E45E1",
-                arrowColor: "#1E45E1",
-                textDisabledColor: "#9CA3AF",
-              }}
-            /> */}
-            <Calendar
-  current={today.format("YYYY-MM-DD")}
-  maxDate={today.format("YYYY-MM-DD")} // ❌ future block
-  markingType="custom"
-  markedDates={markedDates}
-  onDayPress={(day) => {
-    if (isDateDisabled(day.dateString)) return;
-
-    setSelectedDate(dayjs(day.dateString, "YYYY-MM-DD"));
-    setShowDatePicker(false);
-    setDateError("");
-  }}
-  theme={{
-    todayTextColor: "#1E45E1",
-    selectedDayBackgroundColor: "#1E45E1",
-    arrowColor: "#1E45E1",
-    textDisabledColor: "#9CA3AF",
-  }}
-/>
-
-
-
-          </View>
-        </View>
-      )}
     </>
   );
 }
@@ -671,17 +633,17 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
   },
 
-//  sheet: { backgroundColor: "#fff", paddingHorizontal: 20, paddingTop: 20, borderTopLeftRadius: 25, borderTopRightRadius: 25, maxHeight: "90%", },
+  //  sheet: { backgroundColor: "#fff", paddingHorizontal: 20, paddingTop: 20, borderTopLeftRadius: 25, borderTopRightRadius: 25, maxHeight: "90%", },
 
-sheet: {
-  backgroundColor: "#fff",
-  paddingHorizontal: 20,
-  paddingTop: 20,
-  borderTopLeftRadius: 25,
-  borderTopRightRadius: 25,
-  maxHeight: "90%",
-  paddingBottom: 30,
-},
+  sheet: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    borderTopLeftRadius: 25,
+    borderTopRightRadius: 25,
+    maxHeight: "90%",
+    paddingBottom: 30,
+  },
 
   handle: {
     width: 50,
@@ -700,7 +662,7 @@ sheet: {
 
   title: {
     fontSize: 18,
-   fontFamily: "Gilroy-Bold" ,
+    fontFamily: "Gilroy-Bold",
     marginBottom: 18,
   },
 
@@ -716,7 +678,7 @@ sheet: {
     marginBottom: 16,
     fontSize: 14,
     color: "#222222",
-     fontFamily: "Gilroy-Medium"
+    fontFamily: "Gilroy-Medium"
   },
 
   row: {
@@ -727,14 +689,14 @@ sheet: {
     gap: 12,
     marginBottom: 10,
   },
-   row1: {
+  row1: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-around",
     flex: 1,
     gap: 12,
-    marginBottom:20,
-    
+    marginBottom: 20,
+
   },
 
   icon: {
@@ -748,8 +710,8 @@ sheet: {
   valueText: {
     fontSize: 15,
     fontFamily: "Gilroy-Semibold",
-    flexShrink:1,
-    color:"#222222"
+    flexShrink: 1,
+    color: "#222222"
   },
 
   swapIcon: {
@@ -757,14 +719,14 @@ sheet: {
     height: 35,
 
   },
- swapWrapper: {
-  alignItems: "center",    
-  justifyContent: "center", 
-  paddingTop:10
-},
+  swapWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 10
+  },
 
   inputField: {
-     flex: 1,  
+    flex: 1,
     fontSize: 15,
     color: "#000",
     fontFamily: "Gilroy-Regular"
@@ -796,18 +758,18 @@ sheet: {
 
 
   footer: {
-        flexDirection: "row",
-  justifyContent: "flex-end",
-  alignItems: "center",
-  marginTop: 20,
-  marginBottom: 10,
-  gap: 20, 
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 10,
+    gap: 20,
   },
 
   cancel: {
     fontSize: 16,
     color: "#777",
-      fontFamily: "Gilroy-Semibold",
+    fontFamily: "Gilroy-Semibold",
   },
 
   assignBtn: {
@@ -896,7 +858,7 @@ sheet: {
   checkboxLabel: {
     fontSize: 13,
     color: "#4B4B4B",
-    fontFamily: "Gilroy-Medium" 
+    fontFamily: "Gilroy-Medium"
   },
 
 });

@@ -827,7 +827,7 @@ export default function AddBookingScreen({ navigation, route }) {
                 setSelectedBed(null);
 
                 setRooms([]);
-                setBeds([]);
+                // setBeds([]);
 
                 setFloorError("");
                 setRoomError("");
