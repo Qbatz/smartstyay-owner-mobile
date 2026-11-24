@@ -13,6 +13,7 @@ import {
   Platform,
   Keyboard, Dimensions,
 } from 'react-native';
+import CheckboxComponent from "./CheckboxComponent"
 
 import { ArrowUp2, ArrowDown2, SearchNormal1 } from 'iconsax-react-native';
 
@@ -29,32 +30,40 @@ const DropdownComponent = ({
   containerStyle,
   dropdownStyle,
   maxDropdownHeight = 240,
-  // dropdownWidthRatio = 1,
 
+  // option width ==> 
   dropdownWidthRatio = 0.91,
 
-  // NEW FEATURES
+
   searchable = false,
   allowCustomValue = false,
   searchPlaceholder = 'Search...',
   customValueLabel = 'Add',
+  multiSelect = false,
+  closeOnSelect = true,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  // const [dropdownPosition, setDropdownPosition] = useState({
-  //   top: 0,
-  //   left: 0,
-  //   width: 0,
-  // });
+
 
   const triggerRef = useRef(null);
 
-  // Selected option
-  const selectedOption = options?.find(item => {
-    const itemValue =
-      typeof item === 'object' ? item?.value : item;
+  const getItemValue = item =>
+    typeof item === 'object' ? item?.value : item;
 
+  const getItemLabel = item =>
+    typeof item === 'object' ? item?.label : item;
+
+  const selectedValues = multiSelect && Array.isArray(value) ? value : [];
+
+  const isValueSelected = v =>
+    multiSelect
+      ? selectedValues.some(s => String(s) === String(v))
+      : value != null && String(v) === String(value);
+
+  const selectedOption = options?.find(item => {
+    const itemValue = getItemValue(item);
     return (
       itemValue != null &&
       value != null &&
@@ -62,15 +71,27 @@ const DropdownComponent = ({
     );
   });
 
-  const selectedLabel = selectedOption
-    ? typeof selectedOption === 'object'
-      ? selectedOption.label
-      : selectedOption
+  const singleLabel = selectedOption
+    ? getItemLabel(selectedOption)
     : allowCustomValue && typeof value === 'string'
       ? value
       : '';
 
-  // Search filter
+  const getMultiLabel = () => {
+    if (selectedValues.length === 0) return '';
+
+    const first = selectedValues[0];
+    const firstOption = options.find(
+      item => String(getItemValue(item)) === String(first)
+    );
+    const firstLabel = firstOption ? getItemLabel(firstOption) : String(first);
+
+    const extra = selectedValues.length - 1;
+    return extra > 0 ? `${firstLabel} +${extra} more` : firstLabel;
+  };
+
+  const selectedLabel = multiSelect ? getMultiLabel() : singleLabel;
+
   const filteredOptions = options.filter(item => {
     const itemLabel =
       typeof item === 'object' ? item?.label : item;
@@ -80,7 +101,6 @@ const DropdownComponent = ({
       .includes(searchText.trim().toLowerCase());
   });
 
-  // Check whether typed value already exists
   const customValueExists = options.some(item => {
     const itemLabel =
       typeof item === 'object' ? item?.label : item;
@@ -112,21 +132,11 @@ const DropdownComponent = ({
     maxHeight: maxDropdownHeight,
   });
 
-  // const triggerRef = useRef(null);
   const triggerLayoutRef = useRef(null);
   const keyboardHeightRef = useRef(0);
 
-  // const triggerRef = useRef(null);
   const searchInputRef = useRef(null);
-  // const keyboardHeightRef = useRef(0);
 
-  // const focusSearchInput = () => {
-  //   InteractionManager.runAfterInteractions(() => {
-  //     requestAnimationFrame(() => {
-  //       searchInputRef.current?.focus();
-  //     });
-  //   });
-  // };
 
   const calculateDropdownPosition = (y, height, x, width) => {
     const screenHeight = Dimensions.get('screen').height;
@@ -180,26 +190,6 @@ const DropdownComponent = ({
   };
 
 
-  // const openDropdown = () => {
-  //   if (disabled) return;
-
-  //   setSearchText('');
-
-  //   triggerRef.current?.measureInWindow((x, y, width, height) => {
-  //     const statusBarOffset =
-  //       Platform.OS === 'android'
-  //         ? StatusBar.currentHeight || 0
-  //         : 0;
-
-  //     setDropdownPosition({
-  //       top: y + height + 6 + statusBarOffset,
-  //       left: x,
-  //       width,
-  //     });
-
-  //     setIsOpen(true);
-  //   });
-  // };
 
   useEffect(() => {
     const showListener = Keyboard.addListener(
@@ -243,22 +233,37 @@ const DropdownComponent = ({
     setSearchText('');
   };
 
-  // Select existing option
   const handleSelect = item => {
-    const selectedValue =
-      typeof item === 'object' ? item.value : item;
+    const selectedValue = getItemValue(item);
+
+    if (multiSelect) {
+      const alreadySelected = isValueSelected(selectedValue);
+
+      const next = alreadySelected
+        ? selectedValues.filter(v => String(v) !== String(selectedValue))
+        : [...selectedValues, selectedValue];
+
+      onChange?.(next);
+
+      if (closeOnSelect) closeDropdown();
+      return;
+    }
 
     onChange?.(selectedValue);
     closeDropdown();
   };
 
-  // Add custom value
   const handleAddCustomValue = () => {
     const customValue = searchText.trim();
-
     if (!customValue || !allowCustomValue) return;
 
-    onChange?.(customValue);
+    if (multiSelect) {
+      if (!isValueSelected(customValue)) {
+        onChange?.([...selectedValues, customValue]);
+      }
+    } else {
+      onChange?.(customValue);
+    }
     closeDropdown();
   };
 
@@ -274,7 +279,6 @@ const DropdownComponent = ({
       ) : null}
 
 
-      {/* Dropdown Trigger */}
       <TouchableOpacity
         ref={triggerRef}
         activeOpacity={0.8}
@@ -303,7 +307,6 @@ const DropdownComponent = ({
         )}
       </TouchableOpacity>
 
-      {/* Dropdown Modal */}
       <Modal
         visible={isOpen}
         transparent
@@ -319,7 +322,6 @@ const DropdownComponent = ({
             onPress={closeDropdown}
           />
 
-          {/* Same Input Position - Search */}
           {searchable && (
             <View
               style={[
@@ -333,10 +335,10 @@ const DropdownComponent = ({
                 },
               ]}
             >
-              <SearchNormal1
+              {/* <SearchNormal1
                 size={20}
                 color="#71717A"
-              />
+              /> */}
 
               <TextInput
                 ref={searchInputRef}
@@ -365,7 +367,6 @@ const DropdownComponent = ({
             </View>
           )}
 
-          {/* Options */}
           <View
             style={[
               styles.optionsShadow,
@@ -385,38 +386,33 @@ const DropdownComponent = ({
                 nestedScrollEnabled
                 showsVerticalScrollIndicator={false}
               >
-
                 {filteredOptions.map((item, index) => {
-                  const itemValue =
-                    typeof item === 'object'
-                      ? item.value
-                      : item;
+                  const itemValue = getItemValue(item);
+                  const itemLabel = getItemLabel(item);
+                  const isSelected = isValueSelected(itemValue);
 
-                  const itemLabel =
-                    typeof item === 'object'
-                      ? item.label
-                      : item;
-
-                  const isSelected =
-                    value != null &&
-                    String(itemValue) === String(value);
+                  if (multiSelect) {
+                    return (
+                      <View key={String(itemValue) + index} style={styles.checkboxRow}>
+                        <CheckboxComponent
+                          title={itemLabel}
+                          value={isSelected}
+                          onValueChange={() => handleSelect(item)}
+                          titleStyle={styles.checkboxTitle}
+                          containerStyle={{ paddingVertical: 10 }}
+                        />
+                      </View>
+                    );
+                  }
 
                   return (
                     <TouchableOpacity
                       key={String(itemValue) + index}
                       activeOpacity={0.7}
                       onPress={() => handleSelect(item)}
-                      style={[
-                        styles.option,
-                        isSelected && styles.selectedOption,
-                      ]}
+                      style={[styles.option, isSelected && styles.selectedOption]}
                     >
-                      <Text
-                        style={[
-                          styles.optionText,
-                          isSelected && styles.selectedText,
-                        ]}
-                      >
+                      <Text style={[styles.optionText, isSelected && styles.selectedText]}>
                         {itemLabel}
                       </Text>
                     </TouchableOpacity>
@@ -475,7 +471,6 @@ const styles = StyleSheet.create({
     borderColor: '#DEDEDE',
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
-    // paddingVertical: 8,
     paddingLeft: 12,
     paddingRight: 10,
     flexDirection: 'row',
@@ -526,7 +521,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
 
-  // Search
+
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -554,18 +549,7 @@ const styles = StyleSheet.create({
     color: '#71717A',
   },
 
-  // option: {
-  //   minHeight: 44,
-  //   paddingHorizontal: 14,
-  //   paddingVertical: 12,
-  //   justifyContent: 'center',
-  // },
 
-  // optionText: {
-  //   fontSize: 14,
-  //   color: '#18181B',
-  //   fontFamily: 'Gilroy-Semibold',
-  // },
 
   selectedOption: {
     backgroundColor: '#F4F4F5',
@@ -656,13 +640,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#E4E4E7',
 
-    // iOS Shadow
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.12,
     shadowRadius: 16,
 
-    // Android Shadow
     elevation: 12,
 
     overflow: 'visible',
@@ -674,7 +656,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 15,
     overflow: 'hidden',
-    paddingVertical:6
+    paddingVertical: 6
   },
 
   searchTrigger: {
@@ -719,6 +701,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#18181B',
     fontFamily: 'Gilroy-Semibold',
+  },
+  checkboxRow: {
+    paddingHorizontal: 14,
+  },
+
+  checkboxTitle: {
+    fontSize: 14,
+    fontFamily: 'Gilroy-Semibold',
+    color: '#18181B',
   },
 
 
