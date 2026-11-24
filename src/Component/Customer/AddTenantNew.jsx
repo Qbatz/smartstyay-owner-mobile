@@ -6,7 +6,7 @@ import {
     TextInput,
     Image,
     StyleSheet,
-    ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard, BackHandler, Platform, FlatList
+    ScrollView, TouchableWithoutFeedback, KeyboardAvoidingView, Modal, Dimensions, Keyboard, BackHandler, Platform, FlatList, Pressable
 } from "react-native";
 import * as ImagePicker from "react-native-image-picker";
 // import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
@@ -47,6 +47,8 @@ import BankIcon from "../../Assets/Images/bankBlue.png";
 import CashIcon from "../../Assets/Images/Cash_Icon.png";
 import CardIcon from "../../Assets/Images/Cardorange.png";
 import InputComponent from "../MorePages/InputComponent";
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
 
 
 export default function AddTenantNewform({ navigation, route }) {
@@ -915,21 +917,50 @@ export default function AddTenantNewform({ navigation, route }) {
     }
 
 
-    const loadRoomsByFloor = async (floorId) => {
-        if (!floorId) return
+    // const loadRoomsByFloor = async (floorId) => {
+    //     if (!floorId) return
 
+    //     try {
+    //         const res = await getAllRoomsByFloor(floorId);
+
+    //         if (res?.success && Array.isArray(res?.data)) {
+    //             setRooms(res?.data)
+    //         } else {
+    //             setRooms([])
+    //         }
+    //     } catch (e) {
+    //         setRooms([])
+    //     }
+    // }
+
+    const loadRoomsByFloor = async (floorId) => {
+        if (!floorId) return [];
         try {
             const res = await getAllRoomsByFloor(floorId);
-
             if (res?.success && Array.isArray(res?.data)) {
-                setRooms(res?.data)
-            } else {
-                setRooms([])
+                setRooms(res.data);
+                return res.data;
             }
+            setRooms([]);
+            return [];
         } catch (e) {
-            setRooms([])
+            setRooms([]);
+            return [];
         }
-    }
+    };
+
+    const getFloorId = (item) => item?.id ?? item?.floorId ?? item?._id;
+    const getRoomId = (item) => item?.id ?? item?.roomId ?? item?._id;
+
+    const floorOptions = (floors || []).map((item) => ({
+        label: item?.name ?? item?.floorName,
+        value: getFloorId(item),
+    }));
+
+    const roomOptions = (rooms || []).map((item) => ({
+        label: item?.name ?? item?.roomName,
+        value: getRoomId(item),
+    }));
 
     useEffect(() => {
         if (activeHostelId) {
@@ -1552,21 +1583,51 @@ export default function AddTenantNewform({ navigation, route }) {
 
     console.log(beds)
 
-    const filteredBeds = beds?.filter((bed) => {
-        if (!floorSelected || !roomSelected) return false;
+    // const filteredBeds = beds?.filter((bed) => {
+    //     if (!floorSelected || !roomSelected) return false;
 
-        return (
-            bed?.floorId === floorSelected?.id &&
-            bed?.roomId === roomSelected?.id &&
-            (
-                bed?.currentStatus === "VACANT" ||
-                bed?.currentStatus === "NOTICE"
-            )
-        );
-    });
+    //     return (
+    //         bed?.floorId === floorSelected?.id &&
+    //         bed?.roomId === roomSelected?.id &&
+    //         (
+    //             bed?.currentStatus === "VACANT" ||
+    //             bed?.currentStatus === "NOTICE"
+    //         )
+    //     );
+    // });
 
 
-    console.log(filteredBeds)
+    const filteredBeds = React.useMemo(() => {
+        const fId = getFloorId(floorSelected);
+        const rId = getRoomId(roomSelected);
+        if (fId == null || rId == null) return [];
+
+        return (Array.isArray(beds) ? beds : []).filter((bed) => {
+            const sameFloor = String(bed?.floorId) === String(fId);
+            const sameRoom = String(bed?.roomId) === String(rId);
+            const isAvailable = ["VACANT", "NOTICE"].includes(
+                String(bed?.currentStatus || "").trim().toUpperCase()
+            );
+            return sameFloor && sameRoom && isAvailable;
+        });
+    }, [beds, floorSelected, roomSelected]);
+
+    const bedOptions = React.useMemo(() => {
+        const list = filteredBeds.map((item) => ({
+            label: item?.bedName,
+            value: item?.bedId,
+        }));
+
+
+        if (
+            bedSelected?.bedId != null &&
+            !list.some((o) => String(o.value) === String(bedSelected.bedId))
+        ) {
+            list.push({ label: bedSelected.bedName, value: bedSelected.bedId });
+        }
+        return list;
+    }, [filteredBeds, bedSelected]);
+
 
     const hasRooms = rooms && rooms?.length > 0;
     const hasBeds = filteredBeds && filteredBeds?.length > 0;
@@ -4126,6 +4187,167 @@ export default function AddTenantNewform({ navigation, route }) {
     console.log(tenantList);
 
 
+    const renderStayDropdowns = () => (
+        <>
+            <DropdownComponent
+                label="Floor"
+                required
+                placeholder="Select a Floor"
+                options={floorOptions}
+                value={floorSelected?.id || null}
+                error={floorError}
+                onChange={async (value) => {
+                    const selected = floors.find(
+                        (item) => String(getFloorId(item)) === String(value)
+                    );
+                    if (!selected) return;
+
+                    setFloorSelected(selected);
+                    setFloorError("");
+
+                    setRoomSelected(null);
+                    setBedSelected(null);
+                    setRooms([]);
+                    setBedError("");
+                    setSelectedBedDetails(null);
+                    setCheckinRentalAmount("");
+                    setRentalError("");
+
+                    await loadRoomsByFloor(getFloorId(selected));
+                }}
+            />
+            {floorError ? <ErrorMessage message={floorError} type="error" /> : null}
+
+            <DropdownComponent
+                label="Room"
+                required
+                placeholder="Select a Room"
+                options={roomOptions}
+                value={roomSelected?.id || null}
+                disabled={!floorSelected}
+                error={roomError}
+                emptyText="No room available"
+                onChange={(value) => {
+                    const selected = rooms.find(
+                        (item) => String(getRoomId(item)) === String(value)
+                    );
+                    if (!selected) return;
+
+                    setRoomSelected(selected);
+                    setRoomError("");
+                    setBedSelected(null);
+                    setSelectedBedDetails(null);
+                    setBedError("");
+                    setCheckinRentalAmount("");
+                    setRentalError("");
+                }}
+            />
+            {roomError ? <ErrorMessage message={roomError} type="error" /> : null}
+
+            <DropdownComponent
+                label="Bed"
+                required
+                placeholder="Select a Bed"
+                options={bedOptions}
+                value={bedSelected?.bedId != null ? String(bedSelected.bedId) : null}
+                disabled={!floorSelected || !roomSelected}
+                error={bedError}
+                emptyText="No bed available"
+                onChange={(value) => {
+                    const selected = filteredBeds.find(
+                        (item) => String(item.bedId) === String(value)
+                    );
+                    if (!selected) return;
+
+                    setBedSelected(selected);
+                    setSelectedBedDetails(selected);
+                    setBedError("");
+
+                    if (!sameAsCurrent) {
+                        setCheckinRentalAmount(String(selected.rentAmount || ""));
+                        setRentalError("");
+                    }
+                }}
+            />
+            {bedError ? <ErrorMessage message={bedError} type="error" /> : null}
+        </>
+    );
+
+    const STATE_LIST_HEIGHT = 220;
+    const stateWrapRef = useRef(null);
+    const [stateOpenAbove, setStateOpenAbove] = useState(false);
+
+    const openStateDropdown = (withKeyboard = true) => {
+        stateWrapRef.current?.measureInWindow((x, y, w, h) => {
+            const kb = withKeyboard ? (keyboardHeight || 300) : 0;
+            const footer = 90;
+            const spaceBelow = SCREEN_HEIGHT - (y + h) - kb - footer;
+
+            const openAbove =
+                spaceBelow < STATE_LIST_HEIGHT && y > STATE_LIST_HEIGHT + 60;
+
+            setStateOpenAbove(openAbove);
+            setStateOpen(true);
+
+            // list mela insert aagum bodhu input position maaraama irukka scroll compensate
+            if (openAbove) {
+                setTimeout(() => {
+                    scrollRef.current?.scrollTo({
+                        y: currentScrollY.current + STATE_LIST_HEIGHT + 4,
+                        animated: true,
+                    });
+                }, 80);
+            }
+        });
+    };
+
+    const closeStateDropdown = () => {
+        setStateOpen(false);
+        setStateQuery("");
+        setStateOpenAbove(false);
+    };
+
+    const renderStateList = () =>
+        stateOpen ? (
+            <View style={styles.stateList}>
+                <ScrollView
+                    keyboardShouldPersistTaps="always"
+                    nestedScrollEnabled
+                    showsVerticalScrollIndicator
+                >
+                    {filteredStateList.length > 0 ? (
+                        filteredStateList.map((v) => (
+                            <TouchableOpacity
+                                key={v.value}
+                                style={[styles.option, selectedState === v.label && { backgroundColor: "#E6F0FF" }]}
+                                onPress={() => {
+                                    setSelectedState(v.label);
+                                    closeStateDropdown();
+                                    Keyboard.dismiss();
+                                }}
+                            >
+                                <Text style={styles.optionText}>{v.label}</Text>
+                            </TouchableOpacity>
+                        ))
+                    ) : (
+                        <Text style={styles.noResult}>No state found</Text>
+                    )}
+
+                    {selectedState ? (
+                        <TouchableOpacity
+                            style={{ padding: 12, alignItems: "center" }}
+                            onPress={() => {
+                                setSelectedState("");
+                                closeStateDropdown();
+                            }}
+                        >
+                            <Text style={{ color: "red", fontFamily: "Gilroy-Semibold" }}>Clear selection</Text>
+                        </TouchableOpacity>
+                    ) : null}
+                </ScrollView>
+            </View>
+        ) : null;
+
 
 
     return (
@@ -4576,70 +4798,13 @@ export default function AddTenantNewform({ navigation, route }) {
 
 
 
-                                    <View style={{ position: "relative" }}>
-                                        <Text style={styles.label}>
-                                            ID Proof Type
-                                        </Text>
-
-                                        {/* INPUT */}
-                                        <TouchableOpacity
-                                            style={styles.inputBox}
-                                            onPress={() => {
-                                                setShowIdProofType(v => !v);
-                                            }}
-                                        >
-                                            <Text style={{ fontSize: 15 }}>
-                                                {IdproofType
-                                                    ? idProofOptions.find(o => o.value === IdproofType)?.label
-                                                    : "Select ID Proof"}
-                                            </Text>
-
-                                            <Image
-                                                source={DownArrow}
-                                                style={{ width: 18, height: 18, tintColor: "#555" }}
-                                            />
-                                        </TouchableOpacity>
-
-                                        {/* DROPDOWN */}
-                                        {ShowIdproofType && (
-                                            <View style={styles.transactiondropdown}>
-                                                <ScrollView
-                                                    nestedScrollEnabled
-                                                    scrollEnabled={idProofOptions.length > 3}
-                                                    showsVerticalScrollIndicator={false}
-                                                >
-                                                    {idProofOptions.map(opt => {
-                                                        const isSelected = IdproofType === opt.value;
-
-                                                        return (
-                                                            <TouchableOpacity
-                                                                key={opt.value}
-                                                                style={[
-                                                                    styles.dropdownRow,
-                                                                    isSelected && styles.dropdownRowSelected,
-                                                                ]}
-                                                                onPress={() => {
-                                                                    setIdProofType(opt.value);
-                                                                    setShowIdProofType(false);
-                                                                }}
-                                                            >
-                                                                <Text
-                                                                    style={
-                                                                        isSelected
-                                                                            ? styles.dropdownTextSelected
-                                                                            : styles.dropdownText
-                                                                    }
-                                                                >
-                                                                    {opt.label}
-                                                                </Text>
-                                                            </TouchableOpacity>
-                                                        );
-                                                    })}
-                                                </ScrollView>
-                                            </View>
-                                        )}
-
-                                    </View>
+                                    <DropdownComponent
+                                        label="ID Proof Type"
+                                        placeholder="Select ID Proof"
+                                        options={idProofOptions}
+                                        value={IdproofType || null}
+                                        onChange={(val) => setIdProofType(val)}
+                                    />
 
                                     <Text style={styles.label}>
                                         ID Proof No
@@ -4865,118 +5030,39 @@ export default function AddTenantNewform({ navigation, route }) {
                                         />
 
 
+
                                         <Text style={styles.label}>State</Text>
 
-                                        <View style={{ position: "relative" }}>
-                                            <TextInput
-                                                style={styles.select}
-                                                placeholder="Select state"
-                                                placeholderTextColor="#9CA3AF"
+                                        {stateOpenAbove && renderStateList()}
+
+                                        <View ref={stateWrapRef} collapsable={false}>
+                                            <InputComponent
+                                                type="name"
                                                 value={stateOpen ? stateQuery : selectedState}
-
-                                                onFocus={(e) => {
-                                                    scrollInputIntoView(e)
-                                                    setStateOpen(true);
-                                                    setStateQuery("");   // 🔥 cursor focus panna fresh search
-                                                }}
+                                                placeholder="Select state"
+                                                onFocus={() => openStateDropdown(true)}
                                                 onChangeText={(t) => {
-                                                    const sanitized = t.replace(/[^a-zA-Z\s]/g, "");
-                                                    setStateQuery(sanitized);    // 🔥 typing always search
-                                                    setStateOpen(true);
+                                                    setStateQuery(t.replace(/[^a-zA-Z\s]/g, ""));
+                                                    if (!stateOpen) openStateDropdown(true);
                                                 }}
-
+                                                rightIcon={
+                                                    <Image
+                                                        source={DownArrow}
+                                                        style={[styles.arrowIconImg, stateOpen && { transform: [{ rotate: "180deg" }] }]}
+                                                    />
+                                                }
+                                                onRightIconPress={() => {
+                                                    if (stateOpen) {
+                                                        closeStateDropdown();
+                                                    } else {
+                                                        Keyboard.dismiss();
+                                                        openStateDropdown(false);
+                                                    }
+                                                }}
                                             />
-
-
-                                            <TouchableOpacity
-                                                style={styles.arrowTouch}
-                                                activeOpacity={0.7}
-                                                onPress={() => {
-                                                    Keyboard.dismiss();  // ✅ keyboard hide
-                                                    setStateOpen((prev) => !prev);
-
-                                                    // ✅ close pannumbothu query reset
-                                                    if (stateOpen) setStateQuery("");
-                                                }}
-                                            >
-                                                <Image source={DownArrow} style={styles.arrowIconImg} />
-                                            </TouchableOpacity>
-
-
-                                            {stateOpen && (
-                                                <>
-                                                    <TouchableWithoutFeedback
-                                                        onPress={() => {
-                                                            setStateOpen(false);
-                                                            setStateQuery("");
-                                                        }}
-                                                    >
-                                                        <View style={{
-                                                            position: "absolute",
-                                                            top: -1000,
-                                                            left: -1000,
-                                                            right: -1000,
-                                                            bottom: -1000,
-                                                            backgroundColor: "transparent",
-                                                            zIndex: 999,
-                                                        }} />
-                                                    </TouchableWithoutFeedback>
-
-                                                    <View style={{
-                                                        borderWidth: 1,
-                                                        borderColor: "#ddd",
-                                                        borderRadius: 12,
-                                                        zIndex: 1000,
-                                                        marginTop: 6,
-                                                        maxHeight: 250,
-                                                        backgroundColor: "#fff",
-                                                    }}>
-                                                        <ScrollView
-                                                            keyboardShouldPersistTaps="always"
-                                                            nestedScrollEnabled={true}
-                                                            showsVerticalScrollIndicator={true}
-                                                        >
-                                                            {filteredStateList.length > 0 ? (
-                                                                filteredStateList.map((v, index) => (
-                                                                    <TouchableOpacity
-                                                                        key={index}
-                                                                        style={[styles.option, selectedState === v.label
-                                                                            && { backgroundColor: "#E6F0FF" }]}
-                                                                        onPress={() => {
-                                                                            setSelectedState(v.label);
-                                                                            setStateQuery("");
-                                                                            setStateOpen(false);
-                                                                        }}
-                                                                    >
-                                                                        {console.log(v)}
-                                                                        <Text style={styles.optionText}>{v.label}</Text>
-                                                                    </TouchableOpacity>
-                                                                ))
-                                                            ) : (
-                                                                <Text style={styles.noResult}>No state found</Text>
-                                                            )}
-
-                                                            {/* 🔴 CLEAR OPTION */}
-                                                            {selectedState && (
-                                                                <TouchableOpacity
-                                                                    style={{ padding: 12, alignItems: "center" }}
-                                                                    onPress={() => {
-                                                                        setSelectedState("");
-                                                                        setStateQuery("");
-                                                                        setStateOpen(false);
-                                                                    }}
-                                                                >
-                                                                    <Text style={{ color: "red", fontFamily: "Gilroy-Semibold" }}>
-                                                                        Clear selection
-                                                                    </Text>
-                                                                </TouchableOpacity>
-                                                            )}
-                                                        </ScrollView>
-                                                    </View>
-                                                </>
-                                            )}
-
                                         </View>
+
+                                        {!stateOpenAbove && renderStateList()}
 
 
 
@@ -5083,49 +5169,22 @@ export default function AddTenantNewform({ navigation, route }) {
                                     </View>
                                     {activeTab === "Booking" && (
                                         <>
-                                            <Text style={styles.label}>Booking Date <Text style={{ color: "red" }}>*</Text></Text>
-                                            <View ref={bookingDateRef} collapsable={false}>
-                                                <TouchableOpacity
-                                                    style={styles.dateBox}
-                                                    onPress={() => {
-                                                        Keyboard.dismiss();   // 🔥 keyboard close
-                                                        setOpenDropdownId(null);
-                                                        setCheckinTenantsopen(false);
-
-                                                        setTimeout(() => {
-                                                            bookingDateRef.current.measureInWindow((x, y, w, h) => {
-                                                                setDatePickerTop(getSafeCalendarTop(y, h));
-                                                                setActiveDateField("booking");
-                                                                setShowCalendar(true);
-                                                            });
-                                                        }, 150); // 🔥 keyboard animation wait
-                                                    }}
-
-                                                >
-                                                    <Text style={styles.placeholder}>
-                                                        {purchaseDate ? dayjs(purchaseDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                                                    </Text>
-                                                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-                                                </TouchableOpacity>
-                                            </View>
-
-                                            {bookingDateError && (
-                                                <ErrorMessage message={bookingDateError} type="error" />
-                                            )}
-                                            <Text style={styles.label}>Booking Amount <Text style={{ color: "red" }}>*</Text></Text>
-                                            {/* <TextInput
-                                                style={styles.input}
-                                                placeholder="Enter Amount"
-                                                keyboardType="numeric"
-                                                value={bookingAmount}
-                                                onChangeText={(text) => {
-                                                    const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setBookingAmount(sanitizeAmount(text));
-                                                    setBookingAmountError("");
+                                            <DatePickerComponent
+                                                label="Booking Date"
+                                                required
+                                                selectedDate={purchaseDate ? dayjs(purchaseDate).format("YYYY-MM-DD") : null}
+                                                placeholder="DD-MM-YYYY"
+                                                displayFormat="DD-MM-YYYY"
+                                                maxDate={dayjs().format("YYYY-MM-DD")}
+                                                error={bookingDateError}
+                                                onSelect={(date) => {
+                                                    setPurchaseDate(date);
+                                                    setJoiningDate(null);
+                                                    setBookingDateError("");
                                                 }}
-                                                onFocus={(e) => scrollInputIntoView(e)}
-                                            /> */}
+                                            />
 
+                                            <Text style={styles.label}>Booking Amount <Text style={{ color: "red" }}>*</Text></Text>
                                             <InputComponent
                                                 type="number"
                                                 value={bookingAmount}
@@ -5138,269 +5197,41 @@ export default function AddTenantNewform({ navigation, route }) {
                                                 onFocus={(e) => scrollInputIntoView(e)}
                                                 error={!!bookingAmountError}
                                             />
-                                            {bookingAmountError && (
-                                                <ErrorMessage message={bookingAmountError} type="error" />
-                                            )}
+                                            {bookingAmountError ? <ErrorMessage message={bookingAmountError} type="error" /> : null}
 
-                                            <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-                                            <View ref={joiningDateRef} collapsable={false}>
-                                                <TouchableOpacity
-                                                    style={styles.dateBox}
-                                                    onPress={() => {
-                                                        Keyboard.dismiss();        // 🔥 keyboard close
-                                                        setOpenDropdownId(null);
-                                                        setCheckinTenantsopen(false);
-
-                                                        setTimeout(() => {
-                                                            joiningDateRef.current.measureInWindow((x, y, w, h) => {
-                                                                setDatePickerTop(getSafeCalendarTop(y, h));
-                                                                setActiveDateField("joining");
-                                                                setShowCalendar(true);
-                                                            });
-                                                        }, 150);                  // 🔥 wait for keyboard animation
-                                                    }}
-                                                >
-                                                    <Text style={styles.placeholder}>
-                                                        {joiningDate ? dayjs(joiningDate).format("DD-MM-YYYY") : "DD-MM-YYYY"}
-                                                    </Text>
-                                                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-                                                </TouchableOpacity>
-                                            </View>
-
-                                            {joiningDateError && (
-                                                <ErrorMessage message={joiningDateError} type="error" />
-                                            )}
+                                            <DatePickerComponent
+                                                label="Joining Date"
+                                                required
+                                                selectedDate={joiningDate ? dayjs(joiningDate).format("YYYY-MM-DD") : null}
+                                                placeholder="DD-MM-YYYY"
+                                                displayFormat="DD-MM-YYYY"
+                                                minDate={purchaseDate ? dayjs(purchaseDate).format("YYYY-MM-DD") : undefined}
+                                                disabled={!purchaseDate}
+                                                error={joiningDateError}
+                                                onSelect={(date) => {
+                                                    setJoiningDate(date);
+                                                    setJoiningDateError("");
+                                                }}
+                                            />
 
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                                 <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
-                                                <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}
-                                                    onPress={handleshowBedDetailsheet}>
-
-                                                    <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
-
-                                                    <Text style={{ color: '#1E45E1' }}>Bed Layout View</Text>
-                                                </TouchableOpacity>
-
-                                            </View>
-
-                                            <Text style={styles.label}> Floor <Text style={{ color: "red" }}>*</Text></Text>
-
-                                            <View style={{ position: "relative" }}>
                                                 <TouchableOpacity
-                                                    style={[styles.select,]}
-                                                    // disabled={isFloorDisabled}
-                                                    onPress={() => toggleDropdown("floor")}
+                                                    style={{
+                                                        flexDirection: "row",
+                                                        backgroundColor: joiningDate ? "#EDF3FF" : "#F3F4F6",
+                                                        padding: 10,
+                                                        opacity: joiningDate ? 1 : 0.5,
+                                                    }}
+                                                    disabled={!joiningDate}
+                                                    onPress={handleshowBedDetailsheet}
                                                 >
-                                                    <Text style={styles.selectText}>
-                                                        {floorSelected ? floorSelected.name : "Select a Floor"}
-                                                    </Text>
-                                                    <Image source={DownArrow} style={styles.arrow} />
+                                                    <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10, tintColor: joiningDate ? "#1E45E1" : "#9CA3AF" }} />
+                                                    <Text style={{ color: joiningDate ? "#1E45E1" : "#9CA3AF" }}>Bed Layout View</Text>
                                                 </TouchableOpacity>
-
-
-
-                                                {openDropdown === "floor" && (
-                                                    <View style={styles.dropdownMenu}>
-                                                        {openDropdown && (
-                                                            <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-                                                                <View style={styles.dropdownOverlay} />
-                                                            </TouchableWithoutFeedback>
-                                                        )}
-                                                        <ScrollView
-                                                            style={{ maxHeight: 160 }}
-                                                            nestedScrollEnabled={true}          // ✅ Android fix
-                                                            keyboardShouldPersistTaps="handled"
-                                                            showsVerticalScrollIndicator={false}
-                                                        >
-                                                            {floors?.map((f) => (
-                                                                <TouchableOpacity
-                                                                    key={f.id}
-                                                                    style={styles.option}
-                                                                    onPress={() => {
-
-                                                                        setFloorSelected(f);
-                                                                        setOpenDropdown(null);
-
-                                                                        setRoomSelected(null);
-                                                                        setBedSelected(null);
-                                                                        setRooms([]);
-
-                                                                        setFloorError("")
-                                                                        loadRoomsByFloor(f?.id);
-                                                                        loadRooms(f?.id);
-                                                                    }}
-
-
-                                                                >
-                                                                    <Text style={styles.optionText}>{f?.name}</Text>
-                                                                </TouchableOpacity>
-                                                            ))}
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
                                             </View>
-                                            {floorError && (
-                                                <ErrorMessage message={floorError} type="error" />
-                                            )}
-                                            <Text style={styles.label}> Room <Text style={{ color: "red" }}>*</Text></Text>
 
-                                            <View style={{ position: "relative" }}>
-                                                <TouchableOpacity
-                                                    style={[styles.select, isRoomDisabled && styles.disabledSelect]}
-                                                    disabled={isRoomDisabled}
-                                                    onPress={() => toggleDropdown("room")}
-                                                >
-                                                    <Text style={styles.selectText}>
-                                                        {roomSelected ? roomSelected?.name : "Select a Room"}
-                                                    </Text>
-                                                    <Image source={DownArrow} style={styles.arrow} />
-                                                </TouchableOpacity>
-
-
-
-
-                                                {openDropdown === "room" && (
-                                                    <View style={styles.dropdownMenu}>
-                                                        {openDropdown && (
-                                                            <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-                                                                <View style={styles.dropdownOverlay} />
-                                                            </TouchableWithoutFeedback>
-                                                        )}
-
-                                                        <ScrollView
-                                                            style={{ maxHeight: 160 }}
-                                                            nestedScrollEnabled={true}          // ✅ Android fix
-                                                            keyboardShouldPersistTaps="handled"
-                                                            showsVerticalScrollIndicator={false}
-                                                        >
-
-                                                            {!hasRooms ? (
-                                                                <View style={styles.emptyOption}>
-                                                                    <Text style={styles.emptyText}>No room available</Text>
-                                                                </View>
-                                                            ) : (
-                                                                rooms.map((r) => (
-                                                                    <TouchableOpacity
-                                                                        key={r.id}
-                                                                        style={styles.option}
-                                                                        onPress={() => {
-                                                                            setRoomSelected(r);
-                                                                            setOpenDropdown(null);
-                                                                            setBedSelected(null);
-                                                                            setRoomError("")
-                                                                        }}
-                                                                    >
-                                                                        <Text style={styles.optionText}>{r?.name}</Text>
-                                                                    </TouchableOpacity>
-                                                                ))
-                                                            )}
-
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
-
-                                            </View>
-                                            {roomError && (
-                                                <ErrorMessage message={roomError} type="error" />
-                                            )}
-                                            <Text style={styles.label}> Bed <Text style={{ color: "red" }}>*</Text></Text>
-
-                                            <View
-                                                style={{
-                                                    position: "relative",
-                                                    zIndex: openDropdown === "bed" ? 10000 : 1,
-                                                    elevation: openDropdown === "bed" ? 20 : 1,
-                                                }}
-                                            >
-                                                <TouchableOpacity
-                                                    style={[styles.select, isBedDisabled && styles.disabledSelect]}
-                                                    disabled={isBedDisabled}
-                                                    onPress={() => toggleDropdown("bed")}
-                                                >
-                                                    <Text style={styles.selectText}>
-                                                        {bedSelected ? bedSelected?.bedName : "Select a Bed"}
-                                                    </Text>
-                                                    <Image source={DownArrow} style={styles.arrow} />
-                                                </TouchableOpacity>
-
-
-
-                                                {openDropdown === "bed" && (
-                                                    <View style={styles.dropdownMenu}>
-                                                        {openDropdown && (
-                                                            <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-                                                                <View style={styles.dropdownOverlay} />
-                                                            </TouchableWithoutFeedback>
-                                                        )}
-                                                        {console.log("ballu", filteredBeds)}
-
-                                                        <ScrollView
-                                                            style={{ maxHeight: 160 }}
-                                                            nestedScrollEnabled={true}
-                                                            keyboardShouldPersistTaps="handled"
-                                                            showsVerticalScrollIndicator={false}
-                                                        >
-
-                                                            {!hasBeds ? (
-                                                                <View style={styles.emptyOption}>
-                                                                    <Text style={styles.emptyText}>No bed available</Text>
-                                                                </View>
-                                                            ) : (
-
-                                                                filteredBeds.map((b) => (
-                                                                    <TouchableOpacity
-                                                                        key={b.bedId}
-                                                                        style={styles.option}
-
-                                                                        onPress={() => {
-                                                                            setBedSelected(b);
-                                                                            setOpenDropdown(null);
-                                                                            setBedError("");
-
-
-                                                                            if (!sameAsCurrent) {
-                                                                                setAmount(String(b.rentAmount));
-                                                                                setRentError("");
-                                                                            }
-                                                                        }}
-
-                                                                    >
-                                                                        <Text style={styles.optionText}>{b.bedName}</Text>
-                                                                    </TouchableOpacity>
-                                                                ))
-                                                            )}
-
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
-
-                                            </View>
-                                            {bedError && (
-                                                <ErrorMessage message={bedError} type="error" />
-                                            )}
-
-
-                                            {/* <Text style={styles.label}>Total Rent <Text style={{ color: "red" }}>*</Text></Text>
-                                            <TextInput
-                                                style={styles.input}
-                                                placeholder={
-                                                    selectedBed?.rentAmount
-                                                        ? String(selectedBed.rentAmount)
-                                                        : "Enter Amount"
-                                                }
-                                                placeholderTextColor="#9CA3AF"
-                                                keyboardType="numeric"
-                                                value={rentalAmount}
-                                                onChangeText={(text) => {
-                                                    const onlyNum = text.replace(/[^0-9]/g, "");
-                                                    setRentalAmount(onlyNum);
-                                                    setRentalError("");
-                                                }}
-
-                                            />
-                                            {rentalError && (
-                                                <ErrorMessage message={rentalError} type="error" />
-                                            )} */}
+                                            {renderStayDropdowns()}
 
 
 
@@ -5573,245 +5404,38 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                     {activeTab === "CheckIn" && (
                                         <>
-                                            <Text style={styles.label}>Joining Date <Text style={{ color: "red" }}>*</Text></Text>
-
-                                            <View ref={checkinDateRef} collapsable={false}>
-                                                <TouchableOpacity
-                                                    style={styles.dateBox}
-                                                    onPress={() => {
-                                                        Keyboard.dismiss();
-                                                        setOpenDropdownId(null);
-                                                        setCheckinTenantsopen(false);
-
-                                                        setTimeout(() => {
-                                                            checkinDateRef.current.measureInWindow((x, y, w, h) => {
-                                                                setDatePickerTop(getSafeCalendarTop(y, h));
-                                                                setActiveDateField("checkin");
-                                                                setShowCalendar(true);
-                                                            });
-                                                        }, 150);
-                                                    }}
-
-                                                >
-
-
-                                                    <Text style={styles.placeholder}>
-                                                        {checkJoiningDate
-                                                            ? dayjs(checkJoiningDate).format("DD-MM-YYYY")
-                                                            : "DD-MM-YYYY"}
-                                                    </Text>
-                                                    <Image source={require("../../Assets/Images/calendar.png")} style={styles.icon} />
-                                                </TouchableOpacity>
-                                            </View>
-
-                                            {checkJoinDateError && (
-                                                <ErrorMessage message={checkJoinDateError} type="error" />
-                                            )}
-
+                                            <DatePickerComponent
+                                                label="Joining Date"
+                                                required
+                                                selectedDate={checkJoiningDate ? dayjs(checkJoiningDate).format("YYYY-MM-DD") : null}
+                                                placeholder="DD-MM-YYYY"
+                                                displayFormat="DD-MM-YYYY"
+                                                maxDate={dayjs().format("YYYY-MM-DD")}
+                                                error={checkJoinDateError}
+                                                onSelect={(date) => {
+                                                    setcheckJoiningDate(date);
+                                                    setCheckJoinDateError("");
+                                                }}
+                                            />
 
                                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 15, alignItems: 'center' }}>
                                                 <Text>Select Stay Details <Text style={{ color: "red" }}>*</Text></Text>
-                                                <TouchableOpacity style={{ flexDirection: 'row', backgroundColor: '#EDF3FF', padding: 10, paddingHorizontal: 10 }}
-                                                    onPress={handleshowBedDetailsheet} >
-
-                                                    <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10 }} />
-
-                                                    <Text style={{ color: '#1E45E1' }}>Bed Layout View</Text>
-                                                </TouchableOpacity>
-
-                                            </View>
-
-
-                                            <Text style={styles.label}> Floor <Text style={{ color: "red" }}>*</Text></Text>
-
-                                            <View style={{ position: "relative" }}>
                                                 <TouchableOpacity
-                                                    style={[styles.select,]}
-                                                    // disabled={isFloorDisabled}
-                                                    onPress={() => toggleDropdown("floor")}
+                                                    style={{
+                                                        flexDirection: "row",
+                                                        backgroundColor: checkJoiningDate ? "#EDF3FF" : "#F3F4F6",
+                                                        padding: 10,
+                                                        opacity: checkJoiningDate ? 1 : 0.5,
+                                                    }}
+                                                    disabled={!checkJoiningDate}
+                                                    onPress={handleshowBedDetailsheet}
                                                 >
-                                                    <Text style={styles.selectText}>
-                                                        {floorSelected ? floorSelected.name : "Select a Floor"}
-                                                    </Text>
-                                                    <Image source={DownArrow} style={styles.arrow} />
+                                                    <Image source={BedIcon} style={{ height: 20, width: 20, marginRight: 10, tintColor: checkJoiningDate ? "#1E45E1" : "#9CA3AF" }} />
+                                                    <Text style={{ color: checkJoiningDate ? "#1E45E1" : "#9CA3AF" }}>Bed Layout View</Text>
                                                 </TouchableOpacity>
-
-
-
-                                                {openDropdown === "floor" && (
-                                                    <View style={styles.dropdownMenu}>
-                                                        {openDropdown && (
-                                                            <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-                                                                <View style={styles.dropdownOverlay} />
-                                                            </TouchableWithoutFeedback>
-                                                        )}
-                                                        <ScrollView
-                                                            style={{ maxHeight: 160 }}
-                                                            nestedScrollEnabled={true}          // ✅ Android fix
-                                                            keyboardShouldPersistTaps="handled"
-                                                            showsVerticalScrollIndicator={false}
-                                                        >
-                                                            {floors?.map((f) => (
-                                                                <TouchableOpacity
-                                                                    key={f.id}
-                                                                    style={styles.option}
-                                                                    onPress={() => {
-
-                                                                        setFloorSelected(f);
-                                                                        setOpenDropdown(null);
-
-                                                                        setRoomSelected(null);
-                                                                        setBedSelected(null);
-                                                                        setRooms([]);
-
-                                                                        setFloorError("")
-                                                                        loadRoomsByFloor(f?.id);
-                                                                        loadRooms(f?.id);
-                                                                    }}
-
-
-                                                                >
-                                                                    <Text style={styles.optionText}>{f?.name}</Text>
-                                                                </TouchableOpacity>
-                                                            ))}
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
                                             </View>
-                                            {floorError && (
-                                                <ErrorMessage message={floorError} type="error" />
-                                            )}
-                                            <Text style={styles.label}> Room <Text style={{ color: "red" }}>*</Text></Text>
 
-                                            <View style={{ position: "relative" }}>
-                                                <TouchableOpacity
-                                                    style={[styles.select, isRoomDisabled && styles.disabledSelect]}
-                                                    disabled={isRoomDisabled}
-                                                    onPress={() => toggleDropdown("room")}
-                                                >
-                                                    <Text style={styles.selectText}>
-                                                        {roomSelected ? roomSelected?.name : "Select a Room"}
-                                                    </Text>
-                                                    <Image source={DownArrow} style={styles.arrow} />
-                                                </TouchableOpacity>
-
-
-
-
-                                                {openDropdown === "room" && (
-                                                    <View style={styles.dropdownMenu}>
-                                                        {openDropdown && (
-                                                            <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-                                                                <View style={styles.dropdownOverlay} />
-                                                            </TouchableWithoutFeedback>
-                                                        )}
-
-                                                        <ScrollView
-                                                            style={{ maxHeight: 160 }}
-                                                            nestedScrollEnabled={true}          // ✅ Android fix
-                                                            keyboardShouldPersistTaps="handled"
-                                                            showsVerticalScrollIndicator={false}
-                                                        >
-
-                                                            {!hasRooms ? (
-                                                                <View style={styles.emptyOption}>
-                                                                    <Text style={styles.emptyText}>No room available</Text>
-                                                                </View>
-                                                            ) : (
-                                                                rooms.map((r) => (
-                                                                    <TouchableOpacity
-                                                                        key={r.id}
-                                                                        style={styles.option}
-                                                                        onPress={() => {
-                                                                            setRoomSelected(r);
-                                                                            setOpenDropdown(null);
-                                                                            setBedSelected(null);
-                                                                            setRoomError("")
-                                                                        }}
-                                                                    >
-                                                                        <Text style={styles.optionText}>{r?.name}</Text>
-                                                                    </TouchableOpacity>
-                                                                ))
-                                                            )}
-
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
-
-                                            </View>
-                                            {roomError && (
-                                                <ErrorMessage message={roomError} type="error" />
-                                            )}
-                                            <Text style={styles.label}> Bed <Text style={{ color: "red" }}>*</Text></Text>
-
-                                            <View style={{ position: "relative" }}>
-                                                <TouchableOpacity
-                                                    style={[styles.select, isBedDisabled && styles.disabledSelect]}
-                                                    disabled={isBedDisabled}
-                                                    onPress={() => toggleDropdown("bed")}
-                                                >
-                                                    <Text style={styles.selectText}>
-                                                        {bedSelected ? bedSelected?.bedName : "Select a Bed"}
-                                                    </Text>
-                                                    <Image source={DownArrow} style={styles.arrow} />
-                                                </TouchableOpacity>
-
-
-
-                                                {openDropdown === "bed" && (
-                                                    <View style={styles.dropdownMenu}>
-                                                        {openDropdown && (
-                                                            <TouchableWithoutFeedback onPress={() => setOpenDropdown(null)}>
-                                                                <View style={styles.dropdownOverlay} />
-                                                            </TouchableWithoutFeedback>
-                                                        )}
-                                                        {console.log("ballu", filteredBeds)}
-
-                                                        <ScrollView
-                                                            style={{ maxHeight: 160 }}
-                                                            nestedScrollEnabled={true}
-                                                            keyboardShouldPersistTaps="handled"
-                                                            showsVerticalScrollIndicator={false}
-                                                        >
-
-                                                            {!hasBeds ? (
-                                                                <View style={styles.emptyOption}>
-                                                                    <Text style={styles.emptyText}>No bed available</Text>
-                                                                </View>
-                                                            ) : (
-
-                                                                filteredBeds.map((b) => (
-                                                                    <TouchableOpacity
-                                                                        key={b.bedId}
-                                                                        style={styles.option}
-
-                                                                        onPress={() => {
-                                                                            setBedSelected(b);
-                                                                            setOpenDropdown(null);
-                                                                            setBedError("");
-
-
-                                                                            if (!sameAsCurrent) {
-                                                                                setAmount(String(b.rentAmount));
-                                                                                setRentError("");
-                                                                            }
-                                                                        }}
-
-                                                                    >
-                                                                        <Text style={styles.optionText}>{b.bedName}</Text>
-                                                                    </TouchableOpacity>
-                                                                ))
-                                                            )}
-
-
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
-
-                                            </View>
-                                            {bedError && (
-                                                <ErrorMessage message={bedError} type="error" />
-                                            )}
+                                            {renderStayDropdowns()}
 
 
                                             <Text style={{
@@ -5925,136 +5549,63 @@ export default function AddTenantNewform({ navigation, route }) {
                                                             </Text>
                                                         </View>
 
-                                                        {extraCharges.map((item) => (
-                                                            <View key={item.id} style={styles.figmaRowWrapper}>
+                                                        {extraCharges.map((item) => {
+                                                            const typeOptions = TYPE_OPTIONS
+                                                                .filter((t) => !(t === "Maintenance" && maintenanceAlreadyUsed))
+                                                                .map((t) => ({ label: t, value: t }));
 
-                                                                {/* CLOSE BTN */}
-                                                                <TouchableOpacity
-                                                                    onPress={() => removeCharge(item.id, item.type)}
-                                                                    style={styles.figmaCloseBtn}
-                                                                >
-
-                                                                    <Image
-                                                                        source={Delete}
-                                                                        style={styles.figmaCloseText}
-                                                                    />
-                                                                </TouchableOpacity>
-
-
-                                                                <View style={styles.figmaRow}>
-
-
-                                                                    {item.type === "" ? (
-                                                                        <TouchableOpacity
-                                                                            style={styles.figmaLeftBox}
-                                                                            onPress={() =>
-                                                                                setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                                                                            }
-                                                                        >
-                                                                            <Text style={{ color: "#777" }}>Select...</Text>
-                                                                            <Image source={DownArrow} style={styles.arrow} />
-                                                                        </TouchableOpacity>
-                                                                    ) : item.type === "Others" ? (
-                                                                        <TextInput
-                                                                            ref={(r) => {
-                                                                                inputRefs.current[`reason-${item.id}`] = r;
-                                                                            }}
-                                                                            style={styles.figmaLeftBox}
-                                                                            placeholder="Enter reason"
-
-                                                                            value={item.title}
-                                                                            onFocus={() => {
-                                                                                setOpenDropdownId(null);
-                                                                                scrollInputIntoView(inputRefs.current[`reason-${item.id}`]);
-                                                                            }}
-
-                                                                            // onChangeText={(t) => updateTitle(item.id, t)}
-                                                                            onChangeText={(t) => {
-                                                                                const onlyLetters = t.replace(/[^a-zA-Z\s]/g, "");
-                                                                                updateTitle(item.id, onlyLetters);
-                                                                            }}
-                                                                        />
-                                                                    ) : (
-                                                                        <View style={[styles.figmaLeftBox, { backgroundColor: "#EFEFEF" }]}>
-                                                                            <Text>Maintenance</Text>
+                                                            return (
+                                                                <View key={item?.id} style={styles.rowWrapper}>
+                                                                    <View style={styles.inputRow}>
+                                                                        <View style={{ flex: 1 }}>
+                                                                            {item.type === "" ? (
+                                                                                <DropdownComponent
+                                                                                    placeholder="Select..."
+                                                                                    options={typeOptions}
+                                                                                    value={null}
+                                                                                    error={item.typeError}
+                                                                                    onChange={(val) => selectType(item.id, val)}
+                                                                                />
+                                                                            ) : item.type === "Others" ? (
+                                                                                <InputComponent
+                                                                                    type="name"
+                                                                                    value={item.title}
+                                                                                    placeholder="Enter reason"
+                                                                                    onChangeText={(t) => updateTitle(item.id, t)}
+                                                                                    error={!!item.titleError}
+                                                                                />
+                                                                            ) : (
+                                                                                <InputComponent
+                                                                                    type="name"
+                                                                                    value="Maintenance"
+                                                                                    disabled
+                                                                                    inputStyle={{ color: "#24242B" }}
+                                                                                    onChangeText={() => { }}
+                                                                                />
+                                                                            )}
                                                                         </View>
-                                                                    )}
 
-                                                                    {/* RIGHT BOX ALWAYS VISIBLE (disabled until type selected) */}
-                                                                    {item.type === "" ? (
-                                                                        <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                                                                            <Text style={{ color: "#999" }}>Enter amount</Text>
-                                                                        </View>
-                                                                    ) : (
-                                                                        <TextInput
-                                                                            ref={(r) => {
-                                                                                inputRefs.current[`amount-${item.id}`] = r;
-                                                                            }}
-                                                                            style={styles.figmaRightBox}
-                                                                            placeholder="Enter amount"
-                                                                            keyboardType="numeric"
+                                                                        <InputComponent
+                                                                            type="numberOnly"
                                                                             value={item.amount}
-                                                                            onFocus={() => {
-                                                                                setOpenDropdownId(null);
-                                                                                scrollInputIntoView(inputRefs.current[`amount-${item.id}`]);
-                                                                            }}
-
-                                                                            onChangeText={(t) => {
-
-                                                                                let cleaned = t.replace(/[^0-9.]/g, "");
-
-                                                                                const parts = cleaned.split(".");
-
-                                                                                if (parts.length > 2) {
-                                                                                    cleaned = parts[0] + "." + parts[1];
-                                                                                }
-
-                                                                                if (parts[1]?.length > 2) {
-                                                                                    cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                                                                                }
-
-                                                                                updateAmount(item.id, cleaned)
-                                                                            }
-
-                                                                            }
+                                                                            placeholder="Enter amount"
+                                                                            disabled={!item.type}
+                                                                            onChangeText={(t) => updateAmount(item.id, t)}
+                                                                            error={!!item.amountError}
+                                                                            flex={1}
                                                                         />
-                                                                    )}
-
-                                                                </View>
-
-                                                                {item.titleError && (
-                                                                    <ErrorMessage message={item.titleError} type="error" />
-                                                                )}
-
-                                                                {item.typeError && (
-                                                                    <ErrorMessage message={item.typeError} type="error" />
-                                                                )}
-
-                                                                {item.amountError && (
-                                                                    <ErrorMessage message={item.amountError} type="error" />
-                                                                )}
-                                                                {openDropdownId === item.id && item.type === "" && (
-                                                                    <View style={styles.nonRefundDropdown}>
-                                                                        {TYPE_OPTIONS.map((t) => {
-
-                                                                            const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
-
-                                                                            return (
-                                                                                <TouchableOpacity
-                                                                                    key={t}
-                                                                                    disabled={disabled}
-                                                                                    onPress={() => !disabled && selectType(item.id, t)}
-                                                                                    style={{ opacity: disabled ? 0.3 : 1 }}
-                                                                                >
-                                                                                    <Text style={styles.dropdownItem}>{t}</Text>
-                                                                                </TouchableOpacity>
-                                                                            );
-                                                                        })}
                                                                     </View>
-                                                                )}
 
-                                                            </View>
-                                                        ))}
+                                                                    <Pressable style={styles.removeBtn} onPress={() => removeCharge(item.id)} hitSlop={8}>
+                                                                        <Image source={Delete} style={styles.figmaCloseText} />
+                                                                    </Pressable>
+
+                                                                    {item.typeError ? <ErrorMessage message={item.typeError} type="error" /> : null}
+                                                                    {item.titleError ? <ErrorMessage message={item.titleError} type="error" /> : null}
+                                                                    {item.amountError ? <ErrorMessage message={item.amountError} type="error" /> : null}
+                                                                </View>
+                                                            );
+                                                        })}
 
                                                         <TouchableOpacity
                                                             // style={styles.addNewButton}
@@ -6281,53 +5832,21 @@ export default function AddTenantNewform({ navigation, route }) {
 
                                                         </View> */}
 
-                                                                            <View style={styles.amountInputWrapper}>
-
-                                                                                <TextInput
-                                                                                    style={styles.customRentInput}
-                                                                                    placeholder="₹ 0.00"
-                                                                                    placeholderTextColor="#9CA3AF"
-                                                                                    keyboardType="numeric"
-                                                                                    value={customRentAmount}
-                                                                                    onChangeText={(text) => {
-                                                                                        // setCustomRentAmount(
-                                                                                        //     text.replace(/[^0-9]/g, "")
-                                                                                        // );
-                                                                                        setCustomRentAmount(sanitizeAmount(text));
-                                                                                        setCustomRentError("");
-                                                                                    }}
-                                                                                />
-
-                                                                                <TouchableOpacity
-                                                                                    style={styles.setBtnInside}
-                                                                                    onPress={() => {
-
-                                                                                        if (!customRentAmount) {
-                                                                                            setCustomRentError(
-                                                                                                "Please enter custom rent amount"
-                                                                                            );
-                                                                                            return;
-                                                                                        }
-
-                                                                                        if (Number(customRentAmount) <= 0) {
-                                                                                            setCustomRentError(
-                                                                                                "Amount should be greater than zero"
-                                                                                            );
-                                                                                            return;
-                                                                                        }
-
-                                                                                        setSavedCustomRent(customRentAmount);
-                                                                                        setIsCustomRentSaved(true);
-                                                                                        setShowCustomRentEditor(false);
-                                                                                        setCustomRentError("");
-                                                                                    }}
-                                                                                >
-                                                                                    <Text style={styles.setBtnText}>
-                                                                                        ✓ Set
-                                                                                    </Text>
-                                                                                </TouchableOpacity>
-
-                                                                            </View>
+                                                                            <InputComponent
+                                                                                type="numberOnly"
+                                                                                value={customRentAmount}
+                                                                                placeholder="Enter Rent Amount"
+                                                                                onChangeText={(text) => {
+                                                                                    setCustomRentAmount(sanitizeAmount(text));
+                                                                                    setCustomRentError("");
+                                                                                }}
+                                                                                rightIcon={
+                                                                                    <View style={styles.setButton}>
+                                                                                        <Text style={styles.setButtonText}>✓ Set</Text>
+                                                                                    </View>
+                                                                                }
+                                                                                onRightIconPress={handleSetCustomRent}
+                                                                            />
 
                                                                             {customRentError ? (
                                                                                 <ErrorMessage message={customRentError} />
@@ -6949,258 +6468,143 @@ export default function AddTenantNewform({ navigation, route }) {
                                         </View>
 
 
+                                        {guardians.map((item, index) => {
+                                            const relIsOther =
+                                                item.relationshipOther ||
+                                                (!!item.relationship && !relationshipOptions.includes(item.relationship));
+                                            const occIsOther =
+                                                item.occupationOther ||
+                                                (!!item.occupation && !occupationOptions.includes(item.occupation));
 
-                                        {guardians.map((item, index) => (
-                                            <View
-                                                key={index}
-                                                style={styles.guardianCard}
-                                            >
-                                                {/* Header */}
+                                            const relOptions = relationshipOptions.map((o) => ({ label: o, value: o }));
+                                            const occOptions = occupationOptions.map((o) => ({ label: o, value: o }));
 
-                                                <View style={styles.cardHeader}>
-                                                    <Text style={styles.cardTitle}>
-                                                        Item {String(index + 1).padStart(2, "0")}
-                                                    </Text>
+                                            return (
+                                                <View key={item.id ?? index} style={styles.guardianCard}>
+                                                    <View style={styles.cardHeader}>
+                                                        <Text style={styles.cardTitle}>
+                                                            Item {String(index + 1).padStart(2, "0")}
+                                                        </Text>
 
-                                                    <TouchableOpacity
-                                                        onPress={() =>
-                                                            setGuardians(prev =>
-                                                                prev.filter(x => x.id !== item.id)
-                                                            )
-                                                        }
-                                                    >
-                                                        <Image
-                                                            source={require("../../Assets/Images/DeleteIcon.png")}
-                                                            style={{ width: 18, height: 18 }}
-                                                        />
-                                                    </TouchableOpacity>
-                                                </View>
-
-
-                                                <Text style={styles.label}>Guardian Full Name </Text>
-                                                <TextInput
-                                                    style={styles.input}
-                                                    placeholder="Enter name"
-                                                    value={item.fullName}
-                                                    onChangeText={(text) => {
-                                                        updateGuardian(
-                                                            index,
-                                                            "fullName",
-                                                            text.replace(/[^A-Za-z\s]/g, "")
-                                                        );
-                                                    }}
-                                                    onFocus={(e) => scrollInputIntoView(e)}
-
-                                                />
-
-                                                {guardianErrors[index]?.fullName && (
-                                                    <ErrorMessage message={guardianErrors[index].fullName} />
-                                                )}
-
-
-
-
-
-
-
-                                                <Text style={styles.label}>Relationship </Text>
-                                                <TouchableOpacity
-                                                    onPress={() => {
-                                                        setShowRelationDropdown(!showRelationDropdown);
-                                                        setShowOccupationDropdown(false);
-                                                    }}
-                                                >
-                                                    <View style={{
-                                                        borderWidth: 1,
-                                                        borderColor: "#E5E7EB",
-                                                        borderRadius: 10,
-                                                        paddingHorizontal: 12,
-                                                        height: 50,
-                                                        flexDirection: "row",
-                                                        alignItems: "center",
-                                                        justifyContent: "space-between",
-                                                        fontFamily: "Gilroy-Regular"
-                                                    }}>
-                                                        <TextInput
-                                                            placeholder="Select Relationship"
-                                                            value={item.relationship}
-                                                            editable={isRelationOther}
-                                                            onChangeText={(text) => {
-                                                                updateGuardian(index, "relationship", text);
+                                                        <TouchableOpacity
+                                                            onPress={() => {
+                                                                setGuardians((prev) => prev.filter((_, i) => i !== index));
+                                                                setGuardianErrors((prev) => prev.filter((_, i) => i !== index));
                                                             }}
-                                                            onFocus={(e) => scrollInputIntoView(e)}
-                                                            style={{ flex: 1 }}
-                                                        />
-                                                        <Image
-                                                            source={DownArrow}
-                                                            style={[
-                                                                styles.arrowIcon,
-                                                                showRelationDropdown && { transform: [{ rotate: "180deg" }] }
-                                                            ]}
-                                                        />
+                                                        >
+                                                            <Image
+                                                                source={require("../../Assets/Images/DeleteIcon.png")}
+                                                                style={{ width: 18, height: 18 }}
+                                                            />
+                                                        </TouchableOpacity>
                                                     </View>
-                                                </TouchableOpacity>
 
-                                                {guardianErrors[index]?.relationship && (
-                                                    <ErrorMessage message={guardianErrors[index].relationship} />
-                                                )}
-
-                                                {showRelationDropdown && (
-                                                    <View style={styles.additinaldropdown}>
-                                                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                                            {relationshipOptions.map((item) => (
-                                                                <TouchableOpacity
-                                                                    key={item}
-                                                                    style={styles.dropdownItem}
-                                                                    onPress={() => {
-                                                                        if (item === "Other") {
-                                                                            updateGuardian(index, "relationship", item);
-                                                                            setIsRelationOther(true);
-                                                                            setRelationship(""); // empty for typing
-                                                                            setRelationErr("")
-                                                                        } else {
-                                                                            updateGuardian(index, "relationship", item);
-                                                                            setIsRelationOther(false);
-                                                                            setRelationship(item);
-                                                                            setRelationErr("")
-                                                                        }
-                                                                        setShowRelationDropdown(false);
-                                                                    }}
-                                                                >
-                                                                    <Text>{item}</Text>
-                                                                </TouchableOpacity>
-                                                            ))}
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
-
-                                                <Text style={styles.label}>Guardian Occupation </Text>
-                                                <TouchableOpacity
-                                                    onPress={() => {
-                                                        setShowOccupationDropdown(!showOccupationDropdown);
-                                                        setShowRelationDropdown(false);
-                                                    }}
-                                                >
-                                                    <View style={{
-                                                        borderWidth: 1,
-                                                        borderColor: "#E5E7EB",
-                                                        borderRadius: 10,
-                                                        paddingHorizontal: 12,
-                                                        height: 50,
-                                                        flexDirection: "row",
-                                                        alignItems: "center",
-                                                        justifyContent: "space-between",
-                                                        fontFamily: "Gilroy-Regular"
-                                                    }}>
-                                                        <TextInput
-                                                            placeholder="Select Occupation"
-                                                            value={item.occupation}
-                                                            editable={isOccupationOther}
-                                                            onChangeText={(t) => {
-                                                                const cleaned = t
-                                                                    .replace(/[^A-Za-z\s]/g, "")
-                                                                    .replace(/\s+/g, " ");
-
-                                                                updateGuardian(index, "occupation", cleaned);
-                                                                setOccupationErr("");
-                                                                setFormErr("");
-                                                            }}
-                                                            onFocus={(e) => scrollInputIntoView(e)}
-                                                            style={{ flex: 1 }}
-                                                        />
-
-
-
-                                                        <Image
-                                                            source={DownArrow}
-                                                            style={[
-                                                                styles.arrowIcon,
-                                                                showOccupationDropdown && { transform: [{ rotate: "180deg" }] }
-                                                            ]}
-                                                        />
-
-                                                    </View>
-                                                </TouchableOpacity>
-                                                {guardianErrors[index]?.occupation && (
-                                                    <ErrorMessage message={guardianErrors[index].occupation} />
-                                                )}
-
-                                                {showOccupationDropdown && (
-                                                    <View style={styles.additinaldropdown}>
-                                                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                                                            {occupationOptions.map((item) => (
-                                                                <TouchableOpacity
-                                                                    key={item}
-                                                                    style={styles.dropdownItem}
-                                                                    onPress={() => {
-                                                                        if (item === "Other") {
-                                                                            setIsOccupationOther(true);
-
-                                                                            updateGuardian(index, "occupation", "");
-                                                                        } else {
-                                                                            setIsOccupationOther(false);
-
-                                                                            updateGuardian(index, "occupation", item);
-                                                                        }
-
-                                                                        setOccupationErr("");
-                                                                        setShowOccupationDropdown(false);
-                                                                    }}
-                                                                >
-                                                                    <Text>{item}</Text>
-                                                                </TouchableOpacity>
-                                                            ))}
-                                                        </ScrollView>
-                                                    </View>
-                                                )}
-
-                                                {/* Mobile */}
-                                                <Text style={styles.label}>Mobile Number </Text>
-                                                <View style={{
-                                                    borderWidth: 1,
-                                                    borderColor: "#E5E7EB",
-                                                    borderRadius: 10,
-                                                    paddingHorizontal: 12,
-                                                    height: 50,
-                                                    flexDirection: "row",
-                                                    alignItems: "center",
-                                                    justifyContent: "space-between",
-                                                    fontFamily: "Gilroy-Regular"
-                                                }}>
-                                                    {/* Country Code */}
-                                                    <Text style={{ marginRight: 8, fontSize: 14 }}>+91</Text>
-                                                    <View style={styles.divider} />
-                                                    {/* Mobile Input */}
-                                                    <TextInput
-                                                        placeholder="Enter Mobile Number"
-                                                        keyboardType="number-pad"
-                                                        maxLength={10}
-                                                        value={item.mobile}
-                                                        // onChangeText={(t) => {
-                                                        //     const validmobile = t.replace(/[^0-9]/g, "");
-                                                        //     setMobile(validmobile);
-                                                        //     setMobileErr("");
-                                                        //     setFormErr("");
-                                                        // }}
+                                                    {/* Full name */}
+                                                    <Text style={styles.label}>Guardian Full Name</Text>
+                                                    <InputComponent
+                                                        type="name"
+                                                        value={item.fullName}
+                                                        placeholder="Enter name"
                                                         onChangeText={(text) =>
-                                                            updateGuardian(
-                                                                index,
-                                                                "mobile",
-                                                                text.replace(/[^0-9]/g, "")
-                                                            )
+                                                            updateGuardian(index, "fullName", text.replace(/[^A-Za-z\s]/g, ""))
                                                         }
                                                         onFocus={(e) => scrollInputIntoView(e)}
-                                                        style={{ flex: 1 }}
+                                                        error={!!guardianErrors[index]?.fullName}
                                                     />
+                                                    {guardianErrors[index]?.fullName ? (
+                                                        <ErrorMessage message={guardianErrors[index].fullName} />
+                                                    ) : null}
+
+                                                    {/* Relationship */}
+                                                    <DropdownComponent
+                                                        label="Relationship"
+                                                        placeholder="Select Relationship"
+                                                        options={relOptions}
+                                                        value={relIsOther ? "Other" : item.relationship || null}
+                                                        error={guardianErrors[index]?.relationship}
+                                                        onChange={(val) => {
+                                                            if (val === "Other") {
+                                                                updateGuardian(index, "relationshipOther", true);
+                                                                updateGuardian(index, "relationship", "");
+                                                            } else {
+                                                                updateGuardian(index, "relationshipOther", false);
+                                                                updateGuardian(index, "relationship", val);
+                                                            }
+                                                        }}
+                                                    />
+                                                    {relIsOther && (
+                                                        <InputComponent
+                                                            type="name"
+                                                            value={item.relationship}
+                                                            placeholder="Enter relationship"
+                                                            onChangeText={(t) =>
+                                                                updateGuardian(index, "relationship", t.replace(/[^A-Za-z\s]/g, ""))
+                                                            }
+                                                            onFocus={(e) => scrollInputIntoView(e)}
+                                                            error={!!guardianErrors[index]?.relationship}
+                                                        />
+                                                    )}
+
+                                                    {/* Occupation */}
+                                                    <DropdownComponent
+                                                        label="Guardian Occupation"
+                                                        placeholder="Select Occupation"
+                                                        options={occOptions}
+                                                        value={occIsOther ? "Other" : item.occupation || null}
+                                                        error={guardianErrors[index]?.occupation}
+                                                        onChange={(val) => {
+                                                            if (val === "Other") {
+                                                                updateGuardian(index, "occupationOther", true);
+                                                                updateGuardian(index, "occupation", "");
+                                                            } else {
+                                                                updateGuardian(index, "occupationOther", false);
+                                                                updateGuardian(index, "occupation", val);
+                                                            }
+                                                        }}
+                                                    />
+                                                    {occIsOther && (
+                                                        <InputComponent
+                                                            type="name"
+                                                            value={item.occupation}
+                                                            placeholder="Enter occupation"
+                                                            onChangeText={(t) =>
+                                                                updateGuardian(
+                                                                    index,
+                                                                    "occupation",
+                                                                    t.replace(/[^A-Za-z\s]/g, "").replace(/\s+/g, " ")
+                                                                )
+                                                            }
+                                                            onFocus={(e) => scrollInputIntoView(e)}
+                                                            error={!!guardianErrors[index]?.occupation}
+                                                        />
+                                                    )}
+
+                                                    {/* Mobile */}
+                                                    <Text style={styles.label}>Mobile Number</Text>
+                                                    <View style={styles.inputRow}>
+                                                        <View style={styles.countryBox}>
+                                                            <Text style={styles.countryBoxText}>+91</Text>
+                                                        </View>
+                                                        <InputComponent
+                                                            type="number"
+                                                            keyboardType="number-pad"
+                                                            maxLength={10}
+                                                            value={item.mobile}
+                                                            placeholder="Enter Mobile Number"
+                                                            onChangeText={(text) =>
+                                                                updateGuardian(index, "mobile", text.replace(/[^0-9]/g, ""))
+                                                            }
+                                                            onFocus={(e) => scrollInputIntoView(e)}
+                                                            error={!!guardianErrors[index]?.mobile}
+                                                            flex={1}
+                                                        />
+                                                    </View>
+                                                    {guardianErrors[index]?.mobile ? (
+                                                        <ErrorMessage message={guardianErrors[index].mobile} />
+                                                    ) : null}
                                                 </View>
-
-
-                                                {guardianErrors[index]?.mobile && (
-                                                    <ErrorMessage message={guardianErrors[index].mobile} />
-                                                )}
-
-                                            </View>
-                                        ))}
+                                            );
+                                        })}
 
 
                                         <View style={{
@@ -7219,13 +6623,25 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     alignItems: 'center'
                                                 }}
                                                 onPress={() => {
+                                                    // setGuardians(prev => [
+                                                    //     ...prev,
+                                                    //     {
+                                                    //         id: Date.now(),
+                                                    //         fullName: "",
+                                                    //         relationship: "",
+                                                    //         occupation: "",
+                                                    //         mobile: "",
+                                                    //     },
+                                                    // ]);
                                                     setGuardians(prev => [
                                                         ...prev,
                                                         {
                                                             id: Date.now(),
                                                             fullName: "",
                                                             relationship: "",
+                                                            relationshipOther: false,
                                                             occupation: "",
+                                                            occupationOther: false,
                                                             mobile: "",
                                                         },
                                                     ]);
@@ -7248,383 +6664,99 @@ export default function AddTenantNewform({ navigation, route }) {
                                         </View>
 
                                         {jobDetailsList.map((job, index) => (
-                                            <View
-                                                key={job.id}
-                                                style={styles.guardianCard}
-                                            >
-
-
+                                            <View key={job.id} style={styles.guardianCard}>
                                                 <View style={styles.cardHeader}>
                                                     <Text style={styles.cardTitle}>
                                                         Item {String(index + 1).padStart(2, "0")}
                                                     </Text>
 
                                                     {jobDetailsList.length > 1 && (
-                                                        <TouchableOpacity
-                                                            onPress={() => removeJob(index)}
-                                                        >
+                                                        <TouchableOpacity onPress={() => removeJob(index)}>
                                                             <Image
                                                                 source={require("../../Assets/Images/DeleteIcon.png")}
-                                                                style={{
-                                                                    width: 18,
-                                                                    height: 18,
-                                                                }}
+                                                                style={{ width: 18, height: 18 }}
                                                             />
                                                         </TouchableOpacity>
                                                     )}
                                                 </View>
 
-
-
-                                                <Text style={styles.label}>
-                                                    Company / College Name
-                                                </Text>
-
-                                                <TextInput
-                                                    style={styles.input}
-                                                    placeholder="Enter name"
+                                                {/* Company */}
+                                                <Text style={styles.label}>Company / College Name</Text>
+                                                <InputComponent
+                                                    type="name"
                                                     value={job.companyName}
-                                                    onChangeText={(text) => {
-                                                        const cleaned = text.replace(
-                                                            /[^A-Za-z\s]/g,
-                                                            ""
-                                                        );
-
-                                                        updateJob(
-                                                            index,
-                                                            "companyName",
-                                                            cleaned
-                                                        );
-                                                    }}
-                                                    onFocus={(e) =>
-                                                        scrollInputIntoView(e)
-                                                    }
-                                                />
-
-                                                {jobErrors[index]?.companyName && (
-                                                    <ErrorMessage message={jobErrors[index].companyName} />
-                                                )}
-
-
-
-                                                <Text style={styles.label}>
-                                                    Employment Status
-                                                </Text>
-
-                                                <View
-                                                    style={{
-                                                        zIndex:
-                                                            jobDropdown.index === index &&
-                                                                jobDropdown.type === "employment"
-                                                                ? 30
-                                                                : 1,
-                                                    }}
-                                                >
-                                                    <TouchableOpacity
-                                                        style={styles.dropdown}
-                                                        activeOpacity={0.8}
-                                                        onPress={() => {
-                                                            setJobDropdown(
-                                                                jobDropdown.index === index &&
-                                                                    jobDropdown.type === "employment"
-                                                                    ? {
-                                                                        index: null,
-                                                                        type: null,
-                                                                    }
-                                                                    : {
-                                                                        index,
-                                                                        type: "employment",
-                                                                    }
-                                                            );
-                                                        }}
-                                                    >
-                                                        <Text
-                                                            style={[
-                                                                styles.dropdownText,
-                                                                !job.employmentStatus && {
-                                                                    color: "#9CA3AF",
-                                                                },
-                                                            ]}
-                                                        >
-                                                            {job.employmentStatus?.label ||
-                                                                "Select Employment Status"}
-                                                        </Text>
-
-                                                        <Image
-                                                            source={DownArrow}
-                                                            style={styles.arrow}
-                                                        />
-                                                    </TouchableOpacity>
-
-                                                    {jobDropdown.index === index &&
-                                                        jobDropdown.type === "employment" && (
-                                                            <View style={styles.dropdownList}>
-                                                                <ScrollView
-                                                                    nestedScrollEnabled
-                                                                    showsVerticalScrollIndicator={false}
-                                                                >
-                                                                    {jobOptions.map(item => (
-                                                                        <TouchableOpacity
-                                                                            key={item.value}
-                                                                            style={styles.option}
-                                                                            onPress={() => {
-                                                                                updateJob(
-                                                                                    index,
-                                                                                    "employmentStatus",
-                                                                                    item
-                                                                                );
-
-                                                                                setJobDropdown({
-                                                                                    index: null,
-                                                                                    type: null,
-                                                                                });
-                                                                            }}
-                                                                        >
-                                                                            <Text
-                                                                                style={
-                                                                                    styles.optionText
-                                                                                }
-                                                                            >
-                                                                                {item.label}
-                                                                            </Text>
-                                                                        </TouchableOpacity>
-                                                                    ))}
-                                                                </ScrollView>
-                                                            </View>
-                                                        )}
-                                                </View>
-
-
-                                                {jobErrors[index]?.employmentStatus && (
-                                                    <ErrorMessage message={jobErrors[index].employmentStatus} />
-                                                )}
-
-
-
-                                                <Text style={styles.label}>
-                                                    Job Role
-                                                </Text>
-
-                                                <View
-                                                    style={{
-                                                        zIndex:
-                                                            jobDropdown.index === index &&
-                                                                jobDropdown.type === "role"
-                                                                ? 30
-                                                                : 1,
-                                                    }}
-                                                >
-                                                    <TouchableOpacity
-                                                        style={styles.dropdown}
-                                                        activeOpacity={0.8}
-                                                        onPress={() => {
-                                                            setJobDropdown(
-                                                                jobDropdown.index === index &&
-                                                                    jobDropdown.type === "role"
-                                                                    ? {
-                                                                        index: null,
-                                                                        type: null,
-                                                                    }
-                                                                    : {
-                                                                        index,
-                                                                        type: "role",
-                                                                    }
-                                                            );
-                                                        }}
-                                                    >
-                                                        <Text style={styles.dropdownText}>
-                                                            {job.jobRole?.label ||
-                                                                "Select Job Role"}
-                                                        </Text>
-
-                                                        <Image
-                                                            source={DownArrow}
-                                                            style={styles.arrow}
-                                                        />
-                                                    </TouchableOpacity>
-
-                                                    {jobDropdown.index === index &&
-                                                        jobDropdown.type === "role" && (
-                                                            <View style={styles.dropdownList}>
-                                                                <ScrollView
-                                                                    nestedScrollEnabled
-                                                                    showsVerticalScrollIndicator={false}
-                                                                >
-                                                                    {jobRoleOptions.map(item => (
-                                                                        <TouchableOpacity
-                                                                            key={item.value}
-                                                                            style={styles.option}
-                                                                            onPress={() => {
-                                                                                updateJob(
-                                                                                    index,
-                                                                                    "jobRole",
-                                                                                    item
-                                                                                );
-
-                                                                                setJobDropdown({
-                                                                                    index: null,
-                                                                                    type: null,
-                                                                                });
-                                                                            }}
-                                                                        >
-                                                                            <Text
-                                                                                style={
-                                                                                    styles.optionText
-                                                                                }
-                                                                            >
-                                                                                {item.label}
-                                                                            </Text>
-                                                                        </TouchableOpacity>
-                                                                    ))}
-                                                                </ScrollView>
-                                                            </View>
-                                                        )}
-                                                </View>
-
-                                                {jobErrors[index]?.jobRole && (
-                                                    <ErrorMessage message={jobErrors[index].jobRole} />
-                                                )}
-
-
-
-                                                <Text style={styles.label}>
-                                                    Work Location
-                                                </Text>
-
-                                                <TextInput
-                                                    style={styles.input}
                                                     placeholder="Enter name"
-                                                    value={job.worklocation}
-                                                    onChangeText={(text) => {
-                                                        const cleaned = text.replace(
-                                                            /[^A-Za-z\s]/g,
-                                                            ""
-                                                        );
+                                                    onChangeText={(text) =>
+                                                        updateJob(index, "companyName", text.replace(/[^A-Za-z\s]/g, ""))
+                                                    }
+                                                    onFocus={(e) => scrollInputIntoView(e)}
+                                                    error={!!jobErrors[index]?.companyName}
+                                                />
+                                                {jobErrors[index]?.companyName ? (
+                                                    <ErrorMessage message={jobErrors[index].companyName} />
+                                                ) : null}
 
-                                                        updateJob(
-                                                            index,
-                                                            "worklocation",
-                                                            cleaned
-                                                        );
-                                                    }}
-                                                    onFocus={(e) =>
-                                                        scrollInputIntoView(e)
+                                                {/* Employment status */}
+                                                <DropdownComponent
+                                                    label="Employment Status"
+                                                    placeholder="Select Employment Status"
+                                                    options={jobOptions}
+                                                    value={job.employmentStatus?.value || null}
+                                                    error={jobErrors[index]?.employmentStatus}
+                                                    onChange={(val) =>
+                                                        updateJob(index, "employmentStatus", jobOptions.find((o) => o.value === val) || null)
                                                     }
                                                 />
 
-                                                {jobErrors[index]?.worklocation && (
+                                                {/* Job role */}
+                                                <DropdownComponent
+                                                    label="Job Role"
+                                                    placeholder="Select Job Role"
+                                                    options={jobRoleOptions}
+                                                    value={job.jobRole?.value || null}
+                                                    error={jobErrors[index]?.jobRole}
+                                                    onChange={(val) =>
+                                                        updateJob(index, "jobRole", jobRoleOptions.find((o) => o.value === val) || null)
+                                                    }
+                                                />
+
+                                                {/* Work location */}
+                                                <Text style={styles.label}>Work Location</Text>
+                                                <InputComponent
+                                                    type="name"
+                                                    value={job.worklocation}
+                                                    placeholder="Enter name"
+                                                    onChangeText={(text) =>
+                                                        updateJob(index, "worklocation", text.replace(/[^A-Za-z\s]/g, ""))
+                                                    }
+                                                    onFocus={(e) => scrollInputIntoView(e)}
+                                                    error={!!jobErrors[index]?.worklocation}
+                                                />
+                                                {jobErrors[index]?.worklocation ? (
                                                     <ErrorMessage message={jobErrors[index].worklocation} />
-                                                )}
+                                                ) : null}
 
+                                                {/* Shift type */}
+                                                <DropdownComponent
+                                                    label="Shift Type"
+                                                    placeholder="Select Shift Type"
+                                                    options={shiftTypeOptions}
+                                                    value={job.shiftType?.value || null}
+                                                    error={jobErrors[index]?.shiftType}
+                                                    onChange={(val) =>
+                                                        updateJob(index, "shiftType", shiftTypeOptions.find((o) => o.value === val) || null)
+                                                    }
+                                                />
 
-
-                                                <Text style={styles.label}>
-                                                    Shift Type
-                                                </Text>
-
-                                                <View
-                                                    style={{
-                                                        zIndex:
-                                                            jobDropdown.index === index &&
-                                                                jobDropdown.type === "shift"
-                                                                ? 30
-                                                                : 1,
-                                                    }}
-                                                >
-                                                    <TouchableOpacity
-                                                        style={styles.dropdown}
-                                                        activeOpacity={0.8}
-                                                        onPress={() => {
-                                                            setJobDropdown(
-                                                                jobDropdown.index === index &&
-                                                                    jobDropdown.type === "shift"
-                                                                    ? {
-                                                                        index: null,
-                                                                        type: null,
-                                                                    }
-                                                                    : {
-                                                                        index,
-                                                                        type: "shift",
-                                                                    }
-                                                            );
-                                                        }}
-                                                    >
-                                                        <Text
-                                                            style={[
-                                                                styles.dropdownText,
-                                                                !job.shiftType && {
-                                                                    color: "#9CA3AF",
-                                                                },
-                                                            ]}
-                                                        >
-                                                            {job.shiftType?.label ||
-                                                                "Select Shift Type"}
-                                                        </Text>
-
-                                                        <Image
-                                                            source={DownArrow}
-                                                            style={styles.arrow}
-                                                        />
-                                                    </TouchableOpacity>
-
-                                                    {jobDropdown.index === index &&
-                                                        jobDropdown.type === "shift" && (
-                                                            <View style={styles.dropdownList}>
-                                                                <ScrollView
-                                                                    nestedScrollEnabled
-                                                                    showsVerticalScrollIndicator={false}
-                                                                >
-                                                                    {shiftTypeOptions.map(item => (
-                                                                        <TouchableOpacity
-                                                                            key={item.value}
-                                                                            style={styles.option}
-                                                                            onPress={() => {
-                                                                                updateJob(
-                                                                                    index,
-                                                                                    "shiftType",
-                                                                                    item
-                                                                                );
-
-                                                                                setJobDropdown({
-                                                                                    index: null,
-                                                                                    type: null,
-                                                                                });
-                                                                            }}
-                                                                        >
-                                                                            <Text
-                                                                                style={
-                                                                                    styles.optionText
-                                                                                }
-                                                                            >
-                                                                                {item.label}
-                                                                            </Text>
-                                                                        </TouchableOpacity>
-                                                                    ))}
-                                                                </ScrollView>
-                                                            </View>
-                                                        )}
-                                                </View>
-
-                                                {jobErrors[index]?.shiftType && (
-                                                    <ErrorMessage message={jobErrors[index].shiftType} />
-                                                )}
-
-
-                                                <Text style={styles.label}>
-                                                    Shift Timing
-                                                </Text>
-
+                                                {/* Shift timing: existing picker-ah keep pannirukken */}
+                                                <Text style={styles.label}>Shift Timing</Text>
                                                 <View style={styles.shiftRow}>
-
                                                     <TouchableOpacity
                                                         style={styles.shiftInput}
                                                         activeOpacity={0.8}
                                                         onPress={() => {
                                                             setActiveJobIndex(index);
-
-                                                            const initialTime =
-                                                                job.startTime || new Date();
-
+                                                            const initialTime = job.startTime || new Date();
                                                             if (Platform.OS === "ios") {
                                                                 setIosTempTime(initialTime);
                                                                 setIosPickerType("start");
@@ -7633,22 +6765,10 @@ export default function AddTenantNewform({ navigation, route }) {
                                                             }
                                                         }}
                                                     >
-                                                        <Text
-                                                            style={[
-                                                                styles.timeText,
-                                                                !job.startTime &&
-                                                                styles.placeholder,
-                                                            ]}
-                                                        >
-                                                            {job.startTime
-                                                                ? formatTime(job.startTime)
-                                                                : "From"}
+                                                        <Text style={[styles.timeText, !job.startTime && styles.placeholder]}>
+                                                            {job.startTime ? formatTime(job.startTime) : "From"}
                                                         </Text>
-
-                                                        <Image
-                                                            source={require("../../Assets/Images/timer.png")}
-                                                            style={styles.clockIcon}
-                                                        />
+                                                        <Image source={require("../../Assets/Images/timer.png")} style={styles.clockIcon} />
                                                     </TouchableOpacity>
 
                                                     <TouchableOpacity
@@ -7656,10 +6776,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         activeOpacity={0.8}
                                                         onPress={() => {
                                                             setActiveJobIndex(index);
-
-                                                            const initialTime =
-                                                                job.endTime || new Date();
-
+                                                            const initialTime = job.endTime || new Date();
                                                             if (Platform.OS === "ios") {
                                                                 setIosTempTime(initialTime);
                                                                 setIosPickerType("end");
@@ -7668,34 +6785,15 @@ export default function AddTenantNewform({ navigation, route }) {
                                                             }
                                                         }}
                                                     >
-                                                        <Text
-                                                            style={[
-                                                                styles.timeText,
-                                                                !job.endTime &&
-                                                                styles.placeholder,
-                                                            ]}
-                                                        >
-                                                            {job.endTime
-                                                                ? formatTime(job.endTime)
-                                                                : "To"}
+                                                        <Text style={[styles.timeText, !job.endTime && styles.placeholder]}>
+                                                            {job.endTime ? formatTime(job.endTime) : "To"}
                                                         </Text>
-
-                                                        <Image
-                                                            source={require("../../Assets/Images/timer.png")}
-                                                            style={styles.clockIcon}
-                                                        />
+                                                        <Image source={require("../../Assets/Images/timer.png")} style={styles.clockIcon} />
                                                     </TouchableOpacity>
-
                                                 </View>
 
-                                                {jobErrors[index]?.startTime && (
-                                                    <ErrorMessage message={jobErrors[index].startTime} />
-                                                )}
-
-                                                {jobErrors[index]?.endTime && (
-                                                    <ErrorMessage message={jobErrors[index].endTime} />
-                                                )}
-
+                                                {jobErrors[index]?.startTime ? <ErrorMessage message={jobErrors[index].startTime} /> : null}
+                                                {jobErrors[index]?.endTime ? <ErrorMessage message={jobErrors[index].endTime} /> : null}
                                             </View>
                                         ))}
 
@@ -8029,7 +7127,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     numberOfLines={1}
                                                     ellipsizeMode="tail"
                                                 >
-                                                  {item?.holderName || item?.displayName}
+                                                    {item?.holderName || item?.displayName}
                                                 </Text>
 
                                                 <Text
@@ -8037,7 +7135,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                     numberOfLines={1}
                                                     ellipsizeMode="tail"
                                                 >
-                                                 {item?.subLabel}
+                                                    {item?.subLabel}
                                                 </Text>
                                             </View>
 
@@ -8053,7 +7151,7 @@ export default function AddTenantNewform({ navigation, route }) {
                                                         badgeStyle[1],
                                                     ]}
                                                 >
-                                                  {type.replace(/_/g, " ")}
+                                                    {type.replace(/_/g, " ")}
                                                 </Text>
                                             </View>
                                         </TouchableOpacity>
@@ -8262,38 +7360,49 @@ export default function AddTenantNewform({ navigation, route }) {
                     type={activeTab === "CheckIn" ? "checkIn" : "booking"}
                     joiningDate={joiningDate || checkJoiningDate}
                     onClose={() => setShowBedSheet(false)}
-                    onSelect={(data) => {
-                        console.log("Selected Bed =>", data);
+                    onSelect={async (data) => {
+                        const selectedBedId = data?.bedId ?? data?.id;
+                        const floorId = data?.floorId ?? data?.floor?.id;
+                        const roomId = data?.roomId ?? data?.room?.id;
 
-                        setSelectedBedDetails(data);
+                        if (!floorId || !roomId || !selectedBedId) return;
+
+                        const floor =
+                            floors.find((f) => String(getFloorId(f)) === String(floorId)) ||
+                            { id: floorId, name: data.floorName || "" };
+                        setFloorSelected(floor);
+
+                        const roomList = await loadRoomsByFloor(floorId);
+                        const room =
+                            roomList?.find((r) => String(getRoomId(r)) === String(roomId)) ||
+                            { id: roomId, name: data.roomName || "" };
+                        setRoomSelected(room);
+
+                        const bedData = {
+                            ...data,
+                            bedId: selectedBedId,
+                            floorId,
+                            roomId,
+                            bedName: data.bedName || data.name || "",
+                            rentAmount: data.rentAmount ?? data.rent ?? 0,
+                            currentStatus: data.currentStatus || "VACANT",
+                        };
+
+                        setBedSelected(bedData);
+                        setSelectedBedDetails(bedData);
+
+                        setBeds((prev) => {
+                            const list = Array.isArray(prev) ? prev : [];
+                            return [...list.filter((b) => String(b.bedId) !== String(selectedBedId)), bedData];
+                        });
+
+                        setCheckinRentalAmount(String(bedData.rentAmount));
 
                         setFloorError("");
                         setRoomError("");
                         setBedError("");
-
-                        const floor = floors.find(f => f?.id === data?.floorId);
-                        if (floor) {
-                            setFloorSelected(floor);
-                        }
-
-                        loadRoomsByFloor(data?.floorId).then(async () => {
-
-                            const room = {
-                                id: data?.roomId,
-                                name: data?.roomName,
-                            };
-                            setRoomSelected(room);
-
-                            await getAllBedsByRoom(data?.roomId);
-
-                            setBedSelected({
-                                bedId: data?.bedId,
-                                bedName: data?.bedName,
-                                rentAmount: data?.rentAmount,
-                            });
-
-                            setCheckinRentalAmount(String(data?.rentAmount));
-                        });
+                        setRentalError("");
+                        setShowBedSheet(false);
                     }}
                 />
 
@@ -10268,4 +9377,31 @@ const styles = StyleSheet.create({
     bankIconBg: {
         backgroundColor: "#DCE8FF",
     },
+    rowWrapper: { position: "relative", marginBottom: 6 },
+    inputRow: { flexDirection: "row", alignItems: "flex-start", gap: 12, width: "100%" },
+    removeBtn: {
+        position: "absolute", top: -10, right: -6,
+        width: 28, height: 28, borderRadius: 14,
+        backgroundColor: "#E0E0E0", alignItems: "center", justifyContent: "center", zIndex: 1,
+    },
+    setButton: { backgroundColor: "#EAF0FF", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
+    setButtonText: { color: "#165DFF", fontSize: 14, fontFamily: "Gilroy-SemiBold" },
+    stateList: {
+        borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12,
+        maxHeight: 220, backgroundColor: "#fff", marginTop: 4, overflow: "hidden",
+    },
+    noResult: { padding: 14, textAlign: "center", color: "#999", fontFamily: "Gilroy-Medium" },
+    countryBox: {
+    height: 48,
+    minWidth: 56,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: "#DEDEDE",
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+},
+countryBoxText: { fontSize: 14, color: "#111", fontFamily: "Gilroy-Medium" },
+
 });

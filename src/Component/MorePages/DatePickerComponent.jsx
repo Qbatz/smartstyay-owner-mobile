@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     inputWrapper: {
         height: 52,
         width: "100%",
-        borderWidth: 1,
+        borderWidth: 1.5,
         borderColor: "#E5E7EB",
         borderRadius: 16,
         backgroundColor: "#FFFFFF",
@@ -381,12 +381,12 @@ const styles = StyleSheet.create({
 
     focusedInput: {
         borderColor: "#0085FF",
-        borderWidth: 2,
+        borderWidth: 1.5,
     },
 
     errorInput: {
         borderColor: "#FF3333",
-        borderWidth: 1,
+        borderWidth: 1.5,
     },
 
     disabledInput: {

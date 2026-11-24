@@ -25,7 +25,8 @@ import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import InputComponent from "../../MorePages/InputComponent"
-
+import DropdownComponent from "../../MorePages/DropdownComponent";
+import DatePickerComponent from "../../MorePages/DatePickerComponent";
 
 export default function InactiveTenantSheet({ visible, onClose, selectedBed, selectedItem, onSuccess, bookedItems, onBedAdded }) {
   const translateY = useRef(new Animated.Value(400)).current;
@@ -60,9 +61,31 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
   //   ? dayjs(bookingDetails.bookedDate, "DD-MM-YYYY").format("YYYY-MM-DD")
   //   : today;
 
-  const minDate = bookingDetails?.bookedDate
-    ? dayjs(bookingDetails.bookedDate, "DD/MM/YYYY").format("YYYY-MM-DD")
-    : today;
+  const normalizeDate = (value) => {
+    if (!value) return today;
+
+    const raw = String(value).trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+      return raw;
+    }
+
+    const match = raw.match(
+      /^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/
+    );
+
+    if (match) {
+      const [, day, month, year] = match;
+
+      return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+    }
+
+    return dayjs(raw).isValid()
+      ? dayjs(raw).format("YYYY-MM-DD")
+      : today;
+  };
+
+  const minDate = normalizeDate(bookingDetails?.bookedDate);
 
   const customerId =
     selectedItem?.customerId || bookedItems?.tenetId;
@@ -449,13 +472,11 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
               </View>
             </View>
 
-            {/* Joining Date */}
-            <Text style={styles.label}>
+            {/* <Text style={styles.label}>
               Date <Text style={{ color: "red" }}>*</Text>
             </Text>
 
             <TouchableOpacity
-              // style={styles.dateBox}
               style={[
                 styles.dateBox,
                 {
@@ -464,10 +485,10 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
                 },
               ]}
               onPress={() => {
-                Keyboard.dismiss();      // ✅ close keyboard first
+                Keyboard.dismiss();     
                 setTimeout(() => {
                   setOpenJoinDatePic(true);
-                }, 100);                 // small delay for smooth close
+                }, 100);              
               }}
             >
 
@@ -479,7 +500,25 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
             {joiningDateError && (
               <ErrorMessage message={joiningDateError} type="error" />
-            )}
+            )} */}
+
+
+
+            <DatePickerComponent
+              label="Date"
+              required
+              selectedDate={joiningDate}
+              onSelect={(date) => {
+                setJoiningDate(date);
+                setJoiningDateError("");
+              }}
+              minDate={minDate}
+              maxDate={today}
+              placeholder="DD-MM-YYYY"
+              displayFormat="DD-MM-YYYY"
+              error={joiningDateError}
+            />
+
 
             <View style={{ position: "relative" }}>
               <Text style={styles.label}>
@@ -650,9 +689,9 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
               />
             )}
 
-            {refundFromError && (
+            {/* {refundFromError && (
               <ErrorMessage message={refundFromError} type="error" />
-            )}
+            )} */}
 
             <Text style={styles.label}>Transaction ID</Text>
 
@@ -676,13 +715,11 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
             />
 
-            {/* Reason */}
-            <Text style={[styles.label, { marginTop: 12 }]}>
+            {/* <Text style={[styles.label, { marginTop: 12 }]}>
               Reason (Comments)
             </Text>
 
             <TextInput
-              // ref={commentRef}
               style={styles.textArea}
               multiline
               placeholder="Enter comments..."
@@ -698,7 +735,40 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
               }}
             />
 
-            {commentError && <ErrorMessage message={commentError} type="error" />}
+            {commentError && <ErrorMessage message={commentError} type="error" />} */}
+
+
+            {/* Reason (Comments) */}
+            <InputComponent
+              label="Reason (Comments)"
+              type="description"
+              value={comments}
+              onChangeText={(text) => {
+                setComments(text);
+                setCommentError("");
+              }}
+              placeholder="Enter comments..."
+              multiline
+              inputHeight={120}
+              containerStyle={{
+                marginTop: 12,
+              }}
+              onFocus={() => {
+                setTimeout(() => {
+                  scrollRef.current?.scrollToEnd({
+                    animated: true,
+                  });
+                }, 200);
+              }}
+            />
+
+            {commentError ? (
+              <ErrorMessage
+                message={commentError}
+                type="error"
+              />
+            ) : null}
+
 
             {/* Buttons */}
             <View style={styles.btnRow}>
@@ -715,7 +785,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
       </View>
 
-      {openJoinDatePic && (
+      {/* {openJoinDatePic && (
         <TouchableWithoutFeedback
           onPress={() => {
             Keyboard.dismiss();
@@ -751,7 +821,7 @@ export default function InactiveTenantSheet({ visible, onClose, selectedBed, sel
 
           </View>
         </TouchableWithoutFeedback>
-      )}
+      )} */}
 
     </>
   );
@@ -979,153 +1049,153 @@ const styles = StyleSheet.create({
 
   arrow: { fontSize: 18, color: "#555" },
   refundSelectBox: {
-  minHeight: 76,
-  borderWidth: 1,
-  borderRadius: 12,
-  borderColor: "#D9D9D9",
-  paddingHorizontal: 14,
-  paddingVertical: 10,
-  backgroundColor: "#FFFFFF",
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-},
+    minHeight: 66,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: "#D9D9D9",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: "#FFFFFF",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 
-refundPlaceholder: {
-  fontSize: 15,
-  color: "#777777",
-  fontFamily: "Gilroy-Regular",
-},
+  refundPlaceholder: {
+    fontSize: 15,
+    color: "#777777",
+    fontFamily: "Gilroy-Regular",
+  },
 
-refundSelectedContainer: {
-  flex: 1,
-  flexDirection: "row",
-  alignItems: "center",
-},
+  refundSelectedContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-refundAccountIcon: {
-  width: 46,
-  height: 46,
-  borderRadius: 25,
-  alignItems: "center",
-  justifyContent: "center",
-},
+  refundAccountIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 25,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-refundAccountIconImage: {
-  width: 24,
-  height: 24,
-  resizeMode: "contain",
-},
+  refundAccountIconImage: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
+  },
 
-refundAccountDetails: {
-  flex: 1,
-  marginLeft: 12,
-  marginRight: 8,
-},
+  refundAccountDetails: {
+    flex: 1,
+    marginLeft: 12,
+    marginRight: 8,
+  },
 
-refundAccountName: {
-  fontSize: 16,
-  fontFamily: "Gilroy-Semibold",
-  color: "#252525",
-},
+  refundAccountName: {
+    fontSize: 16,
+    fontFamily: "Gilroy-Semibold",
+    color: "#252525",
+  },
 
-refundAccountSubText: {
-  fontSize: 13,
-  fontFamily: "Gilroy-Medium",
-  color: "#74809A",
-  marginTop: 4,
-},
+  refundAccountSubText: {
+    fontSize: 13,
+    fontFamily: "Gilroy-Medium",
+    color: "#74809A",
+    marginTop: 4,
+  },
 
-refundAccountBadge: {
-  minWidth: 68,
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  borderRadius: 24,
-  alignItems: "center",
-  justifyContent: "center",
-},
+  refundAccountBadge: {
+    minWidth: 68,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-refundAccountBadgeText: {
-  fontSize: 12,
-  fontFamily: "Gilroy-Semibold",
-},
+  refundAccountBadgeText: {
+    fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
 
-refundCashIconBg: {
-  backgroundColor: "#D9F8E9",
-},
-refundCardIconBg: {
-  backgroundColor: "#FFF0D9",
-},
-refundUpiIconBg: {
-  backgroundColor: "#F3E5FF",
-},
-refundBankIconBg: {
-  backgroundColor: "#DCE9FF",
-},
+  refundCashIconBg: {
+    backgroundColor: "#D9F8E9",
+  },
+  refundCardIconBg: {
+    backgroundColor: "#FFF0D9",
+  },
+  refundUpiIconBg: {
+    backgroundColor: "#F3E5FF",
+  },
+  refundBankIconBg: {
+    backgroundColor: "#DCE9FF",
+  },
 
-refundCashBadge: {
-  backgroundColor: "#D5F7E7",
-},
-refundCardBadge: {
-  backgroundColor: "#FFF0D9",
-},
-refundUpiBadge: {
-  backgroundColor: "#F3E5FF",
-},
-refundBankBadge: {
-  backgroundColor: "#D8E7FF",
-},
+  refundCashBadge: {
+    backgroundColor: "#D5F7E7",
+  },
+  refundCardBadge: {
+    backgroundColor: "#FFF0D9",
+  },
+  refundUpiBadge: {
+    backgroundColor: "#F3E5FF",
+  },
+  refundBankBadge: {
+    backgroundColor: "#D8E7FF",
+  },
 
-refundCashText: {
-  color: "#009B42",
-},
-refundCardText: {
-  color: "#E84B00",
-},
-refundUpiText: {
-  color: "#9C27F0",
-},
-refundBankText: {
-  color: "#2457E6",
-},
+  refundCashText: {
+    color: "#009B42",
+  },
+  refundCardText: {
+    color: "#E84B00",
+  },
+  refundUpiText: {
+    color: "#9C27F0",
+  },
+  refundBankText: {
+    color: "#2457E6",
+  },
 
-refundArrow: {
-  width: 18,
-  height: 18,
-  tintColor: "#555555",
-  marginLeft: 8,
-},
+  refundArrow: {
+    width: 18,
+    height: 18,
+    tintColor: "#555555",
+    marginLeft: 8,
+  },
 
-refundDropdown: {
-  position: "absolute",
-  top: 78,
-  left: 0,
-  right: 0,
-  backgroundColor: "#FFFFFF",
-  borderWidth: 1,
-  borderColor: "#E0E3E8",
-  borderRadius: 14,
-  overflow: "hidden",
-  zIndex: 9999,
-  elevation: 20,
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.15,
-  shadowRadius: 8,
-},
+  refundDropdown: {
+    position: "absolute",
+    top: 78,
+    left: 0,
+    right: 0,
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "#E0E3E8",
+    borderRadius: 14,
+    overflow: "hidden",
+    zIndex: 9999,
+    elevation: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+  },
 
-refundOptionRow: {
-  minHeight: 82,
-  paddingHorizontal: 14,
-  paddingVertical: 12,
-  flexDirection: "row",
-  alignItems: "center",
-  backgroundColor: "#FFFFFF",
-  borderBottomWidth: 1,
-  borderBottomColor: "#EEF0F4",
-},
+  refundOptionRow: {
+    minHeight: 82,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEF0F4",
+  },
 
-refundOptionSelected: {
-  backgroundColor: "#F0F1F3",
-},
+  refundOptionSelected: {
+    backgroundColor: "#F0F1F3",
+  },
 });

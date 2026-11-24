@@ -22,6 +22,9 @@ import { useCustomer } from "../../../Context/CustomerContext";
 import { CommonContexts } from "../../../Context/CommonContext";
 import SuccessModal from "../../../ToastFile/ToastPage";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
+import InputComponent from "../../MorePages/InputComponent"
+import DropdownComponent from "../../MorePages/DropdownComponent";
+import DatePickerComponent from "../../MorePages/DatePickerComponent";
 
 export default function CancelNotice({ navigation, route }) {
   const { selectedItem, selectedBed } = route.params || {};
@@ -38,7 +41,14 @@ export default function CancelNotice({ navigation, route }) {
   const data = selectedItem || selectedBed;
   const [customerDetails, setCustomerDetails] = useState("")
   const [checkInDateError, setcheckInDateError] = useState("")
-  const [reasonError, setReasonError]=useState("")
+  const [reasonError, setReasonError] = useState("")
+
+  const [stayType, setStayType] = useState("Long stay");
+
+  const stayTypeOptions = [
+    { label: "Long stay", value: "Long stay" },
+    { label: "Short stay", value: "Short stay" },
+  ];
 
   const bedId =
     data?.bedId;
@@ -134,7 +144,7 @@ export default function CancelNotice({ navigation, route }) {
     setcheckInDateError("")
     setReasonError("")
 
-    let hasError =false;
+    let hasError = false;
     const data = selectedItem || selectedBed;
 
     const bedId = data?.bedId || data?.hostelInfo?.bedId
@@ -143,9 +153,9 @@ export default function CancelNotice({ navigation, route }) {
       data?.currentTenantInfo?.[0]?.tenetId;
 
 
-      console.log("bedid", bedId)
-       console.log("tenantId", tenantId);
-      
+    console.log("bedid", bedId)
+    console.log("tenantId", tenantId);
+
 
     if (!activeHostelId || !bedId || !tenantId) {
       return;
@@ -153,14 +163,14 @@ export default function CancelNotice({ navigation, route }) {
 
     if (!checkInDate) {
       setcheckInDateError("Please Select Re Check-in Date");
-      hasError=true;
+      hasError = true;
     }
-    if(!reason){
+    if (!reason) {
       setReasonError("Please enter a reason");
-      hasError=true;
+      hasError = true;
     }
 
-    if(hasError) return;
+    if (hasError) return;
 
     const payload = {
       bedId: bedId,
@@ -170,7 +180,7 @@ export default function CancelNotice({ navigation, route }) {
 
     console.log("CANCEL NOTICE PAYLOAD", payload);
 
-  
+
 
     const res = await cancelCheckout(
       activeHostelId,
@@ -185,16 +195,16 @@ export default function CancelNotice({ navigation, route }) {
       setShowSuccess(true);
       setcheckInDateError("")
 
-        const data = await getCustomerDetails(tenantId)
-       console.log("data", data);
-       
+      const data = await getCustomerDetails(tenantId)
+      console.log("data", data);
+
 
       setTimeout(() => {
         navigation.goBack()
         setShowSuccess(false)
       }, 800);
 
-    } 
+    }
     else {
       setModalType("warning");
       setMessage(res?.message || "Cancel notice failed");
@@ -260,49 +270,59 @@ export default function CancelNotice({ navigation, route }) {
           </View>
 
 
-          <Text style={styles.label}>Stay Type</Text>
+          <DropdownComponent
+            label="Stay Type"
+            options={stayTypeOptions}
+            value={stayType}
+            placeholder="Select Stay Type"
+            onChange={(value) => setStayType(value)}
+             disabled={true}
+          />
 
-          <TouchableOpacity style={styles.dropBox}>
-            <Text style={styles.dropText}>Long stay</Text>
+          <DatePickerComponent
+            label="Re Check-In Date"
+            required
+            selectedDate={
+              checkInDate
+                ? dayjs(checkInDate).format("YYYY-MM-DD")
+                : null
+            }
+            onSelect={(date) => {
+              setCheckInDate(date);
+              setcheckInDateError("");
+            }}
+            minDate={minSelectableDate}
+            maxDate={maxSelectableDate}
+            placeholder="DD/MM/YYYY"
+            displayFormat="DD/MM/YYYY"
+            error={checkInDateError}
+          />
 
-            <Image source={DownArrow} style={styles.dropIcon} />
-          </TouchableOpacity>
-
-          <Text style={styles.label}>Re Check-In Date <Text style={{ color: "red" }}>*</Text></Text>
-
-          <TouchableOpacity
-            style={styles.inputBox}
-            onPress={() => setOpenDate(!openDate)}
-          >
-            <Text style={styles.inputText}>
-              {checkInDate
-                ? dayjs(checkInDate).format("DD/MM/YYYY")
-                : "DD/MM/YYYY"}
-              {/* {dayjs(checkInDate).format("DD/MM/YYYY")} */}
-            </Text>
-            <Image source={CalendarIcon} style={styles.calendarIcon} />
-          </TouchableOpacity>
-
-          {checkInDateError && <ErrorMessage message={checkInDateError} type="error" />}
+          {/* {checkInDateError && <ErrorMessage message={checkInDateError} type="error" />} */}
 
 
           {/* Reason */}
-          <Text style={styles.label}>Reason (Comments) <Text style={{ color: "red" }}>*</Text></Text>
-          <TextInput
-            style={styles.textarea}
-            multiline
-            placeholder="Add reason..."
+          <InputComponent
+            label="Reason (Comments)"
+            type="description"
+            required
             value={reason}
-            onChangeText={(text)=>{
+            onChangeText={(text) => {
               const filtered = text.replace(/[^a-zA-Z0-9 ]/g, "");
-              setReason(filtered)
-              if(filtered){
-                setReasonError("")
+
+              setReason(filtered);
+
+              if (filtered.trim()) {
+                setReasonError("");
               }
             }}
+            placeholder="Add reason..."
+            multiline
+            inputHeight={150}
+            error={reasonError}
           />
-          {reasonError && <ErrorMessage message={reasonError} type="error"/>}
         </ScrollView>
+
         {/* {openDate && (
         <View style={styles.dropdownBox}>
           <DatePicker
@@ -562,7 +582,7 @@ const styles = StyleSheet.create({
   dropIcon: {
     width: 16,
     height: 16,
-    tintColor: "#555", 
+    tintColor: "#555",
   },
   disabledBtn: {
     backgroundColor: "#CBD5E1", // grey
@@ -571,28 +591,28 @@ const styles = StyleSheet.create({
     color: "#6B7280",
   },
   modalOverlay: {
-  flex: 1,
-  backgroundColor: "rgba(0,0,0,0.2)",
-  justifyContent: "center",
-  paddingHorizontal: 20,
-},
-
-dropdownBox: {
-  backgroundColor: "#fff",
-  borderRadius: 16,
-  padding: 10,
-  elevation: 6,
-
-  shadowColor: "#000",
-  shadowOffset: {
-    width: 0,
-    height: 2,
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.2)",
+    justifyContent: "center",
+    paddingHorizontal: 20,
   },
-  shadowOpacity: 0.15,
-  shadowRadius: 6,
 
-  borderWidth: 1,
-  borderColor: "#E5E7EB",
-},
+  dropdownBox: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 10,
+    elevation: 6,
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
 
 });

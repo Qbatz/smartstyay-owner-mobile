@@ -112,7 +112,10 @@ import { useHideTabbarOnScroll }
   from "../../../Utils/useHideTabbarOnScroll";
 import { useCustomer } from "../../../Context/CustomerContext";
 import InputComponent from "../InputComponent"
-
+import DropdownComponent from "../DropdownComponent";
+import DatePickerComponent from "../DatePickerComponent";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat)
 
 
 export default function BillsDesign({ route }) {
@@ -7434,8 +7437,7 @@ export default function BillsDesign({ route }) {
                     </View>
 
 
-                    {/* REFUND DATE */}
-                    <Text style={styles.label}>
+                    {/* <Text style={styles.label}>
                       Refund Date <Text style={{ color: "red", fontSize: 16 }}>*</Text>
                     </Text>
 
@@ -7453,13 +7455,32 @@ export default function BillsDesign({ route }) {
                       <Image source={CalendarIcon} style={{ width: 22, height: 22 }} />
                     </TouchableOpacity>
 
-                    {/* ERROR MESSAGE */}
 
 
 
                     {refundDateError && (
                       <ErrorMessage message={refundDateError} type="error" />
-                    )}
+                    )} */}
+
+                    <DatePickerComponent
+                      label="Refund Date"
+                      required
+                      selectedDate={refundDate ? dayjs(refundDate).format("YYYY-MM-DD") : null}
+                      placeholder="DD/MM/YYYY"
+                      displayFormat="DD/MM/YYYY"
+                      minDate={
+                        invoiceDate?.isValid()
+                          ? invoiceDate.format("YYYY-MM-DD")
+                          : undefined
+                      }
+                      maxDate={dayjs().format("YYYY-MM-DD")}
+                      error={refundDateError}
+                      containerStyle={{ marginTop: 12 }}
+                      onSelect={(date) => {
+                        setRefundDate(dayjs(date).toDate());
+                        setRefundDateError("");
+                      }}
+                    />
 
 
                     {/* 

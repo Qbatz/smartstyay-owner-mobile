@@ -11,7 +11,7 @@ import {
   StyleSheet,
   StatusBar,
   Platform,
-  Keyboard, Dimensions, 
+  Keyboard, Dimensions,
 } from 'react-native';
 
 import { ArrowUp2, ArrowDown2, SearchNormal1 } from 'iconsax-react-native';
@@ -29,7 +29,9 @@ const DropdownComponent = ({
   containerStyle,
   dropdownStyle,
   maxDropdownHeight = 240,
-  dropdownWidthRatio = 1,
+  // dropdownWidthRatio = 1,
+
+  dropdownWidthRatio = 0.91,
 
   // NEW FEATURES
   searchable = false,
@@ -364,84 +366,84 @@ const DropdownComponent = ({
           )}
 
           {/* Options */}
-   <View
-  style={[
-    styles.optionsShadow,
-    {
-      position: 'absolute',
-      top: dropdownPosition.top,
-      left: dropdownPosition.left,
-      width: dropdownPosition.width * dropdownWidthRatio,
-      maxHeight: dropdownPosition.maxHeight,
-    },
-    dropdownStyle,
-  ]}
->
-             <View style={styles.optionsClip}>
-    <ScrollView
-      keyboardShouldPersistTaps="always"
-      nestedScrollEnabled
-      showsVerticalScrollIndicator={false}
-    >
+          <View
+            style={[
+              styles.optionsShadow,
+              {
+                position: 'absolute',
+                top: dropdownPosition.top,
+                left: dropdownPosition.left,
+                width: dropdownPosition.width * dropdownWidthRatio,
+                maxHeight: dropdownPosition.maxHeight,
+              },
+              dropdownStyle,
+            ]}
+          >
+            <View style={styles.optionsClip}>
+              <ScrollView
+                keyboardShouldPersistTaps="always"
+                nestedScrollEnabled
+                showsVerticalScrollIndicator={false}
+              >
 
-              {filteredOptions.map((item, index) => {
-                const itemValue =
-                  typeof item === 'object'
-                    ? item.value
-                    : item;
+                {filteredOptions.map((item, index) => {
+                  const itemValue =
+                    typeof item === 'object'
+                      ? item.value
+                      : item;
 
-                const itemLabel =
-                  typeof item === 'object'
-                    ? item.label
-                    : item;
+                  const itemLabel =
+                    typeof item === 'object'
+                      ? item.label
+                      : item;
 
-                const isSelected =
-                  value != null &&
-                  String(itemValue) === String(value);
+                  const isSelected =
+                    value != null &&
+                    String(itemValue) === String(value);
 
-                return (
-                  <TouchableOpacity
-                    key={String(itemValue) + index}
-                    activeOpacity={0.7}
-                    onPress={() => handleSelect(item)}
-                    style={[
-                      styles.option,
-                      isSelected && styles.selectedOption,
-                    ]}
-                  >
-                    <Text
+                  return (
+                    <TouchableOpacity
+                      key={String(itemValue) + index}
+                      activeOpacity={0.7}
+                      onPress={() => handleSelect(item)}
                       style={[
-                        styles.optionText,
-                        isSelected && styles.selectedText,
+                        styles.option,
+                        isSelected && styles.selectedOption,
                       ]}
                     >
-                      {itemLabel}
+                      <Text
+                        style={[
+                          styles.optionText,
+                          isSelected && styles.selectedText,
+                        ]}
+                      >
+                        {itemLabel}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                {filteredOptions.length === 0 &&
+                  !canAddCustomValue && (
+                    <View style={styles.emptyContainer}>
+                      <Text style={styles.emptyText}>
+                        {emptyText}
+                      </Text>
+                    </View>
+                  )}
+
+                {canAddCustomValue && (
+                  <TouchableOpacity
+                    style={styles.addCustomOption}
+                    onPress={handleAddCustomValue}
+                  >
+                    <Text style={styles.addCustomText}>
+                      + {customValueLabel} "{searchText.trim()}"
                     </Text>
                   </TouchableOpacity>
-                );
-              })}
-
-              {filteredOptions.length === 0 &&
-                !canAddCustomValue && (
-                  <View style={styles.emptyContainer}>
-                    <Text style={styles.emptyText}>
-                      {emptyText}
-                    </Text>
-                  </View>
                 )}
-
-              {canAddCustomValue && (
-                <TouchableOpacity
-                  style={styles.addCustomOption}
-                  onPress={handleAddCustomValue}
-                >
-                  <Text style={styles.addCustomText}>
-                    + {customValueLabel} "{searchText.trim()}"
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </ScrollView>
-              </View>
+              </ScrollView>
+            </View>
           </View>
         </View>
       </Modal>
@@ -460,7 +462,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Gilroy-Semibold',
     color: '#18181B',
     marginBottom: 6,
-    marginTop:6
+    marginTop: 6
   },
 
   required: {
@@ -469,7 +471,7 @@ const styles = StyleSheet.create({
 
   trigger: {
     height: 48,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#DEDEDE',
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
@@ -479,7 +481,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom:6,
+    marginBottom: 6,
     elevation: 4,
     shadowColor: '#000000',
     shadowOffset: {
@@ -602,6 +604,7 @@ const styles = StyleSheet.create({
 
   errorBorder: {
     borderColor: '#EF4444',
+    borderWidth: 1.5
   },
   searchTrigger: {
     backgroundColor: '#FFFFFF',
@@ -647,77 +650,76 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
 
-optionsShadow: {
-  backgroundColor: '#FFFFFF',
-  borderRadius: 16,
-  borderWidth: 1,
-  borderColor: '#E4E4E7',
+  optionsShadow: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#E4E4E7',
 
-  // iOS Shadow
-  shadowColor: '#000000',
-  shadowOffset: {
-    width: 0,
-    height: 5,
+    // iOS Shadow
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 16,
+
+    // Android Shadow
+    elevation: 12,
+
+    overflow: 'visible',
+    zIndex: 20,
+
   },
-  shadowOpacity: 0.16,
-  shadowRadius: 8,
 
-  // Android Shadow
-  elevation: 12,
-
-  overflow: 'visible',
-  zIndex: 20,
-},
-
-optionsClip: {
-  backgroundColor: '#FFFFFF',
-  borderRadius: 15,
-  overflow: 'hidden',
-},
-
-searchTrigger: {
-  backgroundColor: '#FFFFFF',
-  borderWidth: 1,
-  borderColor: '#DEDEDE',
-  borderRadius: 16,
-  paddingHorizontal: 12,
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 8,
-
-  shadowColor: '#000000',
-  shadowOffset: {
-    width: 0,
-    height: 4,
+  optionsClip: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 15,
+    overflow: 'hidden',
+    paddingVertical:6
   },
-  shadowOpacity: 0.12,
-  shadowRadius: 5,
-  elevation: 5,
-  zIndex: 10,
-},
 
-searchTriggerInput: {
-  flex: 1,
-  height: '100%',
-  padding: 0,
-  fontSize: 14,
-  color: '#18181B',
-  fontFamily: 'Gilroy-Medium',
-  textAlignVertical: 'center',
-},
+  searchTrigger: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#DEDEDE',
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
 
-option: {
-  minHeight: 48,
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-  justifyContent: 'center',
-},
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
+    elevation: 5,
+    zIndex: 10,
+  },
 
-optionText: {
-  fontSize: 14,
-  color: '#18181B',
-  fontFamily: 'Gilroy-Semibold',
-},
+  searchTriggerInput: {
+    flex: 1,
+    height: '100%',
+    padding: 0,
+    fontSize: 14,
+    color: '#18181B',
+    fontFamily: 'Gilroy-Medium',
+    textAlignVertical: 'center',
+  },
+
+  option: {
+    minHeight: 48,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    justifyContent: 'center',
+  },
+
+  optionText: {
+    fontSize: 14,
+    color: '#18181B',
+    fontFamily: 'Gilroy-Semibold',
+  },
 
 
 });

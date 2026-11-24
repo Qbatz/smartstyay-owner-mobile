@@ -19,7 +19,10 @@ import BankIcon from "../../../Assets/Images/bankBlue.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen"
 import InputComponent from "../InputComponent"
-
+import DropdownComponent from "../DropdownComponent";
+import DatePickerComponent from "../DatePickerComponent";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat)
 
 
 const NewRecordPayment = ({ route }) => {
@@ -599,23 +602,25 @@ const NewRecordPayment = ({ route }) => {
                         style={styles.blncpyablBox}
                         placeholder="₹ 0.00" /> */}
 
-                    <Text style={styles.txtinputhead}>Paid Date <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
-
-                    <TouchableOpacity style={styles.paidDateBox}
-                        onPress={() => {
+                    <DatePickerComponent
+                        label="Paid Date"
+                        required
+                        selectedDate={paidDate ? dayjs(paidDate).format("YYYY-MM-DD") : null}
+                        placeholder="DD/MM/YYYY"
+                        displayFormat="DD/MM/YYYY"
+                        minDate={
+                            invoiceDate?.isValid()
+                                ? invoiceDate.format("YYYY-MM-DD")
+                                : undefined
+                        }
+                        maxDate={dayjs().format("YYYY-MM-DD")}
+                        error={dateError}
+                        containerStyle={{ marginTop: 12 }}
+                        onSelect={(date) => {
+                            setPaidDate(dayjs(date).toDate());
                             setDateError("");
-                            setOpenPaidDate(true);
-                        }}>
-                        {/* <Text>{paidDate ? paidDate : "DD/MM/YYYY"}</Text> */}
-                        <Text>
-                            {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
-                        </Text>
-                        <Image
-                            source={CalendarIcon}
-                            style={{ width: 22, height: 22, tintColor: "#444" }}
-                        />
-                    </TouchableOpacity>
-                    {dateError && <ErrorMessage message={dateError} type="error" />}
+                        }}
+                    />
 
                     <View style={styles.spltBoxField}>
                         <View style={{ flex: 1, marginRight: 5 }}>
@@ -910,14 +915,17 @@ const NewRecordPayment = ({ route }) => {
 
                     <Text style={styles.txtinputhead}>Notes/Description</Text>
 
-                    <TextInput
-                        style={styles.descTxtBox}
+                    <InputComponent
+                        type="description"
                         value={description}
                         placeholder="Enter Description"
+                        multiline
+                        inputHeight={100}
                         onChangeText={(text) => {
-                            const onlyLetters = text.replace(/[^A-Za-z\s]/g, "")
-                            setDescription(onlyLetters)
-                        }} />
+                            const onlyLetters = text.replace(/[^A-Za-z\s]/g, "");
+                            setDescription(onlyLetters);
+                        }}
+                    />
 
                     <View style={styles.sumryBox}>
                         <Text style={{ fontSize: 15, fontFamily: 'Gilroy-Bold', color: '#FFFFFF99' }}>SUMMARY</Text>
@@ -1087,68 +1095,68 @@ const styles = StyleSheet.create({
     },
     transactiondropdown: {
         position: "absolute",
-    top: 100,
-    left: 0,
-    right: 0,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#D9DDE5",
-    borderRadius: 16,
-    zIndex: 9999,
-    elevation: 10,
-    maxHeight: 260,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
+        top: 100,
+        left: 0,
+        right: 0,
+        backgroundColor: "#FFFFFF",
+        borderWidth: 1,
+        borderColor: "#D9DDE5",
+        borderRadius: 16,
+        zIndex: 9999,
+        elevation: 10,
+        maxHeight: 260,
+        overflow: "hidden",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
     },
 
     paymentMethodRow: {
         minHeight: 82,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: "#FFFFFF",
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F1F3",
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 14,
+        paddingVertical: 12,
+        backgroundColor: "#FFFFFF",
+        borderBottomWidth: 1,
+        borderBottomColor: "#F0F1F3",
     },
-paymentMethodRowSelected: {
-    backgroundColor: "#F5F7FF",
-},
+    paymentMethodRowSelected: {
+        backgroundColor: "#F5F7FF",
+    },
 
-paymentMethodDetails: {
-    flex: 1,
-    justifyContent: "center",
-    marginRight: 8,
-},
+    paymentMethodDetails: {
+        flex: 1,
+        justifyContent: "center",
+        marginRight: 8,
+    },
 
-paymentMethodName: {
-    fontSize: 16,
-    fontFamily: "Gilroy-Semibold",
-    color: "#222222",
-},
+    paymentMethodName: {
+        fontSize: 16,
+        fontFamily: "Gilroy-Semibold",
+        color: "#222222",
+    },
 
-paymentMethodSubText: {
-    fontSize: 14,
-    fontFamily: "Gilroy-Medium",
-    color: "#697386",
-    marginTop: 4,
-},
+    paymentMethodSubText: {
+        fontSize: 14,
+        fontFamily: "Gilroy-Medium",
+        color: "#697386",
+        marginTop: 4,
+    },
 
-paymentTypeBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
-},
+    paymentTypeBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderRadius: 20,
+        alignItems: "center",
+        justifyContent: "center",
+    },
 
-paymentTypeText: {
-    fontSize: 12,
-    fontFamily: "Gilroy-Semibold",
-},
+    paymentTypeText: {
+        fontSize: 12,
+        fontFamily: "Gilroy-Semibold",
+    },
     paymentMethodName: {
         fontSize: 16,
         fontFamily: "Gilroy-Semibold",
@@ -1163,7 +1171,7 @@ paymentTypeText: {
         marginTop: 3,
     },
 
-  
+
 
     // cashBadge: {
     //     backgroundColor: "#DDFBE8",
@@ -1173,7 +1181,7 @@ paymentTypeText: {
     //     backgroundColor: "#DCE8FF",
     // },
 
-   
+
 
     cashText: {
         color: "#07883C",
@@ -1267,68 +1275,68 @@ paymentTypeText: {
         color: "#222222",
     },
 
-cardIcon: {
-    width: 27,
-    height: 20,
-    borderWidth: 1.8,
-    borderColor: "#FF9800",
-    borderRadius: 4,
-    justifyContent: "center",
-    overflow: "hidden",
-},
+    cardIcon: {
+        width: 27,
+        height: 20,
+        borderWidth: 1.8,
+        borderColor: "#FF9800",
+        borderRadius: 4,
+        justifyContent: "center",
+        overflow: "hidden",
+    },
 
-cardIconLine: {
-    width: "100%",
-    height: 4,
-    backgroundColor: "#FF9800",
-    marginTop: 3,
-},
+    cardIconLine: {
+        width: "100%",
+        height: 4,
+        backgroundColor: "#FF9800",
+        marginTop: 3,
+    },
 
-cardIconSmallLine: {
-    width: 7,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: "#FF9800",
-    marginTop: 4,
-    marginLeft: 4,
-},
+    cardIconSmallLine: {
+        width: 7,
+        height: 3,
+        borderRadius: 2,
+        backgroundColor: "#FF9800",
+        marginTop: 4,
+        marginLeft: 4,
+    },
 
-// Dropdown badges
+    // Dropdown badges
 
-cashBadge: {
-    backgroundColor: "#DDFBE8",
-},
-cashText: {
-    color: "#07883C",
-},
+    cashBadge: {
+        backgroundColor: "#DDFBE8",
+    },
+    cashText: {
+        color: "#07883C",
+    },
 
-cardBadge: {
-    backgroundColor: "#FFEBD2",
-},
-cardText: {
-    color: "#E65100",
-},
+    cardBadge: {
+        backgroundColor: "#FFEBD2",
+    },
+    cardText: {
+        color: "#E65100",
+    },
 
-debit_cardBadge: {
-    backgroundColor: "#FFEBD2",
-},
-debit_cardText: {
-    color: "#E65100",
-},
+    debit_cardBadge: {
+        backgroundColor: "#FFEBD2",
+    },
+    debit_cardText: {
+        color: "#E65100",
+    },
 
-upiBadge: {
-    backgroundColor: "#F3E5FF",
-},
-upiText: {
-    color: "#8515D9",
-},
+    upiBadge: {
+        backgroundColor: "#F3E5FF",
+    },
+    upiText: {
+        color: "#8515D9",
+    },
 
-bankBadge: {
-    backgroundColor: "#DCE8FF",
-},
-bankText: {
-    color: "#2457E6",
-},
+    bankBadge: {
+        backgroundColor: "#DCE8FF",
+    },
+    bankText: {
+        color: "#2457E6",
+    },
 
 
 })

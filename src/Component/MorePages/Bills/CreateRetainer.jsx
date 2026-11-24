@@ -23,6 +23,11 @@ import BankIcon from "../../../Assets/Images/bankBlue.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 import CardIcon from "../../../Assets/Images/Cardorange.png";
 import InputComponent from "../InputComponent"
+import DropdownComponent from "../DropdownComponent";
+import DatePickerComponent from "../DatePickerComponent";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat)
+
 
 const NewRetainerInvoiceSheet = ({ }) => {
 
@@ -105,6 +110,22 @@ const NewRetainerInvoiceSheet = ({ }) => {
     };
 
     const retainerTypeList = [{ id: 1, retainerType: "AMOUNT_HOLDING" }, { id: 2, retainerType: "EB_HOLDING" }]
+
+    const tenantOptions = (retainerList || [])?.map((t) => ({
+        label: t?.fullName,
+        value: t?.customerId,
+    }));
+
+    const guardianOptions = (selectedTenant?.guardiansList || [])?.map((g) => ({
+        label: g?.guardianName,
+        value: g?.guardianId ?? g.guardianName,
+    }));
+
+    const retainerTypeOptions = retainerTypeList?.map((t) => ({
+        label: t?.retainerType,
+        value: t?.retainerType,
+    }));
+
 
     console.log("selectedTenant", selectedTenant)
     console.log("paidDate", dayjs(paidDate).format("DD/MM/YYYY"))
@@ -519,7 +540,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         keyboardDismissMode="on-drag">
 
 
-                        <Text style={styles.tntNameTxt}>
+                        {/* <Text style={styles.tntNameTxt}>
                             Tenant Name <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
                         <View style={[styles.container, isTenantLocked && { backgroundColor: "#F3F4F6" }]}>
@@ -609,19 +630,53 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 </View>
                             </>
 
-                        )}
+                        )} */}
+
+                        <View style={styles.tenantRow}>
+                            <View style={{ flex: 1 }}>
+                                <DropdownComponent
+                                    label="Tenant Name"
+                                    required
+                                    placeholder="Add or Search Tenant"
+                                    options={tenantOptions}
+                                    value={selectedTenant?.customerId || null}
+                                    disabled={isTenantLocked}
+                                    searchable
+                                    searchPlaceholder="Search Tenant..."
+                                    emptyText="No Options available"
+                                    error={!!errors.name}
+                                    onChange={(value) => {
+                                        const tenant = retainerList.find(
+                                            (t) => String(t.customerId) === String(value)
+                                        );
+                                        if (!tenant) return;
+
+                                        setSelectedName(tenant.fullName);
+                                        setSelectedTenant(tenant);
+                                        setReceivedFrom("");
+                                        setSelectedGuardian("");
+                                        setErrors((prev) => ({ ...prev, name: "" }));
+                                    }}
+                                />
+                            </View>
+
+                            <View style={[styles.tenantSearchButton, isTenantLocked && { opacity: 0.5 }]}>
+                                <Image source={SearchIcon} style={styles.searchIcon} resizeMode="contain" />
+                            </View>
+                        </View>
+
+                        {errors.name ? <ErrorMessage message={errors.name} type="error" /> : null}
 
 
                         <Text style={{ fontSize: 12, fontFamily: 'Gilroy-Medium', marginTop: 12, lineHeight: 16 }}
                         >Search existing tenants in the property flow ecosystem to auto-fill details</Text>
 
-
+                        {/* 
                         <Text style={styles.headerTxt}>Received from <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
 
                         <TouchableOpacity onPress={() => {
                             setGuardianOpen(!guardianOpen)
-                            //  setErrors(prev => ({ ...prev, guardianName: "" }))
                         }}
                             style={[styles.inputBox, { marginTop: 10 }]}>
                             <TextInput
@@ -650,7 +705,6 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                 <>
                                     <TouchableWithoutFeedback onPress={() => {
                                         setGuardianOpen(false)
-                                        // setStateQuery("")
                                     }}>
                                         <View style={styles.dropdownOverlay} />
                                     </TouchableWithoutFeedback>
@@ -662,7 +716,6 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                                 <TouchableOpacity key={index}
                                                     style={{ paddingVertical: 8, paddingHorizontal: 14 }}
                                                     onPress={() => {
-                                                        // setSelectedName(i.guardianName)
                                                         setSelectedGuardian(i)
                                                         setStateQuery("");
                                                         setGuardianOpen(false)
@@ -684,27 +737,58 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     </Text>
                                 </View>
                             )
-                        )}
+                        )} */}
 
-                        <Text style={styles.headerTxt}>Invoice Date <Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                        <DropdownComponent
+                            label="Received from"
+                            required
+                            placeholder="Enter/Select the Respective Person"
+                            options={guardianOptions}
+                            value={selectedGuardian?.guardianName || receivedFrom || null}
+                            searchable
+                            allowCustomValue
+                            searchPlaceholder="Search Guardian..."
+                            customValueLabel="Add"
+                            emptyText="No guardian Details Available"
+                            error={!!errors.guardianName}
+                            onChange={(val) => {
+                                const guardian = (selectedTenant?.guardiansList || []).find(
+                                    // (g) => String(g.guardianId ?? g.guardianName) === String(val)
+                                    (g) => String(g.guardianName) === String(val)
+                                );
 
-                        <TouchableOpacity onPress={() => {
-                            setOpenPaidDate(true)
-                            setErrors(prev => ({ ...prev, paidDate: "" }))
-                        }}
-                            style={[styles.inputBox, { marginTop: 10 }]}>
-
-                            <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium' }}>
-                                {paidDate ? dayjs(paidDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
-                            </Text>
-
-                            <Image
-                                source={CalendarIcon}
-                                style={{ width: 22, height: 22, tintColor: "#444" }}
-                            />
-                        </TouchableOpacity>
-
-                        {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error" />}
+                                if (guardian) {
+                                    setSelectedGuardian(guardian);
+                                    setReceivedFrom("");
+                                } else {
+                                    // typed custom name
+                                    setSelectedGuardian("");
+                                    setReceivedFrom(String(val).replace(/[^A-Za-z\s]/g, ""));
+                                }
+                                setErrors((prev) => ({ ...prev, guardianName: "" }));
+                            }}
+                        />
+                        {errors.guardianName ? (
+                            <ErrorMessage message={errors.guardianName} type="error" />
+                        ) : null}
+                        <DatePickerComponent
+                            label="Invoice Date"
+                            required
+                            selectedDate={paidDate ? dayjs(paidDate).format("YYYY-MM-DD") : null}
+                            placeholder="DD/MM/YYYY"
+                            displayFormat="DD/MM/YYYY"
+                            minDate={
+                                selectedTenant?.joiningDate
+                                    ? dayjs(selectedTenant.joiningDate, "DD/MM/YYYY").format("YYYY-MM-DD")
+                                    : undefined
+                            }
+                            maxDate={dayjs().format("YYYY-MM-DD")}
+                            error={errors.paidDate}
+                            onSelect={(date) => {
+                                setPaidDate(dayjs(date).toDate());
+                                setErrors((prev) => ({ ...prev, paidDate: "" }));
+                            }}
+                        />
 
                         {/* <Text style={styles.headerTxt}>Reference No</Text>
 
@@ -766,7 +850,7 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                     />
 
 
-                                    <Text style={styles.itemdetailTxt}>Retainer Type {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
+                                    {/* <Text style={styles.itemdetailTxt}>Retainer Type {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
 
                                     <TouchableOpacity onPress={() => {
                                         setErrors(prev => ({
@@ -810,7 +894,23 @@ const NewRetainerInvoiceSheet = ({ }) => {
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
-                                    )}
+                                    )} */}
+
+                                    <DropdownComponent
+                                        label="Retainer Type"
+                                        required
+                                        placeholder="Select Type"
+                                        options={retainerTypeOptions}
+                                        value={item.retainerType || null}
+                                        error={!!errors[`retainerType_${index}`]}
+                                        onChange={(val) => {
+                                            handleChange(index, "retainerType", val);
+                                            setErrors((prev) => ({ ...prev, [`retainerType_${index}`]: "" }));
+                                        }}
+                                    />
+                                    {errors[`retainerType_${index}`] ? (
+                                        <ErrorMessage message={errors[`retainerType_${index}`]} type="error" />
+                                    ) : null}
 
                                     <Text style={{ fontSize: 13, fontFamily: 'Gilroy-Regular', color: '#3C3C4399', marginTop: 12 }}>
                                         Amount {" "}<Text style={{ color: "red", fontSize: 19 }}>*</Text></Text>
@@ -1086,16 +1186,18 @@ const NewRetainerInvoiceSheet = ({ }) => {
                         {/* <Image source={DownArrow} style={{ width: 18, height: 18, tintColor: "#555" }} /> */}
                         {/* </TouchableOpacity> */}
 
-                        <Text style={styles.dscptTxt}>Description</Text>
-
-                        <TextInput
-                            ref={descriptionRef}
-                            style={styles.dscpBox}
-                            placeholder="Enter Description"
-                            value={description}
-                            onFocus={() => scrollToField(descriptionRef)}
-                            onChangeText={handleDescriptionChange}
-                        />
+                        <View ref={descriptionRef}>
+                            <Text style={styles.dscptTxt}>Description</Text>
+                            <InputComponent
+                                type="description"
+                                value={description}
+                                placeholder="Enter Description"
+                                multiline
+                                inputHeight={100}
+                                onFocus={() => scrollToField(descriptionRef)}
+                                onChangeText={handleDescriptionChange}
+                            />
+                        </View>
 
                         <View style={{ flexDirection: 'row', alignSelf: 'flex-end', alignItems: 'center', marginTop: 22 }}>
                             <TouchableOpacity onPress={handleLeaveScreen}
@@ -1534,6 +1636,21 @@ const styles = StyleSheet.create({
     },
     cardText: {
         color: "#E84B00",
+    },
+    tenantRow: {
+        flexDirection: "row",
+        alignItems: "flex-end",
+    },
+    tenantSearchButton: {
+        width: 48,
+        height: 48,
+        marginBottom: 6,
+        marginLeft: -10,
+        backgroundColor: "#2952FF",
+        borderTopRightRadius: 16,
+        borderBottomRightRadius: 16,
+        justifyContent: "center",
+        alignItems: "center",
     },
 
 })

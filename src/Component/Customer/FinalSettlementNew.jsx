@@ -31,6 +31,13 @@ import SuccessModal from "../../ToastFile/ToastPage";
 import FinalSettlementDiscount from "./FinalSettlementDiscountSheet"
 import SettlementDiscountAction from "./settlementdiscountAction"
 import SettlementCustomRentSheet from "./FinalSettlementCustomRentSheet"
+import InputComponent from "../MorePages/InputComponent";
+import DropdownComponent from "../MorePages/DropdownComponent";
+import DatePickerComponent from "../MorePages/DatePickerComponent";
+import { Pressable } from "react-native";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat);
+
 
 
 const formatAmount = (amount) => {
@@ -62,9 +69,13 @@ export default function FinalSettlementScreen({ navigation, route }) {
   const [showDetails, setShowDetails] = useState(false);
   const [showOtherDetails, setShowOtherDetails] = useState(false);
   const [showRefundpay, setShowRefundpay] = useState(false)
+  const [isEditingCheckout, setIsEditingCheckout] = useState(false);
   const [actualCheckoutDate, setActualCheckoutDate] = useState(
     dayjs().format("DD-MM-YYYY")
   );
+
+  const checkoutDateRef = useRef(dayjs().format("DD-MM-YYYY"));
+
   const [deductionAmount, setDeductionAmount] = useState("")
 
   console.log("kam", selectedItem)
@@ -149,30 +160,24 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
   // };
 
-  const fetchSettlement = async (date = actualCheckoutDate) => {
+  const fetchSettlement = async (date = checkoutDateRef.current) => {
     const customerId =
       selectedItem?.customerId ||
       selectedBed?.currentTenantInfo?.[0]?.tenetId;
 
     const leavingDate = date || dayjs().format("DD-MM-YYYY");
 
-    console.log("customerId", customerId);
-    console.log("leavingDate", leavingDate);
-    console.log("leavingDate", date);
-
-    // ✅ Stop if values not available
-    if (!customerId || !leavingDate) {
-      console.log("Missing customerId or leavingDate");
-      return;
-    }
-
-    console.log("beforeaddreading", customerId, leavingDate);
+    if (!customerId || !leavingDate) return;
 
     const res = await getSettlementByCustomerId(customerId, leavingDate);
 
     if (res?.success) {
       setSettlementDetails(res?.data);
-      console.log("afteraddreading", res);
+    } else {
+      setModalType("error");
+      setMessage(res?.message || "Failed to load settlement");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
     }
   };
 
@@ -187,17 +192,29 @@ export default function FinalSettlementScreen({ navigation, route }) {
   //   }
   // }, [selectedItem, selectedBed, actualCheckoutDate]);
 
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     const customerId =
+  //       selectedItem?.customerId ||
+  //       selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+  //     if (customerId && actualCheckoutDate) {
+  //       fetchSettlement(actualCheckoutDate)
+
+  //     }
+  //   }, [selectedItem, selectedBed, ])
+  // );
+
   useFocusEffect(
     useCallback(() => {
       const customerId =
         selectedItem?.customerId ||
         selectedBed?.currentTenantInfo?.[0]?.tenetId;
 
-      if (customerId && actualCheckoutDate) {
-        fetchSettlement(actualCheckoutDate)
-
+      if (customerId) {
+        fetchSettlement(checkoutDateRef.current);
       }
-    }, [selectedItem, selectedBed, actualCheckoutDate])
+    }, [selectedItem, selectedBed])
   );
 
   useEffect(() => {
@@ -1060,7 +1077,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
     );
 
     if (discountValue === "") {
-      return true; // empty means 0 discount
+      return true; 
     }
     else if (/^0+$/.test(discountValue) && discountValue !== "0") {
       setMessage("Invalid discount amount");
@@ -1099,6 +1116,58 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
 
   const isGenerateTriggeredRef = useRef(false);
+
+  const handleCheckoutDateChange = async (date) => {
+    const formatted = dayjs(date).format("DD-MM-YYYY");
+
+    setIsEditingCheckout(false);
+
+    if (formatted === checkoutDateRef.current) return;
+
+    const customerId =
+      selectedItem?.customerId ||
+      selectedBed?.currentTenantInfo?.[0]?.tenetId;
+
+    if (!customerId) return;
+
+    const res = await getSettlementByCustomerId(customerId, formatted);
+
+    if (res?.success) {
+      checkoutDateRef.current = formatted;
+      setActualCheckoutDate(formatted);
+      setSettlementDetails(res.data);
+    } else {
+      setModalType("error");
+      setMessage(res?.message || "Failed to load settlement");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
+    }
+  };
+
+
+  const handleSetDiscount = () => {
+    const value = String(discountValue).trim();
+
+    if (value === "") {
+      setDiscountValue("0");
+      setAppliedDiscount(0);
+      setIsEditingDiscount(false);
+      return;
+    }
+
+    if (/^0+$/.test(value) && value !== "0") {
+      setMessage("Invalid discount amount");
+      setModalType("warning");
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
+      return;
+    }
+
+    if (!validateDiscount()) return;
+
+    setAppliedDiscount(Number(value));
+    setIsEditingDiscount(false);
+  };
 
 
   const handleGenerate = async () => {
@@ -1344,7 +1413,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
 
               <View style={styles.rowBetween}>
 
-                <View style={styles.gridCol}>
+                {/* <View style={styles.gridCol}>
                   <Text style={styles.gridLabel}>Actual Checkout Date</Text>
 
                   <View style={styles.checkoutRow}>
@@ -1360,7 +1429,40 @@ export default function FinalSettlementScreen({ navigation, route }) {
                       <Image source={EditIcon} style={styles.editIcon} />
                     </TouchableOpacity>
                   </View>
+                </View> */}
+
+                <View style={styles.gridCol}>
+                  {!isEditingCheckout ? (
+                    <>
+                      <Text style={styles.gridLabel}>Actual Checkout Date</Text>
+
+                      <View style={styles.checkoutRow}>
+                        <Text style={styles.gridValue}>
+                          {actualCheckoutDate || "DD-MM-YYYY"}
+                        </Text>
+
+                        <TouchableOpacity
+                          style={styles.editBtn}
+                          onPress={() => setIsEditingCheckout(true)}
+                          activeOpacity={0.7}
+                        >
+                          <Image source={EditIcon} style={styles.editIcon} />
+                        </TouchableOpacity>
+                      </View>
+                    </>
+                  ) : (
+                    <DatePickerComponent
+                      label="Actual Checkout Date"
+                      selectedDate={dayjs(actualCheckoutDate, "DD-MM-YYYY").format("YYYY-MM-DD")}
+                      placeholder="DD-MM-YYYY"
+                      displayFormat="DD-MM-YYYY"
+                      maxDate={dayjs().format("YYYY-MM-DD")}
+                      onSelect={handleCheckoutDateChange}
+                    />
+                  )}
                 </View>
+
+
                 <View style={[styles.gridCol, { marginLeft: 13 }]}>
                   <Text style={styles.gridLabel}>Status</Text>
                   <Text
@@ -2321,137 +2423,80 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 </View>
               ) : (
 
-                extraCharges.map((item) => (
-                  <View key={item.id} style={styles.figmaRowWrapper}>
-                    {!item.isDefault && (
-                      <TouchableOpacity
-                        onPress={() => removeCharge(item.id)}
-                        style={styles.figmaCloseBtn}
-                      >
-                        <Image source={Delete} style={styles.figmaCloseText} />
-                      </TouchableOpacity>
-                    )}
+                extraCharges.map((item) => {
+                  const typeOptions = TYPE_OPTIONS
+                    .filter((t) => !(t === "Maintenance" && maintenanceAlreadyUsed))
+                    .map((t) => ({ label: t, value: t }));
 
-                    <View style={styles.figmaRow}>
-                      {item.type === "" ? (
-                        <TouchableOpacity
-                          disabled={item.isDefault}
-                          style={[
-                            styles.figmaLeftBox,
-                            item.isDefault && { opacity: 0.6 },
-                          ]}
-                          onPress={() =>
-                            setOpenDropdownId(openDropdownId === item.id ? null : item.id)
-                          }
-                        >
-                          <Text style={{ color: "#777" }}>Select...</Text>
-                          <Image source={DownArrow} style={styles.smallArrow} />
-                        </TouchableOpacity>
-                      ) : item.type === "Others" ? (
-                        <TextInput
-                          style={styles.figmaLeftBox}
-                          placeholder="Enter reason"
-                          value={item.title}
-                          onChangeText={(t) => updateTitle(item.id, t)}
-                          onPress={() => {
-                            setTimeout(() => {
-                              scrollRef.current?.scrollTo({
-                                y: 900,   // 👈 adjust if needed
-                                animated: true,
-                              });
-                            }, 200);
-                          }}
-                        />
-                      ) : (
-                        <View
-                          style={[
-                            styles.figmaLeftBox,
-                            { backgroundColor: "#EFEFEF" },
-                          ]}
-                        >
-                          <Text>Maintenance</Text>
+                  return (
+                    <View key={item.id} style={styles.rowWrapper}>
+                      <View style={styles.inputRow}>
+                        <View style={{ flex: 1 }}>
+                          {item.type === "" ? (
+                            <DropdownComponent
+                              placeholder="Select..."
+                              options={typeOptions}
+                              value={null}
+                              onChange={(val) => selectType(item.id, val)}
+                            />
+                          ) : item.type === "Others" ? (
+                            <InputComponent
+                              type="name"
+                              value={item.title}
+                              placeholder="Enter reason"
+                              disabled={item.isDefault}
+                              onChangeText={(t) => updateTitle(item.id, t)}
+                              error={!!item.titleError}
+                            />
+                          ) : (
+                            <InputComponent
+                              type="name"
+                              value="Maintenance"
+                              disabled
+                              inputStyle={{ color: "#24242B" }}
+                              onChangeText={() => { }}
+                            />
+                          )}
                         </View>
-                      )}
 
-                      {item.type === "" ? (
-                        <View style={[styles.figmaRightBox, { opacity: 0.4 }]}>
-                          <Text style={{ color: "#999" }}>Enter amount</Text>
-                        </View>
-                      ) : (
-                        <TextInput
-                          editable={!item.isDefault}
-                          style={styles.figmaRightBox}
+                        <InputComponent
+                          type="numberOnly"
                           value={item.amount}
-                          placeholder="Enter Amount"
-                          keyboardType="numeric"
+                          placeholder="Enter amount"
+                          disabled={!item.type || item.isDefault}
+                          flex={1}
+                          error={!!item.amountError}
                           onChangeText={(t) => {
-
                             let cleaned = t.replace(/[^0-9.]/g, "");
-
                             const parts = cleaned.split(".");
-
-                            if (parts.length > 2) {
-                              cleaned = parts[0] + "." + parts[1];
-                            }
-
-                            if (parts[1]?.length > 2) {
-                              cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                            }
-
-                            if (cleaned === "0") {
-                              return;
-                            }
-                            updateAmount(item?.id, cleaned)
-
-                          }
-
-                          }
-                          onPress={() => {
-                            setTimeout(() => {
-                              scrollRef.current?.scrollTo({
-                                y: 900,
-                                animated: true,
-                              });
-                            }, 200);
+                            if (parts.length > 2) cleaned = parts[0] + "." + parts[1];
+                            if (parts[1]?.length > 2) cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                            if (cleaned === "0") return;
+                            updateAmount(item.id, cleaned);
                           }}
                         />
-
-                      )}
-                    </View>
-
-                    {item.titleError && (
-                      <ErrorMessage message={item.titleError} type="error" />
-                    )}
-
-                    {item.amountError && (
-                      <ErrorMessage message={item.amountError} type="error" />
-                    )}
-
-                    {openDropdownId === item.id && item.type === "" && (
-                      <View style={styles.nonRefundDropdown}>
-                        {TYPE_OPTIONS.map((t) => {
-                          const disabled = t === "Maintenance" && maintenanceAlreadyUsed;
-
-                          return (
-                            <TouchableOpacity
-                              key={t}
-                              disabled={disabled}
-                              onPress={() => !disabled && selectType(item.id, t)}
-                              style={{ opacity: disabled ? 0.3 : 1 }}
-                            >
-                              <Text style={styles.dropdownItem}>{t}</Text>
-                            </TouchableOpacity>
-                          )
-                        })}
                       </View>
-                    )}
-                  </View>
-                ))
+
+                      {!item.isDefault && (
+                        <Pressable
+                          style={styles.removeBtn}
+                          onPress={() => removeCharge(item.id)}
+                          hitSlop={8}
+                        >
+                          <Image source={Delete} style={styles.figmaCloseText} />
+                        </Pressable>
+                      )}
+
+                      {item.titleError ? <ErrorMessage message={item.titleError} type="error" /> : null}
+                      {item.amountError ? <ErrorMessage message={item.amountError} type="error" /> : null}
+                    </View>
+                  );
+                })
               )}
             </View>
 
 
-
+            {/* 
             <View style={{
               backgroundColor: "#fff",
               borderRadius: 12,
@@ -2527,21 +2572,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     ref={discountRef}
                     value={discountValue}
 
-                    // onChangeText={(t) => {
-                    //   let cleaned = t.replace(/[^0-9.]/g, "");
-
-                    //   const parts = cleaned.split(".");
-
-                    //   if (parts.length > 2) {
-                    //     cleaned = parts[0] + "." + parts[1];
-                    //   }
-
-                    //   if (parts[1]?.length > 2) {
-                    //     cleaned = parts[0] + "." + parts[1].slice(0, 2);
-                    //   }
-                    //   setDiscountValue(cleaned)
-                    // }
-                    // }
+                
 
                     onChangeText={(text) => {
                       let cleaned = text.replace(/[^0-9.]/g, "");
@@ -2564,17 +2595,7 @@ export default function FinalSettlementScreen({ navigation, route }) {
                     keyboardType="numeric"
                     placeholder="Enter discount"
                     style={{ flex: 1, fontSize: 16 }}
-                    // onPress={handleDiscountFocus}
-                    //  onFocus={handleDiscountFocus}  
-                    // onFocus={() => {
-                    //   setIsDiscountFocused(true);
-
-                    //   setTimeout(() => {
-                    //     scrollRef.current?.scrollToEnd({
-                    //       animated: true,
-                    //     });
-                    //   }, 250);
-                    // }}
+                  
                     onFocus={() => {
                       if (Platform.OS === "android") {
                         setTimeout(() => {
@@ -2586,16 +2607,11 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   />
 
                   <TouchableOpacity
-                    // onPress={() => {
-                    //   if (!validateDiscount()) return;
-                    //   setAppliedDiscount(Number(discountValue) || 0);
-                    //   setIsEditingDiscount(false);
-                    // }}
+                
 
                     onPress={() => {
                       const value = discountValue.trim();
 
-                      // empty -> 0
                       if (value === "") {
                         setDiscountValue("0");
                         setAppliedDiscount(0);
@@ -2603,7 +2619,6 @@ export default function FinalSettlementScreen({ navigation, route }) {
                         return;
                       }
 
-                      // 0000 prevent
                       if (/^0+$/.test(value) && value !== "0") {
                         setMessage("Invalid discount amount");
                         setModalType("warning");
@@ -2631,6 +2646,45 @@ export default function FinalSettlementScreen({ navigation, route }) {
                 </View>
               )}
 
+            </View> */}
+
+            <View style={styles.discountCard}>
+              <Text style={styles.discountTitle}>Discount (Current Month)</Text>
+
+              <View ref={discountRef} collapsable={false}>
+                <InputComponent
+                  type="numberOnly"
+                  value={discountValue}
+                  placeholder="Enter discount"
+                  disabled={!isEditingDiscount}
+                  onFocus={() => {
+                    if (Platform.OS === "android") setTimeout(handleDiscountFocus, 350);
+                  }}
+                  onChangeText={(text) => {
+                    let cleaned = text.replace(/[^0-9.]/g, "");
+                    cleaned = cleaned.replace(/^0+(?=\d)/, "");
+                    const parts = cleaned.split(".");
+                    if (parts.length > 2) cleaned = parts[0] + "." + parts[1];
+                    if (parts[1]?.length > 2) cleaned = parts[0] + "." + parts[1].slice(0, 2);
+                    setDiscountValue(cleaned);
+                  }}
+                  rightIcon={
+                    isEditingDiscount ? (
+                      <View style={styles.setButton}>
+                        <Text style={styles.setButtonText}>✓ Set</Text>
+                      </View>
+                    ) : (
+                      <View style={styles.editChip}>
+                        <Image source={EditIcon} style={styles.editChipIcon} />
+                        <Text style={styles.editChipText}>Edit</Text>
+                      </View>
+                    )
+                  }
+                  onRightIconPress={() =>
+                    isEditingDiscount ? handleSetDiscount() : setIsEditingDiscount(true)
+                  }
+                />
+              </View>
             </View>
 
 
@@ -2650,52 +2704,14 @@ export default function FinalSettlementScreen({ navigation, route }) {
                   ]}
                 >
                   ₹{" "}{isNegative ? "-" : ""}
-                   {formatAmount(Math.abs(Number(ReturnAmount) || 0))}
+                  {formatAmount(Math.abs(Number(ReturnAmount) || 0))}
 
 
-                   {/*{Math.abs(Number(ReturnAmount)).toLocaleString("en-IN")}
-                  {Math.round(Math.abs(Number(ReturnAmount))).toLocaleString("en-IN")} */}
+
                 </Text>
               </View>
 
-              {/* {Number(ReturnAmount) > 0 && (
-  discountApplied ? (
-    <View style={styles.discountAppliedCard}>
-      
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <View style={styles.tickCircle}>
-          <Text style={styles.tick}>✓</Text>
-        </View>
 
-        <Text style={styles.discountText}>
-          ₹ {settlementDetails?.currentMonthRentInfo?.discountAmount} discount applied on this invoice
-        </Text>
-      </View>
-
-      <TouchableOpacity onPress={handleDiscount}>
-        <Text style={styles.Discountarrow}>›</Text>
-      </TouchableOpacity>
-
-    </View>
-  ) : (
-    <View style={{ marginBottom: 12 }}>
-      <TouchableOpacity
-        onPress={handleDiscount}
-        activeOpacity={0.8}
-        style={{ flexDirection: 'row' }}
-      >
-        <Text style={styles.makeDiscountText}>
-          Make Discount
-        </Text>
-
-        <Image
-          source={DiscountIcon}
-          style={{ height: 18, width: 18, marginLeft: 7 }}
-        />
-      </TouchableOpacity>
-    </View>
-  )
-)} */}
 
 
 
@@ -3506,6 +3522,27 @@ const styles = StyleSheet.create({
   //   fontSize: 12,
   //   color: "#6B7280",
   // },
+  rowWrapper: { position: "relative", marginTop: 14 },
+  inputRow: { flexDirection: "row", alignItems: "flex-start", gap: 12, width: "100%" },
+  removeBtn: {
+    position: "absolute", top: -10, right: -6,
+    width: 28, height: 28, borderRadius: 14,
+    backgroundColor: "#E0E0E0", alignItems: "center", justifyContent: "center", zIndex: 1,
+  },
 
+  discountCard: {
+    backgroundColor: "#fff", borderRadius: 12, padding: 14,
+    marginHorizontal: 16, marginTop: 10, borderWidth: 1, borderColor: "#E5E7EB",
+  },
+  discountTitle: { fontFamily: "Gilroy-Semibold", marginBottom: 10 },
+
+  setButton: { backgroundColor: "#EAF0FF", paddingHorizontal: 16, paddingVertical: 8, borderRadius: 10 },
+  setButtonText: { color: "#165DFF", fontSize: 14, fontFamily: "Gilroy-SemiBold" },
+  editChip: {
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: "#E0ECFF", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10,
+  },
+  editChipIcon: { width: 16, height: 16, tintColor: "#2563EB", marginRight: 6 },
+  editChipText: { color: "#2563EB", fontFamily: "Gilroy-Semibold", fontSize: 13 },
 
 });
