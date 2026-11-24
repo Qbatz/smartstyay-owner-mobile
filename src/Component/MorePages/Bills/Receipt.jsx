@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect, useContext, memo } from "react";
 import {
   View,
   Text,
@@ -9,8 +9,9 @@ import {
   Modal, Animated,
   PanResponder,
   BackHandler, TextInput, ScrollView, Dimensions,
-  ActivityIndicator
+  ActivityIndicator, Platform
 } from "react-native";
+import LinearGradient from "react-native-linear-gradient";
 import { useNavigation } from "@react-navigation/native";
 import { useLayoutEffect } from "react";
 import DatePicker from "react-native-ui-datepicker";
@@ -40,6 +41,8 @@ import AddIcon from "../../../Assets/Images/add-circle.png";
 import DeleteIcon from "../../../Assets/Images/trash.png"
 import EditIcon from "../../../Assets/Images/editIcon.png"
 import TickIcon from "../../../Assets/Images/tick-circle.png"
+import RupeeIcon from "../../../Assets/Images/Rupees.png";
+import TickGreenIcon from "../../../Assets/Images/tickgreen.png";
 
 import ReactNativeBlobUtil from "react-native-blob-util";
 
@@ -582,6 +585,94 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
 
   console.log("someone", onlyReceiptList)
 
+ 
+
+const AnimatedNumber = memo(({ value, duration = 800 }) => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    animatedValue.setValue(0);
+    const listener = animatedValue.addListener(({ value: v }) => {
+      setDisplayValue(Math.floor(v));
+    });
+    const animation = Animated.timing(animatedValue, {
+      toValue: Number(value) || 0,
+      duration,
+      useNativeDriver: false,
+    });
+    animation.start();
+
+    return () => {
+      animation.stop();
+      animatedValue.removeListener(listener);
+    };
+  }, [value, duration, animatedValue]);
+
+  return <Text>{displayValue}</Text>;
+});
+
+const SummaryCard = memo(
+  ({ icon, title, value, isCurrency = true, valueColor = "#111827", linearcolor }) => (
+    <LinearGradient
+      colors={["#FFFFFF", linearcolor]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.summaryCard}
+    >
+      <View style={styles.cardTopRow}>
+        <View style={styles.cardContent}>
+          <Text style={styles.cardTitle}>{title}</Text>
+          <Text style={[styles.cardValue, { color: valueColor }]}>
+            {isCurrency ? "₹ " : ""}
+            <AnimatedNumber value={value} />
+          </Text>
+        </View>
+
+        <View style={styles.iconBox}>
+          <Image source={icon} style={styles.cardIcon} />
+        </View>
+      </View>
+    </LinearGradient>
+  )
+);
+
+const ReceiptSummary = memo(({ summary }) => (
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={styles.cardRow}
+  >
+    <SummaryCard
+      title="Total Receipts"
+      value={summary?.totalReceipt || 0}
+      isCurrency={false}
+      icon={Bills_Black_Icon}
+      linearcolor="#EEF4FF"
+    />
+    <SummaryCard
+      title="Total Amount"
+      value={summary?.totalAmount || 0}
+      icon={RupeeIcon}
+      linearcolor="#F5F3FF"
+    />
+    <SummaryCard
+      title="Paid"
+      value={summary?.paidAmount || 0}
+      icon={TickGreenIcon}
+      valueColor="#00A651"
+      linearcolor="#F4FFF7"
+    />
+    <SummaryCard
+      title="Refund"
+      value={summary?.refundAmount || 0}
+      icon={RupeeIcon}
+      valueColor="#E11D48"
+      linearcolor="#FFF4F4"
+    />
+  </ScrollView>
+));
+
 
 
   return (
@@ -596,11 +687,11 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
       />
 
       <View style={styles.container}>
-        <View style={styles.headerRow}>
+        {/* <View style={styles.headerRow}>
           <Text style={styles.monthText}>This Month</Text>
 
 
-        </View>
+        </View> */}
 
         {/* <FlatList
   data={receiptsList || []}
@@ -722,6 +813,9 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
               onMomentumScrollBegin={() => {
                 onEndReachedCalledDuringMomentum.current = false;
               }}
+              ListHeaderComponent={
+                <ReceiptSummary summary={receiptsList} />
+              }
               onEndReached={() => {
                 if (
                   !onEndReachedCalledDuringMomentum.current &&
@@ -1093,7 +1187,76 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
 
 export default Receipt;
 
+// ---------------------------------------------------------------------------
+// Receipt summary cards (module level so they don't remount on every render)
+// ---------------------------------------------------------------------------
+ const CARD_WIDTH = Dimensions.get("window").width * 0.44;
+
+
 const styles = StyleSheet.create({
+  cardRow: {
+    paddingLeft: 5,
+    paddingTop: 8,
+    marginBottom: 5,
+  },
+  summaryCard: {
+    width: CARD_WIDTH,
+    height: Platform.OS === "ios" ? 100 : 90,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingTop: Platform.OS === "ios" ? 0 : 5,
+    paddingRight: Platform.OS === "ios" ? 0 : 15,
+    paddingBottom: Platform.OS === "ios" ? 0 : 1,
+    paddingLeft: Platform.OS === "ios" ? 0 : 15,
+    borderWidth: 1,
+    borderColor: "#EEF2F6",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+    marginRight: 12,
+    marginBottom: 10,
+    marginTop: 5,
+  },
+  cardTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flex: 1,
+  },
+  cardContent: {
+    paddingLeft: Platform.OS === "ios" ? 12 : 0,
+    paddingTop: Platform.OS === "ios" ? 5 : 0,
+    paddingRight: Platform.OS === "ios" ? 18 : 15,
+  },
+  iconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardIcon: { width: 20, height: 20 },
+  cardTitle: {
+    fontSize: 13,
+    color: "#64748B",
+    fontFamily: "Gilroy-Medium",
+  },
+  cardValue: {
+    marginTop: 12,
+    fontSize: 18,
+    color: "#111827",
+    fontFamily: "Gilroy-Bold",
+  },
   container: {
     flex: 1,
     padding: 15,
