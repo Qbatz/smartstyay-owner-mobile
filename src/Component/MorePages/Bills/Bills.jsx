@@ -7833,66 +7833,39 @@ export default function BillsDesign({ route }) {
 
 
 
-                <MultiSelectDropdown
+                <DropdownComponent
                   label="Bill Status"
-                  dropdownKey="billStatus"
                   placeholder="Select Bill Status"
-                  activeDropdown={activeDropdown}
-                  setActiveDropdown={setActiveDropdown}
-                  options={billStatusOptions}
-                  selected={billStatus}
+                  multiSelect
+                  // closeOnSelect={false}
+                  options={billStatusOptions || []}
+                  value={billStatus}
                   onChange={(values) => {
                     setBillStatus(values);
                     setFilterError("");
                   }}
                 />
 
-                <MultiSelectDropdown
+                <DropdownComponent
                   label="Type"
-                  dropdownKey="type"
                   placeholder="Select Type"
-                  activeDropdown={activeDropdown}
-                  setActiveDropdown={setActiveDropdown}
-                  options={typeOptions}
-                  selected={type}
+                  multiSelect
+                  // closeOnSelect={false}
+                  options={typeOptions || []}
+                  value={type}
                   onChange={(values) => {
                     setType(values);
                     setFilterError("");
                   }}
                 />
 
+                {/* date row - same */}
 
 
-                <View style={styles.dateRow}>
-
-                  <TouchableOpacity
-                    style={styles.dateBox}
-                    onPress={() => setOpenFrom(true)}
-                  >
-                    <Text style={styles.dateText}>
-                      {formatDate(fromDate)}
-                    </Text>
-
-                    <View style={styles.calendarBg}>
-                      <Image source={CalendarIcon} style={styles.calIcon} />
-                    </View>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.dateBox}
-                    onPress={() => setOpenTo(true)}
-                  >
-                    <Text style={styles.dateText}>
-                      {formatDate(toDate)}
-                    </Text>
-
-                    <View style={styles.calendarBg}>
-                      <Image source={CalendarIcon} style={styles.calIcon} />
-                    </View>
-                  </TouchableOpacity>
 
 
-                </View>
+
+              
 
 
                 {/* <View style={styles.quickRow}>
@@ -7914,15 +7887,13 @@ export default function BillsDesign({ route }) {
 
 
 
-
-                <MultiSelectDropdown
+                <DropdownComponent
                   label="Mode"
-                  dropdownKey="mode"
                   placeholder="Select Mode"
-                  activeDropdown={activeDropdown}
-                  setActiveDropdown={setActiveDropdown}
-                  options={modeOptions}
-                  selected={mode}
+                  multiSelect
+                  // closeOnSelect={false}
+                  options={modeOptions || []}
+                  value={mode}
                   onChange={(values) => {
                     setMode(values);
                     setFilterError("");
@@ -7940,14 +7911,13 @@ export default function BillsDesign({ route }) {
                 </TouchableOpacity>
                 {morefilters && (<>
                   <View style={{ marginBottom: 80 }}>
-                    <MultiSelectDropdown
+                    <DropdownComponent
                       label="Created By"
-                      dropdownKey="createdBy"
                       placeholder="Select User"
-                      activeDropdown={activeDropdown}
-                      setActiveDropdown={setActiveDropdown}
-                      options={createdByOptions}
-                      selected={createdBy}
+                      multiSelect
+                      // closeOnSelect={false}
+                      options={createdByOptions || []}
+                      value={createdBy}
                       onChange={(values) => {
                         setCreatedBy(values);
                         setFilterError("");

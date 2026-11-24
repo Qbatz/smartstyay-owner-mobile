@@ -1,11 +1,5 @@
-
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Pressable,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
 
 const CheckboxComponent = ({
   title,
@@ -26,10 +20,10 @@ const CheckboxComponent = ({
   const isActiveFocus = focused || isFocused;
 
   const getCheckboxColor = () => {
-    if (disabled) return '#80BFFF';
-    if (error) return '#FF3333';
-    if (isHovered) return '#3392FF';
-    return '#0085FF';
+    if (disabled) return '#93C5FD';
+    if (error) return '#EF4444';
+    if (isHovered) return '#2F78F0';
+    return '#3B82F6';
   };
 
   const checkboxColor = getCheckboxColor();
@@ -49,59 +43,39 @@ const CheckboxComponent = ({
       disabled={disabled}
       focusable={!disabled}
       accessibilityRole="checkbox"
-      accessibilityState={{
-        checked: value,
-        disabled,
-      }}
+      accessibilityState={{ checked: value, disabled }}
       style={[
         styles.container,
+        { alignItems: description ? 'flex-start' : 'center' },
         containerStyle,
       ]}
     >
-      {/* Checkbox */}
       <View style={styles.checkboxWrapper}>
         <View
           style={[
             styles.checkbox,
-            {
-              backgroundColor: value
-                ? checkboxColor
-                : '#FFFFFF',
-              borderColor: value
-                ? checkboxColor
-                : error
-                  ? '#FF3333'
-                  : disabled
-                    ? '#F4F4F5'
-                    : '#E4E4E7',
-            },
+            value
+              ? { backgroundColor: checkboxColor, borderColor: checkboxColor }
+              : {
+                  backgroundColor: disabled ? '#FAFAFA' : '#FFFFFF',
+                  borderColor: error ? '#EF4444' : '#ECECEE',
+                },
           ]}
         >
-          {value && (
-            <View style={styles.checkIcon}>
-              <View style={styles.checkLineOne} />
-              <View style={styles.checkLineTwo} />
-            </View>
-          )}
+          {value && <View style={styles.checkMark} />}
         </View>
 
-        {/* Focus Ring */}
         {isActiveFocus && (
           <View
             pointerEvents="none"
             style={[
               styles.focusRing,
-              {
-                borderColor: error
-                  ? '#FF3333'
-                  : '#DCEBFF',
-              },
+              { borderColor: error ? '#FECACA' : '#DBEAFE' },
             ]}
           />
         )}
       </View>
 
-      {/* Content */}
       <View style={styles.content}>
         {title ? (
           <Text
@@ -129,9 +103,7 @@ const CheckboxComponent = ({
         ) : null}
 
         {error && errorMessage ? (
-          <Text style={styles.errorMessage}>
-            {errorMessage}
-          </Text>
+          <Text style={styles.errorMessage}>{errorMessage}</Text>
         ) : null}
       </View>
     </Pressable>
@@ -141,83 +113,55 @@ const CheckboxComponent = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
     width: '100%',
     paddingVertical: 8,
   },
 
   checkboxWrapper: {
-    width: 40,
-    height: 32,
-    alignItems: 'flex-start',
+    width: 20,
+    height: 20,
+    marginRight: 12,
+    alignItems: 'center',
     justifyContent: 'center',
-    paddingLeft: 2,
   },
 
   checkbox: {
-    width: 28,
-    height: 28,
-    borderRadius: 9,
+    width: 20,
+    height: 20,
+    borderRadius: 6,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
 
     shadowColor: '#000000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
-    shadowRadius: 3,
+    shadowRadius: 2,
     elevation: 2,
   },
 
-  checkIcon: {
-    width: 15,
-    height: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  checkLineOne: {
-    position: 'absolute',
+  checkMark: {
     width: 5,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 2,
-    transform: [
-      { rotate: '45deg' },
-      { translateX: -3 },
-      { translateY: 2 },
-    ],
-  },
-
-  checkLineTwo: {
-    position: 'absolute',
-    width: 9,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 2,
-    transform: [
-      { rotate: '-50deg' },
-      { translateX: 2 },
-      { translateY: 0 },
-    ],
+    height: 10,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: '#FFFFFF',
+    transform: [{ rotate: '45deg' }],
+    marginTop: -2,
   },
 
   focusRing: {
     position: 'absolute',
-    top: -1,
+    top: -3,
     left: -3,
-    width: 34,
-    height: 34,
-    borderRadius: 11,
+    width: 26,
+    height: 26,
+    borderRadius: 9,
     borderWidth: 3,
   },
 
   content: {
     flex: 1,
-    paddingTop: 2,
   },
 
   title: {
@@ -230,18 +174,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '400',
     color: '#71717A',
-    marginTop: 5,
+    marginTop: 4,
   },
 
   errorText: {
-    color: '#FF3333',
+    color: '#EF4444',
   },
 
   errorMessage: {
     fontSize: 14,
     fontWeight: '400',
-    color: '#FF3333',
-    marginTop: 5,
+    color: '#EF4444',
+    marginTop: 4,
   },
 
   disabledTitle: {
@@ -254,55 +198,3 @@ const styles = StyleSheet.create({
 });
 
 export default CheckboxComponent;
-
-
-
-
-// import React, { useState } from 'react';
-// import { View } from 'react-native';
-// import CheckboxComponent from '../../components/common/CheckboxComponent';
-
-// const CheckInScreen = () => {
-//   const [isAccepted, setIsAccepted] = useState(false);
-
-//   return (
-//     <View style={{ padding: 20 }}>
-//       <CheckboxComponent
-//         title="Accept Terms & Conditions"
-//         description="I agree to the terms and conditions"
-//         value={isAccepted}
-//         onValueChange={setIsAccepted}
-//       />
-//     </View>
-//   );
-// };
-
-// export default CheckInScreen;
-
-
-
-// Error state
-
-
-
-// <CheckboxComponent
-//   title="Accept Terms & Conditions"
-//   description="Please accept before continuing"
-//   value={false}
-//   onValueChange={setIsAccepted}
-//   error={true}
-//   errorMessage="This field is required"
-// />
-
-
-
-// Disabled state
-
-
-{/* <CheckboxComponent
-  title="Email Notifications"
-  description="Receive updates through email"
-  value={true}
-  disabled={true}
-/> */}
-
