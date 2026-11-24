@@ -433,10 +433,11 @@ const investmentAccount = getInvestmentAccountDetails();
             <ValidatedInput
               placeholder="Enter Amount"
               keyboardType="numeric"
-              type="numberOnly"
+              type="decimalNumbers"
               inputType="numeric"
               value={paidAmount}
               onChangeText={(text) => {
+               
                 setPaidAmount(text);
                 setErrors((prev) => ({
                   ...prev,

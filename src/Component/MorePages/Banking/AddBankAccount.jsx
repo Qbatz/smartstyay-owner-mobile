@@ -133,64 +133,64 @@ export default function AddBankAccount({ mode = "add",
   };
 
 
- 
-useEffect(() => {
-  if (!isEditMode || !screenEditTab) return;
 
-  const item =
-    screenEditTab?.selectedItem?.raw ||
-    screenEditTab?.selectedItem ||
-    screenEditTab?.raw ||
-    screenEditTab;
+  useEffect(() => {
+    if (!isEditMode || !screenEditTab) return;
 
-  const type = String(
-    item?.accountType || item?.bankAccountType || ""
-  ).toUpperCase();
+    const item =
+      screenEditTab?.selectedItem?.raw ||
+      screenEditTab?.selectedItem ||
+      screenEditTab?.raw ||
+      screenEditTab;
 
-  const selectedType =
-    type === "CARD" || type === "CREDIT_CARD"
-      ? "Credit"
-      : type === "CASH"
-        ? "cash"
-        : "bank";
+    const type = String(
+      item?.accountType || item?.bankAccountType || ""
+    ).toUpperCase();
 
-  // API uses cardNerwork (typo)
-  const cardNetworkValue =
-    item?.cardNetwork ??
-    item?.cardNerwork ??
-    item?.cardNetworkType ??
-    "";
+    const selectedType =
+      type === "CARD" || type === "CREDIT_CARD"
+        ? "Credit"
+        : type === "CASH"
+          ? "cash"
+          : "bank";
 
-  const mappedCardNetwork =
-    normalizeCardNetwork(cardNetworkValue);
+    // API uses cardNerwork (typo)
+    const cardNetworkValue =
+      item?.cardNetwork ??
+      item?.cardNerwork ??
+      item?.cardNetworkType ??
+      "";
 
-  console.log("CARD NETWORK DEBUG:", {
-    original: cardNetworkValue,
-    mapped: mappedCardNetwork,
-  });
+    const mappedCardNetwork =
+      normalizeCardNetwork(cardNetworkValue);
 
-  setAccountType(selectedType);
+    console.log("CARD NETWORK DEBUG:", {
+      original: cardNetworkValue,
+      mapped: mappedCardNetwork,
+    });
 
-  setForm(prev => ({
-    ...prev,
-    displayName: item?.displayName || "",
-    bankName: item?.bankName || "",
-    accountHolder: item?.accountHolder || "",
-    accountNumber: String(item?.accountNumber || ""),
-    branch: item?.branchName || "",
-    ifsc: item?.ifscCode || "",
-    accountCategory: item?.bankAccountType || "",
-    cashType: normalizeCashType(item?.cashAccountType),
-    openingBalance: String(item?.openingBalance ?? item?.balance ?? ""),
-    cardNetwork: mappedCardNetwork,
-    cardHolderName: item?.accountHolder || "",
-    cardLast4: String(item?.cardNumber || "").slice(-4),
-    creditLimit: String(item?.creditLimit ?? ""),
-    billingCycle: String(item?.billingCycle ?? ""),
-  }));
+    setAccountType(selectedType);
 
-  setErrors({});
-}, [isEditMode, screenEditTab]);
+    setForm(prev => ({
+      ...prev,
+      displayName: item?.displayName || "",
+      bankName: item?.bankName || "",
+      accountHolder: item?.accountHolder || "",
+      accountNumber: String(item?.accountNumber || ""),
+      branch: item?.branchName || "",
+      ifsc: item?.ifscCode || "",
+      accountCategory: item?.bankAccountType || "",
+      cashType: normalizeCashType(item?.cashAccountType),
+      openingBalance: String(item?.openingBalance ?? item?.balance ?? ""),
+      cardNetwork: mappedCardNetwork,
+      cardHolderName: item?.accountHolder || "",
+      cardLast4: String(item?.cardNumber || "").slice(-4),
+      creditLimit: String(item?.creditLimit ?? ""),
+      billingCycle: String(item?.billingCycle ?? ""),
+    }));
+
+    setErrors({});
+  }, [isEditMode, screenEditTab]);
 
 
 
@@ -745,18 +745,18 @@ useEffect(() => {
         const payload =
           accountType === "cash"
             ? {
-            
+
               newAccountType: "Cash",
               displayName: form.displayName.trim(),
               cashAccountType: form.cashType,
               responsiblePerson: form.responsiblePerson,
               description: form.description.trim(),
 
-             
+
             }
             : accountType === "bank"
               ? {
-            
+
                 newAccountType: "Bank",
                 accountHolderName: form.accountHolder.trim(),
                 bankName: form.bankName.trim(),
@@ -767,7 +767,7 @@ useEffect(() => {
                 description: form.description.trim(),
               }
               : {
-              
+
                 newAccountType: "Card",
                 accountHolderName: form.cardHolderName.trim(),
                 displayName: form.displayName.trim(),
@@ -780,7 +780,7 @@ useEffect(() => {
 
         console.log("UPDATE BANK TYPE =>", accountType);
         console.log("UPDATE BANK PAYLOAD =>", payload);
-             console.log("bankId", bankId);
+        console.log("bankId", bankId);
 
         const res = await updateBankAccount(
           activeHostelId,
@@ -1981,8 +1981,18 @@ useEffect(() => {
                     isEditMode && styles.disabledInput,
                   ]}
                   onChangeText={(v) => {
-                    const value = v.replace(/[^0-9]/g, "");
-                    if (value.length > 1 && value.startsWith("0")) {
+                    // const value = v.replace(/[^0-9]/g, "");
+                    // if (value.length > 1 && value.startsWith("0")) {
+                    //   return;
+                    // }
+                    let value = v.replace(/[^0-9.]/g, "");
+
+                    const parts = value.split(".");
+                    if (parts.length > 2) {
+                      value = parts[0] + "." + parts.slice(1).join("");
+                    }
+
+                    if (value.length > 1 && value.startsWith("0") && value[1] !== ".") {
                       return;
                     }
                     handleChange("openingBalance", value);

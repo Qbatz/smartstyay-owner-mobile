@@ -2189,6 +2189,27 @@ export default function BillsProvider({ children }) {
     }
   };
 
+  const deleteInvoice=async(hostelId,invoiceId)=>{
+    const axios= getAxios();
+
+    try{
+      const res= await axios.delete(`/v2/bills/${hostelId}/${invoiceId}`);
+      console.log("clear delete",res)
+      return {
+        success: true,
+        message: res?.data || "Deleted Invoice",
+      };
+    }catch(error){
+      const msg = getErrorMessage(error);
+      console.log("realerror",msg)
+      return {
+        success: false,
+        message: msg,
+        statusCode: error?.response?.status,
+      };
+    }
+  }
+
   return (
     <BillContext.Provider
       value={{
@@ -2244,7 +2265,7 @@ export default function BillsProvider({ children }) {
         CreateManualInvoice, GetRecurringInvoicesForReview,
         UpdateRecurringBillItem, DeleteRecurringBillItem,
         GenerateAllRecurringInvoices, AddRecurringBillItem, onlyReceiptList, setOnlyReceiptList,
-        onlyBillList,
+        onlyBillList,deleteInvoice
       }}
     >
       {children}

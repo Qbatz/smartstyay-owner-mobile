@@ -25,7 +25,7 @@ const validationRules = {
     return cleaned;
   },
 
-    numberOnly: (text) => {
+  numberOnly: (text) => {
     return text.replace(/[^0-9]/g, "");
   },
 
@@ -38,22 +38,36 @@ const validationRules = {
   },
 
   alphaNumeric: (text) => {
-  return text.replace(/[^a-zA-Z0-9\s]/g, "");
-},
+    return text.replace(/[^a-zA-Z0-9\s]/g, "");
+  },
 
   gst: (text) => {
-  return text
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "")
-    .slice(0, 15);
-},
+    return text
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 15);
+  },
 
-pan: (text) => {
-  return text
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, "")
-    .slice(0, 10);
-},
+  pan: (text) => {
+    return text
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 10);
+  },
+  decimalNumbers: (text) => {
+    let value = text.replace(/[^0-9.]/g, "");
+
+    const parts = value.split(".");
+    if (parts.length > 2) {
+      value = parts[0] + "." + parts.slice(1).join("");
+    }
+
+    if (value.length > 1 && value.startsWith("0") && value[1] !== ".") {
+      value = value.slice(1);
+    }
+
+    return value;
+  },
 };
 
 const keyboardTypes = {
@@ -63,8 +77,8 @@ const keyboardTypes = {
   numberOnly: "numeric",
   name: "default",
   description: "default",
-  gst : "default",
-  pan :  "default",
+  gst: "default",
+  pan: "default",
   alphaNumeric: "default",
 };
 
@@ -76,7 +90,7 @@ const maxLengths = {
 
 const ValidatedInput = ({
   type = "text",
-  inputType, 
+  inputType,
   value,
   onChangeText,
   style,
@@ -96,7 +110,7 @@ const ValidatedInput = ({
       keyboardType={keyboardTypes[type] || "default"}
       maxLength={maxLengths[type]}
       onChangeText={handleChange}
-      inputMode={inputType} 
+      inputMode={inputType}
     />
   );
 };

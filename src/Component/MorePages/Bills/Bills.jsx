@@ -141,7 +141,7 @@ export default function BillsDesign({ route }) {
     downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid,
     GetAdvanceCreditDetails, advanceCreditDetails, GetInitializeAdvanceRedeem, ReceiptFilter,
     GetInitializeRecordPaymentDetails, GetInitializeDiscountDetails, GetAdvanceBookingBills, GetRecurringInvoicesForReview,
-    availablerecurringInvoices, onlyBillList } = useContext(BillContext)
+    availablerecurringInvoices, onlyBillList, deleteInvoice } = useContext(BillContext)
 
   const { activeHostelId } = useContext(CommonContexts);
   const { bankList, getBankListByHostel } = useContext(BankingContext)
@@ -339,6 +339,7 @@ export default function BillsDesign({ route }) {
   const { CommonModule } = NativeModules;
 
   const [environment, setEnvironment] = useState("")
+  const [spinnerLoader, setSpinnerLoader] = useState(false)
 
 
 
@@ -3265,6 +3266,44 @@ export default function BillsDesign({ route }) {
   //    <SmLoader/>
   // </View>
   //          }
+
+  console.log("isSPinner", spinnerLoader)
+
+  const handleDeleteBill = async () => {
+    setSpinnerLoader(true)
+    try {
+
+      if (selectedBill) {
+
+        const res = await deleteInvoice(selectedBill?.hostelId, selectedBill?.invoiceId)
+        console.log("deleteInvoiceDetail", res)
+        if (res?.success) {
+          setModalMessage(res?.message)
+          setShowSuccessModal(true)
+          setModalType("success")
+          setShowBillDetails(false)
+
+          setTimeout(() => {
+            setShowSuccessModal(false)
+            setSpinnerLoader(false)
+            setDeleteTenants(false);
+          }, 1200);
+        } else {
+          setModalMessage(res?.message)
+          setShowSuccessModal(true)
+          setModalType("error")
+          setTimeout(() => {
+            setShowSuccessModal(false)
+            setDeleteTenants(false);
+            setSpinnerLoader(false)
+          }, 1200);
+        }
+      }
+    } catch (error) {
+      console.log( error?.message)
+      setSpinnerLoader(false)
+    }
+  }
 
 
   return (
@@ -6678,13 +6717,13 @@ export default function BillsDesign({ route }) {
                       <TouchableOpacity
                         style={[
                           styles.popupRow,
-                          isBillLocked && styles.popupRowDisabled,
+                          selectedBill?.invoiceMode != "Manual" && styles.popupRowDisabled,
                         ]}
-                        disabled={isBillLocked && !canDeleteInvoice}
-                      // onPress={() => {
-                      //   setShowMenu(false);
-                      //   setDeleteTenants(true);
-                      // }}
+                        disabled={selectedBill?.invoiceMode != "Manual" && !canDeleteInvoice}
+                        onPress={() => {
+                          setShowMenu(false);
+                          setDeleteTenants(true);
+                        }}
                       >
                         <Image
                           source={require("../../../Assets/Images/trash.png")}
@@ -6693,7 +6732,7 @@ export default function BillsDesign({ route }) {
                         <Text
                           style={[
                             styles.popupText,
-                            isBillLocked && styles.popupTextDisabled,
+                            selectedBill?.invoiceMode != "Manual" && styles.popupTextDisabled,
                           ]}
                         >
                           Delete
@@ -8151,7 +8190,7 @@ export default function BillsDesign({ route }) {
 
                   <View style={styles.deleteBtnRow}>
                     <TouchableOpacity
-                      style={styles.cancelBtn}
+                      style={styles.deletecancelBtn}
                       onPress={() => setDeleteTenants(false)}
                     >
                       <Text style={styles.cancelText}>Cancel</Text>
@@ -8161,10 +8200,12 @@ export default function BillsDesign({ route }) {
                       style={styles.deleteBtn}
                       onPress={() => {
                         console.log("DELETE CONFIRMED");
-                        setDeleteTenants(false);
+                        handleDeleteBill()
+                        
                       }}
                     >
                       <Text style={styles.deleteBtnText}>Delete</Text>
+                      {spinnerLoader ? <ActivityIndicator size="small" color="#FFFFFF" /> : null}
                     </TouchableOpacity>
                   </View>
 
@@ -9352,7 +9393,7 @@ const styles = StyleSheet.create({
 
   deleteBtnRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    // justifyContent: "space-between",
     width: "100%",
   },
 
@@ -9387,7 +9428,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#2D6CDF",
     alignItems: "center",
-    marginLeft: 10,
+    justifyContent: 'center',
+    flexDirection: 'row'
+    // marginLeft: 10,
+  },
+  deletecancelBtn: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#DCDCDC',
+    alignItems: "center",
+    marginRight: 5
   },
 
 
@@ -9723,8 +9775,10 @@ const styles = StyleSheet.create({
   },
 
   cancelBtn: {
+
     paddingVertical: 12,
     paddingHorizontal: 18,
+
   },
 
   cancelText: {
