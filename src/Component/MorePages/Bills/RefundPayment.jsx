@@ -28,6 +28,12 @@ import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
 import BankIcon from "../../../Assets/Images/bankBlue.png";
 import CashIcon from "../../../Assets/Images/Cash_Icon.png";
 import InputComponent from "../InputComponent"
+import DropdownComponent from "../DropdownComponent";
+import DatePickerComponent from "../DatePickerComponent";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat)
+
+
 
 const RefundPaymentSheet = ({
   visible,
@@ -901,27 +907,25 @@ const RefundPaymentSheet = ({
             </View>
 
 
-            <Text style={styles.label}>
-              Refund Date <Text style={{ color: "red", fontSize: 16 }}>*</Text>
-            </Text>
-
-            <TouchableOpacity
-              style={styles.inputBox}
-              onPress={() => {
+            <DatePickerComponent
+              label="Refund Date"
+              required
+              selectedDate={refundDate ? dayjs(refundDate).format("YYYY-MM-DD") : null}
+              placeholder="DD/MM/YYYY"
+              displayFormat="DD/MM/YYYY"
+              minDate={
+                invoiceDate?.isValid()
+                  ? invoiceDate.format("YYYY-MM-DD")
+                  : undefined
+              }
+              maxDate={dayjs().format("YYYY-MM-DD")}
+              error={refundDateError}
+              containerStyle={{ marginTop: 12 }}
+              onSelect={(date) => {
+                setRefundDate(dayjs(date).toDate());
                 setRefundDateError("");
-                setOpenRefundDate(true);
               }}
-            >
-              <Text style={{ fontSize: 15 }}>
-                {refundDate ? dayjs(refundDate).format("DD/MM/YYYY") : "DD/MM/YYYY"}
-              </Text>
-
-              <Image source={CalendarIcon} style={{ width: 22, height: 22 }} />
-            </TouchableOpacity>
-
-            {refundDateError && (
-              <ErrorMessage message={refundDateError} type="error" />
-            )}
+            />
 
 
 
@@ -1528,100 +1532,100 @@ const styles = StyleSheet.create({
 
 
 
-refundSelectedPaymentBox: {
-  height: 64,
-  minHeight: 64,
-  paddingHorizontal: 12,
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-},
+  refundSelectedPaymentBox: {
+    height: 64,
+    minHeight: 64,
+    paddingHorizontal: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 
-selectedPaymentContent: {
-  flex: 1,
-  flexDirection: "row",
-  alignItems: "center",
-  marginRight: 8,
-},
+  selectedPaymentContent: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 8,
+  },
 
-refundPaymentIcon: {
-  width: 40,
-  height: 40,
-  borderRadius: 22,
-  justifyContent: "center",
-  alignItems: "center",
-  marginRight: 10,
-},
+  refundPaymentIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 22,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
 
-refundPaymentDetails: {
-  flex: 1,
-  justifyContent: "center",
-},
+  refundPaymentDetails: {
+    flex: 1,
+    justifyContent: "center",
+  },
 
-refundCardIcon: {
-  width: 27,
-  height: 20,
-  borderWidth: 1.7,
-  borderColor: "#FF9800",
-  borderRadius: 4,
-  justifyContent: "center",
-},
+  refundCardIcon: {
+    width: 27,
+    height: 20,
+    borderWidth: 1.7,
+    borderColor: "#FF9800",
+    borderRadius: 4,
+    justifyContent: "center",
+  },
 
-refundCardTopLine: {
-  width: "100%",
-  height: 4,
-  backgroundColor: "#FF9800",
-  marginTop: 2,
-},
+  refundCardTopLine: {
+    width: "100%",
+    height: 4,
+    backgroundColor: "#FF9800",
+    marginTop: 2,
+  },
 
-refundCardBottomLine: {
-  width: 8,
-  height: 3,
-  backgroundColor: "#FF9800",
-  marginTop: 5,
-  marginLeft: 4,
-},
+  refundCardBottomLine: {
+    width: 8,
+    height: 3,
+    backgroundColor: "#FF9800",
+    marginTop: 5,
+    marginLeft: 4,
+  },
 
-cashBadge: {
-  backgroundColor: "#DDF8E8",
-},
-cashText: {
-  color: "#15803D",
-},
+  cashBadge: {
+    backgroundColor: "#DDF8E8",
+  },
+  cashText: {
+    color: "#15803D",
+  },
 
-cardBadge: {
-  backgroundColor: "#FFEBD2",
-},
-cardText: {
-  color: "#E65100",
-},
+  cardBadge: {
+    backgroundColor: "#FFEBD2",
+  },
+  cardText: {
+    color: "#E65100",
+  },
 
-debit_cardBadge: {
-  backgroundColor: "#FFEBD2",
-},
-debit_cardText: {
-  color: "#E65100",
-},
+  debit_cardBadge: {
+    backgroundColor: "#FFEBD2",
+  },
+  debit_cardText: {
+    color: "#E65100",
+  },
 
-upiBadge: {
-  backgroundColor: "#F3E5FF",
-},
-upiText: {
-  color: "#8515D9",
-},
+  upiBadge: {
+    backgroundColor: "#F3E5FF",
+  },
+  upiText: {
+    color: "#8515D9",
+  },
 
-bankBadge: {
-  backgroundColor: "#DCE9FF",
-},
-bankText: {
-  color: "#2563EB",
-},
+  bankBadge: {
+    backgroundColor: "#DCE9FF",
+  },
+  bankText: {
+    color: "#2563EB",
+  },
 
-noPaymentMethodText: {
-  padding: 15,
-  color: "#777",
-  fontFamily: "Gilroy-Medium",
-},
+  noPaymentMethodText: {
+    padding: 15,
+    color: "#777",
+    fontFamily: "Gilroy-Medium",
+  },
 
 
 })
