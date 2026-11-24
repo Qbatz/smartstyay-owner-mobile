@@ -21,6 +21,11 @@ import CalendarIcon from "../../../Assets/Images/calendar.png";
 import DatePicker from "react-native-ui-datepicker";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import FilterIcon from "../../../Assets/Images/filter.png";
+import InputComponent from "../InputComponent"
+import DropdownComponent from "../DropdownComponent";
+import DatePickerComponent from "../DatePickerComponent";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat)
 
 
 const RetainerFilterSheet = ({
@@ -368,7 +373,7 @@ const RetainerFilterSheet = ({
             (filters.paymentStatus && filters.paymentStatus.length > 0) ||
             (filters.type && filters.type.length > 0) ||
             (filters?.period) ||
-            (filters.status && filters.status.length >0 ) ||
+            (filters.status && filters.status.length > 0) ||
             (filters.modes && filters.modes.length > 0) ||
             (filters.collectedBy && filters.collectedBy.length > 0) ||
             (filters.floor && filters?.floor.length > 0) ||
@@ -469,7 +474,7 @@ const RetainerFilterSheet = ({
 
 
 
-                        <MultiSelectDropdown
+                        {/* <MultiSelectDropdown
                             label="Retainer Type"
                             dropdownKey="retainerType"
                             placeholder="Select Retainer Type"
@@ -490,8 +495,34 @@ const RetainerFilterSheet = ({
                             options={statusOptions}
                             selected={status}
                             onChange={setStatus}
+                        /> */}
+
+                        <DropdownComponent
+                            label="Retainer Type"
+                            placeholder="Select Retainer Type"
+                            multiSelect
+                            options={retainerTypeOptions}
+                            value={retainerType}
+                            onChange={(values) => {
+                                setRetainerType(values);
+                                setFilterError("");
+                            }}
                         />
 
+                        <DropdownComponent
+                            label="Status"
+                            placeholder="Select Status"
+                            multiSelect
+                            options={statusOptions}
+                            value={status}
+                            onChange={(values) => {
+                                setStatus(values);
+                                setFilterError("");
+                            }}
+                        />
+
+
+{/* 
                         <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, }}>
 
                             <View style={{ flex: 1 }}>
@@ -504,10 +535,7 @@ const RetainerFilterSheet = ({
                         </View>
 
                         <View style={styles.dateRow}>
-                            {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenFrom(true)}>
-              <Text style={styles.dateText}>{formatDate(fromDate)}</Text>
-              <Image source={CalendarIcon} style={styles.calIcon} />
-            </TouchableOpacity> */}
+                 
                             <TouchableOpacity
                                 style={styles.dateBox}
                                 onPress={() => setOpenFrom(true)}
@@ -534,28 +562,21 @@ const RetainerFilterSheet = ({
                                 </View>
                             </TouchableOpacity>
 
-                            {/* <TouchableOpacity style={styles.dateBox} onPress={() => setOpenTo(true)}>
-              <Text style={styles.dateText}>{formatDate(toDate)}</Text>
-              <Image source={CalendarIcon} style={styles.calIcon} />
-            </TouchableOpacity> */}
-                        </View>
+                        </View> */}
 
 
 
 
-                        <View style={styles.quickRow}>
+                        {/* <View style={styles.quickRow}>
 
                             {periodOptions.map(i => (
                                 <TouchableOpacity style={[
                                     styles.quickBtn,
                                     selectedPeriod === i?.value && styles.activeQuickBtn,
                                 ]}
-                                    // key={i?.type} 
+                                 
                                     key={`${i?.value}-${i?.label}`}
-                                    // onPress={() => {
-                                    //     setFromDate(dayjs()); setToDate(dayjs());
-                                    //     setSelectedPeriod(i?.value)
-                                    // }}
+                                    
                                     onPress={() => {
                                         setSelectedPeriod(i?.value);
                                         setFromDate(null);
@@ -569,29 +590,8 @@ const RetainerFilterSheet = ({
                                 </TouchableOpacity>
 
                             ))}
-                            {/* <TouchableOpacity style={[
-                                styles.quickBtn,
-                                selectedPeriod === "TODAY" && styles.activeQuickBtn,
-                            ]} onPress={() => { 
-                                setFromDate(dayjs()); setToDate(dayjs()); 
-                                setSelectedPeriod}}>
-                                <Text style={styles.quickText}>Today</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={[
-                                styles.quickBtn,
-                                selectedPeriod === "week" && styles.activeQuickBtn,
-                            ]} onPress={() => { setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week")); }}>
-                                <Text style={styles.quickText}>This Week</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity style={[
-                                styles.quickBtn,
-                                selectedPeriod === "month" && styles.activeQuickBtn,
-                            ]} onPress={() => { setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); }}>
-                                <Text style={styles.quickText}>This Month</Text>
-                            </TouchableOpacity> */}
-                        </View>
+                         
+                        </View> */}
 
 
 
@@ -621,31 +621,27 @@ const RetainerFilterSheet = ({
                             onChange={setPaymentMethod}
                         /> */}
 
-                        <MultiSelectDropdown
+                        <DropdownComponent
                             label="Floor"
-                            dropdownKey="floor"
                             placeholder="Select floor"
-                            activeDropdown={activeDropdown}
-                            setActiveDropdown={setActiveDropdown}
+                            multiSelect
                             options={floorOptions}
-                            selected={selectedFloor}
+                            value={selectedFloor}
                             onChange={(values) => {
-                                setSelectedFloor(values)
-                                setFilterError("")
+                                setSelectedFloor(values);
+                                setFilterError("");
                             }}
                         />
 
-                        <MultiSelectDropdown
+                        <DropdownComponent
                             label="Room"
-                            dropdownKey="room"
                             placeholder="Select room"
-                            activeDropdown={activeDropdown}
-                            setActiveDropdown={setActiveDropdown}
+                            multiSelect
                             options={roomOptions}
-                            selected={selectedRoom}
+                            value={selectedRoom}
                             onChange={(values) => {
-                                setSelectedRoom(values)
-                                setFilterError("")
+                                setSelectedRoom(values);
+                                setFilterError("");
                             }}
                         />
 
@@ -670,80 +666,50 @@ const RetainerFilterSheet = ({
 
                         {showMoreFilters && (
                             <>
-                                {/* <MultiSelectDropdown
-                                    label="Collected By"
-                                    dropdownKey="collectedBy"
-                                    placeholder="Select User"
-                                    activeDropdown={activeDropdown}
-                                    setActiveDropdown={setActiveDropdown}
-                                    options={collectedByOptions}
-                                    selected={collectedBy}
-                                    onChange={setCollectedBy}
-                                /> */}
+                                <Text style={styles.amountLabel}>Amount Range</Text>
 
-                                {/* <MultiSelectDropdown
-                                    label="Available Balance"
-                                    dropdownKey="availableBalance"
-                                    placeholder="Select Balance"
-                                    activeDropdown={activeDropdown}
-                                    setActiveDropdown={setActiveDropdown}
-                                    options={availableBalanceOptions}
-                                    selected={availableBalance}
-                                    onChange={setAvailableBalance}
-                                /> */}
-
-                                <Text style={{ fontSize: 14, fontFamily: 'Gilroy-Medium', marginTop: 12 }}>Amount Range</Text>
                                 <View style={styles.amountRow}>
+                                    <InputComponent
+                                        type="numberOnly"
+                                        placeholder="Min"
+                                        value={minAmount}
+                                        flex={1}
+                                        maxLength={9}
+                                        leftIcon={<Text style={styles.currency}>₹</Text>}
+                                        error={!!errorMsg}
+                                        onChangeText={(text) => {
+                                            setMinAmount(text);
+                                            if (maxAmount && Number(text) > Number(maxAmount)) {
+                                                setErrorMsg("Min Amount should not be greater than max");
+                                            } else {
+                                                setErrorMsg("");
+                                            }
+                                        }}
+                                    />
 
-                                    {/* Minimum Amount */}
-                                    <View style={[styles.amountInputContainer, { marginRight: 5 }]}>
-                                        <Text style={styles.currency}>₹</Text>
-
-                                        <TextInput
-                                            value={minAmount}
-                                            onChangeText={(text) => {
-                                                if (text > maxAmount) {
-                                                    setErrorMsg("Min Amount should not be greater than max")
-                                                } else {
-                                                    setErrorMsg("")
-                                                }
-                                                const cleanText = text.replace(/[^0-9]/g, "");
-                                                setMinAmount(cleanText)
-                                            }}
-                                            placeholder="Min"
-                                            placeholderTextColor="#999"
-                                            keyboardType="numeric"
-                                            style={styles.amountInput}
-                                        />
-                                    </View>
-
-                                    {/* Maximum Amount */}
-                                    <View style={[styles.amountInputContainer, { marginLeft: 5 }, !minAmount && { opacity: 0.4 }]}>
-                                        <Text style={styles.currency}>₹</Text>
-
-                                        <TextInput
-                                            value={maxAmount}
-                                            editable={minAmount ? true : false}
-                                            onChangeText={(text) => {
-                                                if (minAmount > text) {
-                                                    setErrorMsg("Min Amount should not be greater than max")
-                                                } else {
-                                                    setErrorMsg("")
-                                                }
-                                                const cleanText = text.replace(/[^0-9]/g, "");
-                                                setMaxAmount(cleanText)
-                                            }}
-                                            placeholder="Max"
-                                            placeholderTextColor="#999"
-                                            keyboardType="numeric"
-                                            style={styles.amountInput}
-                                        />
-                                    </View>
+                                    <InputComponent
+                                        type="numberOnly"
+                                        placeholder="Max"
+                                        value={maxAmount}
+                                        flex={1}
+                                        maxLength={9}
+                                        disabled={!minAmount}
+                                        leftIcon={<Text style={styles.currency}>₹</Text>}
+                                        error={!!errorMsg}
+                                        onChangeText={(text) => {
+                                            setMaxAmount(text);
+                                            if (minAmount && Number(minAmount) > Number(text)) {
+                                                setErrorMsg("Min Amount should not be greater than max");
+                                            } else {
+                                                setErrorMsg("");
+                                            }
+                                        }}
+                                    />
                                 </View>
-                                {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
+
+                                {errorMsg ? <ErrorMessage message={errorMsg} type="error" /> : null}
                             </>
                         )}
-
 
 
                         {/* <MultiSelectDropdown
@@ -1127,6 +1093,23 @@ const styles = StyleSheet.create({
     },
     moreFilterText: {
         fontSize: 16, fontFamily: 'Gilroy-Bold'
-    }
+    },
+    amountLabel: {
+        fontSize: 14,
+        fontFamily: 'Gilroy-Semibold',
+        marginTop: 12,
+    },
+
+    amountRow: {
+        flexDirection: "row",
+        alignItems: "flex-start",
+        gap: 12,
+        marginTop: 2,
+    },
+
+    currency: {
+        fontSize: 16,
+        color: "#999",
+    },
 
 })
