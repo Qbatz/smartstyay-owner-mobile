@@ -266,22 +266,34 @@ export default FilterDropdown;
 
 const styles = StyleSheet.create({
 
-    dropdownButton: {
-        height: 44,
+    // dropdownButton: {
+    //     height: 44,
+    //     borderWidth: 1,
+    //     borderColor: "#E2E8F0",
+    //     borderRadius: 8,
+    //     paddingHorizontal: 12,
+
+    //     flexDirection: "row",
+    //     alignItems: "center",
+    //     justifyContent: "space-between",
+
+    //     backgroundColor: "#FFFFFF",
+    // },
+     dropdownButton: {
+        minHeight: 44,
         borderWidth: 1,
         borderColor: "#E2E8F0",
-        borderRadius: 8,
+        borderRadius: 10,
         paddingHorizontal: 12,
-
+        paddingVertical: 8,
         flexDirection: "row",
         alignItems: "center",
-        justifyContent: "space-between",
-
         backgroundColor: "#FFFFFF",
+        justifyContent:'center'
     },
 
     dropdownText: {
-        flex: 1,
+        // flex: 1,
         fontSize: 14,
         fontFamily: "Gilroy-Medium",
         color: "#1E293B",
@@ -323,17 +335,7 @@ const styles = StyleSheet.create({
         fontFamily: "Gilroy-Medium",
         color: "#334155",
     },
-    dropdownButton: {
-        minHeight: 44,
-        borderWidth: 1,
-        borderColor: "#E2E8F0",
-        borderRadius: 8,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#FFFFFF",
-    },
+   
 
     dropdownContent: {
         flex: 1,

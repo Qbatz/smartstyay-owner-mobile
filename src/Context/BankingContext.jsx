@@ -430,36 +430,52 @@ export default function BankingProvider({ children }) {
     filters = {}
   ) => {
     try {
-      setLoading(true);
+     
+      if (page === 1) setLoading(true);
       setErrorMsg("");
 
       const axios = getAxios();
 
-      const params = {
-        page,
-        size,
-        ...(filters.dateFilter && { dateFilter: filters.dateFilter }),
-        ...(filters.source && { source: filters.source }),
-        ...(filters.fromDate && { fromDate: filters.fromDate }),
-        ...(filters.toDate && { toDate: filters.toDate }),
-      };
+      const params = { page, size };
+
+     
+      const dateFilter = Array.isArray(filters?.dateFilter)
+        ? filters.dateFilter[0]
+        : filters?.dateFilter;
+      if (dateFilter && dateFilter !== "ALL") {
+        params.dateFilter = dateFilter;
+      }
+
+      const source = Array.isArray(filters?.source)
+        ? filters.source.filter(Boolean)
+        : filters?.source
+          ? [filters.source]
+          : [];
+      if (source.length > 0) {
+        params.source = source.join(",");
+      }
+
+      if (filters?.fromDate) params.fromDate = filters.fromDate;
+      if (filters?.toDate) params.toDate = filters.toDate;
 
       const res = await axios.get(
         `/v3/bank/allBankTransactions/${hostelId}/${bankId}`,
         { params }
       );
+      console.log("allTransaction",res)
 
       if (res.status === 200) {
         console.log("Bank Transaction History =>", res.data);
 
-        const transactions =
-          res.data?.transactions ||
-          res.data?.list ||
-          res.data?.data ||
-          res.data ||
-          [];
+        const transactions = Array.isArray(res.data?.transactions)
+          ? res.data.transactions
+          : [];
 
-        setBankTransactionHistory(transactions);
+        // Keep the context list as the full loaded list (page 1 replaces,
+        // later pages append). BankLedger keeps its own copy for pagination.
+        setBankTransactionHistory((prev) =>
+          page === 1 ? transactions : [...(prev || []), ...transactions]
+        );
 
         return {
           success: true,

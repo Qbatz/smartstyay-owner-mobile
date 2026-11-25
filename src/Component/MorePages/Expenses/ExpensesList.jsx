@@ -170,20 +170,33 @@ export default function ExpensesList({ navigation }) {
     }, [activeHostelId])
 
 
-    const handleSearch = async (text) => {
-        if (!text?.trim()) {
-            return GetExpenseList(activeHostelId);
-        }
+    const searchDebounceRef = useRef(null);
 
-        return GetExpenseList(activeHostelId, {
-            name: text,
-            categoryId: selectedCategoryId || null,
-            page: 1,
-            size: 10,
-        });
+    useEffect(() => {
+        return () => clearTimeout(searchDebounceRef.current);
+    }, []);
+
+
+    const handleSearch = (text) => {
+        clearTimeout(searchDebounceRef.current);
+
+        searchDebounceRef.current = setTimeout(() => {
+            if (!text?.trim()) {
+                GetExpenseList(activeHostelId);
+                return;
+            }
+
+            GetExpenseList(activeHostelId, {
+                name: text.trim(),
+                categoryId: selectedCategoryId || null,
+                page: 1,
+                size: 10,
+            });
+        }, 400);
     };
 
     const handleClearSearch = async () => {
+        clearTimeout(searchDebounceRef.current);
         setSearchText("");
         setSearchOpen(false);
 
