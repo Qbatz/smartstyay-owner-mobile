@@ -946,6 +946,7 @@ export default function NewBankingList() {
               : UpiIcon,
 
         raw: item,
+        isDeleted: item?.isDeleted,
       };
     });
 
@@ -1851,6 +1852,7 @@ export default function NewBankingList() {
                               type === "CASH" && styles.cashCard,
                               type === "CARD" && styles.creditCard,
                               type === "BANK" && styles.bankAccountCard,
+                              item?.isDeleted && styles.accountDeleted
                             ]}
                           >
                             {/* HEADER */}
@@ -3895,6 +3897,9 @@ const styles = StyleSheet.create({
   },
   bankAccountCard: {
     backgroundColor: "#FFFFFF",
+  },
+  accountDeleted:{
+    backgroundColor:'#eaebed'
   },
   filterRow: {
     flexDirection: "row",

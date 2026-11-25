@@ -32,6 +32,7 @@ import TransactionSheet from "./TransactionSheet"
 import { PGContext } from "../../../Context/PGContext";
 
 
+
 export default function BankDetails({ }) {
     // const { expense } = route.params;
 
@@ -44,9 +45,9 @@ export default function BankDetails({ }) {
     const { bankDetails, bankId } = route.params || {};
 
 
-  
 
-   
+
+
 
     console.log("bankDetails", bankDetails);
 
@@ -80,7 +81,7 @@ export default function BankDetails({ }) {
         useContext(BankingContext);
     const { activeHostelId } = useContext(CommonContexts);
 
-  const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
+    const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
 
 
     const [activeMenu, setActiveMenu] = useState(null);
@@ -89,7 +90,7 @@ export default function BankDetails({ }) {
 
 
 
- const isValidSubscription = PGDetails?.isSubscriptionActive;
+    const isValidSubscription = PGDetails?.isSubscriptionActive;
     const isSubscriptionAllow = isValidSubscription
 
 
@@ -190,8 +191,11 @@ export default function BankDetails({ }) {
 
             case "Ledger":
                 return (
-                    <BankLedger
-                    />
+                    <>
+                        <BankLedger
+                        />
+                       
+                    </>
                 );
 
 
@@ -262,11 +266,11 @@ export default function BankDetails({ }) {
                             //  style={styles.addBtn} 
                             style={[
                                 styles.addBtn,
-                                (!canWriteBanking || !isSubscriptionAllow) && {
+                                (!canWriteBanking || !isSubscriptionAllow || bankDetails?.isDeleted) && {
                                     opacity: 0.4,
                                 },
                             ]}
-                            disabled={!canWriteBanking || !isSubscriptionAllow}
+                            disabled={!canWriteBanking || !isSubscriptionAllow || bankDetails?.isDeleted}
                             onPress={() => setShowTransactionSheet(true)}>
                             <Text style={styles.addBtnText}>
                                 ＋ Add Transaction
@@ -277,11 +281,11 @@ export default function BankDetails({ }) {
                             // style={styles.transferBtn}
                             style={[
                                 styles.transferBtn,
-                                (!canWriteBanking || !isSubscriptionAllow) && {
+                                (!canWriteBanking || !isSubscriptionAllow || bankDetails?.isDeleted) && {
                                     opacity: 0.4,
                                 },
                             ]}
-                            disabled={!canWriteBanking || !isSubscriptionAllow}
+                            disabled={!canWriteBanking || !isSubscriptionAllow || bankDetails?.isDeleted}
                             onPress={handleTransfer}>
                             <Image source={TransferIcon} style={{ height: 18, width: 18, marginRight: 10 }} />
                             <Text style={styles.transferText}>

@@ -102,7 +102,8 @@ export default function MultiSelectDropdown({
             // showsVerticalScrollIndicator={false}
             style={{ maxHeight: 140 }}
           >
-            {options.map((item) => {
+            {options.length>0 ?
+            options.map((item) => {
               const checked = selected.includes(item.value);
               return (
                 <TouchableOpacity
@@ -119,7 +120,9 @@ export default function MultiSelectDropdown({
                   <Text style={styles.optionText}>{item.label}</Text>
                 </TouchableOpacity>
               );
-            })}
+            }) : <View style={styles.emptyFolder}>
+              <Text style={styles.emptyText}>No Options</Text>
+              </View>}
 
 
           </ScrollView>
@@ -256,6 +259,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#1D4ED8",
     borderColor: "#1D4ED8",
   },
+  emptyFolder:{
+    paddingVertical:12,
+    paddingHorizontal:10,alignItems:'center'
+  },
+  emptyText:{
+    fontSize:13,
+    fontFamily:'Gilroy-Semibold',color:'#A0A0A0'
+  }
 
 });
 
