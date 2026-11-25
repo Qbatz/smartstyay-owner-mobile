@@ -22,6 +22,11 @@ import DatePicker from "react-native-ui-datepicker";
 import { useHasPermission } from "../../../Utils/useHasPermission";
 import FilterIcon from "../../../Assets/Images/filter.png";
 import LeavePageScreen from "../../../ToastFile/LeavePageScreen";
+import InputComponent from "../InputComponent"
+import DropdownComponent from "../DropdownComponent";
+import DatePickerComponent from "../DatePickerComponent";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+dayjs.extend(customParseFormat)
 
 const ReceiptFilterSheet = ({
   visible,
@@ -242,7 +247,7 @@ const ReceiptFilterSheet = ({
       type: type,
       modes: paymentmode,
       collectedBy: collectedBy,
-      period:selectedPeriod,
+      period: selectedPeriod,
       minAmount: minAmount,
       maxAmount: maxAmount,
     };
@@ -355,7 +360,7 @@ const ReceiptFilterSheet = ({
                   }}
                 /> */}
 
-            <MultiSelectDropdown
+            {/* <MultiSelectDropdown
               label="Type"
               dropdownKey="type"
               placeholder="Select Type"
@@ -364,6 +369,18 @@ const ReceiptFilterSheet = ({
               options={typeOptions}
               selected={type}
               onChange={setType}
+            /> */}
+
+            <DropdownComponent
+              label="Type"
+              placeholder="Select Type"
+              multiSelect
+              options={typeOptions}
+              value={type}
+              onChange={(values) => {
+                setType(values);
+                setFilterError("");
+              }}
             />
 
             {/* <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 10, }}>
@@ -415,10 +432,11 @@ const ReceiptFilterSheet = ({
               <TouchableOpacity style={[
                 styles.quickBtn,
                 selectedPeriod === "THIS_MONTH" && styles.activeQuickBtn,
-              ]} onPress={() => {setSelectedPeriod("THIS_MONTH")
+              ]} onPress={() => {
+                setSelectedPeriod("THIS_MONTH")
                 //  setFromDate(dayjs()); setToDate(dayjs());
-                  }}>
-                <Text style={[styles.quickText ,  selectedPeriod === "THIS_MONTH" && {color:'#ffffff'}]}>
+              }}>
+                <Text style={[styles.quickText, selectedPeriod === "THIS_MONTH" && { color: '#ffffff' }]}>
                   This Month</Text>
               </TouchableOpacity>
 
@@ -428,19 +446,19 @@ const ReceiptFilterSheet = ({
               ]} onPress={() => {
                 setSelectedPeriod("LAST_3_MONTHS")
                 //  setFromDate(dayjs().startOf("week")); setToDate(dayjs().endOf("week"));
-                  }}>
-                <Text style={[styles.quickText ,  selectedPeriod === "LAST_3_MONTHS" && {color:'#ffffff'}]}>
+              }}>
+                <Text style={[styles.quickText, selectedPeriod === "LAST_3_MONTHS" && { color: '#ffffff' }]}>
                   Last 3 Months</Text>
               </TouchableOpacity>
 
               <TouchableOpacity style={[
                 styles.quickBtn,
                 selectedPeriod === "LAST_6_MONTHS" && styles.activeQuickBtn,
-              ]} onPress={() => { 
+              ]} onPress={() => {
                 setSelectedPeriod("LAST_6_MONTHS")
                 // setFromDate(dayjs().startOf("month")); setToDate(dayjs().endOf("month")); 
-                }}>
-                <Text style={[styles.quickText ,  selectedPeriod === "LAST_6_MONTHS" && {color:'#ffffff'}]}>
+              }}>
+                <Text style={[styles.quickText, selectedPeriod === "LAST_6_MONTHS" && { color: '#ffffff' }]}>
                   Last 6 Months</Text>
               </TouchableOpacity>
             </View>
@@ -474,60 +492,55 @@ const ReceiptFilterSheet = ({
             onChange={setAmountRange}
           /> */}
 
-            <Text style={{ fontSize: 16, fontFamily: 'Gilroy-Medium', marginBottom: 6, marginTop: 14 }}>
-              Amount Range</Text>
+            <Text style={styles.amountLabel}>Amount Range</Text>
 
             <View style={styles.amountRow}>
+              <InputComponent
+                type="numberOnly"
+                placeholder="Min"
+                value={minAmount}
+                flex={1}
+                maxLength={9}
+                containerStyle={{ marginTop: -10 }}
+                leftIcon={<Text style={styles.currency}>₹</Text>}
+                error={!!errorMsg}
+                onChangeText={(text) => {
+                  setMinAmount(text);
+                  if (maxAmount && Number(text) > Number(maxAmount)) {
+                    setErrorMsg("Min Amount should not be greater than max");
+                  } else {
+                    setErrorMsg("");
+                  }
+                  setFilterError("");
+                }}
+              />
 
-              {/* Minimum Amount */}
-              <View style={[styles.amountInputContainer, { marginRight: 5 }]}>
-                <Text style={styles.currency}>₹</Text>
-
-                <TextInput
-                  value={minAmount}
-                  onChangeText={(text) => {
-                    if (text > maxAmount) {
-                      setErrorMsg("Min Amount should not be greater than max")
-                    } else {
-                      setErrorMsg("")
-                    }
-                    const cleanText = text.replace(/[^0-9]/g, "");
-                    setMinAmount(cleanText)
-                  }}
-                  placeholder="Min"
-                  placeholderTextColor="#999"
-                  keyboardType="numeric"
-                  style={styles.amountInput}
-                />
-              </View>
-
-              {/* Maximum Amount */}
-              <View style={[styles.amountInputContainer, { marginLeft: 5 }, !minAmount && { opacity: 0.4 }]}>
-                <Text style={styles.currency}>₹</Text>
-
-                <TextInput
-                  value={maxAmount}
-                  editable={minAmount ? true : false}
-                  onChangeText={(text) => {
-                    if (minAmount > text) {
-                      setErrorMsg("Min Amount should not be greater than max")
-                    } else {
-                      setErrorMsg("")
-                    }
-                    const cleanText = text.replace(/[^0-9]/g, "");
-                    setMaxAmount(cleanText)
-                  }}
-                  placeholder="Max"
-                  placeholderTextColor="#999"
-                  keyboardType="numeric"
-                  style={styles.amountInput}
-                />
-              </View>
+              <InputComponent
+                type="numberOnly"
+                placeholder="Max"
+                value={maxAmount}
+                flex={1}
+                maxLength={9}
+                disabled={!minAmount}
+                containerStyle={{ marginTop: -10 }}
+                leftIcon={<Text style={styles.currency}>₹</Text>}
+                error={!!errorMsg}
+                onChangeText={(text) => {
+                  setMaxAmount(text);
+                  if (minAmount && Number(minAmount) > Number(text)) {
+                    setErrorMsg("Min Amount should not be greater than max");
+                  } else {
+                    setErrorMsg("");
+                  }
+                  setFilterError("");
+                }}
+              />
             </View>
-            {errorMsg && <ErrorMessage message={errorMsg} type="error" />}
+
+            {errorMsg ? <ErrorMessage message={errorMsg} type="error" /> : null}
 
 
-            <MultiSelectDropdown
+            {/* <MultiSelectDropdown
               label="Payment Method"
               dropdownKey="paymentMode"
               placeholder="Select Payment Method"
@@ -536,20 +549,35 @@ const ReceiptFilterSheet = ({
               options={paymentModeOptions}
               selected={paymentmode}
               onChange={setPaymentMode}
+            /> */}
+
+            <DropdownComponent
+              label="Payment Method"
+              placeholder="Select Payment Method"
+              multiSelect
+              options={paymentModeOptions}
+              value={paymentmode}
+              onChange={(values) => {
+                setPaymentMode(values);
+                setFilterError("");
+              }}
+               emptyText = 'No Payment Method available'
+
             />
 
 
 
-
-            <MultiSelectDropdown
+            <DropdownComponent
               label="Collected By"
-              dropdownKey="collectedBy"
               placeholder="Select User"
-              activeDropdown={activeDropdown}
-              setActiveDropdown={setActiveDropdown}
+              multiSelect
               options={collectedByOptions}
-              selected={collectedBy}
-              onChange={setCollectedBy}
+              value={collectedBy}
+              onChange={(values) => {
+                setCollectedBy(values);
+                setFilterError("");
+              }}
+                 emptyText = 'No Users available'
             />
 
             {/* <MultiSelectDropdown
@@ -916,4 +944,21 @@ const styles = StyleSheet.create({
     color: "#222",
     paddingVertical: 0,
   },
+  amountLabel: {
+  fontSize: 14,
+  fontFamily: 'Gilroy-Semibold',
+  marginTop: 14,
+  marginBottom: 6,
+},
+
+amountRow: {
+  flexDirection: "row",
+  alignItems: "flex-start",
+  gap: 12,
+},
+
+currency: {
+  fontSize: 16,
+  color: "#999",
+},
 })

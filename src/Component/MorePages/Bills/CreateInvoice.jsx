@@ -1504,7 +1504,7 @@ const CreateInvoice = ({ }) => {
                             }}
                         />
 
-                        {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error" />}
+                        {/* {errors.paidDate && <ErrorMessage message={errors.paidDate} type="error" />} */}
 
 
                         {/* </TouchableOpacity> */}
