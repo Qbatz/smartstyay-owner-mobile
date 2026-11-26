@@ -269,7 +269,7 @@ export default function EditBasicDetailsSheet({
                                 //     setFirstNameError("");
                                 // }}
                                 onChangeText={(text) => {
-                                    const cleanText = text.replace(/[^a-zA-Z ]/g, "");
+                                    const cleanText = text.replace(/[^a-zA-Z0-9 ]/g, "");
                                     setFirstName(cleanText);
                                     setFirstNameError("");
                                 }}
@@ -284,7 +284,7 @@ export default function EditBasicDetailsSheet({
                                 placeholder="Enter LastName"
                                 // onChangeText={setLastName}
                                 onChangeText={(text) => {
-                                    const cleanText = text.replace(/[^a-zA-Z ]/g, "");
+                                    const cleanText = text.replace(/[^a-zA-Z0-9 ]/g, "");
                                     setLastName(cleanText);
 
                                 }}

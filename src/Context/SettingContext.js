@@ -398,22 +398,22 @@ export const SettingProvider = ({ children }) => {
   //   }
   // };
 
-  const deleteUser = async (userId) => {
+  const deleteUser = async (hostelId, userId) => {
     try {
       const token = await retriveData("token");
       const axios = getAxios();
       const res = await axios.delete(
-        `/v2/profile/delete-user/${userId}`,
+        `/v2/profile/delete-user/${hostelId}/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
       return { success: true, data: res.data };
 
     } catch (err) {
+      console.log("DELETE USER ERROR →", err.response?.data || err.message);
       return {
         success: false,
         data: err.response?.data || err.message,

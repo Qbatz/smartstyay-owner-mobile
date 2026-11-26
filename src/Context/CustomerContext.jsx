@@ -840,6 +840,42 @@ export const CustomerProvider = ({ children }) => {
       setLoading(false);
     }
   };
+  const removeTenantProfilePicture = async (hostelId, customerId) => {
+    if (!hostelId || !customerId) {
+      return { success: false, message: "Missing hostel or tenant details" };
+    }
+
+    try {
+      setLoading(true);
+      setErrorMsg("");
+      const token = await retriveData("token");
+      const axios = getAxios();
+      const res = await axios.delete(
+        `/v3/customers/profile-pic/${hostelId}/${customerId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      console.log("REMOVE PROFILE PIC RESPONSE:", res);
+      if (res.status === 200) {
+        return { success: true };
+      }
+      return { success: false, message: "Unable to remove profile picture" };
+    } catch (error) {
+      if (error?.response?.status === 401) {
+        await AutoLogout(loginContext);
+      }
+      const message = error?.response?.data?.message;
+      return {
+        success: false,
+        message: typeof message === "string" && message.trim()
+          ? message
+          : "Unable to remove profile picture",
+      };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const editBasicDetails = async (customerId, payloads, profilePic = null) => {
     try {
       setLoading(true);
@@ -2843,7 +2879,7 @@ export const CustomerProvider = ({ children }) => {
         getCustomerDetails,
         moveToNoticePeriod,
         bookCustomer, cancelCheckout, getSettlementByCustomerId, submitSettlement, initializeCheckout, confirmCheckout,
-        initializeCheckIn, bookedCheckInCustomer, initializeCancelBooking, cancelBooking, getCheckoutCustomersByHostel, editBasicDetails, editJoiningDate, editRentalAmount, editAdvanceAmount, assignAmenitiesForTenant, initializeCancelCheckout,
+        initializeCheckIn, bookedCheckInCustomer, initializeCancelBooking, cancelBooking, getCheckoutCustomersByHostel, editBasicDetails, removeTenantProfilePicture, editJoiningDate, editRentalAmount, editAdvanceAmount, assignAmenitiesForTenant, initializeCancelCheckout,
         addVendor, updateVendor, vendorList, setVendorList,
         getVendorList, LoadMoreVendorList, vendorLoadingMore, deleteVendor, getDashboardByHostel, AddManualDocument, deleteManualDocument, AddAdditionalContacts, addExpense, settleExpense, settleVendorPayment, RequestKYC,
         AddTenantDraft, TenantCheckIn, UpdateTenantDraft, SearchCustomer,

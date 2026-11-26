@@ -79,7 +79,7 @@ export default function UsersScreen({ navigation }) {
   const handleConfirmDelete = async () => {
     if (!deleteUserId) return;
 
-    const res = await deleteUser(deleteUserId);
+    const res = await deleteUser(activeHostelId, deleteUserId);
     if (res.success) {
 
 
