@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
   FlatList,
   View,
   Text,
   StyleSheet,
-  TouchableOpacity, Image
+  TouchableOpacity, Image,
+  ActivityIndicator
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { VendorContext } from "../../../Context/VendorContext";
@@ -110,15 +111,23 @@ const DATA = [
 
 
 export default function VendorExpenses({ vendor,
+  vendorId,            // from route — vendor (vendorDetails) can still be null on first render
+  filters = {},        // applied expense filters (API shape) from VendorDetails
   onExpensePress = () => { },
 }) {
 
   const { loading,
     getVendorExpenses,
+    LoadMoreVendorExpenses,
+    vendorExpensesLoading,
+    vendorExpensesLoadingMore,
     vendorExpenses,
     getVendorExpensePayments,
-    vendorExpensePayments, 
+    vendorExpensePayments,
   } = useContext(VendorContext);
+
+  const id = vendorId ?? vendor?.id;
+  const endReachedDuringMomentum = useRef(true);
  
       const { expensesList, GetExpenseList, IntializeexpensesList, GetInitializeExpense,
           DeleteExpense
@@ -135,10 +144,20 @@ export default function VendorExpenses({ vendor,
 
 
 
+  // Page 1 on open (and when the vendor changes), keeping any applied filters.
+  // Filter Apply / Reset in VendorDetails fetch page 1 themselves.
   useEffect(() => {
-    getVendorExpenses(vendor?.id);
-    // getVendorExpensePayments(vendor?.id);
-  }, [])
+    if (id) {
+      endReachedDuringMomentum.current = true;
+      getVendorExpenses(id, filters, 1);
+    }
+  }, [id])
+
+  const handleLoadMore = () => {
+    if (endReachedDuringMomentum.current || vendorExpensesLoading || vendorExpensesLoadingMore) return;
+    endReachedDuringMomentum.current = true;
+    LoadMoreVendorExpenses(id); // no-op when there are no more pages
+  };
 
   useEffect(() => {
     if (activeHostelId) {
@@ -288,11 +307,22 @@ export default function VendorExpenses({ vendor,
 
         <FlatList
           data={vendorExpenses?.expenses || []}
-          keyExtractor={(item) => item?.expenseId?.toString()}
+          keyExtractor={(item, index) => String(item?.expenseId ?? index)}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.listContainer}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.3}
+          onMomentumScrollBegin={() => {
+            endReachedDuringMomentum.current = false;
+          }}
+          ListFooterComponent={
+            vendorExpensesLoadingMore ? (
+              <ActivityIndicator size="small" color="#2F54EB" style={{ marginVertical: 16 }} />
+            ) : null
+          }
           ListEmptyComponent={
+            vendorExpensesLoading ? null :
             <View style={styles.emptyContainer}>
               <Image
                 source={EmptyState}

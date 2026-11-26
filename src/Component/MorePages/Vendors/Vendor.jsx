@@ -41,7 +41,7 @@ import DirectionImage from "../../../Assets/Images/direction-down.png"
 import Filter from "../../../Assets/Images/filter.png";
 import OutstandingIcon from "../../../Assets/Images/Outstanding.png"
 import GreenRupees from "../../../Assets/Images/GreenRupees.png"
-// import FilterBottomSheet from "../Reports/FilterBottomSheet";
+import FilterBottomSheet from "../Reports/FilterBottomSheet";
 
 
 const { width } = Dimensions.get("window");
@@ -204,17 +204,11 @@ export default function Vendors({ navigation }) {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [selectedStatus, setSelectedStatus] = useState(null);
 
+    // Category / Status filter bottom sheets (FilterBottomSheet)
     const [categoryOpen, setCategoryOpen] = useState(false);
     const [statusOpen, setStatusOpen] = useState(false);
-
-    const categoryRef = useRef(null);
-    const statusRef = useRef(null);
-
-    const [dropdownPosition, setDropdownPosition] = useState({
-        x: 0,
-        y: 0,
-        width: 0,
-    });
+    const [tempCategory, setTempCategory] = useState([]);
+    const [tempStatus, setTempStatus] = useState([]);
 
     const [searchText, setSearchText] = useState("");
 
@@ -351,26 +345,16 @@ export default function Vendors({ navigation }) {
     //     }, [navigation, showFilter])
     // );
 
-    const openDropdown = (type) => {
-        const ref = type === "category"
-            ? categoryRef
-            : statusRef;
+    const openCategorySheet = () => {
+        setTempCategory(selectedCategory !== null ? [selectedCategory] : []);
+        setStatusOpen(false);
+        setCategoryOpen(true);
+    };
 
-        ref.current?.measureInWindow((x, y, width, height) => {
-            setDropdownPosition({
-                x,
-                y: y + height + 6,
-                width,
-            });
-
-            if (type === "category") {
-                setCategoryOpen(true);
-                setStatusOpen(false);
-            } else {
-                setStatusOpen(true);
-                setCategoryOpen(false);
-            }
-        });
+    const openStatusSheet = () => {
+        setTempStatus(selectedStatus ? [selectedStatus] : []);
+        setCategoryOpen(false);
+        setStatusOpen(true);
     };
 
 
@@ -484,9 +468,16 @@ export default function Vendors({ navigation }) {
         setSearchText("");
         setSelectedCategory(null);
         setSelectedStatus(null);
+        setTempCategory([]);
+        setTempStatus([]);
 
         setCategoryOpen(false);
         setStatusOpen(false);
+
+        // Pagination restarts from page 1 (context resets page + hasMore);
+        // wait for a fresh drag before loading page 2.
+        userHasScrolledRef.current = false;
+        pendingEndReachedRef.current = false;
 
         if (activeHostelId) {
             getVendorList(activeHostelId, {
@@ -966,19 +957,12 @@ export default function Vendors({ navigation }) {
                                             ]}
                                         >
                                             <TouchableOpacity
-                                                ref={categoryRef}
                                                 style={[
                                                     styles.vendorFilterBox,
                                                     selectedCategory !== null && styles.vendorFilterBoxActive,
                                                 ]}
                                                 activeOpacity={0.8}
-                                                onPress={() => {
-                                                    if (categoryOpen) {
-                                                        setCategoryOpen(false);
-                                                    } else {
-                                                        openDropdown("category");
-                                                    }
-                                                }}
+                                                onPress={openCategorySheet}
                                             >
                                                 <Text
                                                     numberOfLines={1}
@@ -988,7 +972,7 @@ export default function Vendors({ navigation }) {
                                                         styles.vendorFilterTextActive,
                                                     ]}
                                                 >
-                                                    {selectedCategoryLabel || "Select Category"}
+                                                    {selectedCategoryLabel || "Category"}
                                                 </Text>
 
                                                 <Image
@@ -1076,19 +1060,12 @@ export default function Vendors({ navigation }) {
                                         <View style={[styles.vendorFilterDropdown, { zIndex: statusOpen ? 20 : 10 }]}>
 
                                             <TouchableOpacity
-                                                ref={statusRef}
                                                 style={[
                                                     styles.vendorFilterBox,
                                                     selectedStatus && styles.vendorFilterBoxActive,
                                                 ]}
                                                 activeOpacity={0.8}
-                                                onPress={() => {
-                                                    if (statusOpen) {
-                                                        setStatusOpen(false);
-                                                    } else {
-                                                        openDropdown("status");
-                                                    }
-                                                }}
+                                                onPress={openStatusSheet}
                                             >
                                                 <Text
                                                     numberOfLines={1}
@@ -1098,7 +1075,7 @@ export default function Vendors({ navigation }) {
                                                         styles.vendorFilterTextActive,
                                                     ]}
                                                 >
-                                                    {selectedStatusLabel || "Select Status"}
+                                                    {selectedStatusLabel || "Status"}
                                                 </Text>
 
                                                 <Image
@@ -1428,218 +1405,51 @@ export default function Vendors({ navigation }) {
             )}
 
 
-            <Modal
-                transparent
+            {/* Category filter (single select — API takes one categoryId) */}
+            <FilterBottomSheet
                 visible={categoryOpen}
-                animationType="none"
-                onRequestClose={() => setCategoryOpen(false)}
-            >
-                <View style={styles.dropdownModalOverlay}>
-                    <TouchableWithoutFeedback
-                        onPress={() => setCategoryOpen(false)}
-                    >
-                        <View style={styles.dropdownModalBackdrop} />
-                    </TouchableWithoutFeedback>
+                title="Category"
+                options={categoryOptions}
+                selectedValues={tempCategory}
+                setSelectedValues={setTempCategory}
+                isSingleSelect={true}
+                onReset={() => {
+                    setTempCategory([]);
+                    setSelectedCategory(null);
+                    setCategoryOpen(false);
+                    applyVendorFilters(null, selectedStatus);
+                }}
+                onApply={() => {
+                    const value = tempCategory[0] ?? null;
+                    setSelectedCategory(value);
+                    setCategoryOpen(false);
+                    applyVendorFilters(value, selectedStatus);
+                }}
+                onClose={() => setCategoryOpen(false)}
+            />
 
-                    <View
-                        style={[
-                            styles.vendorModalDropdown,
-                            {
-                                left: dropdownPosition.x,
-                                top: dropdownPosition.y,
-                                width: dropdownPosition.width,
-                            },
-                        ]}
-                    >
-                        <FlatList
-                            data={[
-                                ...categoryOptions,
-                                ...(selectedCategory !== null
-                                    ? [
-                                        {
-                                            value: "__clear__",
-                                            label: "Clear Category",
-                                        },
-                                    ]
-                                    : []),
-                            ]}
-                            keyExtractor={(item, index) =>
-                                `${item.value}-${index}`
-                            }
-                            renderItem={({ item }) => {
-                                if (item.value === "__clear__") {
-                                    return (
-                                        <TouchableOpacity
-                                            style={styles.vendorFilterClearOption}
-                                            onPress={() => {
-                                                setSelectedCategory(null);
-                                                setCategoryOpen(false);
-
-                                                applyVendorFilters(
-                                                    null,
-                                                    selectedStatus
-                                                );
-                                            }}
-                                        >
-                                            <Text
-                                                style={styles.vendorFilterClearText}
-                                            >
-                                                Clear Category
-                                            </Text>
-                                        </TouchableOpacity>
-                                    );
-                                }
-
-                                const isSelected =
-                                    String(selectedCategory) ===
-                                    String(item.value);
-
-                                return (
-                                    <TouchableOpacity
-                                        activeOpacity={0.7}
-                                        style={[
-                                            styles.vendorFilterOption,
-                                            isSelected &&
-                                            styles.vendorFilterOptionSelected,
-                                        ]}
-                                        onPress={() => {
-                                            setSelectedCategory(item.value);
-                                            setCategoryOpen(false);
-
-                                            applyVendorFilters(
-                                                item.value,
-                                                selectedStatus
-                                            );
-                                        }}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.vendorFilterOptionText,
-                                                isSelected &&
-                                                styles.vendorFilterOptionTextSelected,
-                                            ]}
-                                        >
-                                            {item.label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            }}
-                            style={styles.vendorDropdownList}
-                            nestedScrollEnabled={true}
-                            scrollEnabled={true}
-                            showsVerticalScrollIndicator={true}
-                            keyboardShouldPersistTaps="handled"
-                            removeClippedSubviews={false}
-                        />
-                    </View>
-                </View>
-            </Modal>
-
-            <Modal
-                transparent
+            {/* Payment status filter */}
+            <FilterBottomSheet
                 visible={statusOpen}
-                animationType="none"
-                onRequestClose={() => setStatusOpen(false)}
-            >
-                <View style={styles.dropdownModalOverlay}>
-                    <TouchableWithoutFeedback
-                        onPress={() => setStatusOpen(false)}
-                    >
-                        <View style={styles.dropdownModalBackdrop} />
-                    </TouchableWithoutFeedback>
-
-                    <View
-                        style={[
-                            styles.vendorModalDropdown,
-                            {
-                                left: dropdownPosition.x,
-                                top: dropdownPosition.y,
-                                width: dropdownPosition.width,
-                            },
-                        ]}
-                    >
-                        <FlatList
-                            data={[
-                                ...statusOptions,
-                                ...(selectedStatus
-                                    ? [
-                                        {
-                                            value: "__clear__",
-                                            label: "Clear Status",
-                                        },
-                                    ]
-                                    : []),
-                            ]}
-                            keyExtractor={(item, index) =>
-                                `${item.value}-${index}`
-                            }
-                            renderItem={({ item }) => {
-                                if (item.value === "__clear__") {
-                                    return (
-                                        <TouchableOpacity
-                                            style={styles.vendorFilterClearOption}
-                                            onPress={() => {
-                                                setSelectedStatus(null);
-                                                setStatusOpen(false);
-
-                                                applyVendorFilters(
-                                                    selectedCategory,
-                                                    null
-                                                );
-                                            }}
-                                        >
-                                            <Text
-                                                style={styles.vendorFilterClearText}
-                                            >
-                                                Clear Status
-                                            </Text>
-                                        </TouchableOpacity>
-                                    );
-                                }
-
-                                const isSelected =
-                                    selectedStatus === item.value;
-
-                                return (
-                                    <TouchableOpacity
-                                        activeOpacity={0.7}
-                                        style={[
-                                            styles.vendorFilterOption,
-                                            isSelected &&
-                                            styles.vendorFilterOptionSelected,
-                                        ]}
-                                        onPress={() => {
-                                            setSelectedStatus(item.value);
-                                            setStatusOpen(false);
-
-                                            applyVendorFilters(
-                                                selectedCategory,
-                                                item.value
-                                            );
-                                        }}
-                                    >
-                                        <Text
-                                            style={[
-                                                styles.vendorFilterOptionText,
-                                                isSelected &&
-                                                styles.vendorFilterOptionTextSelected,
-                                            ]}
-                                        >
-                                            {item.label}
-                                        </Text>
-                                    </TouchableOpacity>
-                                );
-                            }}
-                            style={styles.vendorDropdownList}
-                            nestedScrollEnabled={true}
-                            scrollEnabled={true}
-                            showsVerticalScrollIndicator={true}
-                            keyboardShouldPersistTaps="handled"
-                            removeClippedSubviews={false}
-                        />
-                    </View>
-                </View>
-            </Modal>
+                title="Payment Status"
+                options={statusOptions}
+                selectedValues={tempStatus}
+                setSelectedValues={setTempStatus}
+                isSingleSelect={true}
+                onReset={() => {
+                    setTempStatus([]);
+                    setSelectedStatus(null);
+                    setStatusOpen(false);
+                    applyVendorFilters(selectedCategory, null);
+                }}
+                onApply={() => {
+                    const value = tempStatus[0] ?? null;
+                    setSelectedStatus(value);
+                    setStatusOpen(false);
+                    applyVendorFilters(selectedCategory, value);
+                }}
+                onClose={() => setStatusOpen(false)}
+            />
 
 
             {openFrom && (

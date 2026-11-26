@@ -8,6 +8,7 @@ import {
   PanResponder,
   Dimensions,
   BackHandler,
+  Modal,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ErrorMessage from "../../ErrorMessagr/Errormessagestyle";
@@ -24,10 +25,10 @@ export default function FilterBottomSheet({
   onApply,
   onReset,
   onClose,
-   isSingleSelect = false 
+  isSingleSelect = false
 }) {
 
-    const insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
 
   const [error, setError] = React.useState("");
@@ -79,8 +80,18 @@ export default function FilterBottomSheet({
 
   if (!visible) return null;
 
+  // Rendered in a Modal so the sheet always draws above the whole screen.
+  // As a plain absolute View it ended up underneath sibling content
+  // (e.g. Receipt list / summary cards with Android elevation).
   return (
-    <>
+    <Modal
+      visible
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      navigationBarTranslucent
+      onRequestClose={closeSheet}
+    >
       <TouchableOpacity
         style={styles.overlay}
         activeOpacity={1}
@@ -89,13 +100,13 @@ export default function FilterBottomSheet({
 
       <Animated.View
         {...panResponder.panHandlers}
-         style={[
-    styles.sheet,
-    { 
-      transform: [{ translateY }],
-      paddingBottom: 20 + insets.bottom  
-    }
-  ]}
+        style={[
+          styles.sheet,
+          {
+            transform: [{ translateY }],
+            paddingBottom: 20 + insets.bottom
+          }
+        ]}
       >
         <View style={styles.dragIndicator} />
 
@@ -118,20 +129,20 @@ export default function FilterBottomSheet({
                 //   }
                 // }}
                 onPress={() => {
-                     setError("");
-  if (isSingleSelect) {
-    setSelectedValues([item.value]);
-  } else {
-    const exists = selectedValues.includes(item.value);
-    if (exists) {
-      setSelectedValues(
-        selectedValues.filter((v) => v !== item.value)
-      );
-    } else {
-      setSelectedValues([...selectedValues, item.value]);
-    }
-  }
-}}
+                  setError("");
+                  if (isSingleSelect) {
+                    setSelectedValues([item.value]);
+                  } else {
+                    const exists = selectedValues.includes(item.value);
+                    if (exists) {
+                      setSelectedValues(
+                        selectedValues.filter((v) => v !== item.value)
+                      );
+                    } else {
+                      setSelectedValues([...selectedValues, item.value]);
+                    }
+                  }
+                }}
               >
                 <Text style={styles.label}>{item.label}</Text>
                 <View style={[styles.radio, checked && styles.radioActive]} />
@@ -139,46 +150,46 @@ export default function FilterBottomSheet({
             );
           })}
         </ScrollView>
-{/* 
+        {/* 
         {error !== "" && (
   <Text style={styles.errorText}>
     {error}
   </Text>
 )} */}
 
-   {error ? (
-            <ErrorMessage message={error} type="error" />
-          ) : null}
+        {error ? (
+          <ErrorMessage message={error} type="error" />
+        ) : null}
 
         <View style={styles.buttons}>
-         <TouchableOpacity
-  style={[
-    styles.resetBtn,
-    (!selectedValues || selectedValues.length === 0) && styles.resetDisabled
-  ]}
-  disabled={!selectedValues || selectedValues.length === 0}
-  onPress={onReset}
->
+          <TouchableOpacity
+            style={[
+              styles.resetBtn,
+              (!selectedValues || selectedValues.length === 0) && styles.resetDisabled
+            ]}
+            disabled={!selectedValues || selectedValues.length === 0}
+            onPress={onReset}
+          >
             <Text style={{ color: "#1D4ED8" }}>Reset</Text>
           </TouchableOpacity>
 
-       <TouchableOpacity
-  style={styles.applyBtn}
-  onPress={() => {
-    if (!selectedValues || selectedValues.length === 0) {
-      setError("Please select at least one option");
-      return;
-    }
+          <TouchableOpacity
+            style={styles.applyBtn}
+            onPress={() => {
+              if (!selectedValues || selectedValues.length === 0) {
+                setError("Please select at least one option");
+                return;
+              }
 
-    setError("");
-    onApply();
-  }}
->
-  <Text style={{ color: "#fff" }}>Apply</Text>
-</TouchableOpacity>
+              setError("");
+              onApply();
+            }}
+          >
+            <Text style={{ color: "#fff" }}>Apply</Text>
+          </TouchableOpacity>
         </View>
       </Animated.View>
-    </>
+    </Modal>
   );
 }
 
@@ -192,18 +203,18 @@ const styles = {
     backgroundColor: "rgba(0,0,0,0.4)",
   },
 
-sheet: {
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: "#fff",
-  borderTopLeftRadius: 24,
-  borderTopRightRadius: 24,
-  paddingHorizontal: 20,
-  paddingTop: 20,
-  maxHeight: "80%",
-},
+  sheet: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    maxHeight: "80%",
+  },
   dragIndicator: {
     width: 40,
     height: 5,
@@ -264,13 +275,13 @@ sheet: {
     alignItems: "center",
   },
   errorText: {
-  color: "#DC2626",
-  fontSize: 13,
-  marginTop: 10,
-  marginBottom: 5
-},
+    color: "#DC2626",
+    fontSize: 13,
+    marginTop: 10,
+    marginBottom: 5
+  },
 
-resetDisabled: {
-  backgroundColor: "#E5E7EB"
-},
+  resetDisabled: {
+    backgroundColor: "#E5E7EB"
+  },
 };

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext } from "react";
+import React, { createContext, useState, useContext, useRef } from "react";
 import { getAxios } from "../Config/AxiosConfig";
 import { CommonContexts } from "../Context/CommonContext";
 
@@ -9,6 +9,17 @@ export default function VendorProvider({ children }) {
   const [vendorCategories, setVendorCategories] = useState([]);
   const [vendorDetails, setVendorDetails] = useState(null);
   const [vendorExpenses, setVendorExpenses] = useState([]);
+
+  // Vendor expenses pagination / filters
+  const [vendorExpensesLoading, setVendorExpensesLoading] = useState(false);      // page 1
+  const [vendorExpensesLoadingMore, setVendorExpensesLoadingMore] = useState(false); // page 2+
+  const [vendorExpenseFilterOptions, setVendorExpenseFilterOptions] = useState(null);
+  const vendorExpenseFiltersRef = useRef({});
+  const vendorExpensePageRef = useRef(1);
+  const vendorExpenseHasMoreRef = useRef(false);
+  const vendorExpenseFetchingRef = useRef(false);
+  const vendorExpenseRequestIdRef = useRef(0);
+  const vendorExpenseVendorIdRef = useRef(null);
   const [vendorExpensePayments, setVendorExpensePayments] = useState([]);
   const [vendorSettlementInitialize, setVendorSettlementInitialize] = useState(null);
   const [vendorComments, setVendorComments] = useState([]);
@@ -109,18 +120,18 @@ export default function VendorProvider({ children }) {
             name: filters?.name || undefined,
             categoryId: filters?.categoryId || undefined,
             paymentStatus: filters?.paymentStatus || undefined,
-            page: filters?.page ,
-            size: filters?.size ,
+            page: filters?.page,
+            size: filters?.size,
           },
         }
       );
 
       console.log("vendor", params);
-      
+
 
       if (res.status === 200) {
         console.log("vendorres", res.data);
-        
+
         setVendorList(res.data || []);
 
         return {
@@ -143,44 +154,44 @@ export default function VendorProvider({ children }) {
 
   const initializeVendorList = async (hostelId) => {
     try {
-        setLoading(true);
+      setLoading(true);
 
-        const axios = getAxios();
+      const axios = getAxios();
 
-        const res = await axios.get(
-            `/v2/vendors/hostel/${hostelId}/vendors`
-        );
+      const res = await axios.get(
+        `/v2/vendors/hostel/${hostelId}/vendors`
+      );
 
-        console.log("INITIALIZE VENDOR LIST RESPONSE =>", res.data);
+      console.log("INITIALIZE VENDOR LIST RESPONSE =>", res.data);
 
-        if (res?.status === 200) {
-          setVendorInitalize(res?.data)
-            return {
-                success: true,
-                data: res?.data,
-            }
-        }
-
+      if (res?.status === 200) {
+        setVendorInitalize(res?.data)
         return {
-            success: false,
-            message: "Failed to get vendor list",
-        };
+          success: true,
+          data: res?.data,
+        }
+      }
+
+      return {
+        success: false,
+        message: "Failed to get vendor list",
+      };
 
     } catch (err) {
-        console.log(
-            "INITIALIZE VENDOR LIST ERROR =>",
-            err?.response?.data || err
-        );
+      console.log(
+        "INITIALIZE VENDOR LIST ERROR =>",
+        err?.response?.data || err
+      );
 
-        return {
-            success: false,
-            message: getErrorMessage(err),
-        };
+      return {
+        success: false,
+        message: getErrorMessage(err),
+      };
 
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
   const getVendorCategories = async (hostelId) => {
     try {
@@ -244,41 +255,96 @@ export default function VendorProvider({ children }) {
     }
   };
 
-  const getVendorExpenses = async (
-    vendorId,
-    search = "",
-    startDate = "",
-    endDate = "",
-    page = 1,
-    size = 10
-  ) => {
-    try {
-      setLoading(true);
+ 
+  const getVendorExpenses = async (vendorId, filters = {}, page = 1, size = 10) => {
+    if (!vendorId) return { success: false };
 
+    const isLoadMore = page > 1;
+
+    if (isLoadMore && vendorExpenseFetchingRef.current) {
+      return { success: false };
+    }
+
+    vendorExpenseFetchingRef.current = true;
+    const requestId = ++vendorExpenseRequestIdRef.current;
+
+    if (isLoadMore) {
+      setVendorExpensesLoadingMore(true);
+    } else {
+     
+      if (vendorExpenseVendorIdRef.current !== vendorId) {
+        setVendorExpenseFilterOptions(null);
+        setVendorExpenses([]);
+      }
+      vendorExpenseVendorIdRef.current = vendorId;
+      vendorExpenseFiltersRef.current = { ...(filters || {}), size };
+      vendorExpensePageRef.current = 1;
+      vendorExpenseHasMoreRef.current = true;
+      setVendorExpensesLoadingMore(false); // a superseded load-more can't clear it
+      setVendorExpensesLoading(true);
+    }
+
+    try {
       const axios = getAxios();
 
-      const res = await axios.get(
-        `/v2/vendors/expenses/${vendorId}`,
-        {
-          params: {
-            search,
-            startDate,
-            endDate,
-            page,
-            size,
-          },
-        }
-      );
+      const params = { page, size };
+      const add = (key, value) => {
+        if (value === undefined || value === null) return;
+        if (typeof value === "string" && value.trim() === "") return;
+        params[key] = value;
+      };
+      add("search", filters?.search);
+      add("startDate", filters?.startDate);
+      add("endDate", filters?.endDate);
+      add("categoryId", filters?.categoryId);
+      add("paymentStatus", filters?.paymentStatus);
+      add("minAmount", filters?.minAmount);
+      add("maxAmount", filters?.maxAmount);
 
-      if (res?.status === 200) {
-        setVendorExpenses(res?.data || []);
+      const res = await axios.get(`/v2/vendors/expenses/${vendorId}`, { params });
 
-        return {
-          success: true,
-          data: res?.data,
-        };
+      if (requestId !== vendorExpenseRequestIdRef.current) {
+        return { success: false, stale: true };
       }
 
+      if (res?.status === 200) {
+        const data = res?.data || {};
+        const list = Array.isArray(data?.expenses) ? data.expenses : [];
+
+        const currentPage = Number(data?.currentPage) || page;
+        const totalPages = Number(data?.totalPages);
+
+        vendorExpensePageRef.current = currentPage;
+        vendorExpenseHasMoreRef.current =
+          Number.isFinite(totalPages) && totalPages > 0
+            ? currentPage < totalPages
+            : list.length >= size;
+
+       
+        const hasFilters = Object.entries(filters || {}).some(
+          ([, v]) => v !== undefined && v !== null && String(v).trim() !== ""
+        );
+        if (data?.filterOptions && (!hasFilters || !vendorExpenseFilterOptions)) {
+          setVendorExpenseFilterOptions(data.filterOptions);
+        }
+
+        if (isLoadMore) {
+          setVendorExpenses((prev) => {
+            const prevList = Array.isArray(prev?.expenses) ? prev.expenses : [];
+            const seen = new Set(prevList.map((e) => e?.expenseId));
+            return {
+              ...data,
+              expenses: [...prevList, ...list.filter((e) => !seen.has(e?.expenseId))],
+            };
+          });
+        } else {
+          setVendorExpenses({ ...data, expenses: list });
+        }
+
+        return { success: true, data };
+      }
+
+      if (!isLoadMore) vendorExpenseHasMoreRef.current = false;
       return { success: false };
     } catch (err) {
       console.log(
@@ -286,13 +352,36 @@ export default function VendorProvider({ children }) {
         err?.response?.data || err
       );
 
+      if (!isLoadMore && requestId === vendorExpenseRequestIdRef.current) {
+        vendorExpenseHasMoreRef.current = false;
+      }
+
       return {
         success: false,
         message: getErrorMessage(err),
       };
     } finally {
-      setLoading(false);
+      if (requestId === vendorExpenseRequestIdRef.current) {
+        vendorExpenseFetchingRef.current = false;
+        if (isLoadMore) setVendorExpensesLoadingMore(false);
+        else setVendorExpensesLoading(false);
+      }
     }
+  };
+
+  // Next page of vendor expenses with the currently applied filters
+  const LoadMoreVendorExpenses = async (vendorId) => {
+    if (
+      !vendorId ||
+      vendorId !== vendorExpenseVendorIdRef.current ||
+      vendorExpenseFetchingRef.current ||
+      !vendorExpenseHasMoreRef.current
+    ) {
+      return { success: false };
+    }
+
+    const { size = 10, ...filters } = vendorExpenseFiltersRef.current || {};
+    return getVendorExpenses(vendorId, filters, vendorExpensePageRef.current + 1, size);
   };
 
   const getVendorExpensePayments = async (
@@ -647,7 +736,7 @@ export default function VendorProvider({ children }) {
   }
 
 
-  
+
   const getVendorComments = async (
     vendorId
   ) => {
@@ -810,7 +899,7 @@ export default function VendorProvider({ children }) {
         vendorExpenses,
         vendorExpensePayments,
         vendorSettlementInitialize,
-        vendorComments, vendorInitialize , 
+        vendorComments, vendorInitialize,
         loading,
         getVendorList,
         getVendorCategories,
@@ -821,6 +910,10 @@ export default function VendorProvider({ children }) {
         deleteVendorCategory,
         getVendorDetails,
         getVendorExpenses,
+        LoadMoreVendorExpenses,
+        vendorExpensesLoading,
+        vendorExpensesLoadingMore,
+        vendorExpenseFilterOptions,
         getVendorExpensePayments,
         getVendorSettlementInitialize,
         settleVendorPayment,
@@ -829,7 +922,7 @@ export default function VendorProvider({ children }) {
         addVendorComment,
         updateVendorComment,
         deleteVendorComment,
-        updateVendorCategory , initializeVendorList
+        updateVendorCategory, initializeVendorList
       }}
     >
       {children}
