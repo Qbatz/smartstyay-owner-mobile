@@ -2016,10 +2016,16 @@ export default function AddBankAccount({ mode = "add",
 
 
             <Text style={styles.label}>Description</Text>
-            <TextInput
+             <TextInput
               multiline
               numberOfLines={5}
               placeholder="Enter the description"
+              value={form.description}
+              onChangeText={(text) => {
+                console.log("DESCRIPTION TYPED:", text);
+                handleChange("description", text);
+              }}
+              // onChangeText={(text) => handleChange("description", text)}
               style={styles.textArea}
             />
 
