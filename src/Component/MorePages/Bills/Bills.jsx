@@ -322,6 +322,31 @@ export default function BillsDesign({ route }) {
   const [createdBy, setCreatedBy] = useState([]);
   const [appliedFilters, setAppliedFilters] = useState(null);
   const [receiptAppliedFilters, setReceiptAppliedFilters] = useState(null);
+
+  // Receipt quick filters (top chips) — they write into receiptAppliedFilters,
+  // the same object the full ReceiptFilterSheet uses, so both stay in sync.
+  const [receiptTypeSheetOpen, setReceiptTypeSheetOpen] = useState(false);
+  const [receiptPeriodSheetOpen, setReceiptPeriodSheetOpen] = useState(false);
+  const [tempReceiptType, setTempReceiptType] = useState([]);
+  const [tempReceiptPeriod, setTempReceiptPeriod] = useState([]);
+
+  // Full-screen loader while a receipt quick filter / reset reloads page 1,
+  // so the old list isn't shown under the new filter chips.
+  const [receiptFilterLoading, setReceiptFilterLoading] = useState(false);
+  const receiptFilterReqRef = useRef(0);
+
+  const withReceiptLoader = async (task) => {
+    const reqId = ++receiptFilterReqRef.current;
+    setReceiptFilterLoading(true);
+    try {
+      return await task();
+    } finally {
+      // Only the latest request turns the loader off
+      if (reqId === receiptFilterReqRef.current) {
+        setReceiptFilterLoading(false);
+      }
+    }
+  };
   // const [retainerAppliedFilter, setRetainerAppliedFilters] = useState(null)
   const [filterError, setFilterError] = useState("");
   const [showUnpaidModal, setShowUnpaidModal] = useState(false)
@@ -538,7 +563,8 @@ export default function BillsDesign({ route }) {
       showReceiptDetails ||
       showRecordPayment ||
       showRefundPayment ||
-      showRecuringBillDetail || statusSheetOpen || typeSheetOpen || modesheetOpen
+      showRecuringBillDetail || statusSheetOpen || typeSheetOpen || modesheetOpen ||
+      receiptTypeSheetOpen || receiptPeriodSheetOpen
     ) {
       setShowTabBar(false)
     } else {
@@ -549,7 +575,8 @@ export default function BillsDesign({ route }) {
     showReceiptDetails,
     showRecordPayment,
     showRefundPayment,
-    showRecuringBillDetail, statusSheetOpen, typeSheetOpen, modesheetOpen])
+    showRecuringBillDetail, statusSheetOpen, typeSheetOpen, modesheetOpen,
+    receiptTypeSheetOpen, receiptPeriodSheetOpen])
 
 
   useLayoutEffect(() => {
@@ -2107,10 +2134,76 @@ export default function BillsDesign({ route }) {
     if (!canReadReceipt) return;
 
     setReceiptAppliedFilters(null);
+    setTempReceiptType([]);
+    setTempReceiptPeriod([]);
 
-    await ReceiptFilter({
-      hostelId: activeHostelId,
-    });
+    // Always restart from the first page
+    await withReceiptLoader(() =>
+      ReceiptFilter({
+        hostelId: activeHostelId,
+        page: 1,
+        size: 20,
+      })
+    );
+  };
+
+  const EMPTY_RECEIPT_FILTERS = {
+    startDate: null,
+    endDate: null,
+    paymentStatus: [],
+    type: [],
+    modes: [],
+    collectedBy: [],
+    period: "",
+    minAmount: null,
+    maxAmount: null,
+  };
+
+  const receiptFilterOptions = receiptsList?.filterOptions || {};
+  const receiptTypeOptions = (receiptFilterOptions.invoiceType || []).map((i) => ({
+    label: i?.name,
+    value: i?.type,
+  }));
+  const receiptPeriodOptions = (receiptFilterOptions.period || []).map((i) => ({
+    label: i?.name,
+    value: i?.type,
+  }));
+
+  const getReceiptOptionLabel = (options, value) =>
+    options.find((o) => o.value === value)?.label || value;
+
+  // Merge a change into the applied receipt filters and reload from page 1.
+  const applyReceiptQuickFilter = async (changes) => {
+    if (!canReadReceipt) return;
+
+    const next = { ...EMPTY_RECEIPT_FILTERS, ...(receiptAppliedFilters || {}), ...changes };
+
+    const hasAnyFilter =
+      next.startDate ||
+      next.endDate ||
+      next.paymentStatus?.length > 0 ||
+      next.type?.length > 0 ||
+      next.modes?.length > 0 ||
+      next.collectedBy?.length > 0 ||
+      !!next.period ||
+      !!next.minAmount?.toString().trim() ||
+      !!next.maxAmount?.toString().trim();
+
+    setReceiptAppliedFilters(hasAnyFilter ? next : null);
+
+    await withReceiptLoader(() =>
+      ReceiptFilter({
+        hostelId: activeHostelId,
+        page: 1,
+        size: 20,
+        period: next.period || "",
+        invoiceType: next.type?.length > 0 ? next.type : undefined,
+        bankIds: next.modes?.length > 0 ? next.modes : undefined,
+        collectedBy: next.collectedBy?.length > 0 ? next.collectedBy : undefined,
+        minAmount: next.minAmount != null ? next.minAmount : null,
+        maxAmount: next.maxAmount != null ? next.maxAmount : null,
+      })
+    );
   };
 
   const handleRetainerResetFilter = async () => {
@@ -2968,11 +3061,17 @@ export default function BillsDesign({ route }) {
     setSearchText("");
 
     if (activeTab === "Receipt") {
+      // Quick filters / sheet filters don't carry over between tab visits
+      setReceiptAppliedFilters(null);
+      setTempReceiptType([]);
+      setTempReceiptPeriod([]);
+
+      // size must match Receipt.jsx "load more" (20), otherwise page 2 skips rows
       ReceiptFilter({
         hostelId: activeHostelId,
         keyword: "",
         page: 1,
-        size: 10,
+        size: 20,
       });
     }
   }, [activeTab])
@@ -3309,7 +3408,7 @@ export default function BillsDesign({ route }) {
   return (
 
     <>
-      {(loading || recordLoading) && <Loader />}
+      {(loading || recordLoading || receiptFilterLoading) && <Loader />}
       <SuccessModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
@@ -4344,6 +4443,60 @@ export default function BillsDesign({ route }) {
           {activeTab === "RecurringBills" && (
             <RecurringBills onSelectRecurringBill={handleRecurringBill} setShowTabBar={setShowTabBar} />
           )}
+          {activeTab === "Receipt" && canReadReceipt &&
+            (receiptTypeOptions.length > 0 || receiptPeriodOptions.length > 0) && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ flexGrow: 0 }}
+                contentContainerStyle={{ paddingLeft: 16, paddingRight: 12 }}
+              >
+                <View style={styles.filterRow}>
+                  {(() => {
+                    const selectedTypes = receiptAppliedFilters?.type || [];
+                    const isActive = selectedTypes.length > 0;
+                    return (
+                      <TouchableOpacity
+                        style={[styles.filterBox, isActive && styles.filterBoxActive]}
+                        onPress={() => {
+                          setTempReceiptType(selectedTypes);
+                          setReceiptTypeSheetOpen(true);
+                        }}
+                      >
+                        <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
+                          {!isActive
+                            ? "Invoice Type"
+                            : `${getReceiptOptionLabel(receiptTypeOptions, selectedTypes[0])}${selectedTypes.length > 1 ? ` +${selectedTypes.length - 1} more` : ""}`}
+                        </Text>
+                        <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+                      </TouchableOpacity>
+                    );
+                  })()}
+
+                  {(() => {
+                    const selectedPeriod = receiptAppliedFilters?.period || "";
+                    const isActive = !!selectedPeriod;
+                    return (
+                      <TouchableOpacity
+                        style={[styles.filterBox, isActive && styles.filterBoxActive]}
+                        onPress={() => {
+                          setTempReceiptPeriod(selectedPeriod ? [selectedPeriod] : []);
+                          setReceiptPeriodSheetOpen(true);
+                        }}
+                      >
+                        <Text style={[styles.filterText, isActive && styles.filterTextActive]}>
+                          {isActive
+                            ? getReceiptOptionLabel(receiptPeriodOptions, selectedPeriod)
+                            : "Period"}
+                        </Text>
+                        <Image source={DownArrow} style={{ width: 16, height: 16, marginLeft: 6 }} />
+                      </TouchableOpacity>
+                    );
+                  })()}
+                </View>
+              </ScrollView>
+            )}
+
           {activeTab === "Receipt" && (
             <Receipt onSelectReceipt={handleOpenReceiptSheet}
               showReceiptFiltersheet={() => setShowReceiptFilter(true)}
@@ -8548,6 +8701,44 @@ export default function BillsDesign({ route }) {
 
             onClose={() => setModeSheetOpen(false)}
           // isSingleSelect={true}
+          />
+
+          {/* Receipt quick filters */}
+          <FilterBottomSheet
+            visible={receiptTypeSheetOpen}
+            title="Invoice Type"
+            options={receiptTypeOptions}
+            selectedValues={tempReceiptType}
+            setSelectedValues={setTempReceiptType}
+            onReset={async () => {
+              setTempReceiptType([]);
+              setReceiptTypeSheetOpen(false);
+              await applyReceiptQuickFilter({ type: [] });
+            }}
+            onApply={async () => {
+              setReceiptTypeSheetOpen(false);
+              await applyReceiptQuickFilter({ type: tempReceiptType });
+            }}
+            onClose={() => setReceiptTypeSheetOpen(false)}
+          />
+
+          <FilterBottomSheet
+            visible={receiptPeriodSheetOpen}
+            title="Month"
+            options={receiptPeriodOptions}
+            selectedValues={tempReceiptPeriod}
+            setSelectedValues={setTempReceiptPeriod}
+            isSingleSelect={true}
+            onReset={async () => {
+              setTempReceiptPeriod([]);
+              setReceiptPeriodSheetOpen(false);
+              await applyReceiptQuickFilter({ period: "" });
+            }}
+            onApply={async () => {
+              setReceiptPeriodSheetOpen(false);
+              await applyReceiptQuickFilter({ period: tempReceiptPeriod[0] || "" });
+            }}
+            onClose={() => setReceiptPeriodSheetOpen(false)}
           />
 
           {/* <FilterBottomSheet

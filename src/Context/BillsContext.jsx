@@ -21,6 +21,9 @@ export default function BillsProvider({ children }) {
   const [retainerInvoiceDetail, setRetainerInvoiceDetail] = useState(null)
   const [availablerecurringInvoices, setAvailableRecurringInvoices] = useState([]);
   const [onlyReceiptList, setOnlyReceiptList] = useState([])
+  // Bumped on every page-1 receipt request (filter / reset / search) so a
+  // slower "load more" response from the previous list can't append to the new one.
+  const receiptRequestIdRef = useRef(0);
   const [onlyBillList, setOnlyBillsList] = useState([])
   const [bookingLoadingMore, setBookingLoadingMore] = useState(false);
   // Last filters used for page 1, reused when loading further pages.
@@ -485,6 +488,9 @@ export default function BillsProvider({ children }) {
       return { success: false, message: "Invalid hostelId" };
     }
 
+    const requestId =
+      page === 1 ? ++receiptRequestIdRef.current : receiptRequestIdRef.current;
+
     try {
       // setLoading(true);
       setErrorMsg("");
@@ -529,6 +535,11 @@ export default function BillsProvider({ children }) {
             .join("&"),
       });
       console.log("checkreceiptpag",res)
+
+      // A newer page-1 request started while this one was in flight
+      if (requestId !== receiptRequestIdRef.current) {
+        return { success: false, stale: true };
+      }
 
       if (res?.status === 200) {
 

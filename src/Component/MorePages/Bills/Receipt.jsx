@@ -45,6 +45,7 @@ import RupeeIcon from "../../../Assets/Images/Rupees.png";
 import TickGreenIcon from "../../../Assets/Images/tickgreen.png";
 
 import ReactNativeBlobUtil from "react-native-blob-util";
+import FilterBottomSheet from "../Reports/FilterBottomSheet";
 
 
 
@@ -118,6 +119,17 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
   const onEndReachedCalledDuringMomentum = useRef(true);
   const isFetchingList = useRef(false);
 
+    const [billStatus, setBillStatus] = useState([]);
+    const [type, setType] = useState([]);
+    const [mode, setMode] = useState([]);
+  
+  
+    const [sheetmode, setSheetMode] = useState([]);
+    const [statusSheetOpen, setStatusSheetOpen] = useState(false);
+     const [tempStatus, setTempStatus] = useState([]);
+      const [tempType, setTempType] = useState([]);
+      const [tempmode, setTempmode] = useState([]);
+
   const detailsY = useRef(new Animated.Value(0)).current;
   const detailsSheetY = useRef(new Animated.Value(0)).current;
 
@@ -166,6 +178,13 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
   //   keyword: searchText,
   // });
 
+  // Any filter change (quick filter, filter sheet, or Reset) reloads page 1
+  // in Bills.jsx, so pagination must start again from page 1 here too.
+  useEffect(() => {
+    setReceiptPage(1)
+    setHasMoreReceipt(true)
+    onEndReachedCalledDuringMomentum.current = true;
+  }, [appliedFilters])
 
 
   useLayoutEffect(() => {
@@ -389,6 +408,12 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
   )
 
 
+  const invoiceTypeOptions=receiptsList?.filterOptions?.invoiceType?.map(i => ({
+    label:i?.name,
+    value:i?.type,
+  }))
+
+
 
   console.log("pagination", receiptPage, hasMoreReceipt)
 
@@ -555,14 +580,16 @@ const Receipt = ({ onSelectReceipt, showReceiptFiltersheet, appliedFilters,
         page: page,
         size: 20,
         period: appliedFilters?.period ? appliedFilters?.period : "",
-        invoiceType: appliedFilters?.type.length > 0 ? appliedFilters?.type : undefined,
-        bankIds: appliedFilters?.modes.length > 0 ? appliedFilters?.modes : undefined,
-        collectedBy: appliedFilters?.collectedBy.length > 0 ? appliedFilters?.collectedBy : undefined,
+        invoiceType: appliedFilters?.type?.length > 0 ? appliedFilters?.type : undefined,
+        bankIds: appliedFilters?.modes?.length > 0 ? appliedFilters?.modes : undefined,
+        collectedBy: appliedFilters?.collectedBy?.length > 0 ? appliedFilters?.collectedBy : undefined,
         minAmount: appliedFilters?.minAmount != null ? appliedFilters?.minAmount : null,
         maxAmount: appliedFilters?.maxAmount != null ? appliedFilters?.maxAmount : null,
       })
 
       console.log("onlyNewReceiptlist", res)
+      // Filters were changed/reset while this page was loading — ignore it
+      if (res?.stale) return;
       if (res?.success) {
         const newReceiptList = res?.data?.listReceipts || [];
         const currentPage= res?.data?.currentPage;
@@ -814,6 +841,7 @@ const ReceiptSummary = memo(({ summary }) => (
                 onEndReachedCalledDuringMomentum.current = false;
               }}
               ListHeaderComponent={
+                // Invoice Type / Period quick filters live in Bills.jsx (above this list)
                 <ReceiptSummary summary={receiptsList} />
               }
               onEndReached={() => {
@@ -899,6 +927,8 @@ const ReceiptSummary = memo(({ summary }) => (
             </View>
           </TouchableOpacity>
         )}
+
+
 
 
 
@@ -1196,7 +1226,7 @@ export default Receipt;
 const styles = StyleSheet.create({
   cardRow: {
     paddingLeft: 5,
-    paddingTop: 8,
+    // paddingTop: 8,
     marginBottom: 5,
   },
   summaryCard: {
@@ -1217,7 +1247,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     marginRight: 12,
     marginBottom: 10,
-    marginTop: 5,
+    // marginTop: 5,
   },
   cardTopRow: {
     flexDirection: "row",
@@ -1777,6 +1807,71 @@ const styles = StyleSheet.create({
   chipText: {
     color: "#2D6CDF",
     fontSize: 12,
+    fontFamily: "Gilroy-Semibold",
+  },
+
+
+  // --
+   filterRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    // marginTop: 4,
+    marginBottom: 8,
+  },
+  filterBox: {
+    flex: 1,
+    paddingVertical: 4,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    // borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    marginRight: 8,
+    marginLeft: 8,
+    backgroundColor: "#fff",
+    flexDirection: "row", justifyContent: "center", alignItems: "center"
+  },
+
+  filterBoxActive: {
+    backgroundColor: "#1D4ED8",
+    borderColor: "#1D4ED8",
+  },
+
+  filterText: {
+    textAlign: "center",
+    color: "#374151",
+  },
+
+  filterTextActive: {
+    color: "#fff",
+  },
+
+  filterChip: {
+    backgroundColor: "#F3F4F6",
+    paddingVertical: 8,
+    paddingHorizontal: 30,
+    borderRadius: 20,
+    marginLeft: 4
+  },
+
+  filterChipActive: {
+    display: 'flex',
+    flexDirection: 'row',
+    backgroundColor: "#E6F0FF",
+    paddingVertical: 8,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+  },
+
+  filterChipText: {
+    fontSize: 13,
+    color: "#374151",
+  },
+
+  filterChipTextActive: {
+    fontSize: 13,
+    color: "#2D6CDF",
     fontFamily: "Gilroy-Semibold",
   },
 

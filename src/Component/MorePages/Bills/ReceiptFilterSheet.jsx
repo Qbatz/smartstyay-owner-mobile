@@ -192,6 +192,13 @@ const ReceiptFilterSheet = ({
   useEffect(() => {
     if (visible) {
       setActiveDropdown(null)
+
+      // Invoice type / period can be changed from the quick filter chips in
+      // Bills.jsx — pick those up so this sheet doesn't re-apply stale values.
+      if (appliedFilters) {
+        setType(appliedFilters.type || []);
+        setSelectedPeriod(appliedFilters.period || "");
+      }
     }
 
     if (!appliedFilters) {

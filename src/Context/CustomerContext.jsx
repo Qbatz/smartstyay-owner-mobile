@@ -952,9 +952,14 @@ export const CustomerProvider = ({ children }) => {
     if (isLoadMore) {
       setVendorLoadingMore(true);
     } else {
+      // New list (initial load / filter / reset): start again from page 1.
       vendorFiltersRef.current = filters || {};
       vendorPageRef.current = 1;
-      vendorHasMoreRef.current = false;
+      vendorHasMoreRef.current = true; // confirmed from totalPages when the response arrives
+      // A load-more that was still in flight is superseded by this request and
+      // its finally won't run the reset (stale requestId) — clear it here,
+      // otherwise vendorLoadingMore stays true and blocks all further paging.
+      setVendorLoadingMore(false);
       setLoading(true);
       setVendorList([]);
     }
@@ -1069,12 +1074,18 @@ export const CustomerProvider = ({ children }) => {
         };
       }
 
+      if (!isLoadMore) vendorHasMoreRef.current = false;
       return { success: false };
     } catch (err) {
       console.log(
         "Vendor list error:",
         err?.response?.data || err
       );
+
+      // Don't try to page past a failed page-1 load
+      if (!isLoadMore && requestId === vendorRequestIdRef.current) {
+        vendorHasMoreRef.current = false;
+      }
 
       if (err?.response?.status === 401) {
         await AutoLogout(loginContext);
