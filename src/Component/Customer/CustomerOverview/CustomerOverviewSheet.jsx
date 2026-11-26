@@ -78,9 +78,9 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const { customer, customerId } = route.params || {};
   const { activeHostelId } = useContext(CommonContexts)
   const { getParticularHostelDetails, PGDetails } = useContext(PGContext);
-  const {  getBillsPdfDetails } = useContext(BillContext);
-  const { getCustomersByHostel, getCustomerDetails, editBasicDetails, loading, DeleteTenantDraft } = useCustomer();
-  console.log("customer", customer, customerId)
+  const { BillDetails, GetAllBillDetails, RecordPayment, GetInitializeRefundDetails, CreateRefund, refundError, GetRecurringBills, recurringBills, BillPdfdetails, getBillsPdfDetails, getReceiptPdfDetails, downloadReceipt, DeleteReceipt, downloadBill, shareBillOnWhatsapp, shareReceiptOnWhatsapp, GetReceiptsList, receiptsList, MarkBillAsUnpaid, GetAdvanceCreditDetails, GetInitializeAdvanceRedeem } = useContext(BillContext);
+
+  const { getBedsByHostelAndDate, checkInCustomer, getCustomersByHostel, changeBedCustomer, getCustomerDetails, editBasicDetails, removeTenantProfilePicture, loading, DeleteTenantDraft } = useCustomer(); console.log("customer", customer, customerId)
   const [activeTab, setActiveTab] = useState("Overview");
   const [customerDetails, setCustomerDetails] = useState("")
   const [showEdit, setShowEdit] = useState(false);
@@ -91,6 +91,8 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   const [showAssignAmenities, setShowAssignAmenities] = useState(false)
   const [showStayHistory, setShowStayHistory] = useState(false)
   const [profileImage, setProfileImage] = useState(null);
+  const [removePictureTarget, setRemovePictureTarget] = useState(null);
+  const isRemovingPictureRef = useRef(false);
   const [modalType, setModalType] = useState("success");
   const [showSuccess, setShowSuccess] = useState(false);
   const [message, setMessage] = useState("");
@@ -343,6 +345,45 @@ export default function CustomerOverviewScreen({ route, navigation }) {
   //     ]
   //   );
   // };
+
+  const selectedCustomerId = customer?.customerId || customerId;
+  const canRemovePicture = Boolean(activeHostelId && selectedCustomerId
+    && customerDetails?.customerId === selectedCustomerId
+    && customerDetails?.hostelId === activeHostelId
+    && customerDetails?.canRemoveProfilePic === true);
+  const showRemovePictureConfirmation = canRemovePicture
+    && removePictureTarget?.customerId === selectedCustomerId
+    && removePictureTarget?.hostelId === activeHostelId;
+
+  const closeDeleteConfirmation = () => {
+    if (showRemovePictureConfirmation) setRemovePictureTarget(null);
+    else setDeleteTenants(false);
+  };
+
+  const handleRemovePicture = async () => {
+    if (!showRemovePictureConfirmation || loading || isRemovingPictureRef.current) return;
+
+    isRemovingPictureRef.current = true;
+    setRemovePictureTarget(null);
+    try {
+      const result = await removeTenantProfilePicture(activeHostelId, selectedCustomerId);
+      if (result.success) {
+        setProfileImage(image => image === profileImage ? null : image);
+        setCustomerDetails(details => (
+          details?.customerId === selectedCustomerId && details?.hostelId === activeHostelId
+            ? { ...details, profilePic: null, canRemoveProfilePic: false }
+            : details
+        ));
+        await fetchCustomerDetails();
+      }
+      setModalType(result.success ? "success" : "error");
+      setMessage(result.success ? "Profile picture removed successfully" : result.message);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 1500);
+    } finally {
+      isRemovingPictureRef.current = false;
+    }
+  };
 
   const openCamera = () => {
     launchCamera(
@@ -1488,34 +1529,36 @@ export default function CustomerOverviewScreen({ route, navigation }) {
         )}
 
 
-        {deleteTenants && (
+        {(deleteTenants || showRemovePictureConfirmation) && (
           <Modal
             transparent
             animationType="fade"
-            visible={deleteTenants}
-            onRequestClose={() => setDeleteTenants(false)}
+            visible={deleteTenants || showRemovePictureConfirmation}
+            onRequestClose={closeDeleteConfirmation}
           >
             <View style={styles.deleteOverlay}>
               <View style={styles.deleteBox}>
 
-                <Text style={styles.deleteTitle}>Delete Customer?</Text>
+                <Text style={styles.deleteTitle}>{showRemovePictureConfirmation ? "Remove Picture?" : "Delete Customer?"}</Text>
                 <Text style={styles.deleteSub}>
-                  Are you sure you want to delete this Customer?
+                  {showRemovePictureConfirmation
+                    ? "Are you sure you want to remove this profile picture?"
+                    : "Are you sure you want to delete this Customer?"}
                 </Text>
 
                 <View style={styles.deleteBtnRow}>
                   <TouchableOpacity
                     style={styles.cancelBtn}
-                    onPress={() => setDeleteTenants(false)}
+                    onPress={closeDeleteConfirmation}
                   >
                     <Text style={styles.cancelText}>Cancel</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={styles.deleteBtn}
-                    onPress={handleDeleteDraft}
+                    onPress={showRemovePictureConfirmation ? handleRemovePicture : handleDeleteDraft}
                   >
-                    <Text style={styles.deleteBtnText}>Delete</Text>
+                    <Text style={styles.deleteBtnText}>{showRemovePictureConfirmation ? "Remove" : "Delete"}</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -1584,12 +1627,12 @@ export default function CustomerOverviewScreen({ route, navigation }) {
               showArrow: true,
               onPress: openGallery,
             },
-            {
+            ...(canRemovePicture ? [{
               label: "Remove Picture",
               icon: require("../../../Assets/Images/DeleteIcon.png"),
               showArrow: false,
-              onPress: () => console.log("remove"),
-            },
+              onPress: () => setRemovePictureTarget({ hostelId: activeHostelId, customerId: selectedCustomerId }),
+            }] : []),
           ]}
         />
 
